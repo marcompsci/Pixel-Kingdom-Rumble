@@ -1,0 +1,33 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-buildid.txt
+# IDE / Unity-generated solution files (Unity regenerates these)
+.vs/
+.vscode/
+.idea/
+/*.csproj
+/*.sln
+*.unityproj
+*.suo
+*.user
+*.userprefs
+# iOS / Xcode export
+/iOSBuild/
+*.ipa
+*.dSYM.zip
+# Cloud test harness output
+DotnetTests/bin/
+DotnetTests/obj/
+.DS_Store

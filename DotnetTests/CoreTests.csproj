@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Cloud/CI harness: compiles the engine-free PKR.Core sources and the EditMode tests
+    WITHOUT Unity, so combat/save/economy/match rules can be verified anywhere.
+    Unity itself ignores this folder (it lives outside Assets/).
+    NUnitShim.cs implements only the NUnit API subset our tests use, because NuGet
+    is not reachable from the build sandbox. In Unity the real NUnit is used.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/_Project/Scripts/Core/**/*.cs" />
+    <Compile Include="../Assets/_Project/Tests/EditMode/*Tests.cs" />
+    <Compile Include="NUnitShim.cs" />
+    <Compile Include="Runner.cs" />
+  </ItemGroup>
+</Project>

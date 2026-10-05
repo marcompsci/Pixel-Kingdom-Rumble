@@ -1,0 +1,20 @@
+# Naming registry
+
+Every player-facing name lives in data (ScriptableObjects) or in this table's listed location, so the game can be
+renamed or reskinned without code changes. Internal IDs (lowercase) never change; display names can.
+
+| Internal ID | Display name (working) | Kind | Defined in |
+|---|---|---|---|
+| `nova` | Nova | Hero | `Data/Characters/Nova.asset` (increment 2); `SaveData.DefaultCharacterId` |
+| `brick` | Brick | Hero (locked in Phase 1) | `Data/Characters/` (increment 6) |
+| `luma` | Luma | Hero (locked in Phase 1) | `Data/Characters/` (increment 6) |
+| `rex_rollo` | Rex Rollo | Hero (locked in Phase 1) | `Data/Characters/` (increment 6) |
+| `sunspire_meadows` | Sunspire Meadows | Biome | `Data/Levels/` |
+| `sq_sunspire_test` | Sunspire Meadows (Test) | Story level | `Data/Levels/` |
+| `skyforge_arena` | Skyforge Arena | Arena stage | `Data/Arena/` |
+| `clockwork_warden` | The Clockwork Warden | Boss (Phase 2) | — |
+| — | Star Shards | Currency | `Economy.cs` comments; UI strings |
+| — | Guard Pips / Exposed | Arena mechanic | UI strings |
+| — | Pixel Kingdom Rumble | Product name | `ProjectConfigurator.ProductName` |
+
+Before release: run a trademark search on the final title and hero names.
