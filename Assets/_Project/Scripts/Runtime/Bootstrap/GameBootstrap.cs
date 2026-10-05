@@ -27,6 +27,7 @@ namespace PKR
 
             Application.targetFrameRate = TargetFrameRate;
             QualitySettings.vSyncCount = 0; // targetFrameRate is ignored on desktop when vSync is on
+            Time.fixedDeltaTime = 1f / TargetFrameRate; // physics in lockstep with rendering: smoother platforming
 
             _root = new GameObject("[PKR Services]");
             Object.DontDestroyOnLoad(_root);

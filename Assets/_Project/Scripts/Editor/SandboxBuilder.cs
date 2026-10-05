@@ -1,0 +1,174 @@
+using System.IO;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+
+namespace PKR.EditorTools
+{
+    /// <summary>
+    /// PKR > Build Movement Sandbox: generates a test course for tuning Nova's movement and touch controls.
+    /// Safe to re-run; it rebuilds the scene from scratch (your tuning lives in the Nova data assets, not the scene).
+    /// Course, left to right: flat run, step platforms, tall wall (air dash over it), one-way platform,
+    /// high ledge (meteor drop down from it), a gap, then a second runway.
+    /// </summary>
+    public static class SandboxBuilder
+    {
+        public const string ScenePath = "Assets/_Project/Scenes/Sandbox/" + SceneIds.MovementSandbox + ".unity";
+        static readonly Color SkyColor = new Color32(126, 200, 227, 255);
+
+        [MenuItem("PKR/Build Movement Sandbox", priority = 20)]
+        public static void Build()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+            EditorUtil.EnsureLayers();
+            var nova = DataAssets.GetOrCreateNova();
+            var groundSprite = PlaceholderArt.Ground();
+            var stoneSprite = PlaceholderArt.StoneBlock();
+            var oneWaySprite = PlaceholderArt.OneWay();
+            var mat = EditorUtil.UnlitSpriteMaterial();
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // --- Camera -----------------------------------------------------------------------
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 6f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = SkyColor;
+            camGo.transform.position = new Vector3(0f, 2f, -10f);
+            var follow = camGo.AddComponent<CameraFollow2D>();
+
+            // --- Course -----------------------------------------------------------------------
+            var level = new GameObject("Course").transform;
+            Block(level, "Floor_A", groundSprite, mat, new Vector2(15f, -1f), new Vector2(50f, 2f));
+            Block(level, "Floor_B", groundSprite, mat, new Vector2(57f, -1f), new Vector2(26f, 2f));          // 4-unit gap at x 40..44
+            Block(level, "Wall_Left", stoneSprite, mat, new Vector2(-10.5f, 5f), new Vector2(1f, 14f));
+            Block(level, "Wall_Right", stoneSprite, mat, new Vector2(70.5f, 5f), new Vector2(1f, 14f));
+            Block(level, "Step_1", stoneSprite, mat, new Vector2(8f, 2f), new Vector2(4f, 1f));
+            Block(level, "Step_2", stoneSprite, mat, new Vector2(13f, 4f), new Vector2(3f, 1f));
+            Block(level, "Step_High", stoneSprite, mat, new Vector2(18f, 6.5f), new Vector2(3f, 1f));       // full-height jump from Step_2
+            Block(level, "Tall_Wall", stoneSprite, mat, new Vector2(24.5f, 2.5f), new Vector2(1f, 5f));      // taller than a jump (3.2); jump + upward air dash
+            OneWay(level, "OneWay_1", oneWaySprite, mat, new Vector2(30f, 2.5f), 5f);
+            Block(level, "Ledge_High", stoneSprite, mat, new Vector2(36f, 7f), new Vector2(4f, 1f));         // meteor drop from here
+            OneWay(level, "OneWay_ToLedge", oneWaySprite, mat, new Vector2(33f, 4.75f), 3f);
+            Block(level, "Gap_Marker", stoneSprite, mat, new Vector2(46f, 1.5f), new Vector2(2f, 1f));
+
+            // --- Nova -------------------------------------------------------------------------
+            var spawn = new Vector2(0f, 1.5f);
+            var hero = BuildNova(nova, mat, spawn);
+            var respawn = hero.AddComponent<RespawnOnFall>();
+            respawn.respawnPoint = spawn;
+            respawn.killY = -12f;
+            follow.target = hero.transform;
+
+            // --- Input + UI -------------------------------------------------------------------
+            // The module assigns its default UI actions itself when added in the Editor.
+            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+
+            var touch = new GameObject("TouchControls").AddComponent<TouchControlsUI>();
+            EditorUtil.SetField(hero.GetComponent<PlayerInputRouter>(), "touchControls", touch);
+
+            var dbg = new GameObject("DebugPanel").AddComponent<SandboxDebugPanel>();
+            dbg.motor = hero.GetComponent<PlatformerMotor2D>();
+
+            // --- Save -------------------------------------------------------------------------
+            EditorUtil.EnsureFolder(Path.GetDirectoryName(ScenePath).Replace('\\', '/'));
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorUtil.AddSceneToBuild(ScenePath);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[PKR] Movement sandbox built at {ScenePath}. Press Play. Keyboard: WASD/arrows, Space jump, " +
+                      "Shift dodge/air dash, L special (meteor drop in air). Device Simulator shows touch controls.");
+        }
+
+        public static GameObject BuildNova(CharacterDefinition def, Material mat, Vector2 position)
+        {
+            var go = new GameObject(def.displayName);
+            go.layer = PKRLayers.Player;
+            go.transform.position = position;
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.freezeRotation = true;
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var col = go.AddComponent<CapsuleCollider2D>();
+            col.direction = CapsuleDirection2D.Vertical;
+            col.size = new Vector2(0.7f, 1.4f);
+            col.sharedMaterial = NoFrictionMaterial();
+
+            go.AddComponent<Invulnerability>();
+            var motor = go.AddComponent<PlatformerMotor2D>();
+            EditorUtil.SetField(motor, "definition", def);
+            EditorUtil.SetField(motor, "bodyCollider", col);
+            EditorUtil.SetLayerMask(motor, "groundMask", 1 << PKRLayers.Ground);
+
+            var abilities = go.AddComponent<NovaAbilities>();
+            EditorUtil.SetField(abilities, "kit", def.kit);
+
+            var router = go.AddComponent<PlayerInputRouter>();
+            EditorUtil.SetField(router, "motor", motor);
+
+            // Visual child: bottom-pivot sprite placed at the collider's feet.
+            var body = new GameObject("Body");
+            body.transform.SetParent(go.transform, false);
+            body.transform.localPosition = new Vector3(0f, -0.7f, 0f);
+            var sr = body.AddComponent<SpriteRenderer>();
+            sr.sprite = def.bodySprite;
+            if (mat != null) sr.sharedMaterial = mat;
+            sr.sortingOrder = 10;
+
+            var visual = go.AddComponent<FighterVisual>();
+            EditorUtil.SetField(visual, "body", body.transform);
+            EditorUtil.SetField(visual, "bodyRenderer", sr);
+            return go;
+        }
+
+        static PhysicsMaterial2D NoFrictionMaterial()
+        {
+            const string path = "Assets/_Project/Data/Settings/PM_NoFriction.physicsMaterial2D";
+            var m = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(path);
+            if (m != null) return m;
+            EditorUtil.EnsureFolder("Assets/_Project/Data/Settings");
+            m = new PhysicsMaterial2D("PM_NoFriction") { friction = 0f, bounciness = 0f };
+            AssetDatabase.CreateAsset(m, path);
+            return m;
+        }
+
+        static GameObject Block(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, Vector2 size)
+        {
+            var go = new GameObject(name);
+            go.layer = PKRLayers.Ground;
+            go.transform.SetParent(parent, false);
+            go.transform.position = center;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.drawMode = SpriteDrawMode.Tiled;
+            sr.size = size;
+            if (mat != null) sr.sharedMaterial = mat;
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = size;
+            return go;
+        }
+
+        static GameObject OneWay(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, float width)
+        {
+            // Sprite is 1 unit tall with the plank in its top third; collider matches the plank only.
+            var go = Block(parent, name, sprite, mat, center, new Vector2(width, 1f));
+            var box = go.GetComponent<BoxCollider2D>();
+            box.size = new Vector2(width, 0.3f);
+            box.offset = new Vector2(0f, 0.35f);
+            box.usedByEffector = true;
+            var eff = go.AddComponent<PlatformEffector2D>();
+            eff.useOneWay = true;
+            eff.surfaceArc = 170f;
+            return go;
+        }
+    }
+}

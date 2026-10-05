@@ -11,6 +11,7 @@ namespace PKR
         public const string CharacterSelect = "02_CharacterSelect";
         public const string StoryTest = "SQ_SunspireMeadows_Test";
         public const string ArenaTest = "AC_Skyforge_Test";
+        public const string MovementSandbox = "SQ_MovementSandbox";
 
         /// <summary>Gameplay scenes run in landscape; everything else is portrait.</summary>
         public static bool IsGameplay(string sceneName) =>

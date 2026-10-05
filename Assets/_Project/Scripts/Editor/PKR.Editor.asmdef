@@ -5,7 +5,6 @@
         "PKR.Core",
         "PKR.Runtime",
         "Unity.InputSystem",
-        "Unity.TextMeshPro",
         "UnityEngine.UI"
     ],
     "includePlatforms": ["Editor"],
