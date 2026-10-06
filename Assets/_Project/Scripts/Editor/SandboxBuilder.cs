@@ -162,6 +162,7 @@ namespace PKR.EditorTools
 
             var router = go.AddComponent<PlayerInputRouter>();
             EditorUtil.SetField(router, "motor", go.GetComponent<PlatformerMotor2D>());
+            go.AddComponent<PlayerMarker>();
             return go;
         }
 
@@ -176,7 +177,7 @@ namespace PKR.EditorTools
             return go;
         }
 
-        static PhysicsMaterial2D NoFrictionMaterial()
+        internal static PhysicsMaterial2D NoFrictionMaterial()
         {
             const string path = "Assets/_Project/Data/Settings/PM_NoFriction.physicsMaterial2D";
             var m = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(path);
@@ -187,7 +188,7 @@ namespace PKR.EditorTools
             return m;
         }
 
-        static GameObject Block(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, Vector2 size)
+        internal static GameObject Block(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, Vector2 size)
         {
             var go = new GameObject(name);
             go.layer = PKRLayers.Ground;
@@ -203,7 +204,7 @@ namespace PKR.EditorTools
             return go;
         }
 
-        static GameObject OneWay(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, float width)
+        internal static GameObject OneWay(Transform parent, string name, Sprite sprite, Material mat, Vector2 center, float width)
         {
             // Sprite is 1 unit tall with the plank in its top third; collider matches the plank only.
             var go = Block(parent, name, sprite, mat, center, new Vector2(width, 1f));

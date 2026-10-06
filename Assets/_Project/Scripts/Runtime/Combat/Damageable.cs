@@ -134,6 +134,30 @@ namespace PKR
             Restored?.Invoke();
         }
 
+        /// <summary>
+        /// Lose HP without knockback or invulnerability checks (falling into a pit). Story mode only.
+        /// Returns true if this caused death.
+        /// </summary>
+        public bool TakeDirectDamage(int amount)
+        {
+            if (IsDead || amount <= 0 || model != DamageModel.StoryHealth) return false;
+            Health = Mathf.Max(0, Health - amount);
+            if (Health <= 0) { Die(); return true; }
+            return false;
+        }
+
+        /// <summary>Runtime setup for fighters built in code (enemies from EnemyFactory).</summary>
+        public void Configure(DamageModel newModel, int newTeam, int maxHealth, float weight, float armor, float postHitInvuln)
+        {
+            model = newModel;
+            team = newTeam;
+            maxHealthOverride = maxHealth;
+            fallbackWeight = weight;
+            fallbackArmor = armor;
+            postHitInvulnerability = postHitInvuln;
+            ResetState();
+        }
+
         /// <summary>Instant defeat (pits, crushers). Ignores invulnerability.</summary>
         public void Kill()
         {

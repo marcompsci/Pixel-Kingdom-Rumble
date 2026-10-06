@@ -54,10 +54,30 @@ mid-respawn; hitboxes use the physics body position instead of the interpolated 
 Known limits: hit flash is a color tint (proper white-flash shader comes with real art); no hit sounds yet
 (silent placeholders); Nova can't be damaged in the sandbox because nothing attacks her yet (enemies in increment 4).
 
+## Increment 4 — Story Quest test level (2026-10-05)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: PatrolLogic, HopperLogic, LevelRun | ✅ | 8 new tests; 69/69 pass with `dotnet run` |
+| Enemies (Cog Beetle walker, Spring Tick hopper) built from data and pooled; contact damage; shard drops | 🟡 | Syntax-checked + API review; not run in Unity |
+| Pickups (Star Shards, health crystals) pooled; puff effects pooled | 🟡 | Same |
+| Moving platforms with rider carry (motor change), spikes, pits, 2 checkpoints, secret room with fake wall, goal gate | 🟡 | Same |
+| LevelFlowController (death/respawn, enemy reset, run stats, save + reward on clear), StoryHUD | 🟡 | Same |
+| PKR > Build Story Test Level | 🟡 | Not run |
+| 2 PlayMode tests (platform carry, spikes + i-frames) | 🟡 | Written, not run |
+
+Fixed during review: platforms now update after riders (rising/slowing lifts no longer drop "grounded");
+landing on a moving platform no longer double-counts its speed; hoppers can't get stuck after being hit
+mid-hop; the player can't die after reaching the goal; a lethal hit during a pit respawn now resets properly;
+dropped shards fall back down instead of freezing mid-air; the lift starts flush with the floor.
+
+Known limits: blocks are sprite-tiled GameObjects rather than a Tilemap (simpler to generate; fine at this size);
+the level-complete banner is temporary (full screen with buttons in increment 5); Spring Ticks can hop off ledges.
+
 ## Upcoming increments
 2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
 3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
-4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) ⬜
+4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) 🟡 (written; awaiting Unity run)
 5. Pause menu, level-complete screen ⬜
 6. Main menu, character select, settings UI ⬜
 7. Arena test scene with bots ⬜

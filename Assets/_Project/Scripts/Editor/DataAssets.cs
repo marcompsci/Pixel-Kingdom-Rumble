@@ -19,6 +19,53 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
         }
 
+        public const string EnemiesFolder = "Assets/_Project/Data/Enemies";
+        public const string LevelsFolder = "Assets/_Project/Data/Levels";
+
+        public static EnemyDefinition GetOrCreateCogBeetle()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/CogBeetle.asset", d =>
+            {
+                d.id = "enemy_cog_beetle"; d.displayName = "Cog Beetle";
+                d.codexEntry = "Maintenance drones of the Tickworks. Their shells still turn with the great gears, " +
+                               "and they patrol the same path they were wound for centuries ago.";
+                d.bodySize = new Vector2(0.9f, 0.7f); d.maxHealth = 2; d.weight = 1f; d.moveSpeed = 0.28f;
+                d.behavior = EnemyBehavior.Walker; d.shardDrop = 2;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.CogBeetle(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        public static EnemyDefinition GetOrCreateSpringTick()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/SpringTick.asset", d =>
+            {
+                d.id = "enemy_spring_tick"; d.displayName = "Spring Tick";
+                d.codexEntry = "A wind-up sentry that coils tight and launches itself at intruders. " +
+                               "Wait for it to land, then strike before it rewinds.";
+                d.bodySize = new Vector2(0.7f, 0.75f); d.maxHealth = 2; d.weight = 0.9f; d.moveSpeed = 0f;
+                d.behavior = EnemyBehavior.Hopper; d.hopCooldown = 1.5f; d.hopRange = 7f; d.hopDrift = 0.5f;
+                d.shardDrop = 3;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.SpringTick(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        public static LevelDefinition GetOrCreateSunspireTestLevel()
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            return GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_SunspireMeadows_Test.asset", l =>
+            {
+                l.id = "sq_sunspire_test"; l.displayName = "Sunspire Meadows"; l.biomeName = "Sunspire Meadows";
+                l.sceneName = SceneIds.StoryTest; l.parTimeSeconds = 120f;
+                l.codexEntry = "Grassland islands stitched together by the Tickworks' oldest machinery. " +
+                               "The brass is warm to the touch, and the gears hum just below hearing.";
+                l.skyColor = new Color32(255, 200, 150, 255);
+            });
+        }
+
         public static CharacterDefinition GetOrCreateNova()
         {
             EditorUtil.EnsureFolder(CharactersFolder);

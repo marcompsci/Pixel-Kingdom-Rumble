@@ -36,6 +36,8 @@ namespace PKR
         public Vector2 Velocity => Body.linearVelocity;
         public bool IsControlLocked => _lockTimer > 0f;
         public bool HasOverride => _override.HasValue;
+        /// <summary>The moving platform we're standing on, if any.</summary>
+        public MovingPlatform Platform => _platform;
         /// <summary>Set by abilities to freeze facing (e.g. during a dash).</summary>
         public bool FacingLocked { get; set; }
 
@@ -62,6 +64,8 @@ namespace PKR
         bool _jumpArc;     // anywhere in a player-initiated jump until landing (apex hang)
         bool _cutApplied;
         float _lastAirVy;
+        MovingPlatform _platform;
+        float _carryX; // horizontal platform velocity added last step
 
         void Awake()
         {
@@ -117,12 +121,18 @@ namespace PKR
 
             // --- Ground state ---------------------------------------------------------------
             bool wasGrounded = IsGrounded;
-            IsGrounded = v.y <= 0.01f && ProbeGround();
+            // Grounded = touching a floor and not moving up relative to it (so rising platforms still count).
+            bool touching = ProbeGround(out var platform);
+            float platformVy = platform != null ? platform.Velocity.y : 0f;
+            IsGrounded = touching && v.y - platformVy <= 0.01f;
+            _platform = IsGrounded ? platform : null;
             if (IsGrounded && !wasGrounded)
             {
                 _airJumpsLeft = s.airJumps;
                 _rising = false;
                 _jumpArc = false;
+                // Velocity so far is in world space; treat the platform's share as carry so we switch to its frame.
+                _carryX = _platform != null ? _platform.Velocity.x : 0f;
                 Landed?.Invoke(Mathf.Max(0f, -_lastAirVy));
             }
             else if (!IsGrounded && wasGrounded)
@@ -145,16 +155,22 @@ namespace PKR
             if (_override.HasValue)
             {
                 Body.linearVelocity = _override.Value;
+                _carryX = 0f;
                 return;
             }
 
             bool canAct = !IsControlLocked;
 
             // --- Horizontal -----------------------------------------------------------------
+            // Work in the platform's frame while grounded; leaving the ground keeps the carried momentum.
+            if (IsGrounded) v.x -= _carryX;
+            float carry = _platform != null ? _platform.Velocity.x : 0f;
             if (canAct)
                 v.x = JumpPhysics.NextHorizontalVelocity(v.x, Intent.Move.x, s, IsGrounded, dt);
             else
                 v.x = JumpPhysics.MoveTowards(v.x, 0f, s.airDeceleration * 0.5f * dt); // knockback drift
+            v.x += carry;
+            _carryX = carry;
 
             // --- Jump -----------------------------------------------------------------------
             if (canAct && _jump.TryConsumeJump())
@@ -179,7 +195,8 @@ namespace PKR
             // --- Gravity --------------------------------------------------------------------
             if (IsGrounded)
             {
-                v.y = Mathf.Max(v.y, GroundStickSpeed);
+                // Stick to the floor (and ride vertical platforms).
+                v.y = (_platform != null ? _platform.Velocity.y : 0f) + GroundStickSpeed;
             }
             else
             {
@@ -205,8 +222,9 @@ namespace PKR
             Jumped?.Invoke();
         }
 
-        bool ProbeGround()
+        bool ProbeGround(out MovingPlatform platform)
         {
+            platform = null;
             if (bodyCollider == null) return false;
             int n = bodyCollider.Cast(Vector2.down, _groundFilter, _hits, GroundProbeDistance);
             for (int i = 0; i < n; i++)
@@ -214,7 +232,11 @@ namespace PKR
                 // Cast reports colliders we already overlap with distance 0 and an upward normal, and it ignores
                 // PlatformEffector2D. Skip those for one-way platforms so jumping up through one doesn't count as landing.
                 if (_hits[i].distance <= 0f && _hits[i].collider != null && _hits[i].collider.usedByEffector) continue;
-                if (_hits[i].normal.y >= GroundNormalMinY) return true;
+                if (_hits[i].normal.y >= GroundNormalMinY)
+                {
+                    if (_hits[i].collider != null) _hits[i].collider.TryGetComponent(out platform);
+                    return true;
+                }
             }
             return false;
         }
@@ -263,6 +285,8 @@ namespace PKR
             _rising = false;
             _jumpArc = false;
             _lastAirVy = 0f;
+            _carryX = 0f;
+            _platform = null;
             _airJumpsLeft = Stats.airJumps;
             _jump.Reset();
             _seenJumpPresses = Intent.Jump.PressCount;

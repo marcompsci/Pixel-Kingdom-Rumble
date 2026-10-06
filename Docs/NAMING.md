@@ -19,6 +19,10 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `nova_tailspin` | Tailspin | Nova move | `Data/Moves/Nova/` |
 | `nova_comet_bolt` | Comet Bolt | Nova move | `Data/Moves/Nova/` |
 | `nova_meteor_shockwave` | Meteor Shockwave | Nova ability hit | `Data/Moves/Nova/` |
+| `enemy_cog_beetle` | Cog Beetle | Enemy (walker) | `Data/Enemies/CogBeetle.asset` |
+| `enemy_spring_tick` | Spring Tick | Enemy (hopper) | `Data/Enemies/SpringTick.asset` |
+| `secret_lift_room` | (secret room) | Secret | `StoryLevelBuilder.cs` |
+| — | Tickworks | Lore: the ancient sky-machine | Character/level lore text |
 | — | Star Shards | Currency | `Economy.cs` comments; UI strings |
 | — | Guard Pips / Exposed | Arena mechanic | UI strings |
 | — | Pixel Kingdom Rumble | Product name | `ProjectConfigurator.ProductName` |
