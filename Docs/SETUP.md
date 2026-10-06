@@ -34,6 +34,8 @@ the repo on top.
    git push -u origin main
    ```
 
+After setup, work through [FIRST_RUN.md](FIRST_RUN.md) to check each feature.
+
 ## iOS build
 
 Requirements: a Mac with Xcode (current release), Unity iOS Build Support module installed via Unity Hub,

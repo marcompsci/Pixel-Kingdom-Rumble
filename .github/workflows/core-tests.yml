@@ -1,0 +1,19 @@
+# Runs the engine-free PKR.Core rules and the EditMode tests with plain .NET (no Unity license needed).
+name: Core tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build and run tests
+        working-directory: DotnetTests
+        run: dotnet run -c Release

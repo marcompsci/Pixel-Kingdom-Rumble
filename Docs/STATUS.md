@@ -2,6 +2,23 @@
 
 Legend: ✅ verified by actually running · 🟡 written, not yet compiled in Unity · ⬜ not started
 
+## Phase 1 summary (2026-10-06): code-complete, not yet run in Unity
+
+| Area | State | What that means |
+|---|---|---|
+| Core rules (`PKR.Core`) + 94 EditMode tests | ✅ | Built and run with .NET 8: 94/94 pass. GitHub Actions runs the same tests on every push |
+| Unity runtime + editor code (~9,600 lines of C# incl. Core) | 🟡 | Syntax-checked with Roslyn; Unity API usage reviewed against Unity's C# source; **never compiled against UnityEngine** |
+| 15 PlayMode tests | 🟡 | Written, never run |
+| Scenes, data assets, placeholder art | 🟡 | Produced by PKR menu commands that have never been run |
+| iOS build, device test, 60 FPS | ⬜ | Nothing built or measured |
+
+Phase 1 feature list: boot → main menu → character select (Nova playable, 3 locked) → Sunspire Meadows test
+level (enemies, pickups, hazards, checkpoints, secret, goal, results) and Skyforge Arena (Stock/Timed/Training,
+1-3 CPUs, retracting bridge, results), with touch controls, pause, settings, save, Star Shards and haptics.
+
+Next step: [FIRST_RUN.md](FIRST_RUN.md). Known gaps: [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+What comes after: [PHASE2_BACKLOG.md](PHASE2_BACKLOG.md).
+
 ## Increment 1 — skeleton, Core rules, services (2026-10-05)
 
 | Item | State | Evidence |
@@ -128,11 +145,10 @@ up for a frame on rematch.
 
 Known limits: every fighter uses Nova's kit (other heroes are locked in Phase 1); no hit/KO sounds yet.
 
-## Upcoming increments
-2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
-3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
-4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) 🟡 (written; awaiting Unity run)
-5. Pause menu, level-complete screen 🟡 (written; awaiting Unity run)
-6. Main menu, character select, settings UI 🟡 (written; awaiting Unity run)
-7. Arena test scene with bots 🟡 (written; awaiting Unity run)
-8. Docs pass, final status report ⬜
+## Increment 8 — Docs pass and Phase 1 report (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| ARCHITECTURE, FIRST_RUN checklist, KNOWN_ISSUES, PHASE2_BACKLOG docs | ✅ | Written; paths and menu names checked against the code |
+| GitHub Actions workflow `Core tests` (.NET 8, `DotnetTests/`) | 🟡 | Same command passes locally (94/94); first run on GitHub happens after this push |
+| No gameplay code changes | n/a | |

@@ -5,8 +5,18 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1, increment 7 of 8. See [Docs/STATUS.md](Docs/STATUS.md) for exactly what is built,
-what was tested, and what is not verified yet.
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**. The engine-free rules pass 94 unit
+tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
+compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
+
+| Doc | What's in it |
+|---|---|
+| [Docs/STATUS.md](Docs/STATUS.md) | Honest per-increment log: verified vs written |
+| [Docs/SETUP.md](Docs/SETUP.md) | Create the Unity project, build for iPhone |
+| [Docs/FIRST_RUN.md](Docs/FIRST_RUN.md) | Step-by-step checklist for the first Unity + iPhone run |
+| [Docs/ARCHITECTURE.md](Docs/ARCHITECTURE.md) | Code layers, key decisions, how to add a hero |
+| [Docs/KNOWN_ISSUES.md](Docs/KNOWN_ISSUES.md) | What's unverified, missing or rough |
+| [Docs/PHASE2_BACKLOG.md](Docs/PHASE2_BACKLOG.md) | Heroes, Clockwork Warden, codex, shop, Game Center, art, audio |
 
 ---
 
@@ -251,6 +261,7 @@ pipeline (damage + push, same-team immunity, one hit per swing), moving-platform
 ## Repo tools
 
 - `Tools/gen_metas.py`: creates missing `.meta` files with stable GUIDs for files added outside Unity.
+- `.github/workflows/core-tests.yml`: runs `DotnetTests/` (Core + EditMode tests, no Unity) on every push and pull request.
 
 ## Design notes
 
