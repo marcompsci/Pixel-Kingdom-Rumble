@@ -188,3 +188,20 @@ Fixed during review: a coil thrown while jumping up through a one-way plank land
 platforms floated in place; coils survived into an arena rematch; locked Luma could appear as a CPU; locked-hero
 lore text; a level scene built before this change silently unlocked nothing (now warns).
 
+## 2.3 — Rex Rollo joins: momentum, wall ride, speed-scaled hits (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: momentum (coast/skid/overspeed) in `JumpPhysics`, `WallRide` rules, `CombatMath.ScaleBySpeed`, unlock rules with secrets | ✅ | 7 new tests; 113/113 pass with `dotnet run` |
+| Motor wall ride + wall jump (off for every hero whose `wallRideTime` is 0) | 🟡 | Syntax-checked + independent review (behavior proven unchanged for the other heroes by reading); not compiled in Unity |
+| Rex: Skate Kick → Tail Whip, Flip Kick, Wheel Spin, Momentum Ram (speed-scaled), Grind Drop, Rail Boost; unlocked by clearing Sunspire Meadows with its secret | 🟡 | Data created by `DataAssets`; not run |
+| Skid and wall-ride placeholder poses | 🟡 | Same |
+| 2 PlayMode tests (wall ride then wall jump; a hero without wall ride never rides) | 🟡 | Written, not run |
+| Rex feel tuning | ⬜ | Needs a device |
+
+Fixed during review: a jump pressed during a ride could be eaten by a coyote/air jump in the same step (wall jump now
+runs first and blocks coyote jumps after it); the skid pose showed for every hero and over rolls/dodges; a ride could
+cut a fresh jump short; riding into a ceiling stuck Rex there; a wall jump flipped a locked attack's facing; Momentum
+Ram counted speed in the wrong direction and on moving platforms; chained follow-ups read the lunge speed;
+projectile/trap moves now warn that `speedBonus` does nothing for them.
+

@@ -9,6 +9,8 @@ namespace PKR.Core
         public string characterId;
         /// <summary>Level that must be cleared (any rank). Empty = no rule (never unlocked by this).</summary>
         public string clearLevelId;
+        /// <summary>Also require this many secrets found in that level (best run). 0 = just clear it.</summary>
+        public int minSecrets;
     }
 
     /// <summary>Applies hero unlock rules to a save. Pure, so it is unit-tested.</summary>
@@ -18,7 +20,7 @@ namespace PKR.Core
         {
             if (save == null || string.IsNullOrEmpty(rule.characterId) || string.IsNullOrEmpty(rule.clearLevelId)) return false;
             var rec = save.GetLevel(rule.clearLevelId);
-            return rec != null && rec.completed;
+            return rec != null && rec.completed && rec.mostSecretsFound >= Math.Max(0, rule.minSecrets);
         }
 
         /// <summary>Unlocks every hero whose rule is now met. Returns the ids that were newly unlocked, in rule order.</summary>

@@ -8,7 +8,7 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `nova` | Nova | Hero | `Data/Characters/Nova.asset` (increment 2); `SaveData.DefaultCharacterId` |
 | `brick` | Brick | Hero (playable from Phase 2.1) | `Data/Characters/Brick.asset` |
 | `luma` | Luma | Hero (playable from Phase 2.2; unlocked by clearing Sunspire Meadows) | `Data/Characters/Luma.asset` |
-| `rex_rollo` | Rex Rollo | Hero (locked in Phase 1) | `Data/Characters/RexRollo.asset` |
+| `rex_rollo` | Rex Rollo | Hero (playable from Phase 2.3; clear Sunspire Meadows with its secret) | `Data/Characters/RexRollo.asset` |
 | `sunspire_meadows` | Sunspire Meadows | Biome | `Data/Levels/` |
 | `sq_sunspire_test` | Sunspire Meadows (Test) | Story level | `Data/Levels/` |
 | `skyforge_arena` | Skyforge Arena | Arena stage | `Data/Arena/` |
@@ -33,6 +33,13 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `luma_magnet_tether` | Magnet Tether | Luma move (pull projectile) | `Data/Moves/Luma/` |
 | `luma_spark_coil` | Spark Coil | Luma move (trap) | `Data/Moves/Luma/` |
 | — | Magnet Hop | Luma ability | `Data/Characters/LumaKit.asset` |
+| `rex_skate_kick` | Skate Kick | Rex move | `Data/Moves/RexRollo/` |
+| `rex_tail_whip` | Tail Whip | Rex move | `Data/Moves/RexRollo/` |
+| `rex_flip_kick` | Flip Kick | Rex move | `Data/Moves/RexRollo/` |
+| `rex_wheel_spin` | Wheel Spin | Rex move | `Data/Moves/RexRollo/` |
+| `rex_momentum_ram` | Momentum Ram | Rex move (speed-scaled) | `Data/Moves/RexRollo/` |
+| `rex_grind_drop_shockwave` | Grind Drop Shockwave | Rex ability hit | `Data/Moves/RexRollo/` |
+| — | Rail Boost, Grind Drop, Wall Ride | Rex abilities | `Data/Characters/RexKit.asset`, Rex's `movement` |
 | `enemy_cog_beetle` | Cog Beetle | Enemy (walker) | `Data/Enemies/CogBeetle.asset` |
 | `enemy_spring_tick` | Spring Tick | Enemy (hopper) | `Data/Enemies/SpringTick.asset` |
 | `secret_lift_room` | (secret room) | Secret | `StoryLevelBuilder.cs` |

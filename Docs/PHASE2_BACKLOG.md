@@ -13,7 +13,7 @@ Ordered by what unblocks the most. Step 0 comes first because everything else bu
 |---|---|---|
 | ~~**Brick** (stone guardian)~~ ✅ 2.1 | Slow, heavy; armored charge; ground-slam shockwave; 4 Guard Pips; can't air dash but has a stone-step double jump | Done: super armor, `HeroKitDefinition`, `HeroAbilities` |
 | ~~**Luma** (magnet-glove inventor)~~ ✅ 2.2 | Magnet tether pulls foes; deployable spark coil trap; magnet hop | Done: pull projectile, pooled `SparkTrap`; zipping to platforms is a possible later upgrade |
-| **Rex Rollo** (roller-skating lizard) | Momentum: keeps speed, wall-ride, tail-whip spin, skid-turn | Momentum mode in `PlatformerMotor2D` (low friction), wall contact |
+| ~~**Rex Rollo** (roller-skating lizard)~~ ✅ 2.3 | Momentum: keeps speed, wall-ride, tail-whip spin, skid-turn | Done: coast/skid in `MovementStats`, `WallRide` in the motor, speed-scaled hits |
 
 Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules~~ ✅ (clear a level); still to do: choosing CPU heroes on the setup screen, CPUs using traps.
 

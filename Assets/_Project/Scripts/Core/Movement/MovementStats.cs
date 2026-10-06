@@ -31,6 +31,22 @@ namespace PKR.Core
         public float jumpBufferTime = 0.12f;
         public int airJumps = 0;
 
+        // ---- Momentum (Rex Rollo). Negative = off, i.e. use the normal rates. -------------------------
+        /// <summary>Ground deceleration with no input, and how fast speed above runSpeed bleeds off. &lt; 0 = groundDeceleration.</summary>
+        public float coastDeceleration = -1f;
+        /// <summary>Ground deceleration when pushing against the direction of travel (a skid). &lt; 0 = normal turnaround.</summary>
+        public float skidDeceleration = -1f;
+
+        // ---- Wall ride (Rex Rollo). wallRideTime 0 = off. --------------------------------------------
+        /// <summary>Seconds a wall ride lasts (once per airtime). 0 disables wall riding.</summary>
+        public float wallRideTime = 0f;
+        /// <summary>Upward speed while riding a wall.</summary>
+        public float wallRideSpeed = 6f;
+        /// <summary>Horizontal speed needed when hitting the wall to start a ride.</summary>
+        public float wallRideMinSpeed = 4f;
+        /// <summary>Horizontal push away from the wall on a wall jump (vertical uses the normal jump).</summary>
+        public float wallJumpSpeedX = 8f;
+
         /// <summary>Returns human-readable problems; empty when valid.</summary>
         public List<string> Validate()
         {
@@ -48,6 +64,9 @@ namespace PKR.Core
             if (coyoteTime < 0f || coyoteTime > 0.3f) e.Add("coyoteTime must be in [0,0.3]");
             if (jumpBufferTime < 0f || jumpBufferTime > 0.3f) e.Add("jumpBufferTime must be in [0,0.3]");
             if (airJumps < 0) e.Add("airJumps must be >= 0");
+            if (wallRideTime < 0f) e.Add("wallRideTime must be >= 0");
+            if (wallRideTime > 0f && (wallRideSpeed <= 0f || wallJumpSpeedX < 0f || wallRideMinSpeed < 0f))
+                e.Add("wall ride speeds must be positive");
             return e;
         }
     }
@@ -80,6 +99,7 @@ namespace PKR.Core
         /// <summary>
         /// Next horizontal velocity. inputX in [-1,1]. Uses acceleration when pushing in the direction of travel,
         /// deceleration when releasing; turning around uses the larger of the two so reversals feel crisp.
+        /// Momentum heroes (coast/skid set) glide when released, skid when reversing and keep extra speed longer.
         /// </summary>
         public static float NextHorizontalVelocity(float current, float inputX, MovementStats s, bool grounded, float dt)
         {
@@ -87,11 +107,20 @@ namespace PKR.Core
             float target = x * s.runSpeed;
             float accel = grounded ? s.groundAcceleration : s.airAcceleration;
             float decel = grounded ? s.groundDeceleration : s.airDeceleration;
+            bool coast = grounded && s.coastDeceleration >= 0f;
+            bool skid = grounded && s.skidDeceleration >= 0f;
             float rate;
-            if (Math.Abs(x) < 0.01f) rate = decel;
-            else if (current != 0f && Math.Sign(target) != Math.Sign(current)) rate = Math.Max(accel, decel);
+            if (Math.Abs(x) < 0.01f) rate = coast ? s.coastDeceleration : decel;
+            else if (current != 0f && Math.Sign(target) != Math.Sign(current)) rate = skid ? s.skidDeceleration : Math.Max(accel, decel);
+            else if (coast && Math.Abs(current) > Math.Abs(target)) rate = s.coastDeceleration; // overspeed bleeds off slowly
             else rate = accel;
             return MoveTowards(current, target, rate * dt);
+        }
+
+        /// <summary>True while pushing against the direction of travel on the ground (for skid visuals/sparks).</summary>
+        public static bool IsSkidding(float current, float inputX, bool grounded)
+        {
+            return grounded && Math.Abs(inputX) > 0.3f && Math.Abs(current) > 1f && Math.Sign(inputX) != Math.Sign(current);
         }
 
         /// <summary>Snap an analog direction to one of 8 directions (unit length). Returns false if below deadzone.</summary>

@@ -39,6 +39,8 @@ namespace PKR
         Damageable _self;
         Material _spriteMaterial;
         bool _startedInAir;
+        HitData _currentHit; // the current move's hit, scaled by speed for momentum moves
+        float _chainSpeed;   // forward speed when the first move of a chain started (follow-ups reuse it)
         bool _usingOverride;
         readonly SwingHitLog _log = new SwingHitLog();
         readonly List<Damageable> _targets = new List<Damageable>();
@@ -80,32 +82,42 @@ namespace PKR
                 if (intent.Attack.Consume(now))
                 {
                     var m = moveset.ForAttack(grounded, intent.Move);
-                    if (m != null) Begin(m, intent.Move);
+                    if (m != null) Begin(m, intent.Move, chained: false);
                     return;
                 }
                 var special = moveset.ForSpecial(grounded);
-                if (special != null && intent.Special.Consume(now)) Begin(special, intent.Move);
+                if (special != null && intent.Special.Consume(now)) Begin(special, intent.Move, chained: false);
                 return;
             }
 
             // Chain into the follow-up during the cancel window.
             if (Current.followUp != null && CanCancel && intent.Attack.Consume(now))
             {
-                Begin(Current.followUp, intent.Move);
+                Begin(Current.followUp, intent.Move, chained: true);
                 return;
             }
 
             Step();
         }
 
-        void Begin(MoveDefinition move, Vector2 stick)
+        void Begin(MoveDefinition move, Vector2 stick, bool chained)
         {
+            if (Mathf.Abs(stick.x) > 0.3f) _motor.SetFacing(stick.x > 0f ? 1 : -1);
+            // Momentum moves use the speed in the facing direction (relative to any platform) before the move's own
+            // lunge takes over; follow-ups in a chain reuse the speed from the chain's first move.
+            if (!chained)
+            {
+                float carry = _motor.Platform != null ? _motor.Platform.Velocity.x : 0f;
+                _chainSpeed = Mathf.Max(0f, (_motor.Body.linearVelocity.x - carry) * _motor.Facing);
+            }
             if (_usingOverride) { _motor.ClearOverride(); _usingOverride = false; }
+            _currentHit = move.speedBonus > 0f
+                ? CombatMath.ScaleBySpeed(move.hit, _chainSpeed, _motor.Stats.runSpeed, move.speedBonus)
+                : move.hit;
             Current = move;
             Frame = 0;
             _log.Reset();
             _startedInAir = !_motor.IsGrounded;
-            if (Mathf.Abs(stick.x) > 0.3f) _motor.SetFacing(stick.x > 0f ? 1 : -1);
             _motor.FacingLocked = true;
             AttackStarted?.Invoke(move);
             // Process frame 0 now, before the motor runs this step, so a rooted move can't be
@@ -148,7 +160,7 @@ namespace PKR
                 }
                 else
                 {
-                    ApplyHits(move, move.WorldHitboxCenter(_motor.Body.position, facing), facing,
+                    ApplyHits(move, _currentHit, move.WorldHitboxCenter(_motor.Body.position, facing), facing,
                               move.shape == HitShape.Circle ? move.hitboxRadius : -1f);
                 }
             }
@@ -161,7 +173,7 @@ namespace PKR
         /// Hit everything in the move's area once. radius &gt; 0 uses a circle centered at center and pushes
         /// targets away from it; otherwise the move's box with knockback in the facing direction.
         /// </summary>
-        void ApplyHits(MoveDefinition move, Vector2 center, int facing, float radius)
+        void ApplyHits(MoveDefinition move, in HitData hit, Vector2 center, int facing, float radius)
         {
             if (radius > 0f) CombatQuery.OverlapCircle(center, radius, _targets);
             else CombatQuery.OverlapBox(center, move.hitboxSize, _targets);
@@ -171,7 +183,7 @@ namespace PKR
                 if (target == _self) continue;
                 if (!_log.TryRegister(target.GetInstanceID())) continue;
                 int dir = radius > 0f ? (target.transform.position.x >= center.x ? 1 : -1) : facing;
-                if (target.TakeHit(move.hit, dir, team, out var result)) OnHitLanded(target, result, move.hit, move);
+                if (target.TakeHit(hit, dir, team, out var result)) OnHitLanded(target, result, hit, move);
             }
         }
 
@@ -196,7 +208,7 @@ namespace PKR
             var impact = moveset != null ? moveset.abilityImpact : null;
             if (impact == null) return;
             _log.Reset();
-            ApplyHits(impact, position + new Vector2(0f, impact.hitboxOffset.y), _motor.Facing, radius > 0f ? radius : impact.hitboxRadius);
+            ApplyHits(impact, impact.hit, position + new Vector2(0f, impact.hitboxOffset.y), _motor.Facing, radius > 0f ? radius : impact.hitboxRadius);
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(Mathf.Max(0.15f, impact.shakeAmplitude), impact.shakeDuration);
         }
 

@@ -42,10 +42,7 @@ namespace PKR.EditorTools
             var nova = GetOrCreateNova();
             var brick = GetOrCreateBrick();
             var luma = GetOrCreateLuma();
-            var rex = GetOrCreateLockedHero("RexRollo", "rex_rollo", "Rex Rollo", "Roller-skating lizard. Brakes are optional.",
-                "Rex Rollo learned to skate on the brass rails that ring the floating islands and never saw a reason to stop. " +
-                "The faster he goes, the harder he hits; the trick is getting him to turn.",
-                new Color32(92, 196, 96, 255), 1.0f, 0f, PlaceholderArt.RexRollo);
+            var rex = GetOrCreateRex();
 
             var roster = GetOrCreate<CharacterRoster>($"{CharactersFolder}/Roster.asset", r => { });
             if (roster.heroes.Count == 0)
@@ -374,6 +371,133 @@ namespace PKR.EditorTools
             {
                 ms.groundAttack = tap; ms.groundUpAttack = flick; ms.airAttack = spin;
                 ms.groundSpecial = tether; ms.airSpecial = coil; ms.abilityImpact = null;
+            });
+        }
+
+        public const string RexMovesFolder = "Assets/_Project/Data/Moves/RexRollo";
+
+        /// <summary>
+        /// Rex Rollo, the roller-skating lizard: fast, slippery, hits harder the faster he goes. Playable from Phase 2.3,
+        /// unlocked by clearing Sunspire Meadows with its secret found. Upgrades a locked asset from older builds.
+        /// </summary>
+        public static CharacterDefinition GetOrCreateRex()
+        {
+            EditorUtil.EnsureFolder(CharactersFolder);
+            var kit = GetOrCreate<RexKitDefinition>($"{CharactersFolder}/RexKit.asset", _ => { });
+            var rex = GetOrCreate<CharacterDefinition>($"{CharactersFolder}/RexRollo.asset", d =>
+            {
+                d.id = "rex_rollo";
+                d.displayName = "Rex Rollo";
+                d.placeholderColor = new Color32(92, 196, 96, 255);
+                ApplyRexStats(d);
+            });
+            if (rex.kit == null) { ApplyRexStats(rex); rex.kit = kit; }
+            if (string.IsNullOrEmpty(rex.tagline)) rex.tagline = "Roller-skating lizard. Brakes are optional.";
+            if (string.IsNullOrEmpty(rex.lore))
+                rex.lore = "Rex Rollo learned to skate on the brass rails that ring the floating islands and never saw a reason to stop. " +
+                           "The faster he goes, the harder he hits; the trick is getting him to turn.";
+            if (rex.bodySprite == null) rex.bodySprite = PlaceholderArt.RexRollo();
+            if (rex.moveset == null) rex.moveset = GetOrCreateRexMoveset();
+            rex.playableInThisBuild = true;
+            rex.unlockedByDefault = false;
+            if (string.IsNullOrEmpty(rex.unlockByClearingLevelId)) { rex.unlockByClearingLevelId = "sq_sunspire_test"; rex.unlockMinSecrets = 1; }
+            if (string.IsNullOrEmpty(rex.unlockHint)) rex.unlockHint = "Clear Sunspire Meadows and find its secret";
+            EditorUtility.SetDirty(rex);
+            return rex;
+        }
+
+        static void ApplyRexStats(CharacterDefinition d)
+        {
+            d.maxHealth = 5;
+            d.weight = 1.0f;
+            d.armorPercent = 0f;
+            d.guardPips = 3;
+            d.dodgeSpeed = 12.5f; d.dodgeDuration = 0.24f;
+            d.movement = new MovementStats
+            {
+                runSpeed = 9.5f, groundAcceleration = 28f, groundDeceleration = 60f,
+                coastDeceleration = 7f,   // glides when you let go
+                skidDeceleration = 45f,   // turning around takes a skid
+                airAcceleration = 30f, airDeceleration = 10f,
+                jumpHeight = 3.0f, timeToApex = 0.36f,
+                wallRideTime = 0.45f, wallRideSpeed = 6.5f, wallRideMinSpeed = 4f, wallJumpSpeedX = 9f
+            };
+        }
+
+        /// <summary>Rex Rollo's skate moves. Original names and starting values; tune in the Inspector.</summary>
+        public static Moveset GetOrCreateRexMoveset()
+        {
+            EditorUtil.EnsureFolder(RexMovesFolder);
+            string F(string n) => $"{RexMovesFolder}/{n}.asset";
+
+            var whip = GetOrCreate<MoveDefinition>(F("Rex_TailWhip"), m =>
+            {
+                m.id = "rex_tail_whip"; m.displayName = "Tail Whip";
+                m.description = "A full spin that cracks his tail around both sides. Launches Exposed foes.";
+                m.frames = new FrameData(6, 5, 16, 6);
+                m.shape = HitShape.Circle; m.hitboxOffset = new Vector2(0f, -0.1f); m.hitboxRadius = 1.1f;
+                m.hit = new HitData { damage = 2, pipDamage = 2, baseKnockback = 7.5f, exposedMultiplier = 3f,
+                                      angleDegrees = 40f, baseHitstunFrames = 14, hitstopFrames = 6, isHeavy = true };
+                m.lungeSpeed = 1.5f; m.haptic = HapticStrength.Medium; m.shakeAmplitude = 0.12f;
+            });
+            var kick = GetOrCreate<MoveDefinition>(F("Rex_SkateKick"), m =>
+            {
+                m.id = "rex_skate_kick"; m.displayName = "Skate Kick";
+                m.description = "A quick wheel-first kick. Press Attack again for Tail Whip.";
+                m.frames = new FrameData(3, 3, 12, 8);
+                m.hitboxOffset = new Vector2(0.75f, -0.2f); m.hitboxSize = new Vector2(0.95f, 0.6f);
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 4f, exposedMultiplier = 1.5f,
+                                      angleDegrees = 20f, baseHitstunFrames = 10, hitstopFrames = 3, isHeavy = false };
+                m.lungeSpeed = 3.5f;
+            });
+            if (kick.followUp == null) { kick.followUp = whip; EditorUtility.SetDirty(kick); }
+
+            var flip = GetOrCreate<MoveDefinition>(F("Rex_FlipKick"), m =>
+            {
+                m.id = "rex_flip_kick"; m.displayName = "Flip Kick";
+                m.description = "Up + Attack. A backflip that kicks straight up.";
+                m.frames = new FrameData(5, 4, 15, 0);
+                m.hitboxOffset = new Vector2(0.3f, 1.0f); m.hitboxSize = new Vector2(1.2f, 1.0f);
+                m.hit = new HitData { damage = 2, pipDamage = 1, baseKnockback = 8f, exposedMultiplier = 2.5f,
+                                      angleDegrees = 82f, baseHitstunFrames = 14, hitstopFrames = 5, isHeavy = true };
+                m.lungeSpeed = 0f; m.haptic = HapticStrength.Medium;
+            });
+            var wheel = GetOrCreate<MoveDefinition>(F("Rex_WheelSpin"), m =>
+            {
+                m.id = "rex_wheel_spin"; m.displayName = "Wheel Spin";
+                m.description = "Air Attack. Spins with skates out, clipping both sides.";
+                m.frames = new FrameData(3, 7, 10, 0);
+                m.shape = HitShape.Circle; m.hitboxOffset = Vector2.zero; m.hitboxRadius = 0.95f;
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 5f, exposedMultiplier = 2f,
+                                      angleDegrees = 30f, baseHitstunFrames = 10, hitstopFrames = 3, isHeavy = false };
+                m.rootedOnGround = false; m.endsOnLanding = true;
+            });
+            var ram = GetOrCreate<MoveDefinition>(F("Rex_MomentumRam"), m =>
+            {
+                m.id = "rex_momentum_ram"; m.displayName = "Momentum Ram";
+                m.description = "Ground Special. Tucks and rams forward. The faster Rex was skating, the harder it hits " +
+                                "(up to 2.5x knockback, +1 damage and Guard Pip at top speed).";
+                m.frames = new FrameData(4, 10, 16, 0);
+                m.hitboxOffset = new Vector2(0.75f, 0f); m.hitboxSize = new Vector2(1.0f, 1.1f);
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 5f, exposedMultiplier = 2.5f,
+                                      angleDegrees = 30f, baseHitstunFrames = 12, hitstopFrames = 5, isHeavy = true };
+                m.lungeSpeed = 10f; m.speedBonus = 1.5f; m.haptic = HapticStrength.Medium; m.shakeAmplitude = 0.15f;
+            });
+            var grind = GetOrCreate<MoveDefinition>(F("Rex_GrindDropShockwave"), m =>
+            {
+                m.id = "rex_grind_drop_shockwave"; m.displayName = "Grind Drop Shockwave";
+                m.description = "The landing of Grind Drop. Small but quick.";
+                m.frames = new FrameData(0, 1, 0, 0);
+                m.shape = HitShape.Circle; m.hitboxOffset = new Vector2(0f, -0.3f); m.hitboxRadius = 1.3f;
+                m.hit = new HitData { damage = 2, pipDamage = 2, baseKnockback = 8f, exposedMultiplier = 2.8f,
+                                      angleDegrees = 60f, baseHitstunFrames = 14, hitstopFrames = 6, isHeavy = true };
+                m.haptic = HapticStrength.Heavy; m.shakeAmplitude = 0.25f; m.shakeDuration = 0.18f;
+            });
+
+            return GetOrCreate<Moveset>(F("Rex_Moveset"), ms =>
+            {
+                ms.groundAttack = kick; ms.groundUpAttack = flip; ms.airAttack = wheel;
+                ms.groundSpecial = ram; ms.airSpecial = null; ms.abilityImpact = grind;
             });
         }
 

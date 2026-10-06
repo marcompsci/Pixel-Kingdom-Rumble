@@ -19,6 +19,8 @@ namespace PKR
         const float GroundProbeDistance = 0.06f;
         const float GroundNormalMinY = 0.65f;
         const float GroundStickSpeed = -0.5f;
+        const float WallProbeDistance = 0.08f;
+        const float WallJumpControlLock = 0.12f;
 
         [SerializeField] CharacterDefinition definition;
         [Tooltip("Layers that count as standing surfaces.")]
@@ -36,6 +38,11 @@ namespace PKR
         public Vector2 Velocity => Body.linearVelocity;
         public bool IsControlLocked => _lockTimer > 0f;
         public bool HasOverride => _override.HasValue;
+        /// <summary>Riding up a wall (heroes with MovementStats.wallRideTime &gt; 0, e.g. Rex Rollo).</summary>
+        public bool IsWallRiding => _wallRide.IsActive;
+        /// <summary>Pushing against the direction of travel on the ground (momentum heroes show a skid).</summary>
+        public bool IsSkidding => Stats.skidDeceleration >= 0f && !HasOverride && IsGrounded &&
+                                  JumpPhysics.IsSkidding(Body.linearVelocity.x, Intent.Move.x, true);
         /// <summary>Mid-air jumps left this airtime (MovementStats.airJumps; Brick's Stone Step).</summary>
         public int AirJumpsLeft => _airJumpsLeft;
         /// <summary>The moving platform we're standing on, if any.</summary>
@@ -51,6 +58,9 @@ namespace PKR
         public event Action LeftGround;
         /// <summary>Fired when hit with knockback, so abilities can cancel themselves.</summary>
         public event Action KnockedBack;
+        /// <summary>Fired when a wall ride starts and on a wall jump (for feedback).</summary>
+        public event Action WallRideStarted;
+        public event Action WallJumped;
 
         readonly MovementStats _fallbackStats = new MovementStats();
         readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
@@ -68,6 +78,9 @@ namespace PKR
         float _lastAirVy;
         MovingPlatform _platform;
         float _carryX; // horizontal platform velocity added last step
+        float _prevVx; // horizontal velocity we asked for last step (the solver zeroes it on hitting a wall)
+        bool _ridingLastStep;
+        readonly WallRide _wallRide = new WallRide();
 
         void Awake()
         {
@@ -142,6 +155,7 @@ namespace PKR
                 LeftGround?.Invoke();
             }
             if (!IsGrounded) _lastAirVy = v.y;
+            else _wallRide.Land();
 
             // --- Jump input edges -> JumpAssist ---------------------------------------------
             if (Intent.Jump.PressCount != _seenJumpPresses)
@@ -158,6 +172,8 @@ namespace PKR
             {
                 Body.linearVelocity = _override.Value;
                 _carryX = 0f;
+                _prevVx = _override.Value.x;
+                _ridingLastStep = false;
                 return;
             }
 
@@ -174,12 +190,60 @@ namespace PKR
             v.x += carry;
             _carryX = carry;
 
+            // --- Wall ride (only heroes whose stats enable it) -------------------------------
+            // Runs before the jump section so a wall jump owns the jump press for this step.
+            bool riding = false, wallJumped = false;
+            // A ceiling stopped the ride (velocity after physics no longer rising): let go.
+            if (_wallRide.IsActive && _ridingLastStep && v.y <= 0.01f) _wallRide.End();
+            if (s.wallRideTime > 0f && !IsGrounded && canAct)
+            {
+                // Don't cut a fresh jump short: only start once rising slower than the ride itself.
+                if (!_wallRide.IsActive && Mathf.Abs(Intent.Move.x) > 0.3f && v.y <= s.wallRideSpeed)
+                {
+                    int dir = Intent.Move.x > 0f ? 1 : -1;
+                    float speedIn = Mathf.Max(Mathf.Max(0f, v.x * dir), Mathf.Max(0f, _prevVx * dir));
+                    if (_wallRide.TryStart(true, ProbeWall(dir), dir, Intent.Move.x, speedIn, s.wallRideTime, s.wallRideMinSpeed))
+                        WallRideStarted?.Invoke();
+                }
+                if (_wallRide.IsActive)
+                {
+                    if (_jump.HasBufferedJump && _jump.TryConsumeBufferedPress())
+                    {
+                        int away = _wallRide.TryWallJump();
+                        v.x = away * s.wallJumpSpeedX;
+                        StartJump(ref v);
+                        _jump.MarkJumped(); // no coyote jump right after
+                        _lockTimer = Mathf.Max(_lockTimer, WallJumpControlLock); // a moment to kick clear of the wall
+                        if (!FacingLocked) Facing = away;
+                        wallJumped = true;
+                        WallJumped?.Invoke();
+                    }
+                    else if (!ProbeWall(_wallRide.WallDir))
+                    {
+                        _wallRide.End(); // rode over the top (or the wall ended)
+                    }
+                    else
+                    {
+                        v.y = s.wallRideSpeed;
+                        v.x = _wallRide.WallDir * 0.5f; // keep contact
+                        _rising = false;
+                        riding = true;
+                    }
+                }
+            }
+            else if (_wallRide.IsActive)
+            {
+                _wallRide.End();
+            }
+            _wallRide.Tick(dt);
+            _ridingLastStep = riding;
+
             // --- Jump -----------------------------------------------------------------------
-            if (canAct && _jump.TryConsumeJump())
+            if (!wallJumped && !riding && canAct && _jump.TryConsumeJump())
             {
                 StartJump(ref v);
             }
-            else if (canAct && !IsGrounded && _airJumpsLeft > 0 && _jump.HasBufferedJump && !_jump.CanUseGroundJump)
+            else if (!wallJumped && !riding && canAct && !IsGrounded && _airJumpsLeft > 0 && _jump.HasBufferedJump && !_jump.CanUseGroundJump)
             {
                 _jump.TryConsumeBufferedPress();
                 _airJumpsLeft--;
@@ -200,7 +264,7 @@ namespace PKR
                 // Stick to the floor (and ride vertical platforms).
                 v.y = (_platform != null ? _platform.Velocity.y : 0f) + GroundStickSpeed;
             }
-            else
+            else if (!riding)
             {
                 float mult = JumpPhysics.GravityMultiplier(v.y, Intent.Jump.Held && _jumpArc, s);
                 v.y -= _gravity * mult * dt;
@@ -208,9 +272,10 @@ namespace PKR
             }
 
             Body.linearVelocity = v;
+            _prevVx = v.x;
 
             // --- Facing ---------------------------------------------------------------------
-            if (canAct && !FacingLocked && Mathf.Abs(Intent.Move.x) > 0.2f)
+            if (!IsControlLocked && !FacingLocked && !riding && Mathf.Abs(Intent.Move.x) > 0.2f)
                 Facing = Intent.Move.x > 0f ? 1 : -1;
         }
 
@@ -222,6 +287,20 @@ namespace PKR
             _jumpArc = true;
             _cutApplied = false;
             Jumped?.Invoke();
+        }
+
+        /// <summary>A solid wall within WallProbeDistance on side dir (+1 right, -1 left). One-way planks don't count.</summary>
+        bool ProbeWall(int dir)
+        {
+            if (bodyCollider == null) return false;
+            int n = bodyCollider.Cast(new Vector2(dir, 0f), _groundFilter, _hits, WallProbeDistance);
+            for (int i = 0; i < n; i++)
+            {
+                var c = _hits[i].collider;
+                if (c == null || c.usedByEffector) continue;
+                if (Mathf.Abs(_hits[i].normal.x) >= 0.7f && Mathf.Sign(_hits[i].normal.x) == -dir) return true;
+            }
+            return false;
         }
 
         bool ProbeGround(out MovingPlatform platform)
@@ -249,6 +328,7 @@ namespace PKR
         public void ApplyKnockback(Vector2 velocity, float lockSeconds)
         {
             ClearOverride();
+            _wallRide.End();
             _rising = false;
             _jumpArc = false;
             _lockTimer = Mathf.Max(_lockTimer, lockSeconds);
@@ -260,6 +340,7 @@ namespace PKR
         /// <summary>Hold a constant velocity until ClearOverride (dashes, rolls, dives).</summary>
         public void SetOverride(Vector2 velocity)
         {
+            _wallRide.End();
             _override = velocity;
             _rising = false;
             _jumpArc = false;
@@ -290,6 +371,8 @@ namespace PKR
             _carryX = 0f;
             _platform = null;
             _airJumpsLeft = Stats.airJumps;
+            _wallRide.Land();
+            _prevVx = 0f;
             _jump.Reset();
             _seenJumpPresses = Intent.Jump.PressCount;
             Body.position = position;

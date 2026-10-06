@@ -38,6 +38,11 @@ namespace PKR
         [Tooltip("Air moves end immediately on landing.")]
         public bool endsOnLanding = true;
 
+        [Header("Momentum (optional)")]
+        [Tooltip("Hits harder the faster the fighter was moving when the move started: knockback x (1 + speed/runSpeed * this). " +
+                 "At 80%+ of run speed it also deals +1 damage and +1 Guard Pip. 0 = off.")]
+        [Min(0f)] public float speedBonus;
+
         [Header("Super armor (optional)")]
         [Tooltip("Hits don't knock the fighter out of this move (damage and Guard Pips still apply). A launch breaks it.")]
         public bool superArmor;
@@ -84,6 +89,7 @@ namespace PKR
             if (followUp == this) e.Add("followUp cannot be the move itself");
             if (spawnsProjectile && (projectileSpeed <= 0f || projectileLifetime <= 0f)) e.Add("projectile speed/lifetime must be positive");
             if (spawnsProjectile && spawnsTrap) e.Add("a move can spawn a projectile or a trap, not both");
+            if ((spawnsProjectile || spawnsTrap) && speedBonus > 0f) e.Add("speedBonus has no effect on projectile or trap moves");
             if (spawnsTrap && (trapLifetime <= 0f || trapRadius <= 0f || trapArmDelay < 0f)) e.Add("trap lifetime/radius must be positive, arm delay >= 0");
             return e;
         }

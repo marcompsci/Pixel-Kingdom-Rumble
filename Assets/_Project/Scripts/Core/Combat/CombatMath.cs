@@ -106,6 +106,25 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>
+        /// Momentum hits (Rex Rollo's Momentum Ram): the faster the attacker was moving when the move started, the harder
+        /// it hits. ratio = speed / referenceSpeed (clamped 0..1); knockback x (1 + ratio * maxBonus);
+        /// at ratio &gt;= 0.8 the hit also deals +1 damage and +1 Guard Pip.
+        /// </summary>
+        public static HitData ScaleBySpeed(in HitData hit, float speed, float referenceSpeed, float maxBonus)
+        {
+            var h = hit;
+            if (referenceSpeed <= 0f || maxBonus <= 0f) return h;
+            float ratio = Clamp(Math.Abs(speed) / referenceSpeed, 0f, 1f);
+            h.baseKnockback = hit.baseKnockback * (1f + ratio * maxBonus);
+            if (ratio >= 0.8f)
+            {
+                h.damage = hit.damage + 1;
+                h.pipDamage = hit.pipDamage + 1;
+            }
+            return h;
+        }
+
         public static float Clamp(float v, float min, float max) => v < min ? min : (v > max ? max : v);
     }
 }

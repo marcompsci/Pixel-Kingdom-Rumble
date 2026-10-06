@@ -65,6 +65,9 @@ namespace PKR
                     case HeroAbilities.State.DiveFall: target = new Vector2(0.7f, 1.35f); break;
                 }
             }
+            bool abilityIdle = _abilities == null || _abilities.Current == HeroAbilities.State.None;
+            if (abilityIdle && _motor.IsWallRiding) target = new Vector2(0.8f, 1.2f);
+            else if (abilityIdle && _motor.IsSkidding) target = new Vector2(1.15f, 0.85f);
             _squash = Vector2.Lerp(_squash, target, 1f - Mathf.Exp(-squashRecover * Time.deltaTime));
 
             body.localScale = new Vector3(

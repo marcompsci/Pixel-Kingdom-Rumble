@@ -5,8 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (Brick and Luma are playable).
-The engine-free rules pass 106 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes are playable).
+The engine-free rules pass 113 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -87,7 +87,7 @@ NEW BEST, shards, secrets, falls, and the Star Shard reward counting up into you
 **Menus (portrait):** the main menu shows your Star Shard total and best Sunspire Meadows result, with
 Story Quest, Arena Clash, Settings and Codex (later). Character select
 lets you browse all four heroes with arrows or cards: Nova and Brick are playable; Luma unlocks when you clear Sunspire
-Meadows (the results screen announces it); Rex Rollo appears as a locked
+Meadows and Rex Rollo when you clear it with its secret found (the results screen announces each); locked heroes show
 silhouettes ("coming in a future update"). Your hero choice is saved.
 
 **Arena Clash (Skyforge Arena):** a symmetrical floating stage: two stone platforms joined by a brass
@@ -148,6 +148,19 @@ approach, attack in range, throw Comet Bolts at mid range and back off when Expo
 | Special (air) | **Spark Coil** | Drops a coil that arms on the ground and zaps the first foe to touch it (one at a time, 6 s) |
 | Dodge (ground / air) | Roll / **Magnet Hop** | Magnet Hop pops her up and forward: her recovery |
 
+**Rex Rollo's kit (roller skates and momentum: 5 HP, 3 Guard Pips; unlock by clearing Sunspire Meadows with its secret):**
+
+| Input | Move | Notes |
+|---|---|---|
+| Move | **Skating** | Fastest hero; glides when you let go and skids when you reverse |
+| Hold toward a wall in the air at speed | **Wall Ride** → Jump: **Wall Jump** | Rides up the wall briefly (once per airtime), then kicks off |
+| Attack (ground) | **Skate Kick** → press again: **Tail Whip** | The whip hits both sides and launches Exposed foes |
+| Up + Attack (ground) | **Flip Kick** | Backflip kick straight up |
+| Attack (air) | **Wheel Spin** | Clips both sides |
+| Special (ground) | **Momentum Ram** | Hits harder the faster he was skating: up to 2.5x knockback, +1 damage and Guard Pip at top speed |
+| Special (air) | **Grind Drop** | Quick dive with a small shockwave |
+| Dodge (ground / air) | Roll / **Rail Boost** | A fast horizontal burst that keeps most of its speed |
+
 Hits use hit stop, a sprite flash, haptics and screen shake (shake respects the accessibility setting).
 Hitboxes draw as Gizmos while attacking (turn on Gizmos in the Game view).
 - Feel: 0.1 s coyote time, 0.12 s jump buffer, hold-for-height jumps, floaty apex while holding, faster falls.
@@ -178,6 +191,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Arena/ArenaConfig.cs` | Match setup options; `BridgeCycle` timing |
 | `AI/EnemyLogic.cs` | Patrol turning, hopper timing, `LevelRun` (time, shards, secrets, deaths, checkpoints, completion) |
 | `Combat/TrapLogic.cs` | Placed-trap life cycle (fall, arm, fire once, expire) |
+| `Movement/WallRide.cs` | Wall-ride rules (start conditions, once per airtime, wall jump) |
 | `Save/UnlockRules.cs` | Hero unlocks earned by clearing levels |
 
 ### Runtime (`Scripts/Runtime`, assembly `PKR.Runtime`)
@@ -196,6 +210,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Data/NovaKitDefinition.cs` | Nova's Air Dash (8-way) and Meteor Drop |
 | `Data/BrickKitDefinition.cs` | Brick's Granite Guard and Landslide Slam |
 | `Data/LumaKitDefinition.cs` | Luma's Magnet Hop (no dive) |
+| `Data/RexKitDefinition.cs` | Rex Rollo's Rail Boost and Grind Drop |
 | `Data/MoveDefinition.cs` | One attack: frame data, hitbox, hit, lunge, follow-up, projectile, feedback |
 | `Data/Moveset.cs` | Which move each input context uses |
 | `Data/EnemyDefinition.cs` | Enemy identity, codex text, art, stats, behavior, contact hit, drops |
@@ -280,9 +295,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 106 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 106 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena, hero kits, Luma) | 21 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 113 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 113 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex) | 23 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

@@ -21,7 +21,7 @@ namespace PKR
             var rules = new System.Collections.Generic.List<PKR.Core.UnlockRule>();
             foreach (var h in heroes)
                 if (h != null && h.playableInThisBuild && !h.unlockedByDefault && !string.IsNullOrEmpty(h.unlockByClearingLevelId))
-                    rules.Add(new PKR.Core.UnlockRule { characterId = h.id, clearLevelId = h.unlockByClearingLevelId });
+                    rules.Add(new PKR.Core.UnlockRule { characterId = h.id, clearLevelId = h.unlockByClearingLevelId, minSecrets = h.unlockMinSecrets });
             return rules;
         }
 

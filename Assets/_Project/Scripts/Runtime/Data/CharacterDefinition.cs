@@ -23,6 +23,8 @@ namespace PKR
         public bool playableInThisBuild = true;
         [Tooltip("Story level id that unlocks this hero when cleared (any rank). Empty = no rule.")]
         public string unlockByClearingLevelId = "";
+        [Tooltip("Also require this many secrets found in that level (best run).")]
+        [Min(0)] public int unlockMinSecrets;
         [Tooltip("Shown in Character Select while locked, e.g. \"Clear Sunspire Meadows\".")]
         public string unlockHint = "";
 

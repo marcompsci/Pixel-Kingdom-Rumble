@@ -62,6 +62,13 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>A jump happened that didn't come from the ground (wall jump): no coyote jump after it.</summary>
+        public void MarkJumped()
+        {
+            _jumpedSinceGrounded = true;
+            _sinceGrounded = float.MaxValue;
+        }
+
         public void Reset()
         {
             _sinceGrounded = float.MaxValue;
