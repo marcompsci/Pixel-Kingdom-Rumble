@@ -150,5 +150,5 @@ Known limits: every fighter uses Nova's kit (other heroes are locked in Phase 1)
 | Item | State | Evidence |
 |---|---|---|
 | ARCHITECTURE, FIRST_RUN checklist, KNOWN_ISSUES, PHASE2_BACKLOG docs | ✅ | Written; paths and menu names checked against the code |
-| GitHub Actions workflow `Core tests` (.NET 8, `DotnetTests/`) | 🟡 | Same command passes locally (94/94); first run on GitHub happens after this push |
+| GitHub Actions workflow `Core tests` (.NET 8, `DotnetTests/`) | ✅ | First run on GitHub (commit 67c6c3d) completed with success |
 | No gameplay code changes | n/a | |
