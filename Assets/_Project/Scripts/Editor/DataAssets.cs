@@ -15,8 +15,51 @@ namespace PKR.EditorTools
         [MenuItem("PKR/Create Default Data Assets", priority = 3)]
         public static void CreateAll()
         {
-            GetOrCreateNova();
+            GetOrCreateRoster();
+            GetOrCreateCogBeetle();
+            GetOrCreateSpringTick();
+            GetOrCreateSunspireTestLevel();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>A hero that is listed in Phase 1 but not playable yet (no move kit). Lore and art are final-ish placeholders.</summary>
+        static CharacterDefinition GetOrCreateLockedHero(string file, string id, string name, string tagline, string lore,
+                                                         Color32 color, float weight, float armor, System.Func<Sprite> sprite)
+        {
+            EditorUtil.EnsureFolder(CharactersFolder);
+            var def = GetOrCreate<CharacterDefinition>($"{CharactersFolder}/{file}.asset", d =>
+            {
+                d.id = id; d.displayName = name; d.tagline = tagline; d.lore = lore;
+                d.unlockedByDefault = false; d.playableInThisBuild = false;
+                d.placeholderColor = color; d.weight = weight; d.armorPercent = armor;
+            });
+            if (def.bodySprite == null) { def.bodySprite = sprite(); EditorUtility.SetDirty(def); }
+            return def;
+        }
+
+        public static CharacterRoster GetOrCreateRoster()
+        {
+            var nova = GetOrCreateNova();
+            var brick = GetOrCreateLockedHero("Brick", "brick", "Brick", "Stone guardian. Slow to move, impossible to move.",
+                "Brick was carved to hold up a bridge that fell centuries ago, and he has been standing guard over the gap " +
+                "ever since. When the islands began to drift he finally stepped off his post, shield stance first.",
+                new Color32(140, 136, 150, 255), 1.6f, 0.3f, PlaceholderArt.Brick);
+            var luma = GetOrCreateLockedHero("Luma", "luma", "Luma", "Inventor. Her gloves pull sparks out of thin air.",
+                "Luma repairs Tickworks relays for a living and builds things she shouldn't in her spare time. Her magnet " +
+                "gloves can drag loose energy shards toward her or lock them into a barrier for a few precious seconds.",
+                new Color32(240, 132, 52, 255), 0.95f, 0f, PlaceholderArt.Luma);
+            var rex = GetOrCreateLockedHero("RexRollo", "rex_rollo", "Rex Rollo", "Roller-skating lizard. Brakes are optional.",
+                "Rex Rollo learned to skate on the brass rails that ring the floating islands and never saw a reason to stop. " +
+                "The faster he goes, the harder he hits; the trick is getting him to turn.",
+                new Color32(92, 196, 96, 255), 1.0f, 0f, PlaceholderArt.RexRollo);
+
+            var roster = GetOrCreate<CharacterRoster>($"{CharactersFolder}/Roster.asset", r => { });
+            if (roster.heroes.Count == 0)
+            {
+                roster.heroes.Add(nova); roster.heroes.Add(brick); roster.heroes.Add(luma); roster.heroes.Add(rex);
+                EditorUtility.SetDirty(roster);
+            }
+            return roster;
         }
 
         public const string EnemiesFolder = "Assets/_Project/Data/Enemies";

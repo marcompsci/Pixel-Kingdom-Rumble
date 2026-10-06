@@ -166,9 +166,9 @@ namespace PKR.EditorTools
         public static Sprite Spikes() => GetOrCreate("ph_spikes", 16, 8, false, (x, y) =>
         {
             if (y <= 1) return SteelDark;
-            int local = x % 8;
-            float half = (7 - y) * 0.62f;            // triangle teeth: wide at the base, sharp at the top
-            if (Math.Abs(local - 3.5f) <= half) return local < 4 ? Steel : White;
+            int local = x % 4;                        // four teeth per tile
+            float half = (7 - y) * 0.36f;            // triangle teeth: wide at the base, sharp at the top
+            if (Math.Abs(local - 1.5f) <= half) return local < 2 ? Steel : White;
             return Clear;
         });
 
@@ -240,6 +240,93 @@ namespace PKR.EditorTools
             if (y == 0) return BrassDark;
             if ((x == 2 || x == 13) && y == 4) return Ink;
             return Brass;
+        });
+
+        // ---- Locked heroes (shown as silhouettes in Phase 1, but drawn in full for later) ---------
+        static readonly Color32 Granite = new Color32(140, 136, 150, 255);
+        static readonly Color32 GraniteDark = new Color32(92, 88, 104, 255);
+        static readonly Color32 Moss = new Color32(96, 176, 84, 255);
+        static readonly Color32 Amber = new Color32(255, 176, 48, 255);
+        static readonly Color32 Overalls = new Color32(240, 132, 52, 255);
+        static readonly Color32 OverallsDark = new Color32(186, 92, 34, 255);
+        static readonly Color32 Glove = new Color32(150, 86, 210, 255);
+        static readonly Color32 GloveDark = new Color32(100, 52, 150, 255);
+        static readonly Color32 TealHair = new Color32(40, 190, 180, 255);
+        static readonly Color32 Lens = new Color32(170, 240, 255, 255);
+        static readonly Color32 Scale = new Color32(92, 196, 96, 255);
+        static readonly Color32 ScaleDark = new Color32(56, 138, 70, 255);
+        static readonly Color32 Belly = new Color32(250, 230, 140, 255);
+        static readonly Color32 SkateBlue = new Color32(70, 120, 230, 255);
+
+        /// <summary>Brick: a broad stone guardian with a moss crown and amber eyes. 16x24, bottom pivot.</summary>
+        public static Sprite Brick() => GetOrCreate("ph_brick", 16, 24, true, (x, y) =>
+        {
+            if (y <= 2) return (x >= 2 && x <= 6) || (x >= 9 && x <= 13) ? GraniteDark : Clear;        // feet
+            if (y <= 16)
+            {
+                if (x < 1 || x > 14) return Clear;
+                if (y >= 6 && y <= 13 && (x <= 2 || x >= 13)) return GraniteDark;                     // fists/arms
+                if (x == 1 || x == 14) return Clear;
+                return ((x * 3 + y * 5) % 9 == 0) ? GraniteDark : Granite;                             // chiselled body
+            }
+            if (y <= 21)
+            {
+                if (x < 3 || x > 12) return Clear;
+                if (y == 18 && (x == 6 || x == 10)) return Amber;                                     // eyes
+                return Granite;
+            }
+            if (y <= 23) return (x >= 3 && x <= 12 && (x + y) % 3 != 0) ? Moss : Clear;               // moss crown
+            return Clear;
+        });
+
+        /// <summary>Luma: an inventor in orange overalls with oversized magnet gloves and goggles. 16x24.</summary>
+        public static Sprite Luma() => GetOrCreate("ph_luma", 16, 24, true, (x, y) =>
+        {
+            if (y <= 1) return (x >= 5 && x <= 6) || (x >= 9 && x <= 10) ? Ink : Clear;
+            if (y <= 4) return (x >= 5 && x <= 6) || (x >= 9 && x <= 10) ? OverallsDark : Clear;
+            if (y <= 13)
+            {
+                if (y >= 6 && y <= 10 && (x <= 3 || x >= 12)) return (x == 0 || x == 15 || y == 6) ? GloveDark : Glove; // big gloves
+                if (x < 4 || x > 11) return Clear;
+                if (y == 12 && (x == 6 || x == 9)) return Brass;                                     // buttons
+                return (x == 4 || x == 11) ? OverallsDark : Overalls;
+            }
+            if (y <= 20)
+            {
+                if (x < 5 || x > 11) return Clear;
+                if (y == 17 && (x == 7 || x == 10)) return Ink;
+                return NovaSkin;
+            }
+            if (y <= 23)
+            {
+                if (y == 21 && x >= 5 && x <= 11) return (x == 7 || x == 10) ? Lens : SteelDark;      // goggles
+                return (x >= 4 && x <= 12) ? TealHair : Clear;
+            }
+            return Clear;
+        });
+
+        /// <summary>Rex Rollo: a green lizard on roller skates with a long tail. 16x24, faces right.</summary>
+        public static Sprite RexRollo() => GetOrCreate("ph_rex_rollo", 16, 24, true, (x, y) =>
+        {
+            if (y == 0) return (x == 4 || x == 6 || x == 9 || x == 11) ? Ink : Clear;                 // wheels
+            if (y <= 2) return (x >= 3 && x <= 7) || (x >= 8 && x <= 12) ? SkateBlue : Clear;         // skates
+            if (y <= 5) return (x >= 5 && x <= 6) || (x >= 9 && x <= 10) ? ScaleDark : Clear;         // legs
+            if (y <= 14)
+            {
+                if (x <= 3 && y <= 9 && y >= 6 - (3 - x)) return ScaleDark;                           // tail
+                if (x < 4 || x > 12) return Clear;
+                if (x >= 7 && x <= 11 && y <= 12) return Belly;
+                return Scale;
+            }
+            if (y <= 20)
+            {
+                if (x < 6 || x > 14) return Clear;
+                if (y == 18 && x == 12) return Ink;                                                    // eye
+                if (y <= 16 && x >= 12) return Belly;                                                  // snout
+                return Scale;
+            }
+            if (y <= 22) return (x >= 7 && x <= 12 && (x % 2 == 0)) ? ScaleDark : Clear;              // head spines
+            return Clear;
         });
 
         /// <summary>Creates (once) a PNG sprite from a pixel function and imports it as a point-filtered sprite.</summary>

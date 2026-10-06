@@ -94,11 +94,25 @@ with the handle; resuming with Esc during layout editing exits edit mode cleanly
 Known limits: Main Menu / Next buttons are disabled until increment 6 adds the menu scene; no audio clips yet,
 so the volume sliders have nothing audible to change.
 
+## Increment 6 — Boot, main menu, character select (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: RosterSelection | ✅ | 4 new tests; 78/78 pass with `dotnet run` |
+| Roster of 4 heroes (Nova playable; Brick, Luma, Rex Rollo locked) with original lore and placeholder art | 🟡 | Data created by editor tool; not run |
+| BootLoader, MainMenuUI, CharacterSelectUI, GameSession, CanvasMatchByAspect | 🟡 | Syntax-checked + API review; not run in Unity |
+| PKR > Build Menu Scenes (00_Boot first in build), PKR > Build All Scenes | 🟡 | Not run |
+| 1 PlayMode character-select test | 🟡 | Written, not run |
+
+Fixed during review: menus switch canvas scaling by screen shape so they fit 4:3 iPads; Build All no longer
+re-prompts or half-builds on cancel; choosing a hero always keeps it valid in the save; disabled buttons aren't
+pre-selected.
+
 ## Upcoming increments
 2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
 3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
 4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) 🟡 (written; awaiting Unity run)
 5. Pause menu, level-complete screen 🟡 (written; awaiting Unity run)
-6. Main menu, character select, settings UI ⬜
+6. Main menu, character select, settings UI 🟡 (written; awaiting Unity run)
 7. Arena test scene with bots ⬜
 8. Docs pass, final status report ⬜

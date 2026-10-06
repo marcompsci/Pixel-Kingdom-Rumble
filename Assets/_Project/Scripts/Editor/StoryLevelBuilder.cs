@@ -28,6 +28,12 @@ namespace PKR.EditorTools
         public static void Build()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildNoPrompt();
+        }
+
+        /// <summary>Build without the save prompt (used by PKR > Build All Scenes).</summary>
+        public static void BuildNoPrompt()
+        {
 
             _shardCount = 0;
             EditorUtil.EnsureLayers();

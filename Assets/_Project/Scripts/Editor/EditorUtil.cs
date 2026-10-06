@@ -53,6 +53,14 @@ namespace PKR.EditorTools
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 
+        /// <summary>Make this scene index 0 in Build Settings (the scene the app launches into).</summary>
+        public static void MakeFirstInBuild(string scenePath)
+        {
+            var scenes = EditorBuildSettings.scenes.Where(s => s.path != scenePath).ToList();
+            scenes.Insert(0, new EditorBuildSettingsScene(scenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
+        }
+
         /// <summary>Assign a private [SerializeField] on a component without making it public.</summary>
         public static void SetField(Object target, string field, Object value)
         {

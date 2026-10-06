@@ -24,8 +24,8 @@ the repo on top.
    - If asked **"enable the new Input System backends?"** choose **Yes** (Unity restarts).
    - Set **Edit > Project Settings > Player > Other Settings > Active Input Handling** to **Input System Package (New)** if it was not set.
 4. Run **PKR > Configure iOS Player Settings**.
-5. **Window > General > Test Runner**: run **EditMode** (74 tests) and **PlayMode** (13 tests).
-5b. **PKR > Build Story Test Level** (and/or **PKR > Build Movement Sandbox**), press Play, and run around. Open **Window > General > Device Simulator**
+5. **Window > General > Test Runner**: run **EditMode** (78 tests) and **PlayMode** (14 tests).
+5b. **PKR > Build All Scenes**, open `Scenes/00_Boot`, press Play. Open **Window > General > Device Simulator**
     and pick an iPhone to see and use the touch controls with the mouse.
 6. Commit Unity's generated files so the repo becomes complete:
    ```bash
@@ -40,7 +40,7 @@ Requirements: a Mac with Xcode (current release), Unity iOS Build Support module
 and your paid Apple Developer account signed in to Xcode.
 
 1. **File > Build Profiles** (Unity 6) > **iOS** > **Switch Platform**.
-2. Make sure the scenes are in the scene list (once they exist, **PKR > Build Test Scenes** adds them).
+2. Run **PKR > Build All Scenes** so every scene is in the list with `00_Boot` first.
 3. **Build** to a folder named `iOSBuild/` at the repo root (it is git-ignored).
 4. Open `iOSBuild/Unity-iPhone.xcodeproj` in Xcode.
 5. Target **Unity-iPhone > Signing & Capabilities**: tick *Automatically manage signing*, choose your Team.
@@ -53,6 +53,6 @@ and your paid Apple Developer account signed in to Xcode.
 - Target: steady 60 FPS on a modern iPhone. No benchmark has been run yet.
 
 ## Troubleshooting
-- **Scene X is not in Build Settings**: run **PKR > Build Test Scenes** (from increment 4).
+- **Scene X is not in Build Settings**: run **PKR > Build All Scenes**.
 - **Orientation does not change in the Editor**: expected. Use the Device Simulator or a real device.
 - **No haptics**: they only work on a real iPhone, and only when *Haptics* is on in Settings.

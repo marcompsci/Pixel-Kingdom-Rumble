@@ -69,6 +69,7 @@ namespace PKR
             scaler.referenceResolution = landscape ? new Vector2(1920f, 1080f) : new Vector2(1080f, 1920f);
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = landscape ? 1f : 0f;
+            go.AddComponent<CanvasMatchByAspect>(); // keeps menus on-screen on iPads and very tall phones
 
             var safe = Rect("SafeArea", go.transform);
             Stretch(safe);
@@ -280,7 +281,7 @@ namespace PKR
         public static void Select(Selectable s)
         {
             var es = UnityEngine.EventSystems.EventSystem.current;
-            if (es != null && s != null) es.SetSelectedGameObject(s.gameObject);
+            if (es != null && s != null && s.interactable) es.SetSelectedGameObject(s.gameObject);
         }
 
         /// <summary>Destroy all children (to rebuild a panel's contents).</summary>
