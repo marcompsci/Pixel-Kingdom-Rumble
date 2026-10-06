@@ -29,6 +29,8 @@ namespace PKR
             QualitySettings.vSyncCount = 0; // targetFrameRate is ignored on desktop when vSync is on
             Time.fixedDeltaTime = 1f / TargetFrameRate; // physics in lockstep with rendering: smoother platforming
 
+            ConfigurePhysicsLayers();
+
             _root = new GameObject("[PKR Services]");
             Object.DontDestroyOnLoad(_root);
 
@@ -43,6 +45,18 @@ namespace PKR
             Services.Settings.Load();
             Services.Save.Load();
             Services.Audio.ApplySettings(Services.Settings.Data);
+        }
+
+        /// <summary>
+        /// Bodies that should pass through each other. Attack queries ignore this matrix, so hits still land.
+        /// Hurtboxes are query-only triggers and never need physics contacts.
+        /// </summary>
+        public static void ConfigurePhysicsLayers()
+        {
+            Physics2D.IgnoreLayerCollision(PKRLayers.Player, PKRLayers.Enemy, true);
+            Physics2D.IgnoreLayerCollision(PKRLayers.Player, PKRLayers.Player, true);
+            Physics2D.IgnoreLayerCollision(PKRLayers.Enemy, PKRLayers.Enemy, true);
+            for (int i = 0; i < 32; i++) Physics2D.IgnoreLayerCollision(PKRLayers.Hurtbox, i, true);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

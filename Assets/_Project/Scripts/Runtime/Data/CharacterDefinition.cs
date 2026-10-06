@@ -44,6 +44,9 @@ namespace PKR
         public float dodgeInvulnerability = 0.18f;
         public float dodgeCooldown = 0.35f;
 
+        [Header("Moves")]
+        public Moveset moveset;
+
         [Header("Hero kit")]
         public ScriptableObject kit;
 

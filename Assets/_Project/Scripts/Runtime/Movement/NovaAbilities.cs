@@ -29,6 +29,7 @@ namespace PKR
         public event Action RollStarted;
 
         PlatformerMotor2D _motor;
+        AttackRunner _attacks;
         Invulnerability _invuln;
         float _stateTimer;
         float _dodgeCooldown;
@@ -38,6 +39,7 @@ namespace PKR
         void Awake()
         {
             _motor = GetComponent<PlatformerMotor2D>();
+            _attacks = GetComponent<AttackRunner>();
             _invuln = GetComponent<Invulnerability>();
             if (_invuln == null) _invuln = gameObject.AddComponent<Invulnerability>();
             if (kit == null && _motor.Definition != null) kit = _motor.Definition.kit as NovaKitDefinition;
@@ -86,11 +88,20 @@ namespace PKR
             {
                 case State.None:
                     if (_motor.IsControlLocked) break;
-                    if (!_motor.IsGrounded && intent.Special.Consume(now)) { BeginMeteor(); break; }
+                    // Attacks own the fighter until their cancel window, where a dodge may interrupt them.
+                    bool attacking = _attacks != null && _attacks.IsAttacking;
+                    if (attacking && !_attacks.CanCancel) break;
+                    if (!attacking && !_motor.IsGrounded && intent.Special.Consume(now)) { BeginMeteor(); break; }
                     if (intent.Dodge.IsBuffered(now) && _dodgeCooldown <= 0f)
                     {
-                        if (_motor.IsGrounded) { intent.Dodge.Consume(now); BeginRoll(intent.Move); }
-                        else if (_airDashesLeft > 0) { intent.Dodge.Consume(now); BeginAirDash(intent.Move); }
+                        bool canRoll = _motor.IsGrounded;
+                        bool canDash = !_motor.IsGrounded && _airDashesLeft > 0;
+                        if (canRoll || canDash)
+                        {
+                            intent.Dodge.Consume(now);
+                            if (attacking) _attacks.Cancel();
+                            if (canRoll) BeginRoll(intent.Move); else BeginAirDash(intent.Move);
+                        }
                     }
                     break;
 

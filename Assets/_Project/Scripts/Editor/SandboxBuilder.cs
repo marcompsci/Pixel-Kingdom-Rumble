@@ -67,6 +67,11 @@ namespace PKR.EditorTools
             respawn.killY = -12f;
             follow.target = hero.transform;
 
+            // --- Training dummies ----------------------------------------------------------------
+            // Story dummy (HP, armor-free) to the right; Arena dummy (Guard Pips) to the left.
+            BuildDummy("Dummy_StoryHP", mat, new Vector2(4.5f, 1.5f), DamageModel.StoryHealth, 6);
+            BuildDummy("Dummy_GuardPips", mat, new Vector2(-5f, 1.5f), DamageModel.ArenaPips, 0);
+
             // --- Input + UI -------------------------------------------------------------------
             // The module assigns its default UI actions itself when added in the Editor.
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
@@ -83,13 +88,15 @@ namespace PKR.EditorTools
             EditorUtil.AddSceneToBuild(ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[PKR] Movement sandbox built at {ScenePath}. Press Play. Keyboard: WASD/arrows, Space jump, " +
-                      "Shift dodge/air dash, L special (meteor drop in air). Device Simulator shows touch controls.");
+                      "J attack, L special (Comet Bolt / Meteor Drop), Shift dodge. Device Simulator shows touch controls.");
         }
 
-        public static GameObject BuildNova(CharacterDefinition def, Material mat, Vector2 position)
+        /// <summary>Shared fighter body: rigidbody, capsule, motor, hurtbox, damageable, visuals.</summary>
+        static GameObject BuildFighterBase(string name, int layer, CharacterDefinition def, Sprite sprite, Material mat,
+                                           Vector2 position, DamageModel model, int team)
         {
-            var go = new GameObject(def.displayName);
-            go.layer = PKRLayers.Player;
+            var go = new GameObject(name);
+            go.layer = layer;
             go.transform.position = position;
 
             var rb = go.AddComponent<Rigidbody2D>();
@@ -105,28 +112,67 @@ namespace PKR.EditorTools
 
             go.AddComponent<Invulnerability>();
             var motor = go.AddComponent<PlatformerMotor2D>();
-            EditorUtil.SetField(motor, "definition", def);
+            if (def != null) EditorUtil.SetField(motor, "definition", def);
             EditorUtil.SetField(motor, "bodyCollider", col);
             EditorUtil.SetLayerMask(motor, "groundMask", 1 << PKRLayers.Ground);
 
-            var abilities = go.AddComponent<NovaAbilities>();
-            EditorUtil.SetField(abilities, "kit", def.kit);
+            var dmg = go.AddComponent<Damageable>();
+            EditorUtil.SetInt(dmg, "model", (int)model);
+            EditorUtil.SetInt(dmg, "team", team);
 
-            var router = go.AddComponent<PlayerInputRouter>();
-            EditorUtil.SetField(router, "motor", motor);
+            // Hurtbox: trigger child on the Hurtbox layer, slightly smaller than the body.
+            var hb = new GameObject("Hurtbox") { layer = PKRLayers.Hurtbox };
+            hb.transform.SetParent(go.transform, false);
+            var hbCol = hb.AddComponent<CapsuleCollider2D>();
+            hbCol.isTrigger = true;
+            hbCol.size = new Vector2(0.75f, 1.35f);
+            var hurt = hb.AddComponent<Hurtbox>();
+            EditorUtil.SetField(hurt, "owner", dmg);
 
             // Visual child: bottom-pivot sprite placed at the collider's feet.
             var body = new GameObject("Body");
             body.transform.SetParent(go.transform, false);
             body.transform.localPosition = new Vector3(0f, -0.7f, 0f);
             var sr = body.AddComponent<SpriteRenderer>();
-            sr.sprite = def.bodySprite;
+            sr.sprite = sprite;
             if (mat != null) sr.sharedMaterial = mat;
             sr.sortingOrder = 10;
 
             var visual = go.AddComponent<FighterVisual>();
             EditorUtil.SetField(visual, "body", body.transform);
             EditorUtil.SetField(visual, "bodyRenderer", sr);
+            var flash = go.AddComponent<HitFlash>();
+            EditorUtil.SetField(flash, "target", sr);
+            go.AddComponent<StatusPips>();
+            return go;
+        }
+
+        public static GameObject BuildNova(CharacterDefinition def, Material mat, Vector2 position)
+        {
+            var go = BuildFighterBase(def.displayName, PKRLayers.Player, def, def.bodySprite, mat, position,
+                                      DamageModel.StoryHealth, TeamIds.Player);
+            EditorUtil.SetFloat(go.GetComponent<Damageable>(), "postHitInvulnerability", 1f);
+
+            var abilities = go.AddComponent<NovaAbilities>();
+            EditorUtil.SetField(abilities, "kit", def.kit);
+
+            var attacks = go.AddComponent<AttackRunner>();
+            EditorUtil.SetField(attacks, "moveset", def.moveset);
+            EditorUtil.SetInt(attacks, "team", TeamIds.Player);
+
+            var router = go.AddComponent<PlayerInputRouter>();
+            EditorUtil.SetField(router, "motor", go.GetComponent<PlatformerMotor2D>());
+            return go;
+        }
+
+        public static GameObject BuildDummy(string name, Material mat, Vector2 position, DamageModel model, int health)
+        {
+            var go = BuildFighterBase(name, PKRLayers.Enemy, null, PlaceholderArt.Dummy(), mat, position,
+                                      model, TeamIds.Neutral);
+            var dmg = go.GetComponent<Damageable>();
+            EditorUtil.SetInt(dmg, "maxHealthOverride", health);
+            EditorUtil.SetFloat(dmg, "fallbackWeight", 1.1f);
+            go.AddComponent<TrainingDummy>();
             return go;
         }
 

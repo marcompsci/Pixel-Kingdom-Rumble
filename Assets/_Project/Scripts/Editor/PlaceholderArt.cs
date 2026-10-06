@@ -59,6 +59,27 @@ namespace PKR.EditorTools
 
         public static Sprite Nova() => GetOrCreate("ph_nova", 16, 24, true, NovaPixel);
 
+        static readonly Color32 Straw = new Color32(232, 196, 112, 255);
+        static readonly Color32 StrawDark = new Color32(190, 150, 74, 255);
+        static readonly Color32 Ring = new Color32(214, 64, 64, 255);
+        static readonly Color32 Post = new Color32(140, 92, 54, 255);
+
+        /// <summary>Training dummy: a wooden post with a round straw target. 16x24, bottom pivot.</summary>
+        public static Sprite Dummy() => GetOrCreate("ph_dummy", 16, 24, true, (x, y) =>
+        {
+            // Base plank
+            if (y <= 1) return (x >= 3 && x <= 12) ? PlankDark : Clear;
+            // Post
+            if (y <= 9) return (x >= 7 && x <= 8) ? Post : Clear;
+            // Round straw target centered at (7.5, 16), radius 6.5, with red rings
+            float dx = x - 7.5f, dy = y - 16f;
+            float d = (float)Math.Sqrt(dx * dx + dy * dy);
+            if (d > 6.5f) return (x >= 7 && x <= 8 && y <= 11) ? Post : Clear;
+            if (d > 5.6f) return StrawDark;
+            if ((d > 3.4f && d <= 4.4f) || d <= 1.3f) return Ring;
+            return ((x + y) % 4 == 0) ? StrawDark : Straw;
+        });
+
         static Color32 NovaPixel(int x, int y)
         {
             // 16x24, facing right. Built from simple shapes; replace with production art later.

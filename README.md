@@ -5,7 +5,7 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1, increment 2 of 8. See [Docs/STATUS.md](Docs/STATUS.md) for exactly what is built,
+**Current status:** Phase 1, increment 3 of 8. See [Docs/STATUS.md](Docs/STATUS.md) for exactly what is built,
 what was tested, and what is not verified yet.
 
 ---
@@ -14,7 +14,7 @@ what was tested, and what is not verified yet.
 
 1. Follow [Docs/SETUP.md](Docs/SETUP.md) once to create the Unity project around this repo.
 2. In Unity: **PKR > Configure iOS Player Settings**.
-3. **PKR > Build Movement Sandbox**, then press **Play**.
+3. **PKR > Build Movement Sandbox**, then press **Play** (Nova, training dummies, full move list).
 4. **Window > General > Test Runner**: run **EditMode** and **PlayMode**.
 
 ## Dependencies
@@ -47,7 +47,8 @@ Re-running a builder replaces that scene; tuning lives in data assets, not scene
 
 **Movement sandbox course** (left to right): flat run, step platforms, a 5-unit wall (taller than a jump:
 use jump + up air dash), a one-way platform, a high ledge for testing Meteor Drop, a 4-unit gap, a second runway.
-Falling off respawns you with blinking invulnerability. A debug panel (top-left) shows FPS, velocity and state and
+Two training dummies stand near the start: one with **HP** (Story Quest rules, right) and one with
+**Guard Pips** (Arena rules, left; flashes red when Exposed). Falling off respawns you with blinking invulnerability. A debug panel (top-left) shows FPS, velocity and state and
 has toggles for touch-layout editing, high contrast, haptics, floating stick and layout reset.
 
 ## Controls
@@ -59,15 +60,25 @@ has toggles for touch-layout editing, high contrast, haptics, floating stick and
 |---|---|---|---|
 | Move / aim | Left stick | WASD or arrows | Left stick / D-pad |
 | Jump (hold = higher) | JUMP | Space or K | South |
-| Attack *(increment 3)* | ATK | J | West |
+| Attack | ATK | J | West |
 | Special | SPL | L or I | North |
 | Dodge | DODGE | Left Shift or U | East or Right Bumper |
 | Pause | *(pause button in increment 5)* | Esc or P | Start |
 
-**Nova's kit so far:**
-- **Dodge on ground:** quick roll with 0.18 s invulnerability.
-- **Dodge in air → Air Dash:** 8 directions (aim with the stick, neutral = forward), once per airtime.
-- **Special in air → Meteor Drop:** short hang, straight dive, landing impact (damage arrives in increment 3).
+**Nova's kit (comet staff + sky-courier mobility):**
+
+| Input | Move | Notes |
+|---|---|---|
+| Attack (ground) | **Courier Jab** → press again: **Comet Sweep** | Quick poke; the sweep is heavy and launches Exposed foes |
+| Up + Attack (ground) | **Rising Arc** | Pops foes upward |
+| Attack (air) | **Tailspin** | Spinning hit around her body; ends on landing |
+| Special (ground) | **Comet Bolt** | Pooled projectile straight ahead |
+| Special (air) | **Meteor Drop** | Hang, dive, landing **Meteor Shockwave** pushes everything away |
+| Dodge (ground) | Roll | 0.18 s invulnerable; cancels the end of attacks |
+| Dodge (air) | Air Dash | 8 directions, once per airtime |
+
+Hits use hit stop, a sprite flash, haptics and screen shake (shake respects the accessibility setting).
+Hitboxes draw as Gizmos while attacking (turn on Gizmos in the Game view).
 - Feel: 0.1 s coyote time, 0.12 s jump buffer, hold-for-height jumps, floaty apex while holding, faster falls.
 
 The touch controls appear on devices and in the **Device Simulator** (Window > General > Device Simulator).
@@ -84,6 +95,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Combat/CombatMath.cs` | Knockback, hitstun, hitstop, armor, full Story/Arena hit resolution |
 | `Input/JumpAssist.cs` | Coyote time and jump buffering |
 | `Input/ActionBuffer.cs` | Buffered button presses shared by humans and bots |
+| `Combat/AttackTimeline.cs` | Frame data phases, cancel windows, once-per-swing hit log |
 | `Movement/MovementStats.cs` | Movement tuning + `JumpPhysics` (gravity from height/apex time, acceleration, 8-way snap) |
 | `Save/SaveData.cs` | Progress, unlocks, cosmetics, level bests, migration and repair |
 | `Save/SettingsData.cs` | Audio, haptics, high contrast, screen shake, floating stick, control layout |
@@ -93,16 +105,18 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 ### Runtime (`Scripts/Runtime`, assembly `PKR.Runtime`)
 | Script | Responsibility |
 |---|---|
-| `Bootstrap/GameBootstrap.cs` | Creates persistent services before the first scene; 60 FPS render + physics |
+| `Bootstrap/GameBootstrap.cs` | Creates persistent services before the first scene; 60 FPS render + physics; layer collision rules |
 | `Bootstrap/Services.cs` | Static access to services |
 | `Bootstrap/SceneIds.cs` | Scene names; which scenes are gameplay (landscape) |
-| `Bootstrap/PKRLayers.cs` | Physics layer indices (Ground 8, Player 9, Enemy 10, Hitbox 11, Pickup 12, Hazard 13) |
+| `Bootstrap/PKRLayers.cs` | Physics layer indices (Ground 8, Player 9, Enemy 10, Hurtbox 11, Pickup 12, Hazard 13) |
 | `Bootstrap/SceneLoader.cs` | Async scene loading with orientation and state switching |
 | `Bootstrap/OrientationController.cs` | Portrait menus / landscape gameplay |
 | `Bootstrap/GameStateManager.cs` | Menu / Playing / Paused / Results; auto-pause when app is backgrounded |
 | `Bootstrap/EventBus.cs` | Typed events (`GameStateChanged`, `SettingsChanged`, `ShardsChanged`) |
 | `Data/CharacterDefinition.cs` | Hero ScriptableObject: identity, lore, art refs, movement, defense, dodge, kit |
 | `Data/NovaKitDefinition.cs` | Nova's air dash and meteor drop tuning |
+| `Data/MoveDefinition.cs` | One attack: frame data, hitbox, hit, lunge, follow-up, projectile, feedback |
+| `Data/Moveset.cs` | Which move each input context uses |
 | `Input/FighterIntent.cs` | What a fighter wants this frame (same for players and bots) |
 | `Input/PlayerInputRouter.cs` | Keyboard + gamepad + touch → `FighterIntent` |
 | `Input/TouchControlsUI.cs` | Builds the touch overlay at runtime; layout from settings; edit mode |
@@ -114,6 +128,16 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Movement/FighterVisual.cs` | Placeholder squash/stretch, facing flip, i-frame blink |
 | `Movement/CameraFollow2D.cs` | Smooth follow, look-ahead, vertical dead zone, bounds, shake (respects setting) |
 | `Combat/Invulnerability.cs` | Shared i-frames (dodge, respawn, post-hit) |
+| `Combat/Damageable.cs` | HP (Story) or Guard Pips (Arena), teams, knockback, post-hit i-frames, events |
+| `Combat/Hurtbox.cs` | Trigger collider on the Hurtbox layer pointing at its Damageable |
+| `Combat/CombatQuery.cs` | Box/circle queries on the Hurtbox layer, one result per Damageable |
+| `Combat/AttackRunner.cs` | Plays moves: context selection, frame stepping, hits, chains, projectiles, meteor shockwave, feedback |
+| `Combat/Projectile.cs` | Pooled straight-line projectile |
+| `Combat/HitStop.cs` | Real-time impact freeze that respects pause |
+| `Pooling/PoolService.cs` | Keyed `ObjectPool` wrapper, cleared on scene load |
+| `Feedback/HitFlash.cs` | Sprite tint on hit (yellow on launch) |
+| `UI/StatusPips.cs` | HP / Guard Pip dots above a fighter; flashes when Exposed |
+| `Level/TrainingDummy.cs` | Sandbox target that resets after defeat or falling |
 | `Level/RespawnOnFall.cs` | Sandbox fall reset (replaced by checkpoints in increment 4) |
 | `UI/UISprites.cs` | Runtime-generated circle/ring sprites + built-in font for placeholder UI |
 | `UI/SafeAreaFitter.cs` | Keeps UI inside the notch/home-bar safe area |
@@ -129,7 +153,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 |---|---|
 | `ProjectConfigurator.cs` | **PKR > Configure iOS Player Settings** |
 | `EditorUtil.cs` | **PKR > Setup Layers**; folders, build list, private-field assignment |
-| `DataAssets.cs` | **PKR > Create Default Data Assets** (Nova + NovaKit; never overwrites tuning) |
+| `DataAssets.cs` | **PKR > Create Default Data Assets** (Nova, NovaKit, Nova's 6 moves + moveset; never overwrites tuning) |
 | `PlaceholderArt.cs` | Generates original `ph_*.png` pixel sprites (16 px/unit, point filtered) |
 | `SandboxBuilder.cs` | **PKR > Build Movement Sandbox** |
 
@@ -142,13 +166,14 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 54 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 54 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor physics) | 5 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 61 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 61 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor + combat) | 8 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
-8-way aiming, save/settings repair, economy and arena match rules. PlayMode covers landing, held vs tapped jump
-height, run speed and knockback control lock.
+8-way aiming, attack frame phases and cancel windows, save/settings repair, economy and arena match rules.
+PlayMode covers landing, held vs tapped jump height, run speed, knockback control lock, and the full hit
+pipeline (damage + push, same-team immunity, one hit per swing).
 
 ## Repo tools
 

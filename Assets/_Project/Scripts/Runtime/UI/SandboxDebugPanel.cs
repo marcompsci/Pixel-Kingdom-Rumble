@@ -13,6 +13,7 @@ namespace PKR
         public bool visible = true;
 
         NovaAbilities _nova;
+        AttackRunner _attacks;
         TouchControlsUI _touch;
         GUIStyle _box, _btn;
         float _fps, _fpsTimer;
@@ -21,6 +22,7 @@ namespace PKR
         void Start()
         {
             if (motor != null) _nova = motor.GetComponent<NovaAbilities>();
+            if (motor != null) _attacks = motor.GetComponent<AttackRunner>();
             _touch = Object.FindFirstObjectByType<TouchControlsUI>();
         }
 
@@ -57,9 +59,10 @@ namespace PKR
                 $"Vel ({v.x:0.0}, {v.y:0.0})\n" +
                 $"Grounded {motor.IsGrounded}  Facing {motor.Facing}\n" +
                 $"Ability {(_nova != null ? _nova.Current.ToString() : "-")}\n" +
-                $"Locked {motor.IsControlLocked}";
-            GUI.Box(new Rect(x, y, w, 110 * s), text, _box);
-            y += 114 * s;
+                $"Locked {motor.IsControlLocked}\n" +
+                $"Attack {(_attacks != null && _attacks.Current != null ? _attacks.Current.displayName + " f" + _attacks.Frame : "-")}";
+            GUI.Box(new Rect(x, y, w, 128 * s), text, _box);
+            y += 132 * s;
 
             var settings = Services.Settings;
             if (_touch != null && GUI.Button(new Rect(x, y, w, h), _touch.EditMode ? "Done editing controls" : "Edit touch layout", _btn))

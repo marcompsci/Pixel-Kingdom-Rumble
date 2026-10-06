@@ -72,6 +72,24 @@ namespace PKR.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        public static void SetInt(Object target, string field, int value)
+        {
+            var so = new SerializedObject(target);
+            var p = so.FindProperty(field);
+            if (p == null) { Debug.LogError($"[PKR] Field '{field}' not found on {target.GetType().Name}"); return; }
+            p.intValue = value; // also works for enums (by underlying value)
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        public static void SetFloat(Object target, string field, float value)
+        {
+            var so = new SerializedObject(target);
+            var p = so.FindProperty(field);
+            if (p == null) { Debug.LogError($"[PKR] Field '{field}' not found on {target.GetType().Name}"); return; }
+            p.floatValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         public static Material UnlitSpriteMaterial()
         {
             // URP's unlit sprite material: renders correctly with no 2D lights in the scene.

@@ -13,6 +13,12 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `sq_sunspire_test` | Sunspire Meadows (Test) | Story level | `Data/Levels/` |
 | `skyforge_arena` | Skyforge Arena | Arena stage | `Data/Arena/` |
 | `clockwork_warden` | The Clockwork Warden | Boss (Phase 2) | — |
+| `nova_courier_jab` | Courier Jab | Nova move | `Data/Moves/Nova/` |
+| `nova_comet_sweep` | Comet Sweep | Nova move | `Data/Moves/Nova/` |
+| `nova_rising_arc` | Rising Arc | Nova move | `Data/Moves/Nova/` |
+| `nova_tailspin` | Tailspin | Nova move | `Data/Moves/Nova/` |
+| `nova_comet_bolt` | Comet Bolt | Nova move | `Data/Moves/Nova/` |
+| `nova_meteor_shockwave` | Meteor Shockwave | Nova ability hit | `Data/Moves/Nova/` |
 | — | Star Shards | Currency | `Economy.cs` comments; UI strings |
 | — | Guard Pips / Exposed | Arena mechanic | UI strings |
 | — | Pixel Kingdom Rumble | Product name | `ProjectConfigurator.ProductName` |

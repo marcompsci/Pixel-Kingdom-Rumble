@@ -17,11 +17,14 @@ the repo on top.
    git checkout -- .              # bring in the repo's tracked files (overwrites Packages/manifest.json)
    git branch --set-upstream-to=origin/main
    ```
+   Note: your home folder is itself a git repo, so always check `git rev-parse --show-toplevel` prints the
+   project folder before committing. Alternatively point Unity Hub at the existing clone in `~/GameDev/Pixel-Kingdom-Rumble`
+   and copy in the template's `ProjectSettings/` and `Assets/Settings/` folders instead.
 3. Open the project in Unity Hub. Unity resolves packages (a few minutes).
    - If asked **"enable the new Input System backends?"** choose **Yes** (Unity restarts).
    - Set **Edit > Project Settings > Player > Other Settings > Active Input Handling** to **Input System Package (New)** if it was not set.
 4. Run **PKR > Configure iOS Player Settings**.
-5. **Window > General > Test Runner**: run **EditMode** (54 tests) and **PlayMode** (5 tests).
+5. **Window > General > Test Runner**: run **EditMode** (61 tests) and **PlayMode** (8 tests).
 5b. **PKR > Build Movement Sandbox**, press Play, and run around. Open **Window > General > Device Simulator**
     and pick an iPhone to see and use the touch controls with the mouse.
 6. Commit Unity's generated files so the repo becomes complete:

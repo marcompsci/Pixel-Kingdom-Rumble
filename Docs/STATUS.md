@@ -37,9 +37,26 @@ PlayMode tests sampled the interpolated transform instead of the physics body.
 Known limits: Special on the ground does nothing yet (comet-staff attacks come in increment 3);
 the debug panel's buttons sit over the joystick zone, so tapping them can also start the floating stick.
 
+## Increment 3 — Combat runtime (2026-10-05)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: AttackTimeline (phases, cancel windows), SwingHitLog | ✅ | 7 new tests; 61/61 pass with `dotnet run` |
+| MoveDefinition / Moveset data, Nova's 6 moves (Courier Jab → Comet Sweep, Rising Arc, Tailspin, Comet Bolt, Meteor Shockwave) | 🟡 | Written; assets are created by the editor tool, not yet run |
+| Damageable (HP + Guard Pips), Hurtbox, CombatQuery, AttackRunner, Projectile + PoolService, HitStop, HitFlash, StatusPips, TrainingDummy | 🟡 | Syntax-checked; Unity APIs checked against Unity's C# source by a review pass; NOT compiled in Unity |
+| Sandbox: two training dummies (HP and Guard Pips) | 🟡 | Builder updated, not run |
+| 3 PlayMode combat tests | 🟡 | Written, not run |
+
+Fixed during review: attacks now process their first frame before the motor (a jump buffered on the same frame
+could turn a ground jab into an air move); hit stop restores the previous time scale; dummies can't get stuck
+mid-respawn; hitboxes use the physics body position instead of the interpolated transform.
+
+Known limits: hit flash is a color tint (proper white-flash shader comes with real art); no hit sounds yet
+(silent placeholders); Nova can't be damaged in the sandbox because nothing attacks her yet (enemies in increment 4).
+
 ## Upcoming increments
 2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
-3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) ⬜
+3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
 4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) ⬜
 5. Pause menu, level-complete screen ⬜
 6. Main menu, character select, settings UI ⬜
