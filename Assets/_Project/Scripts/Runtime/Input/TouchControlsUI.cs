@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PKR.Core;
 using UnityEngine;
@@ -46,8 +47,19 @@ namespace PKR
             RefreshVisibility();
         }
 
-        void OnEnable() => EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
-        void OnDisable() => EventBus<SettingsChanged>.Unsubscribe(OnSettingsChanged);
+        void OnEnable()
+        {
+            EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
+            EventBus<GameStateChanged>.Subscribe(OnGameStateChanged);
+        }
+
+        void OnDisable()
+        {
+            EventBus<SettingsChanged>.Unsubscribe(OnSettingsChanged);
+            EventBus<GameStateChanged>.Unsubscribe(OnGameStateChanged);
+        }
+
+        void OnGameStateChanged(GameStateChanged e) => RefreshVisibility();
 
         void OnSettingsChanged(SettingsChanged e)
         {
@@ -64,8 +76,35 @@ namespace PKR
 
         void RefreshVisibility()
         {
-            bool show = forceShow || EditMode || Touchscreen.current != null || Application.isMobilePlatform;
+            // Hidden while paused or on the results screen, unless the player is editing the layout.
+            var state = Services.State;
+            bool playing = state == null || state.State == GameState.Playing;
+            bool show = EditMode || (playing && (forceShow || Touchscreen.current != null || Application.isMobilePlatform));
             if (_canvas != null && _canvas.enabled != show) _canvas.enabled = show;
+            if (_editBar != null) _editBar.gameObject.SetActive(EditMode);
+        }
+
+        Action _onEditDone;
+        RectTransform _editBar;
+
+        /// <summary>Enter layout editing; onDone runs when the player taps DONE (e.g. to reopen the pause menu).</summary>
+        public void BeginEdit(Action onDone)
+        {
+            _onEditDone = onDone;
+            SetEditMode(true);
+        }
+
+        /// <summary>Leave edit mode and run the BeginEdit callback (same as tapping DONE).</summary>
+        public void EndEdit() => FinishEdit();
+
+        void FinishEdit()
+        {
+            SetEditMode(false);
+            ApplyLayout();
+            ApplyTheme();
+            var cb = _onEditDone;
+            _onEditDone = null;
+            cb?.Invoke();
         }
 
         public void SetEditMode(bool on)
@@ -128,7 +167,7 @@ namespace PKR
         static void EnsureEventSystem()
         {
             if (EventSystem.current != null) return;
-            if (Object.FindFirstObjectByType<EventSystem>() != null) return;
+            if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() != null) return;
             // Per-scene (not DontDestroyOnLoad) so it never duplicates a scene's own EventSystem.
             var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
@@ -163,6 +202,7 @@ namespace PKR
             BuildButton(right, ControlIds.Attack, "ATK");
             BuildButton(right, ControlIds.Special, "SPL");
             BuildButton(right, ControlIds.Dodge, "DODGE");
+            BuildEditBar(safe);
         }
 
         void BuildJoystick(RectTransform leftHalf)
@@ -217,6 +257,39 @@ namespace PKR
             btn.label = label;
             btn.HomeMoved += n => SavePlacement(id, n);
             _buttons[id] = btn;
+        }
+
+        void BuildEditBar(RectTransform safe)
+        {
+            _editBar = NewRect("EditBar", safe);
+            _editBar.anchorMin = new Vector2(0.5f, 1f);
+            _editBar.anchorMax = new Vector2(0.5f, 1f);
+            _editBar.pivot = new Vector2(0.5f, 1f);
+            _editBar.anchoredPosition = new Vector2(0f, -130f); // below the HUD timer
+            _editBar.sizeDelta = new Vector2(1100f, 250f);
+            var bg = _editBar.gameObject.AddComponent<Image>();
+            bg.sprite = UISprites.RoundedRect;
+            bg.type = Image.Type.Sliced;
+            bg.color = UITheme.Current.panel;
+            var v = _editBar.gameObject.AddComponent<VerticalLayoutGroup>();
+            v.padding = new RectOffset(24, 24, 14, 14);
+            v.spacing = 12f;
+            v.childControlWidth = true; v.childControlHeight = true;
+            v.childForceExpandWidth = true; v.childForceExpandHeight = false;
+            UIFactory.Label(_editBar, "Drag the stick and buttons to move them", 40, TextAnchor.MiddleCenter, 60f);
+            var row = NewRect("Buttons", _editBar);
+            row.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var h = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 24f;
+            h.childControlWidth = true; h.childControlHeight = true;
+            h.childForceExpandWidth = true; h.childForceExpandHeight = true;
+            UIFactory.Button(row, "RESET", () =>
+            {
+                if (Services.Settings != null) Services.Settings.ResetControlLayout();
+                ApplyLayout();
+            });
+            UIFactory.Button(row, "DONE", FinishEdit);
+            _editBar.gameObject.SetActive(false);
         }
 
         static RectTransform NewRect(string name, Transform parent)

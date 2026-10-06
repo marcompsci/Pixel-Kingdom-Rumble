@@ -79,6 +79,7 @@ namespace PKR.EditorTools
             var touch = new GameObject("TouchControls").AddComponent<TouchControlsUI>();
             EditorUtil.SetField(hero.GetComponent<PlayerInputRouter>(), "touchControls", touch);
 
+            new GameObject("PauseMenu").AddComponent<PauseMenu>();
             var dbg = new GameObject("DebugPanel").AddComponent<SandboxDebugPanel>();
             dbg.motor = hero.GetComponent<PlatformerMotor2D>();
 

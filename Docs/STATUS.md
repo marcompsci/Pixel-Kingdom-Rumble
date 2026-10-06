@@ -74,11 +74,31 @@ dropped shards fall back down instead of freezing mid-air; the lift starts flush
 Known limits: blocks are sprite-tiled GameObjects rather than a Tilemap (simpler to generate; fine at this size);
 the level-complete banner is temporary (full screen with buttons in increment 5); Spring Ticks can hop off ledges.
 
+## Increment 5 — Pause menu, settings, level-complete screen (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: ResultsMath (time format, percent, rank) | ✅ | 5 new tests; 74/74 pass with `dotnet run` |
+| UIFactory + UITheme (code-built buttons, toggles, sliders, panels; high contrast) | 🟡 | Syntax-checked + API review; not run in Unity |
+| PauseMenu (button, Esc/Start, auto-pause on background, Resume/Restart/Settings/Main Menu) | 🟡 | Same |
+| SettingsPanel (volumes, haptics, shake, high contrast, floating stick, control size, edit/reset layout) | 🟡 | Same |
+| Touch layout editing from the pause menu (DONE/RESET bar), controls hidden while paused/results | 🟡 | Same |
+| LevelCompleteScreen (rank, stats, NEW BEST, reward count-up, Play Again) | 🟡 | Same |
+| 3 PlayMode menu tests | 🟡 | Written, not run |
+
+Fixed during review: settings panel narrowed to fit 4:3 iPads; menus pre-select their first button for
+keyboard/gamepad; control-size slider refreshes after a layout reset; settings saves are batched instead of
+written every slider tick; layout-edit bar got a backing panel and moved below the timer; slider fill lines up
+with the handle; resuming with Esc during layout editing exits edit mode cleanly.
+
+Known limits: Main Menu / Next buttons are disabled until increment 6 adds the menu scene; no audio clips yet,
+so the volume sliders have nothing audible to change.
+
 ## Upcoming increments
 2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
 3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
 4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) 🟡 (written; awaiting Unity run)
-5. Pause menu, level-complete screen ⬜
+5. Pause menu, level-complete screen 🟡 (written; awaiting Unity run)
 6. Main menu, character select, settings UI ⬜
 7. Arena test scene with bots ⬜
 8. Docs pass, final status report ⬜

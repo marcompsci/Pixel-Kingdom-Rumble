@@ -7,7 +7,7 @@ namespace PKR
     /// <summary>
     /// In-level HUD built at runtime: HP, Star Shards, secrets and timer along the top of the safe area,
     /// plus a center banner for checkpoints, secrets and level clear. Follows the high-contrast setting.
-    /// (Increment 5 adds the pause button and the full level-complete screen.)
+    /// The pause button lives in PauseMenu and the end screen in LevelCompleteScreen.
     /// </summary>
     public class StoryHUD : MonoBehaviour
     {
@@ -23,7 +23,6 @@ namespace PKR
         {
             EventBus<CheckpointActivated>.Subscribe(OnCheckpoint);
             EventBus<SecretFound>.Subscribe(OnSecret);
-            EventBus<LevelCompleted>.Subscribe(OnCompleted);
             EventBus<SettingsChanged>.Subscribe(OnSettings);
         }
 
@@ -31,7 +30,6 @@ namespace PKR
         {
             EventBus<CheckpointActivated>.Unsubscribe(OnCheckpoint);
             EventBus<SecretFound>.Unsubscribe(OnSecret);
-            EventBus<LevelCompleted>.Unsubscribe(OnCompleted);
             EventBus<SettingsChanged>.Unsubscribe(OnSettings);
         }
 
@@ -39,22 +37,8 @@ namespace PKR
         void OnSecret(SecretFound e) => ShowBanner($"SECRET FOUND  {e.found}/{e.total}", 2f);
         void OnSettings(SettingsChanged e) => ApplyTheme();
 
-        void OnCompleted(LevelCompleted e)
-        {
-            string best = e.newBestTime ? "  NEW BEST!" : "";
-            ShowBanner($"{e.levelName.ToUpperInvariant()} CLEAR!\n" +
-                       $"Time {FormatTime(e.timeSeconds)}{best}\n" +
-                       $"Shards {e.shards}/{e.totalShards}   Secrets {e.secrets}/{e.totalSecrets}\n" +
-                       $"+{e.starShardReward} Star Shards", float.PositiveInfinity);
-        }
-
-        public static string FormatTime(float seconds)
-        {
-            if (seconds < 0f) seconds = 0f;
-            int m = (int)(seconds / 60f);
-            float s = seconds - m * 60;
-            return $"{m}:{s:00.0}";
-        }
+        /// <summary>Kept for callers; formatting lives in Core so it is unit-tested.</summary>
+        public static string FormatTime(float seconds) => ResultsMath.FormatTime(seconds);
 
         void ShowBanner(string text, float seconds)
         {

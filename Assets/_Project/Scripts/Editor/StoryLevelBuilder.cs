@@ -145,6 +145,8 @@ namespace PKR.EditorTools
             var touch = new GameObject("TouchControls").AddComponent<TouchControlsUI>();
             EditorUtil.SetField(hero.GetComponent<PlayerInputRouter>(), "touchControls", touch);
             new GameObject("HUD").AddComponent<StoryHUD>();
+            new GameObject("PauseMenu").AddComponent<PauseMenu>();
+            new GameObject("LevelCompleteScreen").AddComponent<LevelCompleteScreen>();
 
             // Record totals on the level asset for menus.
             level.totalShards = CountShards();

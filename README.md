@@ -5,7 +5,7 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1, increment 4 of 8. See [Docs/STATUS.md](Docs/STATUS.md) for exactly what is built,
+**Current status:** Phase 1, increment 5 of 8. See [Docs/STATUS.md](Docs/STATUS.md) for exactly what is built,
 what was tested, and what is not verified yet.
 
 ---
@@ -66,6 +66,13 @@ Rules: pits cost 1 HP and return you to the last checkpoint; at 0 HP you respawn
 and enemies reset. Collected shards stay collected. Defeated enemies pop out Star Shards. The HUD shows HP, shards,
 secrets and time; reaching the gate saves your best results and awards Star Shards (cosmetic currency).
 
+**Pause & results:** the **II** button (top-right), Esc/P or gamepad Start pauses; the game also pauses itself when
+iOS sends it to the background. The pause menu has Resume, Restart Level, Settings and Main Menu (enabled once the
+menu scene exists in increment 6). **Settings:** music and sound volume, haptics, screen shake, high contrast,
+floating stick, control size, *edit control layout* (drag the stick/buttons, then DONE) and reset layout.
+The **level-complete screen** shows a rank (S/A/B/C from time vs par, shards, secret and falls), time with
+NEW BEST, shards, secrets, falls, and the Star Shard reward counting up into your total, with Play Again.
+
 ## Controls
 
 **Touch (landscape):** left half = floating joystick (appears where your thumb lands); right side = **JUMP**, **ATK**,
@@ -78,7 +85,7 @@ secrets and time; reaching the gate saves your best results and awards Star Shar
 | Attack | ATK | J | West |
 | Special | SPL | L or I | North |
 | Dodge | DODGE | Left Shift or U | East or Right Bumper |
-| Pause | *(pause button in increment 5)* | Esc or P | Start |
+| Pause | **II** button (top-right) | Esc or P | Start |
 
 **Nova's kit (comet staff + sky-courier mobility):**
 
@@ -115,6 +122,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Save/SaveData.cs` | Progress, unlocks, cosmetics, level bests, migration and repair |
 | `Save/SettingsData.cs` | Audio, haptics, high contrast, screen shake, floating stick, control layout |
 | `Economy/Economy.cs` | Star Shard rewards and cosmetic purchases (cosmetic only) |
+| `Save/ResultsMath.cs` | Time formatting, percentages, clear rank |
 | `Arena/MatchState.cs` | Stock / Timed / Training rules, scoring, placements |
 | `AI/EnemyLogic.cs` | Patrol turning, hopper timing, `LevelRun` (time, shards, secrets, deaths, checkpoints, completion) |
 
@@ -166,7 +174,11 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Combat/ContactDamage.cs` | Hurts other teams on touch (enemy bodies, spikes) |
 | `Pickups/Pickup.cs` | Pooled Star Shards and health crystals (placed or popped out of defeated enemies) |
 | `Feedback/PuffEffect.cs` | Pooled burst effect |
-| `UI/StoryHUD.cs` | HP, shards, secrets, timer and center banners; follows high contrast |
+| `UI/StoryHUD.cs` | HP, shards, secrets, timer and checkpoint/secret banners; follows high contrast |
+| `UI/UIFactory.cs` | Code-built touch-sized controls (canvas + safe area, panel, button, ON/OFF toggle, slider) and `UITheme` |
+| `UI/SettingsPanel.cs` | Settings contents (two columns in landscape, one in portrait); reusable by menus |
+| `UI/PauseMenu.cs` | Pause button + menu, follows the pause state, hands off to layout editing |
+| `UI/LevelCompleteScreen.cs` | Rank, stats, reward count-up, Play Again / Main Menu |
 | `Level/RespawnOnFall.cs` | Sandbox fall reset (replaced by checkpoints in increment 4) |
 | `UI/UISprites.cs` | Runtime-generated circle/ring sprites + built-in font for placeholder UI |
 | `UI/SafeAreaFitter.cs` | Keeps UI inside the notch/home-bar safe area |
@@ -196,15 +208,15 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 69 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 69 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level) | 10 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 74 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 74 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus) | 13 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,
 economy and arena match rules.
 PlayMode covers landing, held vs tapped jump height, run speed, knockback control lock, and the full hit
-pipeline (damage + push, same-team immunity, one hit per swing), moving-platform carry and spike contact damage.
+pipeline (damage + push, same-team immunity, one hit per swing), moving-platform carry, spike contact damage, pause/resume, the pause menu and the results screen.
 
 ## Repo tools
 

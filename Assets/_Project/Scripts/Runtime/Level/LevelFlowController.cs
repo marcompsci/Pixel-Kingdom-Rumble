@@ -225,7 +225,7 @@ namespace PKR
             int reward = Run.Complete(data);
             if (save != null) save.SaveNow();
 
-            // Freeze the hero in a victory pose; menus take over (increment 5 adds the full screen).
+            // Freeze the hero in a victory pose; LevelCompleteScreen takes over.
             if (player.TryGetComponent(out PlayerInputRouter router)) router.enabled = false;
             _playerMotor.Intent.ClearAll();
             if (player.TryGetComponent(out Invulnerability inv)) inv.Grant(9999f); // nothing can hurt you after the goal

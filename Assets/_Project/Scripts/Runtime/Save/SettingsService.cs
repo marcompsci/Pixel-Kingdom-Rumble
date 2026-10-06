@@ -19,13 +19,42 @@ namespace PKR
             Data.Sanitize();
         }
 
-        /// <summary>Call after changing any field on Data. Sanitizes, saves, and notifies listeners.</summary>
+        const float SaveDelay = 0.5f;
+        bool _dirty;
+        float _lastChange;
+
+        /// <summary>
+        /// Call after changing any field on Data. Applies and notifies immediately; the file write is batched
+        /// (0.5 s after the last change, or on pause/quit) so dragging a slider doesn't write every frame.
+        /// </summary>
         public void Commit()
         {
             Data.Sanitize();
-            JsonFileStore.TryWrite(FileName, Data);
+            _dirty = true;
+            _lastChange = Time.unscaledTime;
             Services.Audio?.ApplySettings(Data);
             EventBus<SettingsChanged>.Raise(new SettingsChanged { settings = Data });
+        }
+
+        public void SaveNow()
+        {
+            JsonFileStore.TryWrite(FileName, Data);
+            _dirty = false;
+        }
+
+        void Update()
+        {
+            if (_dirty && Time.unscaledTime - _lastChange >= SaveDelay) SaveNow();
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (paused && _dirty) SaveNow();
+        }
+
+        void OnApplicationQuit()
+        {
+            if (_dirty) SaveNow();
         }
 
         public void SetMusicVolume(float v) { Data.musicVolume = v; Commit(); }
@@ -34,5 +63,26 @@ namespace PKR
         public void SetHighContrast(bool on) { Data.highContrastUI = on; Commit(); }
         public void SetScreenShake(bool on) { Data.screenShakeEnabled = on; Commit(); }
         public void ResetControlLayout() { Data.ResetLayout(); Commit(); }
+        public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }
+
+        /// <summary>Scale every on-screen control (joystick and buttons) at once.</summary>
+        public void SetControlScale(float scale)
+        {
+            if (Data.controlLayout != null)
+                foreach (var c in Data.controlLayout) if (c != null) c.scale = scale;
+            Commit();
+        }
+
+        /// <summary>Average scale of the on-screen controls (for the settings slider).</summary>
+        public float ControlScale
+        {
+            get
+            {
+                if (Data.controlLayout == null || Data.controlLayout.Count == 0) return 1f;
+                float sum = 0f; int n = 0;
+                foreach (var c in Data.controlLayout) if (c != null) { sum += c.scale; n++; }
+                return n > 0 ? sum / n : 1f;
+            }
+        }
     }
 }
