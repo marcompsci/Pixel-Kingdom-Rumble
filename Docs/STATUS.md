@@ -205,3 +205,18 @@ cut a fresh jump short; riding into a ceiling stuck Rex there; a wall jump flipp
 Ram counted speed in the wrong direction and on moving platforms; chained follow-ups read the lunge speed;
 projectile/trap moves now warn that `speedBonus` does nothing for them.
 
+## 2.4 — Clockwork Warden boss (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `WardenBrain` (phases at 60%/25%, attack patterns, slam tracking then lock-on, stagger-only vulnerability, volley spots) | ✅ | 8 new tests; 121/121 pass with `dotnet run` |
+| `ClockworkWarden` (piston slam + shockwave, exposed core hurtbox, gear sweep, cog volley, reset on hero death, completes the level) and `BossHUD` | 🟡 | Syntax-checked + independent review; not compiled in Unity |
+| PKR > Build Boss Test (`SQ_ClockworkWarden_Test`, joins Build All); Sunspire's NEXT button opens it | 🟡 | Not run |
+| 2 PlayMode tests (core only hittable when staggered, then defeatable; hero death resets the fight) | 🟡 | Written, not run |
+| Boss difficulty tuning | ⬜ | Needs play-testing |
+
+Fixed during review: side ledges were too high for most heroes to reach (and their health crystals); the sweep gear
+rolled through the wall and parked outside the arena; hazard art didn't match hitbox sizes and was see-through; the
+slam warning ring was half the shockwave's width; cog warnings could stay hidden during the drop; the piston snapped
+back up in later phases; the boss bar drew badly near empty; building only the boss scene left Sunspire's NEXT disabled.
+

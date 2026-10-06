@@ -11,6 +11,8 @@ namespace PKR
         public string displayName = "New Level";
         public string biomeName = "";
         public string sceneName = "";
+        [Tooltip("Scene the level-complete NEXT button loads. Empty = no next level yet.")]
+        public string nextSceneName = "";
         [TextArea(2, 4)] public string codexEntry = "";
         [Tooltip("Shown on the level-complete screen as the time to beat.")]
         public float parTimeSeconds = 120f;

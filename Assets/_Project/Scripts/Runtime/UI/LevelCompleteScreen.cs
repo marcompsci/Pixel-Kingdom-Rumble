@@ -70,7 +70,12 @@ namespace PKR
             UIFactory.Button(buttons, hasMenu ? "MAIN MENU" : "MENU (SOON)",
                              () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); },
                              interactable: hasMenu);
-            UIFactory.Button(buttons, "NEXT (SOON)", null, interactable: false);
+            var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
+            string next = flowLevel != null ? flowLevel.nextSceneName : "";
+            bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);
+            UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",
+                             () => { if (Services.Scenes != null) Services.Scenes.Load(next); },
+                             interactable: hasNext);
             UIFactory.Select(again);
 
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);

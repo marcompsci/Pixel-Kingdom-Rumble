@@ -15,14 +15,14 @@ Claude with the file and line.
 
 ## B. Tests
 
-- [ ] Test Runner > **EditMode**: 113 tests pass (they already pass under .NET; a failure here means a Unity
+- [ ] Test Runner > **EditMode**: 121 tests pass (they already pass under .NET; a failure here means a Unity
       difference worth reporting).
-- [ ] Test Runner > **PlayMode**: 23 tests. These are the first real check of the physics code.
+- [ ] Test Runner > **PlayMode**: 25 tests. These are the first real check of the physics code.
       Most likely to need tuning: `MotorPlayModeTests` (jump heights) and `ArenaPlayModeTests` (timing).
 
 ## C. Generate content
 
-- [ ] **PKR > Build All Scenes**. Expect log lines for the sandbox, story level, menus and arena.
+- [ ] **PKR > Build All Scenes**. Expect log lines for the sandbox, story level, boss arena, menus and arena.
 - [ ] `Assets/_Project/Data` contains the roster, all four heroes with their kits and moves, two enemies and the level.
 - [ ] `Assets/_Project/Art/Placeholder` contains the `ph_*.png` sprites and they look like pixel art
       (Point filter, no blur).
@@ -48,6 +48,9 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 - [ ] Clear again with the secret room found: "NEW HERO UNLOCKED: REX ROLLO!". Pick Rex: he glides and skids;
       skate into the lift-shaft wall (section D) and jump into it holding toward it: he rides up, Jump kicks off;
       Momentum Ram from a standstill vs at full speed (the full-speed one sends enemies much farther).
+- [ ] Sunspire results → **NEXT** opens the Clockwork Warden. The piston tracks you (red ring), slams, stays down
+      with a glowing core: only then do hits do damage. Jump the gear sweep. Below 60% cogs drop on marked spots.
+      Die: the fight resets. Win: level-complete screen.
 - [ ] Nova, Brick and Luma still stop crisply and never wall ride (their movement must be unchanged).
 - [ ] Pause (II button and Esc): Resume, Restart, Settings, Main Menu. Edit the control layout and see it saved.
 - [ ] Settings: high contrast changes UI and controls; screen shake off stops shake.

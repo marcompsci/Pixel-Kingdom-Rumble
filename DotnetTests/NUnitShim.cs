@@ -30,6 +30,11 @@ namespace NUnit.Framework
         public static void IsNotNull(object o, string message = null) { if (o == null) Fail("Expected not null", message); }
         public static void Less(float a, float b, string message = null) { if (!(a < b)) Fail($"Expected {a} < {b}", message); }
         public static void Greater(float a, float b, string message = null) { if (!(a > b)) Fail($"Expected {a} > {b}", message); }
+        public static void LessOrEqual(float a, float b, string message = null) { if (!(a <= b)) Fail($"Expected {a} <= {b}", message); }
+        public static void AreNotEqual(object notExpected, object actual, string message = null)
+        {
+            if (Equals(notExpected, actual)) Fail($"Expected anything but {notExpected}", message);
+        }
         public static T Throws<T>(TestDelegate code) where T : Exception
         {
             try { code(); }

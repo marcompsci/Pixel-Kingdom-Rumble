@@ -32,6 +32,7 @@ namespace PKR.EditorTools
             DataAssets.CreateAll();
             SandboxBuilder.BuildNoPrompt();
             StoryLevelBuilder.BuildNoPrompt();
+            BossSceneBuilder.BuildNoPrompt();
             BuildMenusNoPrompt();
             ArenaHook?.Invoke(); // set by the arena builder (increment 7) so this file doesn't depend on it
             Debug.Log("[PKR] All scenes built. Press Play in 00_Boot to run the game from the start.");

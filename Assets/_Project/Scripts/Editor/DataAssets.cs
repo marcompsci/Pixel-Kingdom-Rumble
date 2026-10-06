@@ -19,6 +19,7 @@ namespace PKR.EditorTools
             GetOrCreateCogBeetle();
             GetOrCreateSpringTick();
             GetOrCreateSunspireTestLevel();
+            GetOrCreateWardenLevel();
             AssetDatabase.SaveAssets();
         }
 
@@ -90,13 +91,28 @@ namespace PKR.EditorTools
         public static LevelDefinition GetOrCreateSunspireTestLevel()
         {
             EditorUtil.EnsureFolder(LevelsFolder);
-            return GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_SunspireMeadows_Test.asset", l =>
+            var lvl = GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_SunspireMeadows_Test.asset", l =>
             {
                 l.id = "sq_sunspire_test"; l.displayName = "Sunspire Meadows"; l.biomeName = "Sunspire Meadows";
                 l.sceneName = SceneIds.StoryTest; l.parTimeSeconds = 120f;
                 l.codexEntry = "Grassland islands stitched together by the Tickworks' oldest machinery. " +
                                "The brass is warm to the touch, and the gears hum just below hearing.";
                 l.skyColor = new Color32(255, 200, 150, 255);
+            });
+            if (string.IsNullOrEmpty(lvl.nextSceneName)) { lvl.nextSceneName = SceneIds.BossTest; EditorUtility.SetDirty(lvl); }
+            return lvl;
+        }
+
+        public static LevelDefinition GetOrCreateWardenLevel()
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            return GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_ClockworkWarden_Test.asset", l =>
+            {
+                l.id = "sq_clockwork_warden"; l.displayName = "Clockwork Warden"; l.biomeName = "Tickworks Engine Hall";
+                l.sceneName = SceneIds.BossTest; l.parTimeSeconds = 90f;
+                l.codexEntry = "A towering guardian built to keep the Tickworks turning. Its memory has worn down with its " +
+                               "gears, and it now guards the engine hall against everyone, even the heroes it was built to help.";
+                l.skyColor = new Color32(70, 52, 60, 255);
             });
         }
 

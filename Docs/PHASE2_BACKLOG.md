@@ -18,8 +18,8 @@ Ordered by what unblocks the most. Step 0 comes first because everything else bu
 Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules~~ ✅ (clear a level); still to do: choosing CPU heroes on the setup screen, CPUs using traps.
 
 ## 2. Story Quest
-- **Clockwork Warden** boss: multi-phase (gear sweep, piston slam, weak-point core exposed after a stagger),
-  boss health bar, arena-style room, intro/outro. Core: a boss phase state machine with .NET tests.
+- ~~**Clockwork Warden** boss~~ ✅ 2.4: three phases (piston slam with exposed core, gear sweep, cog volley), boss bar,
+  walled arena, Core `WardenBrain` with .NET tests. Still to do: intro/outro, real art, boss music.
 - Real Sunspire Meadows levels (1-1 to 1-3) + a world map, switched to **Tilemaps** with rule tiles.
 - New enemy types (flying Gyro Moth, shielded Bolt Knight).
 - Level select with ranks and secrets per level.

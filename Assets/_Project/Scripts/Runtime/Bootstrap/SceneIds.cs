@@ -10,6 +10,7 @@ namespace PKR
         public const string MainMenu = "01_MainMenu";
         public const string CharacterSelect = "02_CharacterSelect";
         public const string StoryTest = "SQ_SunspireMeadows_Test";
+        public const string BossTest = "SQ_ClockworkWarden_Test";
         public const string ArenaTest = "AC_Skyforge_Test";
         public const string MovementSandbox = "SQ_MovementSandbox";
 
