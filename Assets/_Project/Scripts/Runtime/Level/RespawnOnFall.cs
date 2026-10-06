@@ -25,7 +25,7 @@ namespace PKR
         {
             if (transform.position.y >= killY) return;
             // TryGetComponent, not GetComponent()?.: Unity's fake-null objects break the ?. operator.
-            if (TryGetComponent(out NovaAbilities nova)) nova.Cancel();
+            if (TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
             _motor.Teleport(respawnPoint);
             if (TryGetComponent(out Invulnerability inv)) inv.Grant(respawnInvulnerability, blink: true);
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.SnapToTarget();

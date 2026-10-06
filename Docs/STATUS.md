@@ -16,6 +16,8 @@ Phase 1 feature list: boot → main menu → character select (Nova playable, 3 
 level (enemies, pickups, hazards, checkpoints, secret, goal, results) and Skyforge Arena (Stock/Timed/Training,
 1-3 CPUs, retracting bridge, results), with touch controls, pause, settings, save, Star Shards and haptics.
 
+Phase 2 has started on top of this (see the Phase 2 log below); it is in the same unverified state.
+
 Next step: [FIRST_RUN.md](FIRST_RUN.md). Known gaps: [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 What comes after: [PHASE2_BACKLOG.md](PHASE2_BACKLOG.md).
 
@@ -152,3 +154,22 @@ Known limits: every fighter uses Nova's kit (other heroes are locked in Phase 1)
 | ARCHITECTURE, FIRST_RUN checklist, KNOWN_ISSUES, PHASE2_BACKLOG docs | ✅ | Written; paths and menu names checked against the code |
 | GitHub Actions workflow `Core tests` (.NET 8, `DotnetTests/`) | ✅ | First run on GitHub (commit 67c6c3d) completed with success |
 | No gameplay code changes | n/a | |
+
+# Phase 2
+
+## 2.1 — Brick joins, generic hero kits, super armor (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `CombatMath.ApplySuperArmor`, `AttackTimeline.InArmorWindow`, `RosterSelection.PickRandom`, bots recover with mid-air jumps and only zone with projectiles | ✅ | 7 new tests; 101/101 pass with `dotnet run` |
+| `HeroAbilities` + `HeroKitDefinition` (replaces Nova-only `NovaAbilities`); Nova and Brick kits | 🟡 | Syntax-checked + independent review against Unity's C# source; not compiled in Unity |
+| Brick: 6 moves (Boulder Jab → Quarry Hook, Pillar Uppercut, Rockfall Elbow, Bulwark Charge with super armor, Landslide Shockwave), Stone Step, Granite Guard, Landslide Slam; 6 HP, 4 Guard Pips | 🟡 | Data created by `DataAssets` (also upgrades a Phase 1 locked Brick asset); not run |
+| Super armor in `Damageable` (damage applies, knockback/hitstun skipped unless launched) | 🟡 | Same |
+| Hero swap at runtime (`HeroLoadout`, `SelectedHeroLoader` on Story/sandbox players); CPU fighters pick random heroes | 🟡 | Same |
+| 4 PlayMode tests (armor keeps a move going, a normal hit cancels it, hero swap, mid-air jump) | 🟡 | Written, not run |
+| Brick feel / balance vs Nova | ⬜ | Needs play-testing |
+
+Fixed during review: bot recovery jumps were released early (cut short by the jump-cut rule); renamed Nova kit
+fields keep any existing Inspector tuning (`FormerlySerializedAs`); Brick CPUs no longer fire Bulwark Charge from
+mid range (it could carry them off the stage), since only projectile specials are used for zoning.
+

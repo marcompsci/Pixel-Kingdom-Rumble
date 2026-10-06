@@ -28,6 +28,24 @@ namespace PKR.Core
         /// <summary>Step left/right (dir -1/+1) through ALL heroes, wrapping. Locked heroes can be viewed, not picked.</summary>
         public static int Step(int current, int dir, int count) => Wrap(current + (dir >= 0 ? 1 : -1), count);
 
+        /// <summary>A random selectable index (CPU fighters' hero), or -1 if none is selectable.</summary>
+        public static int PickRandom(bool[] selectable, Random rng)
+        {
+            if (rng == null) throw new ArgumentNullException(nameof(rng));
+            if (selectable == null) return -1;
+            int count = 0;
+            foreach (bool b in selectable) if (b) count++;
+            if (count == 0) return -1;
+            int pick = rng.Next(count);
+            for (int i = 0; i < selectable.Length; i++)
+            {
+                if (!selectable[i]) continue;
+                if (pick == 0) return i;
+                pick--;
+            }
+            return -1;
+        }
+
         /// <summary>Index of the hero with this id, or -1.</summary>
         public static int IndexOf(string[] ids, string id)
         {

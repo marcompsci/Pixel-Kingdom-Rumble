@@ -49,7 +49,7 @@ namespace PKR.Tests
             Assert.AreEqual(0, ui.SelectedIndex);
             Assert.IsTrue(ui.ConfirmEnabled, "Nova is playable");
             ui.Show(1);
-            Assert.IsFalse(ui.ConfirmEnabled, "Brick is locked in Phase 1");
+            Assert.IsFalse(ui.ConfirmEnabled, "a locked hero cannot be confirmed");
             ui.Show(2); // wraps back to Nova
             Assert.AreEqual(0, ui.SelectedIndex);
             Assert.IsTrue(ui.ConfirmEnabled);

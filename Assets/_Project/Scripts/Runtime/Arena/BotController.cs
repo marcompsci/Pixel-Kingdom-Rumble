@@ -6,7 +6,7 @@ namespace PKR
     /// <summary>
     /// CPU fighter: every reaction interval asks Core BotBrain for a decision and feeds it into the same
     /// FighterIntent a human uses. Passive bots (Training mode) stand still.
-    /// Runs before AttackRunner/NovaAbilities so presses are consumed in the same physics step.
+    /// Runs before AttackRunner/HeroAbilities so presses are consumed in the same physics step.
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D))]
     [DefaultExecutionOrder(-60)]
@@ -18,7 +18,8 @@ namespace PKR
         ArenaMatchController _match;
         PlatformerMotor2D _motor;
         Damageable _self;
-        NovaAbilities _nova;
+        HeroAbilities _abilities;
+        AttackRunner _attacks;
         System.Random _rng;
         float _nextDecision;
         BotCommand _last;
@@ -37,7 +38,8 @@ namespace PKR
         {
             _motor = GetComponent<PlatformerMotor2D>();
             _self = GetComponent<Damageable>();
-            _nova = GetComponent<NovaAbilities>();
+            _abilities = GetComponent<HeroAbilities>();
+            _attacks = GetComponent<AttackRunner>();
             if (_rng == null) _rng = new System.Random(GetInstanceID());
         }
 
@@ -91,7 +93,10 @@ namespace PKR
                 velocity = new Vec2(vel.x, vel.y),
                 grounded = _motor.IsGrounded,
                 exposed = _self != null && _self.IsExposed,
-                canAirDash = _nova != null && !_nova.IsBusy && !_motor.IsGrounded && _nova.AirDashesLeft > 0,
+                canAirDash = _abilities != null && !_motor.IsGrounded && _abilities.CanRecoverWithAirDodge,
+                canAirJump = !_motor.IsGrounded && _motor.AirJumpsLeft > 0 && (_abilities == null || !_abilities.IsBusy) && !_motor.IsControlLocked,
+                hasProjectile = _attacks != null && _attacks.Moveset != null && _attacks.Moveset.groundSpecial != null
+                                && _attacks.Moveset.groundSpecial.spawnsProjectile,
                 stageLeft = stage.xMin,
                 stageRight = stage.xMax,
                 stageTop = stage.yMax

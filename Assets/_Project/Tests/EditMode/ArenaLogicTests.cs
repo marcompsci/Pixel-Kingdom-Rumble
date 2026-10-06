@@ -50,12 +50,20 @@ namespace PKR.Tests
         [Test]
         public void MidRange_SometimesThrowsProjectile()
         {
-            var v = Base(); v.targetPosition = new Vec2(5f, 0.7f);
+            var v = Base(); v.targetPosition = new Vec2(5f, 0.7f); v.hasProjectile = true;
             int specials = 0;
             var rng = new System.Random(7);
             for (int i = 0; i < 200; i++) if (BotBrain.Decide(v, Perfect, rng).special) specials++;
             Assert.Greater(specials, 20);   // ~25% with perfect accuracy
             Assert.Less(specials, 90);
+        }
+
+        [Test]
+        public void MidRange_NoProjectile_NeverUsesSpecialFromRange()
+        {
+            var v = Base(); v.targetPosition = new Vec2(5f, 0.7f); v.hasProjectile = false;
+            var rng = new System.Random(7);
+            for (int i = 0; i < 200; i++) Assert.IsFalse(BotBrain.Decide(v, Perfect, rng).special);
         }
 
         [Test]
@@ -134,6 +142,31 @@ namespace PKR.Tests
             Assert.Greater(n.reactionTime, h.reactionTime);
             Assert.Less(e.accuracy, h.accuracy);
         }
+
+        [Test]
+        public void Offstage_UsesAirJumpBeforeAirDash()
+        {
+            var v = Base();
+            v.position = new Vec2(-12f, -2f); v.grounded = false; v.velocity = new Vec2(0f, -3f);
+            v.canAirJump = true;
+            var c = BotBrain.Decide(v, Perfect, new System.Random(1));
+            Assert.IsTrue(c.jump);
+            Assert.IsTrue(c.jumpHeld);
+            Assert.IsFalse(c.dodge);
+            Assert.AreEqual(1f, c.moveX, 0.001f);
+        }
+
+        [Test]
+        public void Offstage_Rising_SavesRecovery()
+        {
+            var v = Base();
+            v.position = new Vec2(-12f, -2f); v.grounded = false; v.velocity = new Vec2(0f, 4f);
+            v.canAirJump = true;
+            var c = BotBrain.Decide(v, Perfect, new System.Random(1));
+            Assert.IsFalse(c.jump);
+            Assert.IsFalse(c.dodge);
+            Assert.IsTrue(c.jumpHeld, "keeps holding so the rising jump isn't cut");
+        }
     }
 
     [TestFixture]
@@ -180,5 +213,6 @@ namespace PKR.Tests
             Assert.AreEqual(BridgePhase.Solid, b.PhaseAt(17.5f)); // wraps
             Assert.AreEqual(BridgePhase.Open, b.PhaseAt(-2f));    // negative time wraps too
         }
+    
     }
 }

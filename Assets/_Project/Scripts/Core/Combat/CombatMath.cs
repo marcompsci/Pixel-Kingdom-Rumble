@@ -92,6 +92,20 @@ namespace PKR.Core
             };
         }
 
+        /// <summary>
+        /// Super armor (e.g. Brick's Bulwark Charge): the fighter keeps going through a hit. Damage and pips still
+        /// apply, but knockback and hitstun are removed. A launch (heavy hit on an Exposed fighter) breaks armor.
+        /// Returns true if the armor held.
+        /// </summary>
+        public static bool ApplySuperArmor(ref HitResult result)
+        {
+            if (result.isLaunch) return false;
+            result.knockbackVelocity = new Vec2(0f, 0f);
+            result.hitstunFrames = 0;
+            result.armored = true;
+            return true;
+        }
+
         public static float Clamp(float v, float min, float max) => v < min ? min : (v > max ? max : v);
     }
 }

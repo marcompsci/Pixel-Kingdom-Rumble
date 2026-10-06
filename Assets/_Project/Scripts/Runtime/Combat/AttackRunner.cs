@@ -8,8 +8,8 @@ namespace PKR
     /// <summary>
     /// Plays a fighter's attacks from its Moveset: picks the move for the current context, steps frame data,
     /// checks hitboxes on active frames (each target once per swing), handles follow-up chains, projectiles,
-    /// ability impacts (Nova's Meteor Drop shockwave) and hit feedback (hit stop, haptics, screen shake).
-    /// Runs before NovaAbilities each physics step.
+    /// ability impacts (dive shockwaves such as Nova's Meteor Drop) and hit feedback (hit stop, haptics, screen shake).
+    /// Runs before HeroAbilities each physics step.
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D))]
     [DefaultExecutionOrder(-20)]
@@ -27,12 +27,15 @@ namespace PKR
         public int Frame { get; private set; }
         public bool IsAttacking => Current != null;
         public bool CanCancel => Current != null && AttackTimeline.InCancelWindow(Current.frames, Frame);
+        /// <summary>The current move has super armor on this frame (Damageable then ignores knockback that isn't a launch).</summary>
+        public bool HasSuperArmor => Current != null && Current.superArmor &&
+                                     AttackTimeline.InArmorWindow(Current.frames, Mathf.Max(0, Frame - 1), Current.armorStartFrame, Current.armorEndFrame);
 
         public event Action<MoveDefinition> AttackStarted;
         public event Action<Damageable, HitResult> HitLanded;
 
         PlatformerMotor2D _motor;
-        NovaAbilities _nova;
+        HeroAbilities _abilities;
         Damageable _self;
         Material _spriteMaterial;
         bool _startedInAir;
@@ -43,7 +46,7 @@ namespace PKR
         void Awake()
         {
             _motor = GetComponent<PlatformerMotor2D>();
-            _nova = GetComponent<NovaAbilities>();
+            _abilities = GetComponent<HeroAbilities>();
             _self = GetComponent<Damageable>();
             if (moveset == null && _motor.Definition != null) moveset = _motor.Definition.moveset;
             var sr = GetComponentInChildren<SpriteRenderer>();
@@ -54,14 +57,14 @@ namespace PKR
         {
             _motor.KnockedBack += Cancel;
             _motor.Landed += OnLanded;
-            if (_nova != null) _nova.MeteorImpact += OnMeteorImpact;
+            if (_abilities != null) _abilities.DiveImpact += OnDiveImpact;
         }
 
         void OnDisable()
         {
             _motor.KnockedBack -= Cancel;
             _motor.Landed -= OnLanded;
-            if (_nova != null) _nova.MeteorImpact -= OnMeteorImpact;
+            if (_abilities != null) _abilities.DiveImpact -= OnDiveImpact;
         }
 
         void FixedUpdate()
@@ -72,7 +75,7 @@ namespace PKR
 
             if (!IsAttacking)
             {
-                if (_motor.IsControlLocked || (_nova != null && _nova.IsBusy)) return;
+                if (_motor.IsControlLocked || (_abilities != null && _abilities.IsBusy)) return;
                 bool grounded = _motor.IsGrounded;
                 if (intent.Attack.Consume(now))
                 {
@@ -183,7 +186,7 @@ namespace PKR
         public void ReportProjectileHit(Damageable target, HitResult result, HitData hit) =>
             OnHitLanded(target, result, hit, null);
 
-        void OnMeteorImpact(Vector2 position, float radius)
+        void OnDiveImpact(Vector2 position, float radius)
         {
             var impact = moveset != null ? moveset.abilityImpact : null;
             if (impact == null) return;

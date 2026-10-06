@@ -67,7 +67,7 @@ namespace PKR.EditorTools
 
             // --- Nova -------------------------------------------------------------------------
             var spawn = new Vector2(0f, 1.5f);
-            var hero = BuildNova(nova, mat, spawn);
+            var hero = BuildHero(nova, mat, spawn, DataAssets.GetOrCreateRoster());
             var respawn = hero.AddComponent<RespawnOnFall>();
             respawn.respawnPoint = spawn;
             respawn.killY = -12f;
@@ -154,13 +154,17 @@ namespace PKR.EditorTools
             return go;
         }
 
-        public static GameObject BuildNova(CharacterDefinition def, Material mat, Vector2 position)
+        /// <summary>
+        /// The player fighter, baked with def (Nova). With a roster, a SelectedHeroLoader swaps in the hero picked in
+        /// Character Select at runtime, so one scene serves every hero.
+        /// </summary>
+        public static GameObject BuildHero(CharacterDefinition def, Material mat, Vector2 position, CharacterRoster roster = null)
         {
             var go = BuildFighterBase(def.displayName, PKRLayers.Player, def, def.bodySprite, mat, position,
                                       DamageModel.StoryHealth, TeamIds.Player);
             EditorUtil.SetFloat(go.GetComponent<Damageable>(), "postHitInvulnerability", 1f);
 
-            var abilities = go.AddComponent<NovaAbilities>();
+            var abilities = go.AddComponent<HeroAbilities>();
             EditorUtil.SetField(abilities, "kit", def.kit);
 
             var attacks = go.AddComponent<AttackRunner>();
@@ -170,6 +174,11 @@ namespace PKR.EditorTools
             var router = go.AddComponent<PlayerInputRouter>();
             EditorUtil.SetField(router, "motor", go.GetComponent<PlatformerMotor2D>());
             go.AddComponent<PlayerMarker>();
+            if (roster != null)
+            {
+                var loader = go.AddComponent<SelectedHeroLoader>();
+                EditorUtil.SetField(loader, "roster", roster);
+            }
             return go;
         }
 

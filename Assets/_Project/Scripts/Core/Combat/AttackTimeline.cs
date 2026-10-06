@@ -62,6 +62,15 @@ namespace PKR.Core
 
         /// <summary>True on the first active frame (used to fire projectiles / one-shot effects exactly once).</summary>
         public static bool IsFirstActiveFrame(in FrameData f, int frame) => frame == Math.Max(0, f.startup);
+
+        /// <summary>
+        /// Super-armor window: frames [start, end] inclusive. end &lt; 0 means "through the last active frame".
+        /// </summary>
+        public static bool InArmorWindow(in FrameData f, int frame, int start, int end)
+        {
+            int last = end >= 0 ? end : Math.Max(0, f.startup) + Math.Max(1, f.active) - 1;
+            return frame >= Math.Max(0, start) && frame <= last && frame < f.Total;
+        }
     }
 
     /// <summary>

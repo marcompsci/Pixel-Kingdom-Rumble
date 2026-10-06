@@ -14,7 +14,7 @@ namespace PKR
         [SerializeField] float squashRecover = 12f;
 
         PlatformerMotor2D _motor;
-        NovaAbilities _nova;
+        HeroAbilities _abilities;
         Invulnerability _invuln;
         Vector3 _baseScale = Vector3.one;
         Vector2 _squash = Vector2.one;
@@ -22,7 +22,7 @@ namespace PKR
         void Awake()
         {
             _motor = GetComponent<PlatformerMotor2D>();
-            _nova = GetComponent<NovaAbilities>();
+            _abilities = GetComponent<HeroAbilities>();
             _invuln = GetComponent<Invulnerability>();
             if (body == null && transform.childCount > 0) body = transform.GetChild(0);
             if (bodyRenderer == null && body != null) bodyRenderer = body.GetComponent<SpriteRenderer>();
@@ -56,13 +56,13 @@ namespace PKR
             if (body == null || _motor == null) return;
 
             Vector2 target = Vector2.one;
-            if (_nova != null)
+            if (_abilities != null)
             {
-                switch (_nova.Current)
+                switch (_abilities.Current)
                 {
-                    case NovaAbilities.State.AirDash: target = new Vector2(1.3f, 0.8f); break;
-                    case NovaAbilities.State.Roll: target = new Vector2(1.2f, 0.7f); break;
-                    case NovaAbilities.State.MeteorFall: target = new Vector2(0.7f, 1.35f); break;
+                    case HeroAbilities.State.AirDodge: target = _abilities.Kit.AirDodgePose; break;
+                    case HeroAbilities.State.Roll: target = new Vector2(1.2f, 0.7f); break;
+                    case HeroAbilities.State.DiveFall: target = new Vector2(0.7f, 1.35f); break;
                 }
             }
             _squash = Vector2.Lerp(_squash, target, 1f - Mathf.Exp(-squashRecover * Time.deltaTime));

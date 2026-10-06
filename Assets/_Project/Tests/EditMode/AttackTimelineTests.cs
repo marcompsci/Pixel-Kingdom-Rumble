@@ -71,5 +71,17 @@ namespace PKR.Tests
             log.Reset();
             Assert.IsTrue(log.TryRegister(7));
         }
+    
+        [Test]
+        public void ArmorWindow_DefaultsToStartupAndActive()
+        {
+            var f = new FrameData(8, 10, 12);
+            Assert.IsTrue(AttackTimeline.InArmorWindow(f, 0, 0, -1));
+            Assert.IsTrue(AttackTimeline.InArmorWindow(f, 17, 0, -1));
+            Assert.IsFalse(AttackTimeline.InArmorWindow(f, 18, 0, -1), "recovery is not armored");
+            Assert.IsFalse(AttackTimeline.InArmorWindow(f, 2, 3, -1), "before the window");
+            Assert.IsTrue(AttackTimeline.InArmorWindow(f, 25, 20, 40));
+            Assert.IsFalse(AttackTimeline.InArmorWindow(f, 30, 20, 40), "never past the end of the move");
+        }
     }
 }

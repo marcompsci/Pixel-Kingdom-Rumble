@@ -141,5 +141,33 @@ namespace PKR.Tests
             Assert.AreEqual(5f, r.knockbackVelocity.Magnitude, Eps);
             Assert.AreEqual(-1, r.pipsRemaining);
         }
+    
+        [Test]
+        public void SuperArmor_KeepsDamageButRemovesKnockbackAndStun()
+        {
+            var pips = new GuardPipState(3);
+            var r = CombatMath.ResolveArenaHit(Flat(6f, heavy: true), pips, 1f, 1);
+            Assert.IsTrue(CombatMath.ApplySuperArmor(ref r));
+            Assert.IsTrue(r.armored);
+            Assert.AreEqual(0f, r.knockbackVelocity.Magnitude, Eps);
+            Assert.AreEqual(0, r.hitstunFrames);
+            Assert.AreEqual(2, pips.Current, "pips still chipped");
+            var story = CombatMath.ResolveStoryHit(Flat(6f), 0f, 1f, 1);
+            int hp = story.hpDamage;
+            CombatMath.ApplySuperArmor(ref story);
+            Assert.AreEqual(hp, story.hpDamage, "damage still applies");
+            Assert.Greater(story.hitstopFrames, 0, "hit stop is kept for feel");
+        }
+
+        [Test]
+        public void SuperArmor_BrokenByLaunch()
+        {
+            var pips = new GuardPipState(1);
+            pips.ApplyHit(1);
+            var r = CombatMath.ResolveArenaHit(Flat(5f, heavy: true), pips, 1f, 1);
+            Assert.IsFalse(CombatMath.ApplySuperArmor(ref r));
+            Assert.IsFalse(r.armored);
+            Assert.Greater(r.knockbackVelocity.Magnitude, 0f);
+        }
     }
 }

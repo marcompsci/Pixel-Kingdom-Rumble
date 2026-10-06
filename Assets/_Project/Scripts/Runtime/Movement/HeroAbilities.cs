@@ -1,32 +1,36 @@
 using System;
-using PKR.Core;
 using UnityEngine;
 
 namespace PKR
 {
     /// <summary>
-    /// Nova's movement kit:
-    ///  - Dodge on ground  -> quick roll with brief invulnerability (shared by all heroes)
-    ///  - Dodge in air     -> 8-way air dash (stick aims; neutral = forward), limited per airtime
-    ///  - Special in air   -> Meteor Drop: short hang, straight dive, landing shockwave (damage wired in increment 3)
+    /// Every hero's movement abilities, driven by their HeroKitDefinition:
+    ///  - Dodge on ground  -> roll with brief invulnerability (speed/duration from the CharacterDefinition)
+    ///  - Dodge in air     -> the kit's air dodge (Nova: 8-way Air Dash; Brick: Granite Guard), limited per airtime
+    ///  - Special in air   -> the kit's dive (Nova: Meteor Drop; Brick: Landslide Slam): hang, dive, landing shockwave
     /// Runs before the motor each physics step so overrides apply in the same step.
+    /// Swap heroes at runtime with SetKit (see HeroLoadout).
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D))]
     [DefaultExecutionOrder(-10)]
-    public class NovaAbilities : MonoBehaviour
+    public class HeroAbilities : MonoBehaviour
     {
-        public enum State { None, Roll, AirDash, MeteorStartup, MeteorFall, MeteorLanding }
+        public enum State { None, Roll, AirDodge, DiveStartup, DiveFall, DiveLanding }
 
-        [SerializeField] NovaKitDefinition kit;
+        [SerializeField] HeroKitDefinition kit;
 
         public State Current { get; private set; } = State.None;
         public bool IsBusy => Current != State.None;
-        public NovaKitDefinition Kit => kit;
-        public int AirDashesLeft => _airDashesLeft;
+        public HeroKitDefinition Kit => kit;
+        public int AirDodgesLeft => _airDodgesLeft;
+        /// <summary>An air dodge is available now and it helps get back to the stage (for CPU fighters).</summary>
+        public bool CanRecoverWithAirDodge => !IsBusy && _airDodgesLeft > 0 && kit.AirDodgeRecovers;
+        /// <summary>Super armor from the kit (e.g. Brick's armored dive).</summary>
+        public bool HasSuperArmor => kit.diveArmored && (Current == State.DiveStartup || Current == State.DiveFall);
 
-        /// <summary>Fired on meteor impact with the landing position and shockwave radius.</summary>
-        public event Action<Vector2, float> MeteorImpact;
-        public event Action AirDashStarted;
+        /// <summary>Fired on dive impact with the landing position and shockwave radius.</summary>
+        public event Action<Vector2, float> DiveImpact;
+        public event Action AirDodgeStarted;
         public event Action RollStarted;
 
         PlatformerMotor2D _motor;
@@ -34,7 +38,7 @@ namespace PKR
         Invulnerability _invuln;
         float _stateTimer;
         float _dodgeCooldown;
-        int _airDashesLeft;
+        int _airDodgesLeft;
         Vector2 _dashVelocity;
 
         void Awake()
@@ -43,12 +47,22 @@ namespace PKR
             _attacks = GetComponent<AttackRunner>();
             _invuln = GetComponent<Invulnerability>();
             if (_invuln == null) _invuln = gameObject.AddComponent<Invulnerability>();
-            if (kit == null && _motor.Definition != null) kit = _motor.Definition.kit as NovaKitDefinition;
+            if (kit == null && _motor.Definition != null) kit = _motor.Definition.kit as HeroKitDefinition;
             if (kit == null)
             {
-                Debug.LogWarning("[NovaAbilities] No NovaKitDefinition assigned; using defaults.", this);
+                Debug.LogWarning("[HeroAbilities] No HeroKitDefinition assigned; using Nova's defaults.", this);
                 kit = ScriptableObject.CreateInstance<NovaKitDefinition>();
             }
+            _airDodgesLeft = kit.airDodgesPerAirtime;
+        }
+
+        /// <summary>Change hero kit at runtime (hero swap). Cancels whatever ability is running.</summary>
+        public void SetKit(HeroKitDefinition newKit)
+        {
+            if (newKit == null) return;
+            Cancel();
+            kit = newKit;
+            _airDodgesLeft = kit.airDodgesPerAirtime;
         }
 
         void OnEnable()
@@ -65,7 +79,7 @@ namespace PKR
             _motor.KnockedBack -= Cancel;
         }
 
-        // Rolling off a ledge ends the roll so Nova falls instead of gliding.
+        // Rolling off a ledge ends the roll so the hero falls instead of gliding.
         void OnLeftGround()
         {
             if (Current == State.Roll) End(new Vector2(_dashVelocity.x * 0.5f, 0f));
@@ -73,8 +87,8 @@ namespace PKR
 
         void OnLanded(float impactSpeed)
         {
-            _airDashesLeft = kit.airDashesPerAirtime;
-            if (Current == State.MeteorFall) BeginMeteorLanding();
+            _airDodgesLeft = kit.airDodgesPerAirtime;
+            if (Current == State.DiveFall) BeginDiveLanding();
         }
 
         void FixedUpdate()
@@ -83,7 +97,7 @@ namespace PKR
             float now = Time.time;
             var intent = _motor.Intent;
             if (_dodgeCooldown > 0f) _dodgeCooldown -= dt;
-            if (_motor.IsGrounded && Current == State.None) _airDashesLeft = kit.airDashesPerAirtime;
+            if (_motor.IsGrounded && Current == State.None) _airDodgesLeft = kit.airDodgesPerAirtime;
 
             switch (Current)
             {
@@ -92,16 +106,16 @@ namespace PKR
                     // Attacks own the fighter until their cancel window, where a dodge may interrupt them.
                     bool attacking = _attacks != null && _attacks.IsAttacking;
                     if (attacking && !_attacks.CanCancel) break;
-                    if (!attacking && !_motor.IsGrounded && intent.Special.Consume(now)) { BeginMeteor(); break; }
+                    if (!attacking && kit.hasDive && !_motor.IsGrounded && intent.Special.Consume(now)) { BeginDive(); break; }
                     if (intent.Dodge.IsBuffered(now) && _dodgeCooldown <= 0f)
                     {
                         bool canRoll = _motor.IsGrounded;
-                        bool canDash = !_motor.IsGrounded && _airDashesLeft > 0;
-                        if (canRoll || canDash)
+                        bool canAirDodge = !_motor.IsGrounded && _airDodgesLeft > 0;
+                        if (canRoll || canAirDodge)
                         {
                             intent.Dodge.Consume(now);
                             if (attacking) _attacks.Cancel();
-                            if (canRoll) BeginRoll(intent.Move); else BeginAirDash(intent.Move);
+                            if (canRoll) BeginRoll(intent.Move); else BeginAirDodge(intent.Move);
                         }
                     }
                     break;
@@ -111,29 +125,29 @@ namespace PKR
                     if (_stateTimer <= 0f) End(new Vector2(_dashVelocity.x * 0.3f, 0f));
                     break;
 
-                case State.AirDash:
+                case State.AirDodge:
                     _stateTimer -= dt;
-                    if (_stateTimer <= 0f) End(_dashVelocity * kit.airDashCarryOver);
+                    if (_stateTimer <= 0f) End(_dashVelocity * kit.airDodgeCarryOver);
                     break;
 
-                case State.MeteorStartup:
+                case State.DiveStartup:
                     _stateTimer -= dt;
                     if (_stateTimer <= 0f)
                     {
-                        Current = State.MeteorFall;
-                        _stateTimer = kit.meteorMaxDuration;
-                        _motor.SetOverride(new Vector2(0f, -kit.meteorFallSpeed));
+                        Current = State.DiveFall;
+                        _stateTimer = kit.diveMaxDuration;
+                        _motor.SetOverride(new Vector2(0f, -kit.diveFallSpeed));
                     }
                     break;
 
-                case State.MeteorFall:
+                case State.DiveFall:
                     _stateTimer -= dt;
                     // Landed event normally ends the fall; this catches landing on the very first step or a timeout.
-                    if (_motor.IsGrounded) BeginMeteorLanding();
-                    else if (_stateTimer <= 0f) End(new Vector2(0f, -kit.meteorFallSpeed * 0.5f));
+                    if (_motor.IsGrounded) BeginDiveLanding();
+                    else if (_stateTimer <= 0f) End(new Vector2(0f, -kit.diveFallSpeed * 0.5f));
                     break;
 
-                case State.MeteorLanding:
+                case State.DiveLanding:
                     _stateTimer -= dt;
                     if (_stateTimer <= 0f) Current = State.None;
                     break;
@@ -160,43 +174,37 @@ namespace PKR
             Services.Haptics?.Play(HapticStrength.Light);
         }
 
-        void BeginAirDash(Vector2 move)
+        void BeginAirDodge(Vector2 move)
         {
-            Vector2 dir;
-            if (JumpPhysics.SnapToEightWay(move.x, move.y, kit.airDashAimDeadzone, out var snapped))
-                dir = new Vector2(snapped.x, snapped.y);
-            else
-                dir = new Vector2(_motor.Facing, 0f);
-
-            if (Mathf.Abs(dir.x) > 0.01f) _motor.SetFacing(dir.x > 0f ? 1 : -1);
-            _dashVelocity = dir * kit.airDashSpeed;
+            _dashVelocity = kit.AirDodgeVelocity(move, _motor.Facing);
+            if (Mathf.Abs(_dashVelocity.x) > 0.01f) _motor.SetFacing(_dashVelocity.x > 0f ? 1 : -1);
             _motor.SetOverride(_dashVelocity);
             _motor.FacingLocked = true;
-            _invuln.Grant(kit.airDashInvulnerability);
-            _airDashesLeft--;
-            _stateTimer = kit.airDashDuration;
-            _dodgeCooldown = kit.airDashDuration;
-            Current = State.AirDash;
-            AirDashStarted?.Invoke();
+            _invuln.Grant(kit.airDodgeInvulnerability);
+            _airDodgesLeft--;
+            _stateTimer = kit.airDodgeDuration;
+            _dodgeCooldown = kit.airDodgeDuration;
+            Current = State.AirDodge;
+            AirDodgeStarted?.Invoke();
             Services.Haptics?.Play(HapticStrength.Light);
         }
 
-        void BeginMeteor()
+        void BeginDive()
         {
-            Current = State.MeteorStartup;
-            _stateTimer = kit.meteorStartup;
+            Current = State.DiveStartup;
+            _stateTimer = kit.diveStartup;
             _motor.SetOverride(Vector2.zero); // brief hang so the move is readable
             _motor.FacingLocked = true;
         }
 
-        void BeginMeteorLanding()
+        void BeginDiveLanding()
         {
             _motor.ClearOverride(Vector2.zero);
             _motor.FacingLocked = false;
-            _motor.LockControl(kit.meteorLandingLag);
-            Current = State.MeteorLanding;
-            _stateTimer = kit.meteorLandingLag;
-            MeteorImpact?.Invoke(transform.position, kit.meteorShockwaveRadius);
+            _motor.LockControl(kit.diveLandingLag);
+            Current = State.DiveLanding;
+            _stateTimer = kit.diveLandingLag;
+            DiveImpact?.Invoke(transform.position, kit.diveShockwaveRadius);
             Services.Haptics?.Play(HapticStrength.Heavy);
         }
 

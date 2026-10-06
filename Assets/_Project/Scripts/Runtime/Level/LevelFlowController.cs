@@ -176,7 +176,7 @@ namespace PKR
                 yield return new WaitForSeconds(0.25f);
             }
 
-            if (player.TryGetComponent(out NovaAbilities nova)) nova.Cancel();
+            if (player.TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
             if (player.TryGetComponent(out AttackRunner attacks)) attacks.Cancel();
             _playerMotor.Teleport(RespawnPosition);
             if (afterDeath || (PlayerHealth != null && PlayerHealth.IsDead))

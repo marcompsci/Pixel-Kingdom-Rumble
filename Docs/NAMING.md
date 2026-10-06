@@ -6,7 +6,7 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | Internal ID | Display name (working) | Kind | Defined in |
 |---|---|---|---|
 | `nova` | Nova | Hero | `Data/Characters/Nova.asset` (increment 2); `SaveData.DefaultCharacterId` |
-| `brick` | Brick | Hero (locked in Phase 1) | `Data/Characters/Brick.asset` |
+| `brick` | Brick | Hero (playable from Phase 2.1) | `Data/Characters/Brick.asset` |
 | `luma` | Luma | Hero (locked in Phase 1) | `Data/Characters/Luma.asset` |
 | `rex_rollo` | Rex Rollo | Hero (locked in Phase 1) | `Data/Characters/RexRollo.asset` |
 | `sunspire_meadows` | Sunspire Meadows | Biome | `Data/Levels/` |
@@ -19,6 +19,13 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `nova_tailspin` | Tailspin | Nova move | `Data/Moves/Nova/` |
 | `nova_comet_bolt` | Comet Bolt | Nova move | `Data/Moves/Nova/` |
 | `nova_meteor_shockwave` | Meteor Shockwave | Nova ability hit | `Data/Moves/Nova/` |
+| `brick_boulder_jab` | Boulder Jab | Brick move | `Data/Moves/Brick/` |
+| `brick_quarry_hook` | Quarry Hook | Brick move | `Data/Moves/Brick/` |
+| `brick_pillar_uppercut` | Pillar Uppercut | Brick move | `Data/Moves/Brick/` |
+| `brick_rockfall_elbow` | Rockfall Elbow | Brick move | `Data/Moves/Brick/` |
+| `brick_bulwark_charge` | Bulwark Charge | Brick move (super armor) | `Data/Moves/Brick/` |
+| `brick_landslide_shockwave` | Landslide Shockwave | Brick ability hit | `Data/Moves/Brick/` |
+| — | Stone Step, Granite Guard, Landslide Slam | Brick abilities | `Data/Characters/BrickKit.asset`, Brick's `movement.airJumps` |
 | `enemy_cog_beetle` | Cog Beetle | Enemy (walker) | `Data/Enemies/CogBeetle.asset` |
 | `enemy_spring_tick` | Spring Tick | Enemy (hopper) | `Data/Enemies/SpringTick.asset` |
 | `secret_lift_room` | (secret room) | Secret | `StoryLevelBuilder.cs` |

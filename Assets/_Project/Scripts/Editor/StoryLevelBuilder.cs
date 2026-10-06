@@ -133,7 +133,7 @@ namespace PKR.EditorTools
             Decor(new Vector2(131f, 7f), 3f);
 
             // --- Player ----------------------------------------------------------------------------
-            var hero = SandboxBuilder.BuildNova(nova, _mat, start.position);
+            var hero = SandboxBuilder.BuildHero(nova, _mat, start.position, DataAssets.GetOrCreateRoster());
             follow.target = hero.transform;
 
             // --- Flow, input, HUD -------------------------------------------------------------------

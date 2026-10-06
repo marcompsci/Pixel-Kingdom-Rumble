@@ -5,7 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**. The engine-free rules pass 94 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 has started (Brick is playable).
+The engine-free rules pass 101 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -85,7 +86,7 @@ NEW BEST, shards, secrets, falls, and the Star Shard reward counting up into you
 
 **Menus (portrait):** the main menu shows your Star Shard total and best Sunspire Meadows result, with
 Story Quest, Arena Clash, Settings and Codex (later). Character select
-lets you browse all four heroes with arrows or cards: Nova is playable; Brick, Luma and Rex Rollo appear as locked
+lets you browse all four heroes with arrows or cards: Nova and Brick are playable; Luma and Rex Rollo appear as locked
 silhouettes ("coming in a future update"). Your hero choice is saved.
 
 **Arena Clash (Skyforge Arena):** a symmetrical floating stage: two stone platforms joined by a brass
@@ -122,6 +123,18 @@ approach, attack in range, throw Comet Bolts at mid range and back off when Expo
 | Special (air) | **Meteor Drop** | Hang, dive, landing **Meteor Shockwave** pushes everything away |
 | Dodge (ground) | Roll | 0.18 s invulnerable; cancels the end of attacks |
 | Dodge (air) | Air Dash | 8 directions, once per airtime |
+
+**Brick's kit (stone fists, slow and heavy: 6 HP, 4 Guard Pips, 30% armor, weight 1.6):**
+
+| Input | Move | Notes |
+|---|---|---|
+| Attack (ground) | **Boulder Jab** → press again: **Quarry Hook** | Slow but heavy; the hook launches Exposed foes far |
+| Up + Attack (ground) | **Pillar Uppercut** | A stone column punches upward |
+| Attack (air) | **Rockfall Elbow** | Knocks foes downward |
+| Special (ground) | **Bulwark Charge** | Armored dash forward: hits don't stop him (he still takes damage) unless he's Exposed and hit hard |
+| Special (air) | **Landslide Slam** | Armored dive with a wide landing shockwave |
+| Jump (air) | **Stone Step** | One mid-air jump per airtime; his recovery |
+| Dodge (ground / air) | Roll / **Granite Guard** | Granite Guard: a short invulnerable stall in mid-air |
 
 Hits use hit stop, a sprite flash, haptics and screen shake (shake respects the accessibility setting).
 Hitboxes draw as Gizmos while attacking (turn on Gizmos in the Game view).
@@ -165,7 +178,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Bootstrap/GameStateManager.cs` | Menu / Playing / Paused / Results; auto-pause when app is backgrounded |
 | `Bootstrap/EventBus.cs` | Typed events (`GameStateChanged`, `SettingsChanged`, `ShardsChanged`) |
 | `Data/CharacterDefinition.cs` | Hero ScriptableObject: identity, lore, art refs, movement, defense, dodge, kit |
-| `Data/NovaKitDefinition.cs` | Nova's air dash and meteor drop tuning |
+| `Data/HeroKitDefinition.cs` | Base kit: air dodge + dive tuning shared by every hero |
+| `Data/NovaKitDefinition.cs` | Nova's Air Dash (8-way) and Meteor Drop |
+| `Data/BrickKitDefinition.cs` | Brick's Granite Guard and Landslide Slam |
 | `Data/MoveDefinition.cs` | One attack: frame data, hitbox, hit, lunge, follow-up, projectile, feedback |
 | `Data/Moveset.cs` | Which move each input context uses |
 | `Data/EnemyDefinition.cs` | Enemy identity, codex text, art, stats, behavior, contact hit, drops |
@@ -179,7 +194,8 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Input/TouchActionButton.cs` | On-screen button with press/hold, haptic tap, drag in edit mode |
 | `Input/TouchTheme.cs` | Normal and high-contrast control colors |
 | `Movement/PlatformerMotor2D.cs` | Platformer physics: accel, coyote, buffer, variable jump, apex hang, knockback, overrides |
-| `Movement/NovaAbilities.cs` | Roll, air dash, meteor drop |
+| `Movement/HeroAbilities.cs` | Every hero's roll, air dodge and dive, driven by their kit |
+| `Movement/HeroLoadout.cs`, `SelectedHeroLoader.cs` | Turn a fighter into another hero at runtime (the hero picked in Character Select) |
 | `Movement/FighterVisual.cs` | Placeholder squash/stretch, facing flip, i-frame blink |
 | `Movement/CameraFollow2D.cs` | Smooth follow, look-ahead, vertical dead zone, bounds, shake; group framing + zoom for the arena |
 | `Combat/Invulnerability.cs` | Shared i-frames (dodge, respawn, post-hit) |
@@ -248,9 +264,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 94 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 94 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena) | 15 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 101 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 101 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits) | 19 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

@@ -119,13 +119,14 @@ namespace PKR
 
             var playerDef = roster != null ? roster.Find(GameSession.SelectedCharacterId) : null;
             if (playerDef == null || !playerDef.playableInThisBuild) playerDef = fallbackHero;
-            var cpuDef = fallbackHero;
+            // CPU fighters pick random selectable heroes (seeded per match so a rematch can differ).
+            var cpuRng = new System.Random(unchecked(System.Environment.TickCount * 31 + Config.FighterCount));
 
             if (arenaCamera != null) arenaCamera.group.Clear();
             for (int slot = 0; slot < Config.FighterCount; slot++)
             {
                 bool human = slot == 0;
-                var def = human ? playerDef : cpuDef;
+                var def = human ? playerDef : PickCpuHero(cpuRng);
                 Vector2 pos = spawnPoints != null && spawnPoints.Length > 0
                     ? (Vector2)spawnPoints[slot % spawnPoints.Length].position
                     : new Vector2(-6f + slot * 4f, 2f);
@@ -157,6 +158,16 @@ namespace PKR
             IsLive = true;
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             EventBus<ArenaMatchStarted>.Raise(new ArenaMatchStarted { mode = Config.mode, fighters = Config.FighterCount });
+        }
+
+        CharacterDefinition PickCpuHero(System.Random rng)
+        {
+            if (roster == null || roster.heroes.Count == 0) return fallbackHero;
+            var selectable = new bool[roster.heroes.Count];
+            for (int i = 0; i < selectable.Length; i++)
+                selectable[i] = roster.heroes[i] != null && roster.heroes[i].playableInThisBuild;
+            int k = RosterSelection.PickRandom(selectable, rng);
+            return k >= 0 ? roster.heroes[k] : fallbackHero;
         }
 
         void ClearFighters()
@@ -228,7 +239,7 @@ namespace PKR
             bool respawn = Match.ReportFall(f.slot, attacker);
             EventBus<ArenaKO>.Raise(new ArenaKO { victimSlot = f.slot, attackerSlot = attacker, eliminated = !respawn });
 
-            if (f.go.TryGetComponent(out NovaAbilities nova)) nova.Cancel();
+            if (f.go.TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
             if (f.go.TryGetComponent(out AttackRunner atk)) atk.Cancel();
             f.motor.Intent.ClearAll();
 

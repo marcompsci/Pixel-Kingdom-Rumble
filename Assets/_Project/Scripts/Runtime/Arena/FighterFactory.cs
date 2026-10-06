@@ -4,7 +4,7 @@ namespace PKR
 {
     /// <summary>
     /// Builds a playable hero at runtime (used by Arena Clash, where the line-up is chosen on the setup screen).
-    /// Mirrors the editor-built Nova: rigidbody, capsule, motor, Damageable, hurtbox, Nova kit, attacks, visuals.
+    /// Mirrors the editor-built hero: rigidbody, capsule, motor, Damageable, hurtbox, hero kit, attacks, visuals.
     /// Body sprite is child 0 so FighterVisual finds it.
     /// </summary>
     public static class FighterFactory
@@ -14,7 +14,7 @@ namespace PKR
         {
             var go = new GameObject(name) { layer = PKRLayers.Player };
             // Build inactive so every component's Awake runs once all components exist
-            // (NovaAbilities looks for AttackRunner in Awake).
+            // (HeroAbilities and Damageable look for AttackRunner in Awake).
             go.SetActive(false);
             go.transform.position = position;
 
@@ -52,7 +52,7 @@ namespace PKR
             hbCol.size = new Vector2(0.75f, 1.35f);
             hb.AddComponent<Hurtbox>();
 
-            go.AddComponent<NovaAbilities>(); // kit comes from def.kit (Phase 1: every playable hero uses Nova's kit)
+            go.AddComponent<HeroAbilities>(); // kit comes from def.kit (NovaKit, BrickKit, ...)
             var attacks = go.AddComponent<AttackRunner>();
             attacks.Moveset = def.moveset;
             attacks.Team = team;

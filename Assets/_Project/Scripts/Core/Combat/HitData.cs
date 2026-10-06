@@ -50,5 +50,7 @@ namespace PKR.Core
         /// <summary>True when an Exposed target took a heavy hit (big launch + VFX).</summary>
         public bool isLaunch;
         public int hpDamage;
+        /// <summary>True when super armor absorbed the knockback and hitstun (damage/pips still applied).</summary>
+        public bool armored;
     }
 }

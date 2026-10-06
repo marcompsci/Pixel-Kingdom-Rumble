@@ -22,7 +22,7 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>A hero that is listed in Phase 1 but not playable yet (no move kit). Lore and art are final-ish placeholders.</summary>
+        /// <summary>A hero that is listed but not playable yet (no move kit). Lore and art are final-ish placeholders.</summary>
         static CharacterDefinition GetOrCreateLockedHero(string file, string id, string name, string tagline, string lore,
                                                          Color32 color, float weight, float armor, System.Func<Sprite> sprite)
         {
@@ -40,10 +40,7 @@ namespace PKR.EditorTools
         public static CharacterRoster GetOrCreateRoster()
         {
             var nova = GetOrCreateNova();
-            var brick = GetOrCreateLockedHero("Brick", "brick", "Brick", "Stone guardian. Slow to move, impossible to move.",
-                "Brick was carved to hold up a bridge that fell centuries ago, and he has been standing guard over the gap " +
-                "ever since. When the islands began to drift he finally stepped off his post, shield stance first.",
-                new Color32(140, 136, 150, 255), 1.6f, 0.3f, PlaceholderArt.Brick);
+            var brick = GetOrCreateBrick();
             var luma = GetOrCreateLockedHero("Luma", "luma", "Luma", "Inventor. Her gloves pull sparks out of thin air.",
                 "Luma repairs Tickworks relays for a living and builds things she shouldn't in her spare time. Her magnet " +
                 "gloves can drag loose energy shards toward her or lock them into a barrier for a few precious seconds.",
@@ -135,6 +132,132 @@ namespace PKR.EditorTools
             if (nova.moveset == null) nova.moveset = GetOrCreateNovaMoveset();
             EditorUtility.SetDirty(nova);
             return nova;
+        }
+
+        public const string BrickMovesFolder = "Assets/_Project/Data/Moves/Brick";
+
+        /// <summary>
+        /// Brick, the stone guardian: slow, heavy, armored. Playable from Phase 2. Also upgrades a Brick asset made by an
+        /// older build (locked, no kit) without touching tuning that already exists.
+        /// </summary>
+        public static CharacterDefinition GetOrCreateBrick()
+        {
+            EditorUtil.EnsureFolder(CharactersFolder);
+            var kit = GetOrCreate<BrickKitDefinition>($"{CharactersFolder}/BrickKit.asset", _ => { });
+            var brick = GetOrCreate<CharacterDefinition>($"{CharactersFolder}/Brick.asset", d =>
+            {
+                d.id = "brick";
+                d.displayName = "Brick";
+                d.placeholderColor = new Color32(140, 136, 150, 255);
+                ApplyBrickStats(d);
+            });
+            bool upgrade = brick.kit == null; // created by Phase 1 as a locked silhouette
+            if (upgrade) ApplyBrickStats(brick);
+            brick.tagline = string.IsNullOrEmpty(brick.tagline) ? "Stone guardian. Slow to move, impossible to move." : brick.tagline;
+            if (string.IsNullOrEmpty(brick.lore))
+                brick.lore = "Brick was carved to hold up a bridge that fell centuries ago, and he has been standing guard over the gap " +
+                             "ever since. When the islands began to drift he finally stepped off his post, shield stance first.";
+            if (brick.kit == null) brick.kit = kit;
+            if (brick.bodySprite == null) brick.bodySprite = PlaceholderArt.Brick();
+            if (brick.moveset == null) brick.moveset = GetOrCreateBrickMoveset();
+            brick.playableInThisBuild = true;
+            brick.unlockedByDefault = true;
+            EditorUtility.SetDirty(brick);
+            return brick;
+        }
+
+        static void ApplyBrickStats(CharacterDefinition d)
+        {
+            d.maxHealth = 6;
+            d.weight = 1.6f;       // heavy: hard to launch
+            d.armorPercent = 0.3f;
+            d.guardPips = 4;       // one more pip than everyone else
+            d.dodgeSpeed = 8.5f; d.dodgeDuration = 0.26f; d.dodgeInvulnerability = 0.2f; d.dodgeCooldown = 0.45f;
+            d.movement = new MovementStats
+            {
+                runSpeed = 5.8f, groundAcceleration = 50f, groundDeceleration = 70f,
+                airAcceleration = 32f, airDeceleration = 20f,
+                jumpHeight = 2.6f, timeToApex = 0.4f, fallGravityMultiplier = 1.9f, maxFallSpeed = 20f,
+                airJumps = 1 // Stone Step: he kicks off a conjured slab once per airtime
+            };
+        }
+
+        /// <summary>Brick's stone-fist moves. Original names and starting values; tune in the Inspector.</summary>
+        public static Moveset GetOrCreateBrickMoveset()
+        {
+            EditorUtil.EnsureFolder(BrickMovesFolder);
+            string F(string n) => $"{BrickMovesFolder}/{n}.asset";
+
+            var hook = GetOrCreate<MoveDefinition>(F("Brick_QuarryHook"), m =>
+            {
+                m.id = "brick_quarry_hook"; m.displayName = "Quarry Hook";
+                m.description = "A slow, heavy follow-up hook. Launches Exposed foes a long way.";
+                m.frames = new FrameData(7, 4, 18, 6);
+                m.hitboxOffset = new Vector2(0.9f, 0.05f); m.hitboxSize = new Vector2(1.2f, 1.0f);
+                m.hit = new HitData { damage = 2, pipDamage = 2, baseKnockback = 8.5f, exposedMultiplier = 3.2f,
+                                      angleDegrees = 40f, baseHitstunFrames = 15, hitstopFrames = 7, isHeavy = true };
+                m.lungeSpeed = 3f; m.haptic = HapticStrength.Medium; m.shakeAmplitude = 0.15f;
+            });
+            var jab = GetOrCreate<MoveDefinition>(F("Brick_BoulderJab"), m =>
+            {
+                m.id = "brick_boulder_jab"; m.displayName = "Boulder Jab";
+                m.description = "A short stone punch. Press Attack again to follow with Quarry Hook.";
+                m.frames = new FrameData(5, 3, 14, 8);
+                m.hitboxOffset = new Vector2(0.8f, 0.05f); m.hitboxSize = new Vector2(1.0f, 0.7f);
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 4.5f, exposedMultiplier = 1.5f,
+                                      angleDegrees = 15f, baseHitstunFrames = 11, hitstopFrames = 4, isHeavy = false };
+                m.lungeSpeed = 2f;
+            });
+            if (jab.followUp == null) { jab.followUp = hook; EditorUtility.SetDirty(jab); }
+
+            var pillar = GetOrCreate<MoveDefinition>(F("Brick_PillarUppercut"), m =>
+            {
+                m.id = "brick_pillar_uppercut"; m.displayName = "Pillar Uppercut";
+                m.description = "Up + Attack. A column of stone punches up in front of Brick.";
+                m.frames = new FrameData(7, 5, 18, 0);
+                m.hitboxOffset = new Vector2(0.4f, 1.1f); m.hitboxSize = new Vector2(1.2f, 1.3f);
+                m.hit = new HitData { damage = 2, pipDamage = 1, baseKnockback = 9f, exposedMultiplier = 2.6f,
+                                      angleDegrees = 85f, baseHitstunFrames = 15, hitstopFrames = 6, isHeavy = true };
+                m.lungeSpeed = 0f; m.haptic = HapticStrength.Medium;
+            });
+            var elbow = GetOrCreate<MoveDefinition>(F("Brick_RockfallElbow"), m =>
+            {
+                m.id = "brick_rockfall_elbow"; m.displayName = "Rockfall Elbow";
+                m.description = "Air Attack. A downward elbow that knocks foes toward the ground.";
+                m.frames = new FrameData(5, 5, 14, 0);
+                m.hitboxOffset = new Vector2(0.45f, -0.55f); m.hitboxSize = new Vector2(1.0f, 0.9f);
+                m.hit = new HitData { damage = 2, pipDamage = 1, baseKnockback = 6f, exposedMultiplier = 2.2f,
+                                      angleDegrees = -50f, baseHitstunFrames = 12, hitstopFrames = 5, isHeavy = false };
+                m.rootedOnGround = false; m.endsOnLanding = true; m.haptic = HapticStrength.Medium;
+            });
+            var charge = GetOrCreate<MoveDefinition>(F("Brick_BulwarkCharge"), m =>
+            {
+                m.id = "brick_bulwark_charge"; m.displayName = "Bulwark Charge";
+                m.description = "Ground Special. Brick raises his stone guard and barrels forward. Hits don't stop him " +
+                                "(he still takes the damage) unless he is Exposed and hit hard.";
+                m.frames = new FrameData(8, 14, 18, 0);
+                m.hitboxOffset = new Vector2(0.7f, 0f); m.hitboxSize = new Vector2(0.9f, 1.3f);
+                m.hit = new HitData { damage = 2, pipDamage = 2, baseKnockback = 8f, exposedMultiplier = 3f,
+                                      angleDegrees = 25f, baseHitstunFrames = 14, hitstopFrames = 6, isHeavy = true };
+                m.lungeSpeed = 9f; m.superArmor = true; m.armorStartFrame = 0; m.armorEndFrame = -1;
+                m.haptic = HapticStrength.Medium; m.shakeAmplitude = 0.12f;
+            });
+            var landslide = GetOrCreate<MoveDefinition>(F("Brick_LandslideShockwave"), m =>
+            {
+                m.id = "brick_landslide_shockwave"; m.displayName = "Landslide Shockwave";
+                m.description = "The landing blast of Landslide Slam. Wider and heavier than most.";
+                m.frames = new FrameData(0, 1, 0, 0);
+                m.shape = HitShape.Circle; m.hitboxOffset = new Vector2(0f, -0.3f); m.hitboxRadius = 2.1f;
+                m.hit = new HitData { damage = 3, pipDamage = 2, baseKnockback = 9.5f, exposedMultiplier = 3f,
+                                      angleDegrees = 55f, baseHitstunFrames = 16, hitstopFrames = 8, isHeavy = true };
+                m.haptic = HapticStrength.Heavy; m.shakeAmplitude = 0.35f; m.shakeDuration = 0.22f;
+            });
+
+            return GetOrCreate<Moveset>(F("Brick_Moveset"), ms =>
+            {
+                ms.groundAttack = jab; ms.groundUpAttack = pillar; ms.airAttack = elbow;
+                ms.groundSpecial = charge; ms.airSpecial = null; ms.abilityImpact = landslide;
+            });
         }
 
         public const string NovaMovesFolder = "Assets/_Project/Data/Moves/Nova";

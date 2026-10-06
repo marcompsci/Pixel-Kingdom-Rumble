@@ -36,6 +36,8 @@ namespace PKR
         public Vector2 Velocity => Body.linearVelocity;
         public bool IsControlLocked => _lockTimer > 0f;
         public bool HasOverride => _override.HasValue;
+        /// <summary>Mid-air jumps left this airtime (MovementStats.airJumps; Brick's Stone Step).</summary>
+        public int AirJumpsLeft => _airJumpsLeft;
         /// <summary>The moving platform we're standing on, if any.</summary>
         public MovingPlatform Platform => _platform;
         /// <summary>Set by abilities to freeze facing (e.g. during a dash).</summary>

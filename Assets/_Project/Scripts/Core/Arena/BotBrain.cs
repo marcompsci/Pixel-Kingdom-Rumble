@@ -32,6 +32,10 @@ namespace PKR.Core
         public bool grounded;
         public bool exposed;
         public bool canAirDash;
+        /// <summary>A mid-air jump is available (Brick's Stone Step).</summary>
+        public bool canAirJump;
+        /// <summary>The ground special is a projectile (Nova's Comet Bolt). Charges like Brick's aren't thrown from range.</summary>
+        public bool hasProjectile;
         public bool hasTarget;
         public Vec2 targetPosition;
         public bool targetExposed;
@@ -83,10 +87,19 @@ namespace PKR.Core
             {
                 float toCenter = RecoveryTargetX(v) - v.position.x;
                 c.moveX = Math.Abs(toCenter) < 0.3f ? 0f : Math.Sign(toCenter);
-                if (v.velocity.y <= 0f && v.canAirDash && rng.NextDouble() < d.recoverySkill)
+                c.jumpHeld = true; // never cut a recovery jump short
+                if (v.velocity.y <= 0f && (v.canAirJump || v.canAirDash) && rng.NextDouble() < d.recoverySkill)
                 {
-                    c.moveY = 1f;
-                    c.dodge = true; // Nova's air dash, aimed up and inward
+                    if (v.canAirJump)
+                    {
+                        c.jump = true; // mid-air jump first (Brick's Stone Step); keep the dash for later
+                        c.jumpHeld = true;
+                    }
+                    else
+                    {
+                        c.moveY = 1f;
+                        c.dodge = true; // Nova's air dash, aimed up and inward
+                    }
                 }
                 return c;
             }
@@ -122,7 +135,7 @@ namespace PKR.Core
             }
 
             // 4) Mid range on the same level: sometimes throw the projectile.
-            if (v.grounded && Math.Abs(dx) >= ProjectileMin && Math.Abs(dx) <= ProjectileMax && Math.Abs(dy) < 1f
+            if (v.hasProjectile && v.grounded && Math.Abs(dx) >= ProjectileMin && Math.Abs(dx) <= ProjectileMax && Math.Abs(dy) < 1f
                 && rng.NextDouble() < d.accuracy * 0.25)
             {
                 c.moveX = toward * 0.3f;

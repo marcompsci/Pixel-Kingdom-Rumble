@@ -67,6 +67,11 @@ Tools/gen_metas.py
 
 ## Adding a hero (Phase 2 pattern)
 
-1. Add a `CharacterDefinition` (+ `Moveset` of `MoveDefinition`s) in `DataAssets`.
-2. If the hero needs special movement, add a component like `NovaAbilities` and let `FighterFactory` add it.
-3. Set `playableInThisBuild = true` in the roster. Character select and the arena pick it up automatically.
+Brick (Phase 2.1) was added this way:
+
+1. Add a `CharacterDefinition` (+ `Moveset` of `MoveDefinition`s) in `DataAssets`. Movement, HP, weight, armor
+   and Guard Pips are per hero; `MovementStats.airJumps` gives mid-air jumps.
+2. Add a kit: a subclass of `HeroKitDefinition` that decides the air dodge velocity and tunes the dive.
+   `HeroAbilities` runs every kit, so no new component is needed. Moves can have **super armor** frames.
+3. Set `playableInThisBuild = true` in the roster. Character select, Story Quest (via `SelectedHeroLoader`),
+   the arena and CPU fighters pick it up automatically.

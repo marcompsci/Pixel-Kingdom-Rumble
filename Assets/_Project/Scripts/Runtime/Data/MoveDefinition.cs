@@ -38,6 +38,14 @@ namespace PKR
         [Tooltip("Air moves end immediately on landing.")]
         public bool endsOnLanding = true;
 
+        [Header("Super armor (optional)")]
+        [Tooltip("Hits don't knock the fighter out of this move (damage and Guard Pips still apply). A launch breaks it.")]
+        public bool superArmor;
+        [Tooltip("First armored frame (0 = first startup frame).")]
+        [Min(0)] public int armorStartFrame;
+        [Tooltip("Last armored frame. -1 = through the last active frame.")]
+        public int armorEndFrame = -1;
+
         [Header("Chaining")]
         [Tooltip("Pressing the same button inside the cancel window performs this move next.")]
         public MoveDefinition followUp;

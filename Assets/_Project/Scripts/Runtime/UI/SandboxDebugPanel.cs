@@ -12,7 +12,7 @@ namespace PKR
         public PlatformerMotor2D motor;
         public bool visible = true;
 
-        NovaAbilities _nova;
+        HeroAbilities _abilities;
         AttackRunner _attacks;
         TouchControlsUI _touch;
         GUIStyle _box, _btn;
@@ -21,7 +21,7 @@ namespace PKR
 
         void Start()
         {
-            if (motor != null) _nova = motor.GetComponent<NovaAbilities>();
+            if (motor != null) _abilities = motor.GetComponent<HeroAbilities>();
             if (motor != null) _attacks = motor.GetComponent<AttackRunner>();
             _touch = Object.FindFirstObjectByType<TouchControlsUI>();
         }
@@ -58,7 +58,7 @@ namespace PKR
                 $"FPS {_fps:0}\n" +
                 $"Vel ({v.x:0.0}, {v.y:0.0})\n" +
                 $"Grounded {motor.IsGrounded}  Facing {motor.Facing}\n" +
-                $"Ability {(_nova != null ? _nova.Current.ToString() : "-")}\n" +
+                $"Ability {(_abilities != null ? _abilities.Current.ToString() : "-")}\n" +
                 $"Locked {motor.IsControlLocked}\n" +
                 $"Attack {(_attacks != null && _attacks.Current != null ? _attacks.Current.displayName + " f" + _attacks.Frame : "-")}";
             GUI.Box(new Rect(x, y, w, 128 * s), text, _box);

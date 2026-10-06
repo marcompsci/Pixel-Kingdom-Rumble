@@ -54,10 +54,24 @@ namespace PKR
         public event Action Restored;
 
         PlatformerMotor2D _motor;
+        AttackRunner _attacks;
+        HeroAbilities _abilities;
         Rigidbody2D _body;
         Invulnerability _invuln;
 
         float Weight => _motor != null && _motor.Definition != null ? _motor.Definition.weight : fallbackWeight;
+        /// <summary>Super armor from the current attack or ability (e.g. Brick's Bulwark Charge).</summary>
+        public bool HasSuperArmor
+        {
+            get
+            {
+                // Looked up on demand so components added after Awake (tests, runtime builds) are seen.
+                if (_attacks == null) _attacks = GetComponent<AttackRunner>();
+                if (_abilities == null) _abilities = GetComponent<HeroAbilities>();
+                return (_attacks != null && _attacks.HasSuperArmor) || (_abilities != null && _abilities.HasSuperArmor);
+            }
+        }
+
         float Armor => _motor != null && _motor.Definition != null ? _motor.Definition.armorPercent : fallbackArmor;
 
         void Awake()
@@ -109,10 +123,15 @@ namespace PKR
             LastAttackerTeam = attackerTeam;
             LastHitTime = Time.time;
 
-            var kb = new Vector2(result.knockbackVelocity.x, result.knockbackVelocity.y);
-            float stunSeconds = result.hitstunFrames / 60f;
-            if (_motor != null) _motor.ApplyKnockback(kb, stunSeconds);
-            else if (_body != null && _body.bodyType == RigidbodyType2D.Dynamic) _body.linearVelocity = kb;
+            // Super armor: take the damage, keep going (unless this hit is a launch).
+            bool armored = HasSuperArmor && CombatMath.ApplySuperArmor(ref result);
+            if (!armored)
+            {
+                var kb = new Vector2(result.knockbackVelocity.x, result.knockbackVelocity.y);
+                float stunSeconds = result.hitstunFrames / 60f;
+                if (_motor != null) _motor.ApplyKnockback(kb, stunSeconds);
+                else if (_body != null && _body.bodyType == RigidbodyType2D.Dynamic) _body.linearVelocity = kb;
+            }
 
             if (model == DamageModel.StoryHealth)
             {

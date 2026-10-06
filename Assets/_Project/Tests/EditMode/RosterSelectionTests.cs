@@ -42,5 +42,22 @@ namespace PKR.Tests
             Assert.AreEqual(-1, RosterSelection.IndexOf(ids, "nobody"));
             Assert.AreEqual(-1, RosterSelection.IndexOf(ids, null));
         }
+    
+        [Test]
+        public void PickRandom_OnlyPicksSelectable()
+        {
+            var sel = new[] { true, true, false, false };
+            var rng = new System.Random(3);
+            bool sawNova = false, sawBrick = false;
+            for (int i = 0; i < 50; i++)
+            {
+                int k = RosterSelection.PickRandom(sel, rng);
+                Assert.IsTrue(k == 0 || k == 1);
+                if (k == 0) sawNova = true; else sawBrick = true;
+            }
+            Assert.IsTrue(sawNova && sawBrick);
+            Assert.AreEqual(-1, RosterSelection.PickRandom(new[] { false, false }, rng));
+            Assert.AreEqual(-1, RosterSelection.PickRandom(null, rng));
+        }
     }
 }
