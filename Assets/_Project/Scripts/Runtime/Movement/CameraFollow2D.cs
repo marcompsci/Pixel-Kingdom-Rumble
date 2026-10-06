@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PKR
@@ -18,6 +19,15 @@ namespace PKR
         [SerializeField] float verticalDeadZone = 1.2f;
         [Tooltip("World-space bounds the camera view must stay inside. Width/height 0 = unbounded.")]
         public Rect bounds;
+
+        /// <summary>When any of these are active, the camera frames all of them and zooms to fit (Arena Clash).</summary>
+        public readonly List<Transform> group = new List<Transform>();
+        [Header("Group framing (Arena Clash)")]
+        public float groupPadding = 3f;
+        public float minOrthoSize = 6.5f;
+        public float maxOrthoSize = 11f;
+        public float zoomSmoothTime = 0.35f;
+        float _zoomVel;
 
         Camera _cam;
         PlatformerMotor2D _motor;
@@ -78,10 +88,38 @@ namespace PKR
             return new Vector2(t.x + ahead + offset.x, _focusY + offset.y);
         }
 
+        bool GroupBounds(out Bounds b)
+        {
+            b = default;
+            bool any = false;
+            foreach (var t in group)
+            {
+                if (t == null || !t.gameObject.activeInHierarchy) continue;
+                if (!any) { b = new Bounds(t.position, Vector3.zero); any = true; }
+                else b.Encapsulate(t.position);
+            }
+            return any;
+        }
+
         void LateUpdate()
         {
-            if (target == null) return;
-            Vector2 desired = Desired();
+            Vector2 desired;
+            if (GroupBounds(out var gb))
+            {
+                desired = new Vector2(gb.center.x, gb.center.y + offset.y * 0.5f);
+                if (_cam != null && _cam.orthographic)
+                {
+                    float needH = gb.size.y * 0.5f + groupPadding;
+                    float needW = (gb.size.x * 0.5f + groupPadding) / Mathf.Max(0.1f, _cam.aspect);
+                    float size = Mathf.Clamp(Mathf.Max(needH, needW), minOrthoSize, maxOrthoSize);
+                    _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, size, ref _zoomVel, zoomSmoothTime);
+                }
+            }
+            else
+            {
+                if (target == null) return;
+                desired = Desired();
+            }
             Vector2 pos = transform.position;
             pos.x = Mathf.SmoothDamp(pos.x, desired.x, ref _vel.x, smoothTimeX);
             pos.y = Mathf.SmoothDamp(pos.y, desired.y, ref _vel.y, smoothTimeY);

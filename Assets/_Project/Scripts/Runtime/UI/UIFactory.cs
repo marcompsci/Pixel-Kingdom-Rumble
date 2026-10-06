@@ -287,7 +287,13 @@ namespace PKR
         /// <summary>Destroy all children (to rebuild a panel's contents).</summary>
         public static void Clear(Transform t)
         {
-            for (int i = t.childCount - 1; i >= 0; i--) UnityEngine.Object.Destroy(t.GetChild(i).gameObject);
+            for (int i = t.childCount - 1; i >= 0; i--)
+            {
+                var child = t.GetChild(i);
+                child.gameObject.SetActive(false);
+                child.SetParent(null, false); // leave layouts now; Destroy itself is deferred to end of frame
+                UnityEngine.Object.Destroy(child.gameObject);
+            }
         }
     }
 }

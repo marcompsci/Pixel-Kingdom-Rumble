@@ -108,11 +108,31 @@ Fixed during review: menus switch canvas scaling by screen shape so they fit 4:3
 re-prompts or half-builds on cancel; choosing a hero always keeps it valid in the save; disabled buttons aren't
 pre-selected.
 
+## Increment 7 — Arena Clash: Skyforge Arena with CPU fighters (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: BotBrain (+ difficulty), ArenaMatchConfig, BridgeCycle | ✅ | 16 new tests; 94/94 pass with `dotnet run` |
+| ArenaMatchController (spawn, blast-zone KOs with credit, respawn i-frames, clock, rewards) | 🟡 | Syntax-checked + API review; not run in Unity |
+| FighterFactory, BotController, SkyforgeBridge (stage event), camera group framing | 🟡 | Same |
+| ArenaSetupUI (Stock/Timed/Training, 1-3 CPUs, Easy/Normal/Hard), ArenaHUD, ArenaResultsScreen | 🟡 | Same |
+| PKR > Build Arena Test (joins Build All) | 🟡 | Not run |
+| 1 PlayMode arena test (KO → elimination → results) | 🟡 | Written, not run |
+| Bot difficulty / fun tuning | ⬜ | Needs play-testing |
+
+Fixed during review: runtime-built fighters now wake up with all components present (attacks and dodges no
+longer overlap); CPUs treat the open bridge gap like an edge and recover to the nearest platform; respawns drop
+over the side platforms instead of the gap; two falls in the same step can't wrongly eliminate someone; CPUs don't
+fire a queued attack while recovering; tests no longer add Star Shards to your real save; HUD cards don't double
+up for a frame on rematch.
+
+Known limits: every fighter uses Nova's kit (other heroes are locked in Phase 1); no hit/KO sounds yet.
+
 ## Upcoming increments
 2. Nova controller + touch controls + Input actions 🟡 (written; awaiting Unity run)
 3. Combat runtime (hitbox/hurtbox, attack runner, hit feedback) 🟡 (written; awaiting Unity run)
 4. Story test level, enemies, pickups, checkpoints, hazards (+ scene builder) 🟡 (written; awaiting Unity run)
 5. Pause menu, level-complete screen 🟡 (written; awaiting Unity run)
 6. Main menu, character select, settings UI 🟡 (written; awaiting Unity run)
-7. Arena test scene with bots ⬜
+7. Arena test scene with bots 🟡 (written; awaiting Unity run)
 8. Docs pass, final status report ⬜

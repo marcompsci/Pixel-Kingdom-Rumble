@@ -22,6 +22,7 @@ namespace PKR
         public State Current { get; private set; } = State.None;
         public bool IsBusy => Current != State.None;
         public NovaKitDefinition Kit => kit;
+        public int AirDashesLeft => _airDashesLeft;
 
         /// <summary>Fired on meteor impact with the landing position and shockwave radius.</summary>
         public event Action<Vector2, float> MeteorImpact;
