@@ -173,3 +173,18 @@ Fixed during review: bot recovery jumps were released early (cut short by the ju
 fields keep any existing Inspector tuning (`FormerlySerializedAs`); Brick CPUs no longer fire Bulwark Charge from
 mid range (it could carry them off the stage), since only projectile specials are used for zoning.
 
+## 2.2 — Luma joins, hero unlock rules, traps (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `TrapLogic` (fall, arm, fire once, expire), `UnlockRules` (clear a level to unlock a hero) | ✅ | 5 new tests; 106/106 pass with `dotnet run` |
+| Luma: Wrench Tap → Voltage Swing, Arc Flick, Static Spin, Magnet Tether (pull), Spark Coil (trap), Magnet Hop; unlocked by clearing Sunspire Meadows | 🟡 | Data created by `DataAssets`; syntax-checked + independent review against Unity's C# source; not compiled in Unity |
+| `SparkTrap` (pooled, one per attacker, rides moving platforms, cleared on arena rematch) | 🟡 | Same |
+| Unlocks on level clear with a "NEW HERO UNLOCKED" banner; Character Select shows the unlock hint and also grants unlocks earned by older saves | 🟡 | Same |
+| CPU fighters only use heroes you've unlocked | 🟡 | Same |
+| 2 PlayMode tests (tether pulls toward Luma; coil falls, arms, zaps once) | 🟡 | Written, not run |
+
+Fixed during review: a coil thrown while jumping up through a one-way plank landed inside it; coils on moving
+platforms floated in place; coils survived into an arena rematch; locked Luma could appear as a CPU; locked-hero
+lore text; a level scene built before this change silently unlocked nothing (now warns).
+

@@ -140,6 +140,7 @@ namespace PKR.EditorTools
             var flowGo = new GameObject("LevelFlow");
             var flow = flowGo.AddComponent<LevelFlowController>();
             EditorUtil.SetField(flow, "level", level);
+            EditorUtil.SetField(flow, "roster", DataAssets.GetOrCreateRoster());
             EditorUtil.SetField(flow, "player", hero);
             EditorUtil.SetField(flow, "startPoint", start);
             EditorUtil.SetFloat(flow, "killY", -10f);

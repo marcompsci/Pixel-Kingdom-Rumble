@@ -5,8 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 has started (Brick is playable).
-The engine-free rules pass 101 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (Brick and Luma are playable).
+The engine-free rules pass 106 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -86,7 +86,8 @@ NEW BEST, shards, secrets, falls, and the Star Shard reward counting up into you
 
 **Menus (portrait):** the main menu shows your Star Shard total and best Sunspire Meadows result, with
 Story Quest, Arena Clash, Settings and Codex (later). Character select
-lets you browse all four heroes with arrows or cards: Nova and Brick are playable; Luma and Rex Rollo appear as locked
+lets you browse all four heroes with arrows or cards: Nova and Brick are playable; Luma unlocks when you clear Sunspire
+Meadows (the results screen announces it); Rex Rollo appears as a locked
 silhouettes ("coming in a future update"). Your hero choice is saved.
 
 **Arena Clash (Skyforge Arena):** a symmetrical floating stage: two stone platforms joined by a brass
@@ -136,6 +137,17 @@ approach, attack in range, throw Comet Bolts at mid range and back off when Expo
 | Jump (air) | **Stone Step** | One mid-air jump per airtime; his recovery |
 | Dodge (ground / air) | Roll / **Granite Guard** | Granite Guard: a short invulnerable stall in mid-air |
 
+**Luma's kit (magnet gloves and gadgets: 5 HP, 3 Guard Pips; unlock by clearing Sunspire Meadows):**
+
+| Input | Move | Notes |
+|---|---|---|
+| Attack (ground) | **Wrench Tap** → press again: **Voltage Swing** | Quick tap, then a charged backhand that launches Exposed foes |
+| Up + Attack (ground) | **Arc Flick** | A spark arcs overhead |
+| Attack (air) | **Static Spin** | Zaps both sides |
+| Special (ground) | **Magnet Tether** | Magnetic bolt that **pulls** the target toward her |
+| Special (air) | **Spark Coil** | Drops a coil that arms on the ground and zaps the first foe to touch it (one at a time, 6 s) |
+| Dodge (ground / air) | Roll / **Magnet Hop** | Magnet Hop pops her up and forward: her recovery |
+
 Hits use hit stop, a sprite flash, haptics and screen shake (shake respects the accessibility setting).
 Hitboxes draw as Gizmos while attacking (turn on Gizmos in the Game view).
 - Feel: 0.1 s coyote time, 0.12 s jump buffer, hold-for-height jumps, floaty apex while holding, faster falls.
@@ -165,6 +177,8 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Arena/BotBrain.cs` | CPU decisions + difficulty presets (recovery, edges, gap, approach, attack, retreat) |
 | `Arena/ArenaConfig.cs` | Match setup options; `BridgeCycle` timing |
 | `AI/EnemyLogic.cs` | Patrol turning, hopper timing, `LevelRun` (time, shards, secrets, deaths, checkpoints, completion) |
+| `Combat/TrapLogic.cs` | Placed-trap life cycle (fall, arm, fire once, expire) |
+| `Save/UnlockRules.cs` | Hero unlocks earned by clearing levels |
 
 ### Runtime (`Scripts/Runtime`, assembly `PKR.Runtime`)
 | Script | Responsibility |
@@ -181,6 +195,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Data/HeroKitDefinition.cs` | Base kit: air dodge + dive tuning shared by every hero |
 | `Data/NovaKitDefinition.cs` | Nova's Air Dash (8-way) and Meteor Drop |
 | `Data/BrickKitDefinition.cs` | Brick's Granite Guard and Landslide Slam |
+| `Data/LumaKitDefinition.cs` | Luma's Magnet Hop (no dive) |
 | `Data/MoveDefinition.cs` | One attack: frame data, hitbox, hit, lunge, follow-up, projectile, feedback |
 | `Data/Moveset.cs` | Which move each input context uses |
 | `Data/EnemyDefinition.cs` | Enemy identity, codex text, art, stats, behavior, contact hit, drops |
@@ -204,6 +219,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Combat/CombatQuery.cs` | Box/circle queries on the Hurtbox layer, one result per Damageable |
 | `Combat/AttackRunner.cs` | Plays moves: context selection, frame stepping, hits, chains, projectiles, meteor shockwave, feedback |
 | `Combat/Projectile.cs` | Pooled straight-line projectile |
+| `Combat/SparkTrap.cs` | Pooled placed trap (Luma's Spark Coil): falls, arms, zaps once; one per owner |
 | `Combat/HitStop.cs` | Real-time impact freeze that respects pause |
 | `Pooling/PoolService.cs` | Keyed `ObjectPool` wrapper, cleared on scene load |
 | `Feedback/HitFlash.cs` | Sprite tint on hit (yellow on launch) |
@@ -264,9 +280,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 101 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 101 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena, hero kits) | 19 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 106 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 106 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits, Luma) | 21 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

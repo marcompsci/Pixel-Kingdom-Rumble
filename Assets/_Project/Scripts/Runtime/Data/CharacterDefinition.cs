@@ -19,8 +19,12 @@ namespace PKR
         public string tagline = "";
         [TextArea(3, 8)] public string lore = "";
         public bool unlockedByDefault;
-        [Tooltip("If false, shown as a locked silhouette in Character Select (Phase 1: only Nova is playable).")]
+        [Tooltip("If false, shown as a locked silhouette in Character Select (\"coming in a future update\").")]
         public bool playableInThisBuild = true;
+        [Tooltip("Story level id that unlocks this hero when cleared (any rank). Empty = no rule.")]
+        public string unlockByClearingLevelId = "";
+        [Tooltip("Shown in Character Select while locked, e.g. \"Clear Sunspire Meadows\".")]
+        public string unlockHint = "";
 
         [Header("Placeholder art")]
         public Color placeholderColor = Color.white;

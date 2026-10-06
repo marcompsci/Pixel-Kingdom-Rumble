@@ -53,6 +53,9 @@ namespace PKR
                 Debug.LogError("[CharacterSelectUI] No roster assigned. Run PKR > Build Menu Scenes.");
                 return;
             }
+            // Saves from before an unlock rule existed still earn the hero as soon as this screen opens.
+            if (Services.Save != null && PKR.Core.UnlockRules.Apply(Services.Save.Data, roster.GetUnlockRules()).Count > 0)
+                Services.Save.MarkDirty();
             var ids = new string[Count];
             var selectable = new bool[Count];
             for (int i = 0; i < Count; i++)
@@ -161,8 +164,10 @@ namespace PKR
             _preview.color = selectable ? Color.white : Silhouette;
             _name.text = hero.displayName.ToUpperInvariant();
             _tagline.text = hero.tagline;
-            _lore.text = selectable ? hero.lore : "A new hero is on the way to the Sunspire Isles.";
-            _status.text = selectable ? "READY" : (hero.playableInThisBuild ? "LOCKED" : "COMING IN A FUTURE UPDATE");
+            _lore.text = selectable || hero.playableInThisBuild ? hero.lore : "A new hero is on the way to the Sunspire Isles.";
+            _status.text = selectable ? "READY"
+                : !hero.playableInThisBuild ? "COMING IN A FUTURE UPDATE"
+                : string.IsNullOrEmpty(hero.unlockHint) ? "LOCKED" : $"LOCKED: {hero.unlockHint.ToUpperInvariant()}";
 
             _confirm.interactable = selectable;
             var confirmText = _confirm.GetComponentInChildren<Text>();

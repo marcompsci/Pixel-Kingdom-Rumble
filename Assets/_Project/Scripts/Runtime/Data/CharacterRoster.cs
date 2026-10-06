@@ -15,6 +15,16 @@ namespace PKR
             return null;
         }
 
+        /// <summary>Unlock rules for heroes that are playable but not unlocked by default.</summary>
+        public System.Collections.Generic.List<PKR.Core.UnlockRule> GetUnlockRules()
+        {
+            var rules = new System.Collections.Generic.List<PKR.Core.UnlockRule>();
+            foreach (var h in heroes)
+                if (h != null && h.playableInThisBuild && !h.unlockedByDefault && !string.IsNullOrEmpty(h.unlockByClearingLevelId))
+                    rules.Add(new PKR.Core.UnlockRule { characterId = h.id, clearLevelId = h.unlockByClearingLevelId });
+            return rules;
+        }
+
         /// <summary>Selectable = playable in this build and unlocked in the save (or unlocked by default).</summary>
         public bool IsSelectable(CharacterDefinition h)
         {

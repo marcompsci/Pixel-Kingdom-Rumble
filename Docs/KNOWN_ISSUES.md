@@ -5,7 +5,7 @@
 - **No Unity compile or play session has happened.** All Unity-side code was syntax-checked with Roslyn and
   its Unity API calls were reviewed against Unity's published C# source, but it has not been compiled against
   UnityEngine. Expect a handful of compile errors and tuning issues on first open. Use [FIRST_RUN.md](FIRST_RUN.md).
-- **19 PlayMode tests** are written but have never run.
+- **21 PlayMode tests** are written but have never run.
 - **No iOS build, device test or FPS measurement** has been done. The 60 FPS target is unmeasured.
 - `PKRHaptics.mm` has not been compiled by Xcode.
 - `Packages/manifest.json` targets Unity 6.0 LTS; a newer 6.x Editor may bump package versions.
@@ -13,9 +13,10 @@
 
 ## Gameplay limits (current)
 
-- **Nova** and **Brick** are playable. Luma and Rex Rollo are locked in character select.
-- Brick is unlocked from the start (no unlock rule yet).
-- CPU fighters pick a random playable hero; you can't choose their heroes on the setup screen yet.
+- **Nova**, **Brick** and **Luma** are playable (Luma after clearing Sunspire Meadows). Rex Rollo is "coming soon".
+- CPU fighters pick a random hero you've unlocked; you can't choose their heroes on the setup screen yet.
+- CPU fighters never lay Spark Coils and ignore coils on the ground.
+- Spark Coils are per attacker and survive until they fire or time out (6 s); they are cleared on rematch.
 - Super armor ignores hazard knockback too, and in Story Quest nothing counts as a launch, so it never breaks there.
 - Only one Story level (Sunspire Meadows test) and one arena (Skyforge test). No Clockwork Warden yet.
 - **Codex** button in the main menu is a placeholder ("later").

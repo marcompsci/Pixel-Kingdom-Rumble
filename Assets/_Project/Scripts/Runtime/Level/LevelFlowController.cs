@@ -16,6 +16,8 @@ namespace PKR
         public static LevelFlowController Current { get; private set; }
 
         [SerializeField] LevelDefinition level;
+        [Tooltip("Heroes whose unlock rule is clearing this level get unlocked here.")]
+        [SerializeField] CharacterRoster roster;
         [SerializeField] GameObject player;
         [SerializeField] Transform startPoint;
         [Tooltip("Falling below this height counts as a pit.")]
@@ -44,6 +46,9 @@ namespace PKR
         void Awake()
         {
             Current = this;
+            if (roster == null)
+                Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +
+                                 "Re-run PKR > Build Story Test Level.", this);
             if (player != null)
             {
                 PlayerHealth = player.GetComponent<Damageable>();
@@ -223,6 +228,15 @@ namespace PKR
             var data = save != null ? save.Data : null;
             float previousBest = data != null && data.GetLevel(Run.LevelId) != null ? data.GetLevel(Run.LevelId).bestTimeSeconds : 0f;
             int reward = Run.Complete(data);
+            var unlockedNames = new List<string>();
+            if (data != null && roster != null)
+            {
+                foreach (var id in UnlockRules.Apply(data, roster.GetUnlockRules()))
+                {
+                    var hero = roster.Find(id);
+                    unlockedNames.Add(hero != null ? hero.displayName : id);
+                }
+            }
             if (save != null) save.SaveNow();
 
             // Freeze the hero in a victory pose; LevelCompleteScreen takes over.
@@ -244,7 +258,8 @@ namespace PKR
                 secrets = Run.SecretsFound,
                 totalSecrets = TotalSecrets,
                 deaths = Run.Deaths,
-                starShardReward = reward
+                starShardReward = reward,
+                unlockedHeroes = unlockedNames.ToArray()
             });
         }
     }

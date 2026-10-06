@@ -42,7 +42,8 @@ namespace PKR
             var rank = ResultsMath.Rank(e.timeSeconds, e.parTimeSeconds, e.shards, e.totalShards,
                                         e.secrets, e.totalSecrets, e.deaths);
             UIFactory.Label(panel, $"{(e.levelName ?? "LEVEL").ToUpperInvariant()} CLEAR!", 64, TextAnchor.MiddleCenter, 90f, title: true);
-            var rankLabel = UIFactory.Label(panel, $"RANK {rank}", 96, TextAnchor.MiddleCenter, 120f);
+            bool newHero = e.unlockedHeroes != null && e.unlockedHeroes.Length > 0;
+            var rankLabel = UIFactory.Label(panel, $"RANK {rank}", newHero ? 80 : 96, TextAnchor.MiddleCenter, newHero ? 96f : 120f);
             rankLabel.color = rank == ClearRank.S ? p.title : p.accent;
 
             string best = e.newBestTime ? "   NEW BEST!" : "";
@@ -51,6 +52,12 @@ namespace PKR
             Row(panel, "Secrets", $"{e.secrets} / {e.totalSecrets}");
             Row(panel, "Falls", e.deaths.ToString());
             var reward = Row(panel, "Reward", "+0");
+            if (newHero)
+            {
+                var unlock = UIFactory.Label(panel, $"NEW HERO UNLOCKED: {string.Join(", ", e.unlockedHeroes).ToUpperInvariant()}!",
+                                             44, TextAnchor.MiddleCenter, 60f, title: true);
+                unlock.color = p.title;
+            }
 
             var buttons = UIFactory.Rect("Buttons", panel);
             buttons.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;

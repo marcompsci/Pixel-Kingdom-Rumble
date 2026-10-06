@@ -165,7 +165,7 @@ namespace PKR
             if (roster == null || roster.heroes.Count == 0) return fallbackHero;
             var selectable = new bool[roster.heroes.Count];
             for (int i = 0; i < selectable.Length; i++)
-                selectable[i] = roster.heroes[i] != null && roster.heroes[i].playableInThisBuild;
+                selectable[i] = roster.IsSelectable(roster.heroes[i]); // CPUs only use heroes you've unlocked
             int k = RosterSelection.PickRandom(selectable, rng);
             return k >= 0 ? roster.heroes[k] : fallbackHero;
         }
@@ -173,6 +173,7 @@ namespace PKR
         void ClearFighters()
         {
             StopAllCoroutines();
+            SparkTrap.DespawnAll();
             _respawning.Clear();
             foreach (var f in _fighters) if (f.go != null) Destroy(f.go);
             _fighters.Clear();

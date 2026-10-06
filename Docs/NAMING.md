@@ -7,7 +7,7 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 |---|---|---|---|
 | `nova` | Nova | Hero | `Data/Characters/Nova.asset` (increment 2); `SaveData.DefaultCharacterId` |
 | `brick` | Brick | Hero (playable from Phase 2.1) | `Data/Characters/Brick.asset` |
-| `luma` | Luma | Hero (locked in Phase 1) | `Data/Characters/Luma.asset` |
+| `luma` | Luma | Hero (playable from Phase 2.2; unlocked by clearing Sunspire Meadows) | `Data/Characters/Luma.asset` |
 | `rex_rollo` | Rex Rollo | Hero (locked in Phase 1) | `Data/Characters/RexRollo.asset` |
 | `sunspire_meadows` | Sunspire Meadows | Biome | `Data/Levels/` |
 | `sq_sunspire_test` | Sunspire Meadows (Test) | Story level | `Data/Levels/` |
@@ -26,6 +26,13 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | `brick_bulwark_charge` | Bulwark Charge | Brick move (super armor) | `Data/Moves/Brick/` |
 | `brick_landslide_shockwave` | Landslide Shockwave | Brick ability hit | `Data/Moves/Brick/` |
 | — | Stone Step, Granite Guard, Landslide Slam | Brick abilities | `Data/Characters/BrickKit.asset`, Brick's `movement.airJumps` |
+| `luma_wrench_tap` | Wrench Tap | Luma move | `Data/Moves/Luma/` |
+| `luma_voltage_swing` | Voltage Swing | Luma move | `Data/Moves/Luma/` |
+| `luma_arc_flick` | Arc Flick | Luma move | `Data/Moves/Luma/` |
+| `luma_static_spin` | Static Spin | Luma move | `Data/Moves/Luma/` |
+| `luma_magnet_tether` | Magnet Tether | Luma move (pull projectile) | `Data/Moves/Luma/` |
+| `luma_spark_coil` | Spark Coil | Luma move (trap) | `Data/Moves/Luma/` |
+| — | Magnet Hop | Luma ability | `Data/Characters/LumaKit.asset` |
 | `enemy_cog_beetle` | Cog Beetle | Enemy (walker) | `Data/Enemies/CogBeetle.asset` |
 | `enemy_spring_tick` | Spring Tick | Enemy (hopper) | `Data/Enemies/SpringTick.asset` |
 | `secret_lift_room` | (secret room) | Secret | `StoryLevelBuilder.cs` |

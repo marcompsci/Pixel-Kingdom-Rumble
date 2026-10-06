@@ -18,5 +18,7 @@ namespace PKR
         public int totalSecrets;
         public int deaths;
         public int starShardReward;
+        /// <summary>Display names of heroes this clear unlocked (empty if none).</summary>
+        public string[] unlockedHeroes;
     }
 }

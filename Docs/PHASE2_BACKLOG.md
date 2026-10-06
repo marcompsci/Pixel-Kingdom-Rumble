@@ -12,10 +12,10 @@ Ordered by what unblocks the most. Step 0 comes first because everything else bu
 | Hero | Kit idea (original) | Tech needed |
 |---|---|---|
 | ~~**Brick** (stone guardian)~~ ✅ 2.1 | Slow, heavy; armored charge; ground-slam shockwave; 4 Guard Pips; can't air dash but has a stone-step double jump | Done: super armor, `HeroKitDefinition`, `HeroAbilities` |
-| **Luma** (magnet-glove inventor) | Pull and push: magnet tether pulls foes or zips her to platforms; deployable spark coil trap | Tether/grapple ability component; placeable objects (pooled) |
+| ~~**Luma** (magnet-glove inventor)~~ ✅ 2.2 | Magnet tether pulls foes; deployable spark coil trap; magnet hop | Done: pull projectile, pooled `SparkTrap`; zipping to platforms is a possible later upgrade |
 | **Rex Rollo** (roller-skating lizard) | Momentum: keeps speed, wall-ride, tail-whip spin, skid-turn | Momentum mode in `PlatformerMotor2D` (low friction), wall contact |
 
-Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; still to do: unlock rules, choosing CPU heroes on the setup screen.
+Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules~~ ✅ (clear a level); still to do: choosing CPU heroes on the setup screen, CPUs using traps.
 
 ## 2. Story Quest
 - **Clockwork Warden** boss: multi-phase (gear sweep, piston slam, weak-point core exposed after a stagger),

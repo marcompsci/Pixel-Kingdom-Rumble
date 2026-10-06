@@ -141,6 +141,11 @@ namespace PKR
                     if (AttackTimeline.IsFirstActiveFrame(f, Frame))
                         Projectile.Spawn(move, _motor.Body.position, facing, team, _self, this, _spriteMaterial);
                 }
+                else if (move.spawnsTrap)
+                {
+                    if (AttackTimeline.IsFirstActiveFrame(f, Frame))
+                        SparkTrap.Spawn(move, _motor.Body.position, facing, team, _self, this, _spriteMaterial);
+                }
                 else
                 {
                     ApplyHits(move, move.WorldHitboxCenter(_motor.Body.position, facing), facing,
@@ -220,7 +225,7 @@ namespace PKR
 
         void OnDrawGizmos()
         {
-            if (!debugDrawHitboxes || Current == null || Current.spawnsProjectile) return;
+            if (!debugDrawHitboxes || Current == null || Current.spawnsProjectile || Current.spawnsTrap) return;
             var phase = AttackTimeline.PhaseAt(Current.frames, Frame);
             Gizmos.color = phase == AttackPhase.Active ? new Color(1f, 0.2f, 0.2f, 0.9f) : new Color(1f, 0.8f, 0.2f, 0.5f);
             int facing = _motor != null ? _motor.Facing : 1;

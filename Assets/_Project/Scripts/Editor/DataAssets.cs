@@ -41,10 +41,7 @@ namespace PKR.EditorTools
         {
             var nova = GetOrCreateNova();
             var brick = GetOrCreateBrick();
-            var luma = GetOrCreateLockedHero("Luma", "luma", "Luma", "Inventor. Her gloves pull sparks out of thin air.",
-                "Luma repairs Tickworks relays for a living and builds things she shouldn't in her spare time. Her magnet " +
-                "gloves can drag loose energy shards toward her or lock them into a barrier for a few precious seconds.",
-                new Color32(240, 132, 52, 255), 0.95f, 0f, PlaceholderArt.Luma);
+            var luma = GetOrCreateLuma();
             var rex = GetOrCreateLockedHero("RexRollo", "rex_rollo", "Rex Rollo", "Roller-skating lizard. Brakes are optional.",
                 "Rex Rollo learned to skate on the brass rails that ring the floating islands and never saw a reason to stop. " +
                 "The faster he goes, the harder he hits; the trick is getting him to turn.",
@@ -257,6 +254,126 @@ namespace PKR.EditorTools
             {
                 ms.groundAttack = jab; ms.groundUpAttack = pillar; ms.airAttack = elbow;
                 ms.groundSpecial = charge; ms.airSpecial = null; ms.abilityImpact = landslide;
+            });
+        }
+
+        public const string LumaMovesFolder = "Assets/_Project/Data/Moves/Luma";
+
+        /// <summary>
+        /// Luma, the magnet-glove inventor: average weight, pulls foes in and lays traps. Playable from Phase 2.2,
+        /// unlocked by clearing Sunspire Meadows. Upgrades a Luma asset made by an older build (locked, no kit).
+        /// </summary>
+        public static CharacterDefinition GetOrCreateLuma()
+        {
+            EditorUtil.EnsureFolder(CharactersFolder);
+            var kit = GetOrCreate<LumaKitDefinition>($"{CharactersFolder}/LumaKit.asset", _ => { });
+            var luma = GetOrCreate<CharacterDefinition>($"{CharactersFolder}/Luma.asset", d =>
+            {
+                d.id = "luma";
+                d.displayName = "Luma";
+                d.placeholderColor = new Color32(240, 132, 52, 255);
+                ApplyLumaStats(d);
+            });
+            if (luma.kit == null) { ApplyLumaStats(luma); luma.kit = kit; }
+            if (string.IsNullOrEmpty(luma.tagline)) luma.tagline = "Inventor. Her gloves pull sparks out of thin air.";
+            if (string.IsNullOrEmpty(luma.lore))
+                luma.lore = "Luma repairs Tickworks relays for a living and builds things she shouldn't in her spare time. Her magnet " +
+                            "gloves can drag loose energy shards toward her or lock them into a barrier for a few precious seconds.";
+            if (luma.bodySprite == null) luma.bodySprite = PlaceholderArt.Luma();
+            if (luma.moveset == null) luma.moveset = GetOrCreateLumaMoveset();
+            luma.playableInThisBuild = true;
+            luma.unlockedByDefault = false;
+            if (string.IsNullOrEmpty(luma.unlockByClearingLevelId)) luma.unlockByClearingLevelId = "sq_sunspire_test";
+            if (string.IsNullOrEmpty(luma.unlockHint)) luma.unlockHint = "Clear Sunspire Meadows";
+            EditorUtility.SetDirty(luma);
+            return luma;
+        }
+
+        static void ApplyLumaStats(CharacterDefinition d)
+        {
+            d.maxHealth = 5;
+            d.weight = 0.95f;
+            d.armorPercent = 0f;
+            d.guardPips = 3;
+            d.movement = new MovementStats { runSpeed = 7.2f, jumpHeight = 3.0f, timeToApex = 0.37f };
+        }
+
+        /// <summary>Luma's magnet-glove moves. Original names and starting values; tune in the Inspector.</summary>
+        public static Moveset GetOrCreateLumaMoveset()
+        {
+            EditorUtil.EnsureFolder(LumaMovesFolder);
+            string F(string n) => $"{LumaMovesFolder}/{n}.asset";
+            var spark = new Color32(120, 200, 255, 255);
+
+            var swing = GetOrCreate<MoveDefinition>(F("Luma_VoltageSwing"), m =>
+            {
+                m.id = "luma_voltage_swing"; m.displayName = "Voltage Swing";
+                m.description = "A charged backhand with the glove. Launches Exposed foes.";
+                m.frames = new FrameData(6, 4, 16, 6);
+                m.hitboxOffset = new Vector2(0.85f, 0.05f); m.hitboxSize = new Vector2(1.2f, 0.9f);
+                m.hit = new HitData { damage = 2, pipDamage = 2, baseKnockback = 7.5f, exposedMultiplier = 3f,
+                                      angleDegrees = 35f, baseHitstunFrames = 14, hitstopFrames = 6, isHeavy = true };
+                m.lungeSpeed = 3f; m.haptic = HapticStrength.Medium; m.shakeAmplitude = 0.12f;
+            });
+            var tap = GetOrCreate<MoveDefinition>(F("Luma_WrenchTap"), m =>
+            {
+                m.id = "luma_wrench_tap"; m.displayName = "Wrench Tap";
+                m.description = "A quick tap with her pocket wrench. Press Attack again for Voltage Swing.";
+                m.frames = new FrameData(3, 3, 11, 8);
+                m.hitboxOffset = new Vector2(0.7f, 0.05f); m.hitboxSize = new Vector2(0.85f, 0.6f);
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 4f, exposedMultiplier = 1.5f,
+                                      angleDegrees = 15f, baseHitstunFrames = 10, hitstopFrames = 3, isHeavy = false };
+                m.lungeSpeed = 2.5f;
+            });
+            if (tap.followUp == null) { tap.followUp = swing; EditorUtility.SetDirty(tap); }
+
+            var flick = GetOrCreate<MoveDefinition>(F("Luma_ArcFlick"), m =>
+            {
+                m.id = "luma_arc_flick"; m.displayName = "Arc Flick";
+                m.description = "Up + Attack. A spark jumps between her gloves overhead.";
+                m.frames = new FrameData(4, 4, 14, 0);
+                m.hitboxOffset = new Vector2(0.2f, 1.0f); m.hitboxSize = new Vector2(1.3f, 0.9f);
+                m.hit = new HitData { damage = 2, pipDamage = 1, baseKnockback = 7.5f, exposedMultiplier = 2.5f,
+                                      angleDegrees = 78f, baseHitstunFrames = 13, hitstopFrames = 5, isHeavy = true };
+                m.lungeSpeed = 0f; m.haptic = HapticStrength.Medium;
+            });
+            var spin = GetOrCreate<MoveDefinition>(F("Luma_StaticSpin"), m =>
+            {
+                m.id = "luma_static_spin"; m.displayName = "Static Spin";
+                m.description = "Air Attack. She spins with gloves out, zapping both sides.";
+                m.frames = new FrameData(3, 8, 10, 0);
+                m.shape = HitShape.Circle; m.hitboxOffset = Vector2.zero; m.hitboxRadius = 1.0f;
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 4.5f, exposedMultiplier = 2f,
+                                      angleDegrees = 30f, baseHitstunFrames = 10, hitstopFrames = 3, isHeavy = false };
+                m.rootedOnGround = false; m.endsOnLanding = true;
+            });
+            var tether = GetOrCreate<MoveDefinition>(F("Luma_MagnetTether"), m =>
+            {
+                m.id = "luma_magnet_tether"; m.displayName = "Magnet Tether";
+                m.description = "Ground Special. A magnetic bolt that yanks whoever it hits toward Luma.";
+                m.frames = new FrameData(9, 1, 20, 0);
+                // Angle 170 = backward and slightly up: the target is pulled toward the attacker.
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 8f, exposedMultiplier = 1.2f,
+                                      angleDegrees = 170f, baseHitstunFrames = 18, hitstopFrames = 4, isHeavy = false };
+                m.spawnsProjectile = true; m.projectileSpeed = 15f; m.projectileLifetime = 0.45f;
+                m.projectileRadius = 0.3f; m.projectileColor = spark; m.lungeSpeed = 0f;
+            });
+            var coil = GetOrCreate<MoveDefinition>(F("Luma_SparkCoil"), m =>
+            {
+                m.id = "luma_spark_coil"; m.displayName = "Spark Coil";
+                m.description = "Air Special. Drops a coil that arms on the ground and zaps the first foe to touch it. One at a time.";
+                m.frames = new FrameData(6, 1, 16, 0);
+                m.hit = new HitData { damage = 1, pipDamage = 1, baseKnockback = 6f, exposedMultiplier = 2f,
+                                      angleDegrees = 80f, baseHitstunFrames = 30, hitstopFrames = 5, isHeavy = false };
+                m.spawnsTrap = true; m.projectileSpawnOffset = new Vector2(0.2f, -0.4f); m.projectileColor = spark;
+                m.trapArmDelay = 0.35f; m.trapLifetime = 6f; m.trapRadius = 0.55f; m.trapFallSpeed = 14f;
+                m.rootedOnGround = false; m.endsOnLanding = false; m.lungeSpeed = 0f;
+            });
+
+            return GetOrCreate<Moveset>(F("Luma_Moveset"), ms =>
+            {
+                ms.groundAttack = tap; ms.groundUpAttack = flick; ms.airAttack = spin;
+                ms.groundSpecial = tether; ms.airSpecial = coil; ms.abilityImpact = null;
             });
         }
 
