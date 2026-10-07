@@ -220,3 +220,15 @@ rolled through the wall and parked outside the arena; hazard art didn't match hi
 slam warning ring was half the shockwave's width; cog warnings could stay hidden during the drop; the piston snapped
 back up in later phases; the boss bar drew badly near empty; building only the boss scene left Sunspire's NEXT disabled.
 
+## 2.5 — Story Quest level select (2026-10-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `LevelSelect` (unlock order, cleared levels stay open, suggested level), `SaveData.RecordRank` + best rank per level | ✅ | 5 new tests; 126/126 pass with `dotnet run` |
+| `WorldDefinition` (Sunspire Isles: Sunspire Meadows → Clockwork Warden), `LevelSelectUI` (03_LevelSelect, portrait) | 🟡 | Syntax-checked + independent review; not compiled in Unity |
+| Flow: Character Select → level select → level; results LEVELS button returns; clear ranks saved | 🟡 | Same |
+| 1 PlayMode test (cards built in order, second level locked) | 🟡 | Written, not run |
+
+Fixed during review: a cleared level could show as locked if an earlier one wasn't cleared; shard counts on cards are
+capped at the level total.
+

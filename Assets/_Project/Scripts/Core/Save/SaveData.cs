@@ -13,6 +13,11 @@ namespace PKR.Core
         public float bestTimeSeconds;
         public int mostShardsCollected;
         public int mostSecretsFound;
+        /// <summary>Best clear rank + 1 (1 = C … 4 = S); 0 = no rank yet. Stored +1 so old saves (missing field = 0) read as "none".</summary>
+        public int bestRankPlusOne;
+
+        /// <summary>Best rank, or null if never ranked.</summary>
+        public ClearRank? BestRank => bestRankPlusOne >= 1 && bestRankPlusOne <= 4 ? (ClearRank)(bestRankPlusOne - 1) : (ClearRank?)null;
     }
 
     /// <summary>
@@ -79,6 +84,17 @@ namespace PKR.Core
             return improved;
         }
 
+        /// <summary>Keep the better of the stored and new rank. Returns true if it improved. The level must have a record.</summary>
+        public bool RecordRank(string levelId, ClearRank rank)
+        {
+            var rec = GetLevel(levelId);
+            if (rec == null) return false;
+            int value = (int)rank + 1;
+            if (value <= rec.bestRankPlusOne) return false;
+            rec.bestRankPlusOne = value;
+            return true;
+        }
+
         /// <summary>Repairs nulls/negatives and upgrades old versions. Safe to call on any loaded data.</summary>
         public void SanitizeAndMigrate()
         {
@@ -100,6 +116,7 @@ namespace PKR.Core
                 if (l.bestTimeSeconds < 0f) l.bestTimeSeconds = 0f;
                 if (l.mostShardsCollected < 0) l.mostShardsCollected = 0;
                 if (l.mostSecretsFound < 0) l.mostSecretsFound = 0;
+                if (l.bestRankPlusOne < 0 || l.bestRankPlusOne > 4) l.bestRankPlusOne = 0;
             }
             // Can't equip what you don't own.
             equippedCosmetics.RemoveAll(c => !ownedCosmetics.Contains(c));

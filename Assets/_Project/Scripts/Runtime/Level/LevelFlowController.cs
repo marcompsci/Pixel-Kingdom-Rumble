@@ -228,6 +228,12 @@ namespace PKR
             var data = save != null ? save.Data : null;
             float previousBest = data != null && data.GetLevel(Run.LevelId) != null ? data.GetLevel(Run.LevelId).bestTimeSeconds : 0f;
             int reward = Run.Complete(data);
+            if (data != null)
+            {
+                var rank = ResultsMath.Rank(Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f, Run.Shards, TotalShards,
+                                            Run.SecretsFound, TotalSecrets, Run.Deaths);
+                data.RecordRank(Run.LevelId, rank); // best rank for the level select
+            }
             var unlockedNames = new List<string>();
             if (data != null && roster != null)
             {

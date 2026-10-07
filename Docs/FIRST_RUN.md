@@ -15,9 +15,9 @@ Claude with the file and line.
 
 ## B. Tests
 
-- [ ] Test Runner > **EditMode**: 121 tests pass (they already pass under .NET; a failure here means a Unity
+- [ ] Test Runner > **EditMode**: 126 tests pass (they already pass under .NET; a failure here means a Unity
       difference worth reporting).
-- [ ] Test Runner > **PlayMode**: 25 tests. These are the first real check of the physics code.
+- [ ] Test Runner > **PlayMode**: 26 tests. These are the first real check of the physics code.
       Most likely to need tuning: `MotorPlayModeTests` (jump heights) and `ArenaPlayModeTests` (timing).
 
 ## C. Generate content
@@ -34,7 +34,8 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 
 - [ ] Title → main menu in **portrait**; Star Shard total shows.
 - [ ] Story Quest → character select: Nova and Brick selectable; Luma shows "LOCKED: CLEAR SUNSPIRE MEADOWS"; Rex Rollo shows his secret hint.
-- [ ] Pick **Brick**: Sunspire Meadows loads with Brick (grey stone sprite, 6 HP). Try Boulder Jab → Quarry Hook,
+- [ ] After Character Select, the **level select** opens (portrait): Sunspire Meadows open, Clockwork Warden locked.
+- [ ] Pick **Brick**, then Sunspire Meadows: it loads with Brick (grey stone sprite, 6 HP). Try Boulder Jab → Quarry Hook,
       Pillar Uppercut, Rockfall Elbow, Bulwark Charge (walk into an enemy mid-charge: he keeps going),
       Stone Step (jump again in the air), Granite Guard (air dodge), Landslide Slam (air special).
 - [ ] Sunspire Meadows loads in **landscape**; joystick + 4 buttons appear; touch with the mouse works.
@@ -42,7 +43,8 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 - [ ] Nova: jab → sweep, Up+Attack, air Tailspin, Comet Bolt, Meteor Drop, roll, 8-way air dash.
 - [ ] Enemies patrol/hop, take hits, drop shards. Spikes and pits hurt. Checkpoints save position.
 - [ ] Moving platform carries Nova. Secret room behind the fake wall in section D.
-- [ ] Goal gate → level-complete screen with rank and reward; Play Again / Main Menu work.
+- [ ] Goal gate → level-complete screen with rank and reward; Play Again / LEVELS / NEXT work. Back on the level
+      select, Sunspire shows your rank, time, shards and secrets, and the Clockwork Warden is unlocked.
 - [ ] First clear shows "NEW HERO UNLOCKED: LUMA!". Pick Luma: Magnet Tether pulls enemies in; Spark Coil
       (air special) blinks, arms and zaps a Cog Beetle; Magnet Hop (air dodge) pops her up.
 - [ ] Clear again with the secret room found: "NEW HERO UNLOCKED: REX ROLLO!". Pick Rex: he glides and skids;

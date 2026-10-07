@@ -72,8 +72,16 @@ namespace PKR.EditorTools
             EditorSceneManager.SaveScene(select, selectPath);
             EditorUtil.AddSceneToBuild(selectPath);
 
+            // 03_LevelSelect
+            string levelsPath = $"{Folder}/{SceneIds.LevelSelect}.unity";
+            var levels = NewUiScene();
+            var levelsUi = new GameObject("LevelSelect").AddComponent<LevelSelectUI>();
+            EditorUtil.SetField(levelsUi, "world", DataAssets.GetOrCreateStoryWorld());
+            EditorSceneManager.SaveScene(levels, levelsPath);
+            EditorUtil.AddSceneToBuild(levelsPath);
+
             AssetDatabase.SaveAssets();
-            Debug.Log("[PKR] Menu scenes built: 00_Boot (first in Build Settings), 01_MainMenu, 02_CharacterSelect.");
+            Debug.Log("[PKR] Menu scenes built: 00_Boot (first in Build Settings), 01_MainMenu, 02_CharacterSelect, 03_LevelSelect.");
         }
 
         static UnityEngine.SceneManagement.Scene NewUiScene()

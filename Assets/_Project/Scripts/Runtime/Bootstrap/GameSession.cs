@@ -35,7 +35,15 @@ namespace PKR
             save.MarkDirty();
         }
 
-        /// <summary>Scene for the current mode.</summary>
-        public static string TargetScene => Mode == SessionMode.ArenaClash ? SceneIds.ArenaTest : SceneIds.StoryTest;
+        /// <summary>Scene after Character Select: the arena, or the Story Quest level select (straight to the first
+        /// level if the level select scene isn't built).</summary>
+        public static string TargetScene
+        {
+            get
+            {
+                if (Mode == SessionMode.ArenaClash) return SceneIds.ArenaTest;
+                return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;
+            }
+        }
     }
 }

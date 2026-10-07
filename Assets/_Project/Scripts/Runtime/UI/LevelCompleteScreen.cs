@@ -7,7 +7,7 @@ namespace PKR
 {
     /// <summary>
     /// Shown after the goal: rank, time vs par (with NEW BEST), shards, secrets, falls, and the Star Shard
-    /// reward counting up into the saved total. Buttons: Play Again, Main Menu, Next Level (when available).
+    /// reward counting up into the saved total. Buttons: Play Again, Levels (Main Menu if there is no level select), Next (when available).
     /// </summary>
     public class LevelCompleteScreen : MonoBehaviour
     {
@@ -66,10 +66,13 @@ namespace PKR
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
+            // Back to the level select when it exists, else the main menu.
+            bool hasLevels = Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect);
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
-            UIFactory.Button(buttons, hasMenu ? "MAIN MENU" : "MENU (SOON)",
-                             () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); },
-                             interactable: hasMenu);
+            string backScene = hasLevels ? SceneIds.LevelSelect : SceneIds.MainMenu;
+            UIFactory.Button(buttons, hasLevels ? "LEVELS" : (hasMenu ? "MAIN MENU" : "MENU (SOON)"),
+                             () => { if (Services.Scenes != null) Services.Scenes.Load(backScene); },
+                             interactable: hasLevels || hasMenu);
             var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
             string next = flowLevel != null ? flowLevel.nextSceneName : "";
             bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);

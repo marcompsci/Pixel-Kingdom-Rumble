@@ -20,6 +20,7 @@ namespace PKR.EditorTools
             GetOrCreateSpringTick();
             GetOrCreateSunspireTestLevel();
             GetOrCreateWardenLevel();
+            GetOrCreateStoryWorld();
             AssetDatabase.SaveAssets();
         }
 
@@ -101,6 +102,23 @@ namespace PKR.EditorTools
             });
             if (string.IsNullOrEmpty(lvl.nextSceneName)) { lvl.nextSceneName = SceneIds.BossTest; EditorUtility.SetDirty(lvl); }
             return lvl;
+        }
+
+        /// <summary>The Story Quest route shown on the level select, in play order.</summary>
+        public static WorldDefinition GetOrCreateStoryWorld()
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            var sunspire = GetOrCreateSunspireTestLevel();
+            var warden = GetOrCreateWardenLevel();
+            var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_SunspireIsles.asset", w =>
+            {
+                w.displayName = "Sunspire Isles";
+                w.description = "Floating meadows held up by the Tickworks. Something in the engine hall is grinding backward.";
+            });
+            if (!world.levels.Contains(sunspire)) world.levels.Add(sunspire);
+            if (!world.levels.Contains(warden)) world.levels.Add(warden);
+            EditorUtility.SetDirty(world);
+            return world;
         }
 
         public static LevelDefinition GetOrCreateWardenLevel()

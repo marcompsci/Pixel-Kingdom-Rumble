@@ -22,7 +22,7 @@ Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules
   walled arena, Core `WardenBrain` with .NET tests. Still to do: intro/outro, real art, boss music.
 - Real Sunspire Meadows levels (1-1 to 1-3) + a world map, switched to **Tilemaps** with rule tiles.
 - New enemy types (flying Gyro Moth, shielded Bolt Knight).
-- Level select with ranks and secrets per level.
+- ~~Level select with ranks and secrets per level~~ ✅ 2.5 (card list; a drawn world map is still to do).
 
 ## 3. Arena Clash
 - More stages (each with one original stage event), stage select.
