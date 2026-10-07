@@ -125,6 +125,13 @@ namespace PKR.Core
             return h;
         }
 
+        /// <summary>Result for a hit a shield stopped: nothing but a short clank of hit stop.</summary>
+        public static HitResult BlockedResult(in HitData hit) => new HitResult
+        {
+            knockbackVelocity = new Vec2(0f, 0f), hitstunFrames = 0, hitstopFrames = Math.Min(3, HitstopFrames(hit)),
+            pipsRemaining = -1, targetWasExposed = false, isLaunch = false, hpDamage = 0, blocked = true
+        };
+
         public static float Clamp(float v, float min, float max) => v < min ? min : (v > max ? max : v);
     }
 }

@@ -232,3 +232,17 @@ back up in later phases; the boss bar drew badly near empty; building only the b
 Fixed during review: a cleared level could show as locked if an earlier one wasn't cleared; shard counts on cards are
 capped at the level total.
 
+## 2.6 — New enemies: Gyro Moth and Bolt Knight (2026-10-07)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `FlyerLogic` (hover, windup, swoop, return with a 3 s give-up), `ShieldState` (block / break / back hits, judged from the attacker's position), `CombatMath.BlockedResult` | ✅ | 7 new tests; 133/133 pass with `dotnet run` |
+| Gyro Moth (flyer via motor velocity override) and Bolt Knight (`ShieldGuard` + new `IHitFilter` hook in `Damageable`; turns slowly toward the hero) | 🟡 | Syntax-checked + independent review; not compiled in Unity |
+| Placed in Sunspire Meadows (two moths, one knight); new placeholder sprites | 🟡 | Not run |
+| 2 PlayMode tests (moth hovers without falling; shield blocks light front hits only, breaks on heavy) | 🟡 | Written, not run |
+
+Fixed during review: the shield judged "front" from which way the hero faced instead of where the hero stood (it now
+uses the attacker's/projectile's/shockwave's position, and hits from straight above land); the knight turned instantly,
+so its back was never reachable (it now takes half a second, and only once you're on the ground); a moth could fly home
+into a ceiling forever; swoops rising through one-way planks aborted; blocked hits shook the camera like real hits.
+

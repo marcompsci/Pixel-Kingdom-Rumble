@@ -10,10 +10,10 @@ namespace PKR.EditorTools
     /// <summary>
     /// PKR > Build Story Test Level: generates "Sunspire Meadows (Test)", an original layout with five sections:
     ///  A  Start meadow: shards, a Cog Beetle, a raised step.
-    ///  B  Floating islands over a pit, a sideways moving platform, a Spring Tick.
-    ///  C  Checkpoint 1, spike valley under one-way planks, a health crystal, a Cog Beetle.
+    ///  B  Floating islands over a pit, a sideways moving platform, a Spring Tick, a Gyro Moth overhead.
+    ///  C  Checkpoint 1, spike valley under one-way planks, a health crystal, a Cog Beetle, a Gyro Moth.
     ///  D  Lift shaft: a rising platform beside a tall wall; a hidden room behind a fake wall (the secret).
-    ///  E  Checkpoint 2, final run with three enemies, the goal gate.
+    ///  E  Checkpoint 2, a shielded Bolt Knight, final run with three enemies, the goal gate.
     /// Re-running rebuilds the scene; tuning lives in the data assets.
     /// </summary>
     public static class StoryLevelBuilder
@@ -40,6 +40,8 @@ namespace PKR.EditorTools
             var nova = DataAssets.GetOrCreateNova();
             var beetle = DataAssets.GetOrCreateCogBeetle();
             var tick = DataAssets.GetOrCreateSpringTick();
+            var moth = DataAssets.GetOrCreateGyroMoth();
+            var knight = DataAssets.GetOrCreateBoltKnight();
             var level = DataAssets.GetOrCreateSunspireTestLevel();
             _mat = EditorUtil.UnlitSpriteMaterial();
             _ground = PlaceholderArt.Ground();
@@ -89,6 +91,7 @@ namespace PKR.EditorTools
             Spot(PickupKind.StarShard, new Vector2(43f, 2f));
             Spot(PickupKind.StarShard, new Vector2(45f, 2f));
             Enemy(tick, new Vector2(52f, 0.6f), -1);
+            Enemy(moth, new Vector2(46f, 4.5f), -1); // hovers over the moving platform and dives at riders
             Decor(new Vector2(43f, 7f), 3f);
 
             // --- C: Checkpoint 1 + spike valley --------------------------------------------------
@@ -100,6 +103,7 @@ namespace PKR.EditorTools
             Spot(PickupKind.Health, new Vector2(68f, 3.6f));
             for (int i = 0; i < 3; i++) Spot(PickupKind.StarShard, new Vector2(72f + i, 1f));
             Enemy(beetle, new Vector2(78f, 0.5f), -1);
+            Enemy(moth, new Vector2(70f, 5f), -1);  // above the spike valley planks
 
             // --- D: Lift shaft + secret room -----------------------------------------------------
             Block("D_Floor", _ground, new Vector2(93f, -1f), new Vector2(14f, 2f));
@@ -119,6 +123,7 @@ namespace PKR.EditorTools
             Block("E_Floor", _ground, new Vector2(120f, -1f), new Vector2(38f, 2f));
             Block("E_WallRight", _stone, new Vector2(139.5f, 6f), new Vector2(1f, 16f));
             Checkpoint(new Vector2(104f, 0f), 1);
+            Enemy(knight, new Vector2(109f, 0.7f), -1); // shield faces the hero: heavy hit, or jump behind it
             Block("E_Block", _stone, new Vector2(116.5f, 1f), new Vector2(3f, 2f));
             Spot(PickupKind.StarShard, new Vector2(110f, 1f));
             Spot(PickupKind.StarShard, new Vector2(116f, 3f));

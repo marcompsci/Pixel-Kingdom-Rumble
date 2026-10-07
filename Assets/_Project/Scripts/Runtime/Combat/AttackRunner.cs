@@ -183,13 +183,22 @@ namespace PKR
                 if (target == _self) continue;
                 if (!_log.TryRegister(target.GetInstanceID())) continue;
                 int dir = radius > 0f ? (target.transform.position.x >= center.x ? 1 : -1) : facing;
-                if (target.TakeHit(hit, dir, team, out var result)) OnHitLanded(target, result, hit, move);
+                // Source x for shields: the hit's center for circles (shockwaves), the attacker's body for boxes.
+                float sourceX = radius > 0f ? center.x : _motor.Body.position.x;
+                if (target.TakeHit(hit, dir, team, out var result, sourceX)) OnHitLanded(target, result, hit, move);
             }
         }
 
         void OnHitLanded(Damageable target, HitResult result, in HitData hit, MoveDefinition move)
         {
             HitStop.Request(result.hitstopFrames);
+            if (result.blocked)
+            {
+                // Shield clank: brief, no shake.
+                if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
+                HitLanded?.Invoke(target, result);
+                return;
+            }
             if (Services.Haptics != null)
                 Services.Haptics.Play(result.isLaunch ? HapticStrength.Heavy : (move != null ? move.haptic : HapticStrength.Light));
             float shake = move != null ? move.shakeAmplitude : 0f;

@@ -162,6 +162,45 @@ namespace PKR.EditorTools
             return Clear;
         });
 
+        /// <summary>Gyro Moth: a round brass body with two spinning steel wings and a glass eye. 16x12, faces right.</summary>
+        public static Sprite GyroMoth() => GetOrCreate("ph_gyro_moth", 16, 12, true, (x, y) =>
+        {
+            float body = Dist(x, y, 8f, 5.5f);
+            if (body <= 3.4f)
+            {
+                if (x == 10 && y == 6) return Ink;                                                     // eye
+                if (body > 2.6f) return BrassDark;
+                return (y == 5) ? Steel : Brass;
+            }
+            // Wings: two thin ovals above the body, angled out.
+            float wl = Dist(x * 0.6f, y, 2.4f, 9.5f), wr = Dist(x * 0.6f, y, 7.2f, 9.5f);
+            if (y >= 8 && (wl <= 1.6f || wr <= 1.6f)) return ((x + y) % 3 == 0) ? SteelDark : Steel;
+            if (y <= 1 && x >= 7 && x <= 8) return SteelDark;                                         // stinger
+            return Clear;
+        });
+
+        /// <summary>Bolt Knight: a squat steel automaton with a riveted helm. 14x20, faces right.</summary>
+        public static Sprite BoltKnight() => GetOrCreate("ph_bolt_knight", 14, 20, true, (x, y) =>
+        {
+            if (y <= 2) return (x >= 3 && x <= 5) || (x >= 8 && x <= 10) ? SteelDark : Clear;      // feet
+            if (y <= 11 && x >= 2 && x <= 11) return ((x == 2 || x == 11) ? SteelDark : ((x + y) % 4 == 0 ? Brass : Steel)); // body
+            if (y <= 18 && x >= 3 && x <= 10)
+            {
+                if (y == 15 && x >= 7 && x <= 9) return Ink;                                         // visor slit
+                return (y == 18 || x == 3 || x == 10) ? SteelDark : Steel;                           // helm
+            }
+            if (y == 19 && x >= 6 && x <= 7) return Brass;                                          // crest bolt
+            return Clear;
+        });
+
+        /// <summary>Bolt Knight's tower shield: a tall riveted brass plate. 6x16.</summary>
+        public static Sprite BoltShield() => GetOrCreate("ph_bolt_shield", 6, 16, false, (x, y) =>
+        {
+            if (x == 0 || x == 5 || y == 0 || y == 15) return BrassDark;
+            if ((x == 2 || x == 3) && y % 4 == 2) return Ink;                                         // rivets
+            return Brass;
+        });
+
         /// <summary>Spikes: steel teeth on a dark base, tiles horizontally. 16x8.</summary>
         public static Sprite Spikes() => GetOrCreate("ph_spikes", 16, 8, false, (x, y) =>
         {

@@ -70,6 +70,19 @@ namespace PKR
             contact.team = TeamIds.Enemy;
             contact.size = def.bodySize * 0.9f;
 
+            if (def.behavior == EnemyBehavior.ShieldWalker)
+            {
+                // Shield child in front of the body (ShieldGuard keeps it on the facing side).
+                var shield = new GameObject("Shield");
+                shield.transform.SetParent(go.transform, false);
+                shield.transform.localPosition = new Vector3(def.bodySize.x * 0.55f, 0f, 0f);
+                var ssr = shield.AddComponent<SpriteRenderer>();
+                ssr.sprite = def.shieldSprite;
+                if (material != null) ssr.sharedMaterial = material;
+                ssr.sortingOrder = 10;
+                go.AddComponent<ShieldGuard>().Configure(def.shieldBreakDuration, ssr);
+            }
+
             go.AddComponent<FighterVisual>();
             go.AddComponent<HitFlash>();
             go.AddComponent<EnemyAI>();

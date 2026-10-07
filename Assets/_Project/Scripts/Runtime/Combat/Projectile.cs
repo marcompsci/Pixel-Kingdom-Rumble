@@ -75,7 +75,7 @@ namespace PKR
             foreach (var target in _targets)
             {
                 if (target == _owner) continue;
-                if (target.TakeHit(_hit, _direction, _team, out var result))
+                if (target.TakeHit(_hit, _direction, _team, out var result, pos.x))
                 {
                     if (_source != null) _source.ReportProjectileHit(target, result, _hit);
                     Despawn();

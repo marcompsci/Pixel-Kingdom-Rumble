@@ -132,7 +132,7 @@ namespace PKR
                     if (target == _owner || !target.CanBeHitBy(_team)) continue;
                     if (!_logic.TryTrigger()) break;
                     int dir = target.transform.position.x >= transform.position.x ? 1 : -1;
-                    if (target.TakeHit(_hit, dir, _team, out var result) && _source != null)
+                    if (target.TakeHit(_hit, dir, _team, out var result, transform.position.x) && _source != null)
                         _source.ReportProjectileHit(target, result, _hit);
                     PuffEffect.Play(transform.position, _color, _renderer.sharedMaterial, 0.3f, 6f, 0.35f);
                     break;

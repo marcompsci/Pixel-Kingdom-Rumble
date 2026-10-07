@@ -4,7 +4,15 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum EnemyBehavior { Walker, Hopper }
+    public enum EnemyBehavior
+    {
+        Walker,
+        Hopper,
+        /// <summary>Hovers at its spawn point and swoops at the hero (Gyro Moth).</summary>
+        Flyer,
+        /// <summary>Walker with a front shield that turns to face a nearby hero (Bolt Knight).</summary>
+        ShieldWalker
+    }
 
     /// <summary>
     /// Data for a common enemy: identity, codex text, art, stats, behavior and drops.
@@ -35,6 +43,21 @@ namespace PKR
         [Tooltip("Horizontal stick strength while hopping toward the player.")]
         [Range(0f, 1f)] public float hopDrift = 0.55f;
 
+        [Header("Flyer (Behavior = Flyer)")]
+        public float aggroRange = 6f;
+        public float swoopSpeed = 9f;
+        public float swoopTime = 0.8f;
+        public float swoopWindup = 0.55f;
+        public float flyerReturnSpeed = 4f;
+        public float swoopCooldown = 1.4f;
+
+        [Header("Shield (Behavior = ShieldWalker)")]
+        [Tooltip("Seconds the shield stays down after a heavy hit breaks it.")]
+        public float shieldBreakDuration = 1.6f;
+        [Tooltip("Within this distance the knight stops and turns its shield toward the hero.")]
+        public float guardRange = 4f;
+        public Sprite shieldSprite;
+
         [Header("Contact damage")]
         public HitData contactHit = new HitData
         {
@@ -51,6 +74,8 @@ namespace PKR
             if (string.IsNullOrWhiteSpace(id)) e.Add("id is empty");
             if (bodySize.x <= 0f || bodySize.y <= 0f) e.Add("bodySize must be positive");
             if (behavior == EnemyBehavior.Hopper && (hopCooldown <= 0f || hopRange <= 0f)) e.Add("hop cooldown/range must be positive");
+            if (behavior == EnemyBehavior.Flyer && (swoopSpeed <= 0f || swoopTime <= 0f || flyerReturnSpeed <= 0f)) e.Add("flyer speeds/times must be positive");
+            if (behavior == EnemyBehavior.ShieldWalker && shieldBreakDuration <= 0f) e.Add("shieldBreakDuration must be positive");
             return e;
         }
 

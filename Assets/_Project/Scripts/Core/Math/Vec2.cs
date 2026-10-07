@@ -26,6 +26,9 @@ namespace PKR.Core
 
         public static Vec2 operator *(Vec2 v, float s) => new Vec2(v.x * s, v.y * s);
         public static Vec2 operator +(Vec2 a, Vec2 b) => new Vec2(a.x + b.x, a.y + b.y);
+        public static Vec2 operator -(Vec2 a, Vec2 b) => new Vec2(a.x - b.x, a.y - b.y);
+        /// <summary>Unit-length copy, or Zero for a zero vector.</summary>
+        public Vec2 Normalized { get { float m = Magnitude; return m > 1e-6f ? new Vec2(x / m, y / m) : Zero; } }
 
         public bool Equals(Vec2 other) => x.Equals(other.x) && y.Equals(other.y);
         public override bool Equals(object obj) => obj is Vec2 v && Equals(v);

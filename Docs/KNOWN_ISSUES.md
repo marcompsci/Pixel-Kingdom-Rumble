@@ -5,7 +5,7 @@
 - **No Unity compile or play session has happened.** All Unity-side code was syntax-checked with Roslyn and
   its Unity API calls were reviewed against Unity's published C# source, but it has not been compiled against
   UnityEngine. Expect a handful of compile errors and tuning issues on first open. Use [FIRST_RUN.md](FIRST_RUN.md).
-- **26 PlayMode tests** are written but have never run.
+- **28 PlayMode tests** are written but have never run.
 - **No iOS build, device test or FPS measurement** has been done. The 60 FPS target is unmeasured.
 - `PKRHaptics.mm` has not been compiled by Xcode.
 - `Packages/manifest.json` targets Unity 6.0 LTS; a newer 6.x Editor may bump package versions.
@@ -25,6 +25,8 @@
 - The Warden is built from placeholder shapes (gear sprites, circles); no intro/outro cutscene or boss music.
 - Warden timings and 24 HP are first guesses; tune `WardenTuning` and the component fields after play-testing.
 - The level select is a simple list of cards, not a drawn world map yet.
+- Gyro Moths have 1 HP; a tougher flyer would fall under gravity while knocked back (fine for now).
+- Bolt Knight shields only exist in Story Quest; arena fighters have no shields.
 - Levels cleared before the level select existed show rank "-" until replayed (ranks weren't saved before).
 - Shard counts include enemy drops, so the results screen can show more than the level's total (the level select caps it).
 - **Codex** button in the main menu is a placeholder ("later").

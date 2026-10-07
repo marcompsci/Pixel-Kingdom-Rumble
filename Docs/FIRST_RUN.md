@@ -15,15 +15,15 @@ Claude with the file and line.
 
 ## B. Tests
 
-- [ ] Test Runner > **EditMode**: 126 tests pass (they already pass under .NET; a failure here means a Unity
+- [ ] Test Runner > **EditMode**: 133 tests pass (they already pass under .NET; a failure here means a Unity
       difference worth reporting).
-- [ ] Test Runner > **PlayMode**: 26 tests. These are the first real check of the physics code.
+- [ ] Test Runner > **PlayMode**: 28 tests. These are the first real check of the physics code.
       Most likely to need tuning: `MotorPlayModeTests` (jump heights) and `ArenaPlayModeTests` (timing).
 
 ## C. Generate content
 
 - [ ] **PKR > Build All Scenes**. Expect log lines for the sandbox, story level, boss arena, menus and arena.
-- [ ] `Assets/_Project/Data` contains the roster, all four heroes with their kits and moves, two enemies and the level.
+- [ ] `Assets/_Project/Data` contains the roster, all four heroes with their kits and moves, four enemies and the levels.
 - [ ] `Assets/_Project/Art/Placeholder` contains the `ph_*.png` sprites and they look like pixel art
       (Point filter, no blur).
 - [ ] File > Build Profiles: `00_Boot` is first in the scene list.
@@ -41,6 +41,8 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 - [ ] Sunspire Meadows loads in **landscape**; joystick + 4 buttons appear; touch with the mouse works.
 - [ ] Movement: run, short hop vs held jump, coyote jump just off a ledge, jump pressed just before landing.
 - [ ] Nova: jab → sweep, Up+Attack, air Tailspin, Comet Bolt, Meteor Drop, roll, 8-way air dash.
+- [ ] Gyro Moths (sections B and C) hover, shake, swoop at you and fly home. The Bolt Knight (section E) blocks
+      jabs with a clank; a heavy hit (Comet Sweep, Quarry Hook...) breaks the shield; hits on its back land.
 - [ ] Enemies patrol/hop, take hits, drop shards. Spikes and pits hurt. Checkpoints save position.
 - [ ] Moving platform carries Nova. Secret room behind the fake wall in section D.
 - [ ] Goal gate → level-complete screen with rank and reward; Play Again / LEVELS / NEXT work. Back on the level

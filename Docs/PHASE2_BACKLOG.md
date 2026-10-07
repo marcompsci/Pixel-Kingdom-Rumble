@@ -21,7 +21,7 @@ Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules
 - ~~**Clockwork Warden** boss~~ ✅ 2.4: three phases (piston slam with exposed core, gear sweep, cog volley), boss bar,
   walled arena, Core `WardenBrain` with .NET tests. Still to do: intro/outro, real art, boss music.
 - Real Sunspire Meadows levels (1-1 to 1-3) + a world map, switched to **Tilemaps** with rule tiles.
-- New enemy types (flying Gyro Moth, shielded Bolt Knight).
+- ~~New enemy types (flying Gyro Moth, shielded Bolt Knight)~~ ✅ 2.6.
 - ~~Level select with ranks and secrets per level~~ ✅ 2.5 (card list; a drawn world map is still to do).
 
 ## 3. Arena Clash

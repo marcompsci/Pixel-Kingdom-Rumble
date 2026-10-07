@@ -5,8 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss and a level select are in).
-The engine-free rules pass 126 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss, a level select and two new enemies are in).
+The engine-free rules pass 133 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -70,10 +70,14 @@ has toggles for touch-layout editing, high contrast, haptics, floating stick and
 | Section | What's there |
 |---|---|
 | A. Start meadow | Shard trail, a Cog Beetle, a raised step |
-| B. Floating islands | A pit, a sideways moving platform, a Spring Tick |
-| C. Spike valley | Checkpoint 1, spikes under one-way planks, a health crystal, a Cog Beetle |
+| B. Floating islands | A pit, a sideways moving platform, a Spring Tick, a **Gyro Moth** overhead |
+| C. Spike valley | Checkpoint 1, spikes under one-way planks, a health crystal, a Cog Beetle, a Gyro Moth |
 | D. Lift shaft | A rising lift beside a wall too tall to jump; a **secret room** behind a fake wall (follow the lone shard) |
-| E. Final run | Checkpoint 2, three enemies, the goal gate |
+| E. Final run | Checkpoint 2, a shielded **Bolt Knight**, three enemies, the goal gate |
+
+**Enemies:** Cog Beetles patrol; Spring Ticks hop at you; **Gyro Moths** hover, shake, then swoop in a straight line
+at where you were (sidestep, then hit them on the way back); **Bolt Knights** hold a tower shield toward you that blocks
+light hits: break it with a heavy hit (it staggers), or get behind it and hit its back before it turns (about half a second).
 
 Rules: pits cost 1 HP and return you to the last checkpoint; at 0 HP you respawn at the checkpoint with full HP
 and enemies reset. Collected shards stay collected. Defeated enemies pop out Star Shards. The HUD shows HP, shards,
@@ -202,6 +206,8 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Arena/MatchState.cs` | Stock / Timed / Training rules, scoring, placements |
 | `Arena/BotBrain.cs` | CPU decisions + difficulty presets (recovery, edges, gap, approach, attack, retreat) |
 | `Arena/ArenaConfig.cs` | Match setup options; `BridgeCycle` timing |
+| `AI/FlyerLogic.cs` | Gyro Moth flight: hover, wind up, swoop at the hero, fly home (gives up after 3 s) |
+| `Combat/ShieldState.cs` | Front shield: light hits blocked, heavy hits break it, back hits land |
 | `AI/EnemyLogic.cs` | Patrol turning, hopper timing, `LevelRun` (time, shards, secrets, deaths, checkpoints, completion) |
 | `Combat/TrapLogic.cs` | Placed-trap life cycle (fall, arm, fire once, expire) |
 | `Movement/WallRide.cs` | Wall-ride rules (start conditions, once per airtime, wall jump) |
@@ -263,6 +269,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Level/EnemySpawnPoint.cs`, `PickupSpot.cs` | Markers the flow controller spawns pooled objects from |
 | `Level/PlayerMarker.cs`, `TriggerUtil.cs`, `LevelEvents.cs` | Player lookup and level events (`CheckpointActivated`, `SecretFound`, `PlayerRespawned`, `LevelCompleted`) |
 | `AI/EnemyAI.cs` | Walker (patrol, turns at walls/ledges) and Hopper (hops at the player) through `FighterIntent` |
+| `AI/ShieldGuard.cs` | Bolt Knight's shield (an `IHitFilter` Damageable checks before a hit lands) |
 | `AI/EnemyFactory.cs` | Builds enemies from data at runtime and recycles them through the pool |
 | `Combat/ContactDamage.cs` | Hurts other teams on touch (enemy bodies, spikes) |
 | `Pickups/Pickup.cs` | Pooled Star Shards and health crystals (placed or popped out of defeated enemies) |
@@ -315,9 +322,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 126 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 126 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select) | 26 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 133 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 133 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select, new enemies) | 28 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

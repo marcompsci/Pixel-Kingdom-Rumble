@@ -52,5 +52,7 @@ namespace PKR.Core
         public int hpDamage;
         /// <summary>True when super armor absorbed the knockback and hitstun (damage/pips still applied).</summary>
         public bool armored;
+        /// <summary>True when a shield stopped the hit entirely (no damage, no knockback).</summary>
+        public bool blocked;
     }
 }

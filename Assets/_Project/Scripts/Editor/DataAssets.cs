@@ -18,6 +18,8 @@ namespace PKR.EditorTools
             GetOrCreateRoster();
             GetOrCreateCogBeetle();
             GetOrCreateSpringTick();
+            GetOrCreateGyroMoth();
+            GetOrCreateBoltKnight();
             GetOrCreateSunspireTestLevel();
             GetOrCreateWardenLevel();
             GetOrCreateStoryWorld();
@@ -86,6 +88,44 @@ namespace PKR.EditorTools
                 d.shardDrop = 3;
             });
             if (e.sprite == null) { e.sprite = PlaceholderArt.SpringTick(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        public static EnemyDefinition GetOrCreateGyroMoth()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/GyroMoth.asset", d =>
+            {
+                d.id = "enemy_gyro_moth"; d.displayName = "Gyro Moth";
+                d.codexEntry = "Tickworks pollinators that once carried oil between the great gears. Now they guard the gaps " +
+                               "between islands, hovering in place until something warm comes close, then diving straight at it.";
+                d.bodySize = new Vector2(0.8f, 0.6f); d.maxHealth = 1; d.weight = 0.7f; d.moveSpeed = 0f;
+                d.behavior = EnemyBehavior.Flyer;
+                d.aggroRange = 6f; d.swoopSpeed = 9f; d.swoopTime = 0.8f; d.swoopWindup = 0.55f;
+                d.flyerReturnSpeed = 4f; d.swoopCooldown = 1.6f;
+                d.shardDrop = 2;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.GyroMoth(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        public static EnemyDefinition GetOrCreateBoltKnight()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/BoltKnight.asset", d =>
+            {
+                d.id = "enemy_bolt_knight"; d.displayName = "Bolt Knight";
+                d.codexEntry = "Gate guards riveted together from spare boiler plate. Their tower shields shrug off light blows; " +
+                               "a heavy hit knocks the shield aside, and their backs were never armored at all.";
+                d.bodySize = new Vector2(0.9f, 1.25f); d.maxHealth = 4; d.weight = 1.6f; d.moveSpeed = 0.18f;
+                d.behavior = EnemyBehavior.ShieldWalker;
+                d.shieldBreakDuration = 1.6f; d.guardRange = 4f;
+                d.shardDrop = 4;
+            });
+            bool dirty = false;
+            if (e.sprite == null) { e.sprite = PlaceholderArt.BoltKnight(); dirty = true; }
+            if (e.shieldSprite == null) { e.shieldSprite = PlaceholderArt.BoltShield(); dirty = true; }
+            if (dirty) EditorUtility.SetDirty(e);
             return e;
         }
 

@@ -12,6 +12,16 @@ namespace PKR
         ArenaPips
     }
 
+    /// <summary>
+    /// Optional component next to a Damageable that can stop hits outright (a shield). Return true to block:
+    /// the hit then deals nothing and the attacker gets a short "clank".
+    /// </summary>
+    public interface IHitFilter
+    {
+        /// <param name="sourceX">World x the hit came from (attacker, projectile, hit center); NaN if unknown.</param>
+        bool TryBlock(in HitData hit, int attackerFacing, float sourceX);
+    }
+
     public static class TeamIds
     {
         public const int Player = 0;
@@ -49,6 +59,8 @@ namespace PKR
         public float LastHitTime { get; private set; } = float.NegativeInfinity;
 
         public event Action<HitResult> Hit;
+        /// <summary>A shield (IHitFilter) stopped a hit.</summary>
+        public event Action<HitResult> Blocked;
         public event Action BecameExposed;
         public event Action Died;
         public event Action Restored;
@@ -56,6 +68,7 @@ namespace PKR
         PlatformerMotor2D _motor;
         AttackRunner _attacks;
         HeroAbilities _abilities;
+        IHitFilter _filter;
         Rigidbody2D _body;
         Invulnerability _invuln;
 
@@ -110,10 +123,19 @@ namespace PKR
         /// Apply a hit. attackerFacing (+1/-1) decides knockback direction. Returns false if ignored
         /// (same team, invulnerable, already dead).
         /// </summary>
-        public bool TakeHit(in HitData hit, int attackerFacing, int attackerTeam, out HitResult result)
+        public bool TakeHit(in HitData hit, int attackerFacing, int attackerTeam, out HitResult result, float sourceX = float.NaN)
         {
             result = default;
             if (!CanBeHitBy(attackerTeam)) return false;
+
+            // Shields: looked up on demand so a ShieldGuard added at runtime is seen.
+            if (_filter == null) _filter = GetComponent<IHitFilter>();
+            if (_filter != null && _filter.TryBlock(hit, attackerFacing, sourceX))
+            {
+                result = CombatMath.BlockedResult(hit);
+                Blocked?.Invoke(result);
+                return true;
+            }
 
             bool wasExposed = IsExposed;
             result = model == DamageModel.ArenaPips
