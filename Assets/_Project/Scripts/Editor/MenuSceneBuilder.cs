@@ -61,6 +61,7 @@ namespace PKR.EditorTools
             var menu = NewUiScene();
             var menuUi = new GameObject("MainMenu").AddComponent<MainMenuUI>();
             EditorUtil.SetField(menuUi, "featuredLevel", level);
+            EditorUtil.SetField(menuUi, "roster", roster);
             EditorSceneManager.SaveScene(menu, menuPath);
             EditorUtil.AddSceneToBuild(menuPath);
 

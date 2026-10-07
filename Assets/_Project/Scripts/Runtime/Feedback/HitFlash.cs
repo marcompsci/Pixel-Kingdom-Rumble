@@ -33,6 +33,13 @@ namespace PKR
             if (target != null) target.color = _base;
         }
 
+        /// <summary>The color the sprite returns to after a flash (cosmetic palettes change it).</summary>
+        public void SetBaseColor(Color c)
+        {
+            _base = c;
+            if (_running == null && target != null) target.color = c;
+        }
+
         void OnHit(PKR.Core.HitResult r)
         {
             if (target == null) return;

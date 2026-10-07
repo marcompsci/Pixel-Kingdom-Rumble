@@ -33,5 +33,15 @@ namespace PKR
 
             fighter.name = def.displayName;
         }
+
+        /// <summary>Tint the fighter's body sprite (cosmetic palette), keeping hit flashes in step.</summary>
+        public static void ApplyTint(GameObject fighter, Color tint)
+        {
+            if (fighter == null) return;
+            if (fighter.TryGetComponent(out HitFlash flash)) flash.SetBaseColor(tint);
+            var body = fighter.transform.Find("Body");
+            var sr = body != null ? body.GetComponent<SpriteRenderer>() : null;
+            if (sr != null) sr.color = tint;
+        }
     }
 }

@@ -161,7 +161,7 @@ namespace PKR
             bool selectable = roster.IsSelectable(hero);
 
             _preview.sprite = hero.bodySprite;
-            _preview.color = selectable ? Color.white : Silhouette;
+            _preview.color = selectable ? roster.TintFor(hero.id) : Silhouette; // shows the equipped palette
             _name.text = hero.displayName.ToUpperInvariant();
             _tagline.text = hero.tagline;
             _lore.text = selectable || hero.playableInThisBuild ? hero.lore : "A new hero is on the way to the Sunspire Isles.";

@@ -246,3 +246,14 @@ uses the attacker's/projectile's/shockwave's position, and hits from straight ab
 so its back was never reachable (it now takes half a second, and only once you're on the ground); a moth could fly home
 into a ceiling forever; swoops rising through one-way planks aborted; blocked hits shook the camera like real hits.
 
+## 2.7 — Star Shard shop: hero palettes (2026-10-07)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `Wardrobe` (buy, one worn palette per hero, unequip) | ✅ | 3 new tests; 136/136 pass with `dotnet run` |
+| `CosmeticDefinition`/`CosmeticCatalog` (12 palettes), `ShopPanel` in the main menu, palette shown in Story, arena and Character Select (`HeroLoadout.ApplyTint`, `HitFlash.SetBaseColor`) | 🟡 | Syntax-checked + independent review; not compiled in Unity |
+| 1 PlayMode test (only unlocked heroes listed; an unaffordable buy changes nothing) | 🟡 | Written, not run |
+
+Fixed during review: the color swatch covered the start of long item names; the shop listed (and revealed) locked
+heroes; the shard-changed event fired with the wrong amount, and on equips.
+

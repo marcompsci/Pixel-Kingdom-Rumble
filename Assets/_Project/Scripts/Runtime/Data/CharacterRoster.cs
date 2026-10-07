@@ -8,6 +8,15 @@ namespace PKR
     public class CharacterRoster : ScriptableObject
     {
         public List<CharacterDefinition> heroes = new List<CharacterDefinition>();
+        [Tooltip("Star Shard shop items (palettes). Optional.")]
+        public CosmeticCatalog cosmetics;
+
+        /// <summary>The palette this hero wears in the current save (white = default look).</summary>
+        public Color TintFor(string heroId)
+        {
+            var save = Services.Save;
+            return cosmetics != null && save != null ? cosmetics.TintFor(save.Data, heroId) : Color.white;
+        }
 
         public CharacterDefinition Find(string id)
         {

@@ -32,7 +32,7 @@ Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules
 
 ## 4. Meta
 - **Codex**: heroes, enemies (text already in `EnemyDefinition`), stages, lore entries unlocked by play.
-- **Cosmetics shop** for Star Shards (palettes, trails, victory poses). Cosmetic-only; `Economy` already handles purchases.
+- ~~**Cosmetics shop** for Star Shards~~ ✅ 2.7 (palettes). Still to do: trails, victory poses.
 - **Game Center**: sign-in, leaderboards (best times), achievements.
 - Cloud save (iCloud key-value or Game Center saved games).
 

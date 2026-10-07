@@ -4,7 +4,8 @@ namespace PKR
 {
     /// <summary>
     /// Put on a scene's baked player: at Start, swaps in the hero chosen in Character Select
-    /// (if it differs from the baked one and is selectable). Runs before the level flow and HUD start.
+    /// (if it differs from the baked one and is selectable), and puts on the hero's equipped palette.
+    /// Runs before the level flow and HUD start.
     /// </summary>
     [DefaultExecutionOrder(-50)]
     public class SelectedHeroLoader : MonoBehaviour
@@ -16,11 +17,12 @@ namespace PKR
         void Start()
         {
             if (roster == null) return;
-            var def = roster.Find(GameSession.SelectedCharacterId);
-            if (def == null || !roster.IsSelectable(def)) return;
             var motor = GetComponent<PlatformerMotor2D>();
-            if (motor != null && motor.Definition == def) return;
-            HeroLoadout.Apply(gameObject, def);
+            var def = roster.Find(GameSession.SelectedCharacterId);
+            if (def != null && roster.IsSelectable(def) && (motor == null || motor.Definition != def))
+                HeroLoadout.Apply(gameObject, def);
+            var worn = motor != null ? motor.Definition : def;
+            if (worn != null) HeroLoadout.ApplyTint(gameObject, roster.TintFor(worn.id));
         }
     }
 }

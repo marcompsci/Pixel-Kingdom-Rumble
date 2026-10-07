@@ -15,9 +15,9 @@ Claude with the file and line.
 
 ## B. Tests
 
-- [ ] Test Runner > **EditMode**: 133 tests pass (they already pass under .NET; a failure here means a Unity
+- [ ] Test Runner > **EditMode**: 136 tests pass (they already pass under .NET; a failure here means a Unity
       difference worth reporting).
-- [ ] Test Runner > **PlayMode**: 28 tests. These are the first real check of the physics code.
+- [ ] Test Runner > **PlayMode**: 29 tests. These are the first real check of the physics code.
       Most likely to need tuning: `MotorPlayModeTests` (jump heights) and `ArenaPlayModeTests` (timing).
 
 ## C. Generate content
@@ -62,7 +62,9 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 - [ ] CPUs are a mix of your unlocked heroes (Nova, Brick, then Luma and Rex once unlocked); Brick CPUs recover with Stone Step and show 4 Guard Pips.
 - [ ] Bridge flashes then retracts; KOs credit the last attacker; respawn blinks; results screen + Rematch.
 - [ ] Timed and Training modes start and end correctly.
-- [ ] Quit and replay: Star Shards and best times persisted.
+- [ ] Main menu > **SHOP**: your unlocked heroes and their palettes. Buy one (shards go down, it's worn at once),
+      switch palettes, DEFAULT LOOK. Character Select, Story Quest and the arena show the palette; hit flashes return to it.
+- [ ] Quit and replay: Star Shards, best times, owned and worn palettes persisted.
 
 ## E. iPhone
 

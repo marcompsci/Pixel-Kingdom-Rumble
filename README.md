@@ -5,8 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss, a level select and two new enemies are in).
-The engine-free rules pass 133 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss, a level select, two new enemies and a Star Shard shop are in).
+The engine-free rules pass 136 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -100,6 +100,10 @@ level-complete screen.
 **Level select (portrait):** after Character Select, Story Quest opens the Sunspire Isles route: one card per level
 (Sunspire Meadows, then the Clockwork Warden) with your best rank, time, Star Shards and secrets. Each level unlocks when
 the one before it is cleared. The results screen's **LEVELS** button comes back here.
+
+**Star Shard shop (main menu > SHOP):** spend Star Shards on palettes (color schemes) for your unlocked heroes,
+three each (60 / 120 / 200 shards). A palette is worn as soon as you buy it; switch between owned ones or go back to the
+default look any time. Palettes show in Story Quest, Arena Clash (your fighter) and Character Select. Cosmetic only.
 
 **Menus (portrait):** the main menu shows your Star Shard total and best Sunspire Meadows result, with
 Story Quest, Arena Clash, Settings and Codex (later). Character select
@@ -200,6 +204,7 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `Movement/MovementStats.cs` | Movement tuning + `JumpPhysics` (gravity from height/apex time, acceleration, 8-way snap) |
 | `Save/SaveData.cs` | Progress, unlocks, cosmetics, level bests, migration and repair |
 | `Save/SettingsData.cs` | Audio, haptics, high contrast, screen shake, floating stick, control layout |
+| `Economy/Wardrobe.cs` | Buying and wearing cosmetics: one palette per hero |
 | `Economy/Economy.cs` | Star Shard rewards and cosmetic purchases (cosmetic only) |
 | `Save/ResultsMath.cs` | Time formatting, percentages, clear rank |
 | `Save/RosterSelection.cs` | Character-select navigation (wrap, initial pick, lookup) |
@@ -282,6 +287,8 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `UI/BootLoader.cs` | Title card, then the main menu |
 | `UI/MainMenuUI.cs` | Portrait main menu |
 | `UI/CharacterSelectUI.cs` | Portrait hero select with locked silhouettes |
+| `UI/ShopPanel.cs` | Star Shard shop (main menu): buy and wear palettes per unlocked hero |
+| `Data/CosmeticDefinition.cs`, `CosmeticCatalog.cs` | A palette (hero, cost, tint) and the shop's list of them |
 | `UI/LevelSelectUI.cs` | Portrait Story Quest route: a card per level with best rank, time, shards, secrets; unlocks in order |
 | `Data/WorldDefinition.cs` | A Story world: name and levels in play order |
 | `UI/CanvasMatchByAspect.cs` | Keeps fixed-size menus on screen on iPads and tall phones |
@@ -322,9 +329,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 133 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 133 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select, new enemies) | 28 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 136 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 136 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select, new enemies, shop) | 29 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

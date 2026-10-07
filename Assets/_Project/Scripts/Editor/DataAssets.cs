@@ -54,7 +54,38 @@ namespace PKR.EditorTools
                 roster.heroes.Add(nova); roster.heroes.Add(brick); roster.heroes.Add(luma); roster.heroes.Add(rex);
                 EditorUtility.SetDirty(roster);
             }
+            if (roster.cosmetics == null) { roster.cosmetics = GetOrCreateCosmetics(); EditorUtility.SetDirty(roster); }
             return roster;
+        }
+
+        public const string CosmeticsFolder = "Assets/_Project/Data/Cosmetics";
+
+        /// <summary>Star Shard shop: three original palettes per hero. Names and prices are starting values.</summary>
+        public static CosmeticCatalog GetOrCreateCosmetics()
+        {
+            EditorUtil.EnsureFolder(CosmeticsFolder);
+            var catalog = GetOrCreate<CosmeticCatalog>($"{CosmeticsFolder}/Cosmetics.asset", c => { });
+            void Add(string id, string name, string hero, int cost, Color32 tint)
+            {
+                var item = GetOrCreate<CosmeticDefinition>($"{CosmeticsFolder}/{id}.asset", d =>
+                {
+                    d.id = id; d.displayName = name; d.heroId = hero; d.cost = cost; d.tint = tint;
+                });
+                if (!catalog.items.Contains(item)) { catalog.items.Add(item); EditorUtility.SetDirty(catalog); }
+            }
+            Add("pal_nova_dawn", "Dawn Courier", "nova", 60, new Color32(255, 214, 150, 255));
+            Add("pal_nova_nebula", "Nebula Night", "nova", 120, new Color32(190, 150, 255, 255));
+            Add("pal_nova_glacier", "Glacier Post", "nova", 200, new Color32(170, 230, 255, 255));
+            Add("pal_brick_moss", "Moss Guardian", "brick", 60, new Color32(170, 230, 150, 255));
+            Add("pal_brick_basalt", "Basalt", "brick", 120, new Color32(130, 130, 150, 255));
+            Add("pal_brick_sandstone", "Sandstone", "brick", 200, new Color32(255, 220, 160, 255));
+            Add("pal_luma_copper", "Copper Coil", "luma", 60, new Color32(255, 180, 130, 255));
+            Add("pal_luma_mint", "Mint Circuit", "luma", 120, new Color32(170, 255, 210, 255));
+            Add("pal_luma_midnight", "Midnight Lab", "luma", 200, new Color32(150, 160, 230, 255));
+            Add("pal_rex_lava", "Lava Skate", "rex_rollo", 60, new Color32(255, 160, 120, 255));
+            Add("pal_rex_arctic", "Arctic Roller", "rex_rollo", 120, new Color32(220, 240, 255, 255));
+            Add("pal_rex_neon", "Neon Rink", "rex_rollo", 200, new Color32(255, 150, 240, 255));
+            return catalog;
         }
 
         public const string EnemiesFolder = "Assets/_Project/Data/Enemies";

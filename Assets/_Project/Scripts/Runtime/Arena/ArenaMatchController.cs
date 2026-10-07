@@ -131,7 +131,9 @@ namespace PKR
                     ? (Vector2)spawnPoints[slot % spawnPoints.Length].position
                     : new Vector2(-6f + slot * 4f, 2f);
                 string name = human ? $"P1 {def.displayName.ToUpperInvariant()}" : $"CPU {slot + 1}";
-                var go = FighterFactory.CreateHero(def, spriteMaterial, pos, slot, DamageModel.ArenaPips, SlotTints[slot], name);
+                // You wear your shop palette; CPUs are tinted by slot so they're easy to tell apart.
+                Color tint = human && roster != null ? roster.TintFor(def.id) : SlotTints[slot];
+                var go = FighterFactory.CreateHero(def, spriteMaterial, pos, slot, DamageModel.ArenaPips, tint, name);
                 var motor = go.GetComponent<PlatformerMotor2D>();
                 motor.SetFacing(pos.x <= 0f ? 1 : -1);
 
