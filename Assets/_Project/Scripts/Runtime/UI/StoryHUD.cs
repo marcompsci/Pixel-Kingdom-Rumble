@@ -15,6 +15,7 @@ namespace PKR
 
         Text _hp, _shards, _time, _secrets, _banner;
         float _bannerUntil;
+        readonly System.Collections.Generic.Queue<string> _codexQueue = new System.Collections.Generic.Queue<string>();
         Damageable _playerHealth;
 
         void Awake() => Build();
@@ -23,6 +24,7 @@ namespace PKR
         {
             EventBus<CheckpointActivated>.Subscribe(OnCheckpoint);
             EventBus<SecretFound>.Subscribe(OnSecret);
+            EventBus<CodexEntryUnlocked>.Subscribe(OnCodex);
             EventBus<SettingsChanged>.Subscribe(OnSettings);
         }
 
@@ -30,11 +32,20 @@ namespace PKR
         {
             EventBus<CheckpointActivated>.Unsubscribe(OnCheckpoint);
             EventBus<SecretFound>.Unsubscribe(OnSecret);
+            EventBus<CodexEntryUnlocked>.Unsubscribe(OnCodex);
             EventBus<SettingsChanged>.Unsubscribe(OnSettings);
         }
 
         void OnCheckpoint(CheckpointActivated e) => ShowBanner("CHECKPOINT", 1.5f);
         void OnSecret(SecretFound e) => ShowBanner($"SECRET FOUND  {e.found}/{e.total}", 2f);
+        void OnCodex(CodexEntryUnlocked e)
+        {
+            // Never cover a message that is still showing: queue it and show it next.
+            _codexQueue.Enqueue($"NEW IN CODEX: {(e.displayName ?? e.id ?? "").ToUpperInvariant()}");
+            if (!BannerBusy) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
+        }
+        const float CodexBannerSeconds = 1.8f;
+        bool BannerBusy => _banner.enabled && Time.unscaledTime <= _bannerUntil;
         void OnSettings(SettingsChanged e) => ApplyTheme();
 
         /// <summary>Kept for callers; formatting lives in Core so it is unit-tested.</summary>
@@ -60,6 +71,7 @@ namespace PKR
             _time.text = FormatTime(run.ElapsedSeconds);
 
             if (_banner.enabled && Time.unscaledTime > _bannerUntil) _banner.enabled = false;
+            if (!BannerBusy && _codexQueue.Count > 0) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
         }
 
         static string Bar(int cur, int max)

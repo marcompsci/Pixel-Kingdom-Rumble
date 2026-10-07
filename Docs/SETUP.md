@@ -24,7 +24,7 @@ the repo on top.
    - If asked **"enable the new Input System backends?"** choose **Yes** (Unity restarts).
    - Set **Edit > Project Settings > Player > Other Settings > Active Input Handling** to **Input System Package (New)** if it was not set.
 4. Run **PKR > Configure iOS Player Settings**.
-5. **Window > General > Test Runner**: run **EditMode** (136 tests) and **PlayMode** (29 tests).
+5. **Window > General > Test Runner**: run **EditMode** (145 tests) and **PlayMode** (31 tests).
 5b. **PKR > Build All Scenes**, open `Scenes/00_Boot`, press Play. Open **Window > General > Device Simulator**
     and pick an iPhone to see and use the touch controls with the mouse.
 6. Commit Unity's generated files so the repo becomes complete:

@@ -23,6 +23,7 @@ namespace PKR.EditorTools
             GetOrCreateSunspireTestLevel();
             GetOrCreateWardenLevel();
             GetOrCreateStoryWorld();
+            GetOrCreateCodex();
             AssetDatabase.SaveAssets();
         }
 
@@ -190,6 +191,21 @@ namespace PKR.EditorTools
             if (!world.levels.Contains(warden)) world.levels.Add(warden);
             EditorUtility.SetDirty(world);
             return world;
+        }
+
+        public const string CodexFolder = "Assets/_Project/Data/Codex";
+
+        /// <summary>Codex contents: the roster, every foe type and the Story Quest world. Missing links are filled in.</summary>
+        public static CodexDefinition GetOrCreateCodex()
+        {
+            EditorUtil.EnsureFolder(CodexFolder);
+            var codex = GetOrCreate<CodexDefinition>($"{CodexFolder}/Codex.asset", c => { });
+            if (codex.roster == null) codex.roster = GetOrCreateRoster();
+            if (codex.world == null) codex.world = GetOrCreateStoryWorld();
+            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight() })
+                if (!codex.enemies.Contains(e)) codex.enemies.Add(e);
+            EditorUtility.SetDirty(codex);
+            return codex;
         }
 
         public static LevelDefinition GetOrCreateWardenLevel()

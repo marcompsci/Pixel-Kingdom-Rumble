@@ -46,6 +46,10 @@ renamed or reskinned without code changes. Internal IDs (lowercase) never change
 | — | Tickworks | Lore: the ancient sky-machine | Character/level lore text |
 | — | Star Shards | Currency | `Economy.cs` comments; UI strings |
 | — | Guard Pips / Exposed | Arena mechanic | UI strings |
+| — | Codex | Main-menu encyclopedia | `CodexPanel.cs`; pages come from each definition's `lore` / `codexEntry` |
 | — | Pixel Kingdom Rumble | Product name | `ProjectConfigurator.ProductName` |
+
+Codex save keys are built from internal IDs (`hero:<id>`, `enemy:<id>`, `place:<level id>`), which is one more reason
+never to change an ID after release.
 
 Before release: run a trademark search on the final title and hero names.

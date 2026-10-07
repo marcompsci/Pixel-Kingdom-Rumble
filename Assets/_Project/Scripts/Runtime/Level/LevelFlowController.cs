@@ -64,6 +64,7 @@ namespace PKR
         void Start()
         {
             Run = new LevelRun(level != null ? level.id : "unknown_level");
+            if (level != null) DiscoverCodex(CodexCategory.Place, level.id, level.displayName);
 
             var spots = FindObjectsByType<PickupSpot>(FindObjectsSortMode.None);
             foreach (var s in spots)
@@ -123,7 +124,26 @@ namespace PKR
             SpawnEnemies();
         }
 
-        void OnEnemyDefeated(EnemyAI e) => RemoveEnemy(e, drop: true);
+        void OnEnemyDefeated(EnemyAI e)
+        {
+            var def = e != null ? e.Definition : null;
+            var save = Services.Save;
+            if (def != null && save != null)
+            {
+                if (Codex.RecordDefeat(save.Data, def.id))
+                    EventBus<CodexEntryUnlocked>.Raise(new CodexEntryUnlocked { category = CodexCategory.Enemy, id = def.id, displayName = def.displayName });
+                save.MarkDirty();
+            }
+            RemoveEnemy(e, drop: true);
+        }
+
+        void DiscoverCodex(CodexCategory category, string id, string displayName)
+        {
+            var save = Services.Save;
+            if (save == null || !Codex.Discover(save.Data, category, id)) return;
+            save.MarkDirty();
+            EventBus<CodexEntryUnlocked>.Raise(new CodexEntryUnlocked { category = category, id = id, displayName = displayName });
+        }
 
         void RemoveEnemy(EnemyAI e, bool drop)
         {

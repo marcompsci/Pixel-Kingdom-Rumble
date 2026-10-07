@@ -31,7 +31,7 @@ Also: ~~generic hero kits~~ ✅, ~~CPUs pick random heroes~~ ✅; ~~unlock rules
 - Local multiplayer with controllers (2–4 players) — the `FighterIntent` design already supports it.
 
 ## 4. Meta
-- **Codex**: heroes, enemies (text already in `EnemyDefinition`), stages, lore entries unlocked by play.
+- ~~**Codex**~~ ✅ 2.8: heroes, foes and places unlocked by play, NEW badges, defeat counts. Still to do: lore pages, arena stages, art for places.
 - ~~**Cosmetics shop** for Star Shards~~ ✅ 2.7 (palettes). Still to do: trails, victory poses.
 - **Game Center**: sign-in, leaderboards (best times), achievements.
 - Cloud save (iCloud key-value or Game Center saved games).

@@ -5,8 +5,8 @@ An original 2D pixel-art action platformer + arena brawler for iPhone, built in 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
 > for the rename registry and [Docs/CREDITS_AND_LICENSES.md](Docs/CREDITS_AND_LICENSES.md) for asset sources.
 
-**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss, a level select, two new enemies and a Star Shard shop are in).
-The engine-free rules pass 136 unit
+**Current status:** Phase 1 is **code-complete but not yet run in Unity**; Phase 2 is in progress (all four heroes playable; the Clockwork Warden boss, a level select, two new enemies, a Star Shard shop and the Codex are in).
+The engine-free rules pass 145 unit
 tests under .NET (also in GitHub Actions); everything Unity-side is written and reviewed but has never been
 compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
@@ -105,8 +105,13 @@ the one before it is cleared. The results screen's **LEVELS** button comes back 
 three each (60 / 120 / 200 shards). A palette is worn as soon as you buy it; switch between owned ones or go back to the
 default look any time. Palettes show in Story Quest, Arena Clash (your fighter) and Character Select. Cosmetic only.
 
+**Codex (main menu > CODEX):** HEROES / FOES / PLACES tabs. A page unlocks when you unlock the hero, defeat that foe for
+the first time, or reach that place; locked pages show a silhouette and how to unlock them. Hero pages list health,
+weight, Guard Pips and every move; foe pages count your defeats; place pages show your best rank and time. New pages are
+marked NEW (also on the menu button) until you open them, and Story Quest shows "NEW IN CODEX: ..." when one unlocks.
+
 **Menus (portrait):** the main menu shows your Star Shard total and best Sunspire Meadows result, with
-Story Quest, Arena Clash, Settings and Codex (later). Character select
+Story Quest, Arena Clash, Shop, Settings and Codex. Character select
 lets you browse all four heroes with arrows or cards: Nova and Brick are playable; Luma unlocks when you clear Sunspire
 Meadows and Rex Rollo when you clear it with its secret found (the results screen announces each); locked heroes show
 silhouettes ("coming in a future update"). Your hero choice is saved.
@@ -288,6 +293,8 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 | `UI/MainMenuUI.cs` | Portrait main menu |
 | `UI/CharacterSelectUI.cs` | Portrait hero select with locked silhouettes |
 | `UI/ShopPanel.cs` | Star Shard shop (main menu): buy and wear palettes per unlocked hero |
+| `UI/CodexPanel.cs` | Codex (main menu): tabs, paged entry list, a page per hero / foe / place |
+| `Data/CodexDefinition.cs` | What the Codex lists: roster, foes, Story world |
 | `Data/CosmeticDefinition.cs`, `CosmeticCatalog.cs` | A palette (hero, cost, tint) and the shop's list of them |
 | `UI/LevelSelectUI.cs` | Portrait Story Quest route: a card per level with best rank, time, shards, secrets; unlocks in order |
 | `Data/WorldDefinition.cs` | A Story world: name and levels in play order |
@@ -329,9 +336,9 @@ To show them in the plain Game view, tick **Force Show** on the `TouchControls` 
 
 | Suite | Count | Location | How to run |
 |---|---|---|---|
-| EditMode | 136 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
-| Same EditMode tests without Unity | 136 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
-| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select, new enemies, shop) | 29 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
+| EditMode | 145 | `Assets/_Project/Tests/EditMode` | Unity Test Runner > EditMode |
+| Same EditMode tests without Unity | 145 | `DotnetTests/` | `cd DotnetTests && dotnet run` (.NET 8 SDK) |
+| PlayMode (motor, combat, level, menus, arena, hero kits, Luma, Rex, boss, level select, new enemies, shop, codex) | 31 | `Assets/_Project/Tests/PlayMode` | Unity Test Runner > PlayMode |
 
 EditMode covers combat math, Guard Pips, jump assist, action buffer, jump physics, horizontal acceleration,
 8-way aiming, attack frame phases and cancel windows, enemy patrol/hop logic, level runs, save/settings repair,

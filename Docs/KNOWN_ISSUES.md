@@ -29,7 +29,9 @@
 - Bolt Knight shields only exist in Story Quest; arena fighters have no shields.
 - Levels cleared before the level select existed show rank "-" until replayed (ranks weren't saved before).
 - Shard counts include enemy drops, so the results screen can show more than the level's total (the level select caps it).
-- **Codex** button in the main menu is a placeholder ("later").
+- The Codex covers heroes, foes and places; there are no separate lore pages yet, and places have no art (a sky-colored dot).
+- After updating, pages you had already earned (heroes unlocked, levels cleared) show as NEW once.
+- Defeat counts start at zero for foes defeated before the Codex existed.
 - The shop sells palettes (sprite tints) only; trails, victory poses and other cosmetics are still to come.
 - Palettes for a hero appear in the shop only once that hero is unlocked.
 - **No audio clips**: AudioService and the volume sliders work, but there is nothing to hear.

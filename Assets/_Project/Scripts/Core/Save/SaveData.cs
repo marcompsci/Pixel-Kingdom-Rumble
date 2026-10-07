@@ -35,7 +35,11 @@ namespace PKR.Core
         public List<string> unlockedCharacters = new List<string> { DefaultCharacterId };
         public List<string> ownedCosmetics = new List<string>();
         public List<string> equippedCosmetics = new List<string>();
+        /// <summary>Codex entries unlocked by play ("enemy:enemy_cog_beetle", "place:sq_sunspire_test"). See Codex.</summary>
         public List<string> unlockedCodexEntries = new List<string>();
+        /// <summary>Codex entries the player has opened (no NEW badge).</summary>
+        public List<string> seenCodexEntries = new List<string>();
+        public List<EnemyTally> enemyDefeats = new List<EnemyTally>();
         public List<string> achievements = new List<string>();
         public List<LevelRecord> levels = new List<LevelRecord>();
         public string lastSelectedCharacter = DefaultCharacterId;
@@ -108,6 +112,10 @@ namespace PKR.Core
             if (ownedCosmetics == null) ownedCosmetics = new List<string>();
             if (equippedCosmetics == null) equippedCosmetics = new List<string>();
             if (unlockedCodexEntries == null) unlockedCodexEntries = new List<string>();
+            if (seenCodexEntries == null) seenCodexEntries = new List<string>();
+            if (enemyDefeats == null) enemyDefeats = new List<EnemyTally>();
+            enemyDefeats.RemoveAll(t => t == null || string.IsNullOrEmpty(t.enemyId));
+            foreach (var t in enemyDefeats) if (t.defeated < 0) t.defeated = 0;
             if (achievements == null) achievements = new List<string>();
             if (levels == null) levels = new List<LevelRecord>();
             levels.RemoveAll(l => l == null || string.IsNullOrEmpty(l.levelId));

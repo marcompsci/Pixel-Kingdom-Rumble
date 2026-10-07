@@ -1,8 +1,12 @@
+using PKR.Core;
+
 namespace PKR
 {
     public struct CheckpointActivated { public int index; }
     public struct PlayerRespawned { public bool afterDeath; }
     public struct SecretFound { public string id; public int found; public int total; }
+    /// <summary>A Codex page unlocked during play (first time a foe is defeated or a place is reached).</summary>
+    public struct CodexEntryUnlocked { public CodexCategory category; public string id; public string displayName; }
 
     /// <summary>Raised once when the goal is reached. Everything the level-complete screen needs.</summary>
     public struct LevelCompleted

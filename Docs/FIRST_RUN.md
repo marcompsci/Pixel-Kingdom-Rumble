@@ -15,15 +15,15 @@ Claude with the file and line.
 
 ## B. Tests
 
-- [ ] Test Runner > **EditMode**: 136 tests pass (they already pass under .NET; a failure here means a Unity
+- [ ] Test Runner > **EditMode**: 145 tests pass (they already pass under .NET; a failure here means a Unity
       difference worth reporting).
-- [ ] Test Runner > **PlayMode**: 29 tests. These are the first real check of the physics code.
+- [ ] Test Runner > **PlayMode**: 31 tests. These are the first real check of the physics code.
       Most likely to need tuning: `MotorPlayModeTests` (jump heights) and `ArenaPlayModeTests` (timing).
 
 ## C. Generate content
 
 - [ ] **PKR > Build All Scenes**. Expect log lines for the sandbox, story level, boss arena, menus and arena.
-- [ ] `Assets/_Project/Data` contains the roster, all four heroes with their kits and moves, four enemies and the levels.
+- [ ] `Assets/_Project/Data` contains the roster, all four heroes with their kits and moves, four enemies, the levels and `Codex/Codex.asset`.
 - [ ] `Assets/_Project/Art/Placeholder` contains the `ph_*.png` sprites and they look like pixel art
       (Point filter, no blur).
 - [ ] File > Build Profiles: `00_Boot` is first in the scene list.
@@ -64,7 +64,10 @@ Window > General > Device Simulator, pick an iPhone, open `00_Boot`, press Play.
 - [ ] Timed and Training modes start and end correctly.
 - [ ] Main menu > **SHOP**: your unlocked heroes and their palettes. Buy one (shards go down, it's worn at once),
       switch palettes, DEFAULT LOOK. Character Select, Story Quest and the arena show the palette; hit flashes return to it.
-- [ ] Quit and replay: Star Shards, best times, owned and worn palettes persisted.
+- [ ] Main menu > **CODEX**: Nova and Brick readable, Luma/Rex "???" with their unlock hints until unlocked. Defeat a
+      Cog Beetle in Sunspire Meadows: "NEW IN CODEX: COG BEETLE" shows; back in the menu the button says "1 NEW" (plus
+      the places you reached); its page counts your defeats; opening it clears NEW. Places show best rank and time.
+- [ ] Quit and replay: Star Shards, best times, owned and worn palettes, codex pages and defeat counts persisted.
 
 ## E. iPhone
 

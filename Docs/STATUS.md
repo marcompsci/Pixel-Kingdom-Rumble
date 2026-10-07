@@ -257,3 +257,13 @@ into a ceiling forever; swoops rising through one-way planks aborted; blocked hi
 Fixed during review: the color swatch covered the start of long item names; the shop listed (and revealed) locked
 heroes; the shard-changed event fired with the wrong amount, and on equips.
 
+## 2.8 — Codex (2026-10-07)
+
+| Item | State | Evidence |
+|---|---|---|
+| Core: `Codex` (unlock rules per category, defeat counts, NEW until opened, paging) + new `SaveData` fields | ✅ | 9 new tests; 145/145 pass with `dotnet run` |
+| `CodexDefinition` asset, `CodexPanel` (tabs, paged list, entry pages with silhouettes for locked entries), CODEX button with NEW count, unlocks from `LevelFlowController`, "NEW IN CODEX" banner in `StoryHUD` | 🟡 | Syntax-checked + independent review; not compiled in Unity |
+| 2 PlayMode tests (locked entries stay hidden, foe list pages and wraps; hero move list incl. a combo loop) | 🟡 | Written, not run |
+
+Fixed during review: a method and a property shared the name `Tab` (would not compile); a second "NEW IN CODEX"
+banner within two seconds was dropped (they now queue); long hero taglines overlapped the lore; Nova read as MEDIUM weight.

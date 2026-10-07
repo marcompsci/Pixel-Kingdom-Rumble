@@ -6,7 +6,7 @@ namespace PKR
     /// <summary>
     /// Portrait main menu: title, Star Shard total, best result for the test level, and
     /// Story Quest / Arena Clash / Shop / Settings / Codex. Modes lead to Character Select.
-    /// The Shop (Star Shard palettes) and Settings open in place as sub-panels.
+    /// The Shop (Star Shard palettes), Codex and Settings open in place as sub-panels.
     /// Buttons for scenes that aren't in the build yet are shown disabled instead of failing.
     /// </summary>
     public class MainMenuUI : MonoBehaviour
@@ -14,10 +14,13 @@ namespace PKR
         [SerializeField] LevelDefinition featuredLevel;
         [Tooltip("Heroes and their shop palettes (roster.cosmetics). The SHOP button hides without it.")]
         [SerializeField] CharacterRoster roster;
+        [Tooltip("Heroes, foes and places for the CODEX button. The button shows as disabled without it.")]
+        [SerializeField] CodexDefinition codex;
 
-        RectTransform _menuRoot, _settingsRoot, _shopRoot;
+        RectTransform _menuRoot, _settingsRoot, _shopRoot, _codexRoot;
         SettingsPanel _settings;
         ShopPanel _shop;
+        CodexPanel _codex;
 
         void Awake()
         {
@@ -30,6 +33,9 @@ namespace PKR
             _shopRoot = UIFactory.Rect("Shop", safe);
             UIFactory.Stretch(_shopRoot);
             _shop = gameObject.AddComponent<ShopPanel>();
+            _codexRoot = UIFactory.Rect("Codex", safe);
+            UIFactory.Stretch(_codexRoot);
+            _codex = gameObject.AddComponent<CodexPanel>();
         }
 
         void OnEnable() => EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
@@ -50,6 +56,7 @@ namespace PKR
         {
             _settingsRoot.gameObject.SetActive(false);
             _shopRoot.gameObject.SetActive(false);
+            _codexRoot.gameObject.SetActive(false);
             _menuRoot.gameObject.SetActive(true);
             BuildMenu();
         }
@@ -85,7 +92,12 @@ namespace PKR
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
                 UIFactory.Button(panel, "SHOP", ShowShop);
             UIFactory.Button(panel, "SETTINGS", ShowSettings);
-            UIFactory.Button(panel, "CODEX (SOON)", null, interactable: false);
+            if (codex != null)
+            {
+                int unseen = codex.Progress().unseen;
+                UIFactory.Button(panel, unseen > 0 ? $"CODEX  ·  {unseen} NEW" : "CODEX", ShowCodex);
+            }
+            else UIFactory.Button(panel, "CODEX", null, interactable: false);
             UIFactory.Label(panel, "Prototype · placeholder art", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Select(story);
         }
@@ -101,6 +113,13 @@ namespace PKR
             _menuRoot.gameObject.SetActive(false);
             _shopRoot.gameObject.SetActive(true);
             _shop.Open(_shopRoot, roster, ShowMenu);
+        }
+
+        void ShowCodex()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _codexRoot.gameObject.SetActive(true);
+            _codex.Open(_codexRoot, codex, ShowMenu);
         }
 
         void ShowSettings()
