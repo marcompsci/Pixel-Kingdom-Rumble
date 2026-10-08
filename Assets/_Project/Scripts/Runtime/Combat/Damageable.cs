@@ -36,6 +36,10 @@ namespace PKR
     /// </summary>
     public class Damageable : MonoBehaviour
     {
+        int _runtimeId;
+        /// <summary>Unique id for this play session (hit logs). See RuntimeIds.</summary>
+        public int RuntimeId => _runtimeId != 0 ? _runtimeId : (_runtimeId = RuntimeIds.Next());
+
         [SerializeField] DamageModel model = DamageModel.StoryHealth;
         [Tooltip("Attacks from the same team are ignored. -1 = neutral (anyone can hit it).")]
         [SerializeField] int team = TeamIds.Enemy;

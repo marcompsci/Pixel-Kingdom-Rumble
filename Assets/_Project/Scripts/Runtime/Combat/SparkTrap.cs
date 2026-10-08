@@ -57,7 +57,7 @@ namespace PKR
         public static SparkTrap Spawn(MoveDefinition move, Vector2 origin, int facing, int team,
                                       Damageable owner, AttackRunner source, Material material)
         {
-            int key = source != null ? source.GetInstanceID() : 0;
+            int key = source != null ? source.RuntimeId : 0;
             if (ActiveByOwner.TryGetValue(key, out var old) && old != null && old.isActiveAndEnabled) old.Despawn();
 
             var go = PoolService.Get(PoolKey, CreateTemplate);

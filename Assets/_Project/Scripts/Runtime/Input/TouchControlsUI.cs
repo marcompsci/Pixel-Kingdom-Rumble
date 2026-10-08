@@ -167,7 +167,7 @@ namespace PKR
         static void EnsureEventSystem()
         {
             if (EventSystem.current != null) return;
-            if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() != null) return;
+            if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null) return;
             // Per-scene (not DontDestroyOnLoad) so it never duplicates a scene's own EventSystem.
             var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();

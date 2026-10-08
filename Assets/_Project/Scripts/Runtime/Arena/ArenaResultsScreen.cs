@@ -17,8 +17,8 @@ namespace PKR
 
         void Awake()
         {
-            if (match == null) match = FindFirstObjectByType<ArenaMatchController>();
-            if (setup == null) setup = FindFirstObjectByType<ArenaSetupUI>();
+            if (match == null) match = FindAnyObjectByType<ArenaMatchController>();
+            if (setup == null) setup = FindAnyObjectByType<ArenaSetupUI>();
             var safe = UIFactory.CreateCanvas(transform, "ArenaResultsCanvas", sortingOrder, landscape: true, out _);
             _root = UIFactory.Rect("Results", safe);
             UIFactory.Stretch(_root);

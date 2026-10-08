@@ -40,7 +40,7 @@ namespace PKR
             _self = GetComponent<Damageable>();
             _abilities = GetComponent<HeroAbilities>();
             _attacks = GetComponent<AttackRunner>();
-            if (_rng == null) _rng = new System.Random(GetInstanceID());
+            if (_rng == null) _rng = new System.Random(unchecked(System.Environment.TickCount + RuntimeIds.Next() * 7919));
         }
 
         void FixedUpdate()

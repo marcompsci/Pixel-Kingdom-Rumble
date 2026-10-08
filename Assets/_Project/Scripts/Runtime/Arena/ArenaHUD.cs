@@ -21,7 +21,7 @@ namespace PKR
 
         void Awake()
         {
-            if (match == null) match = FindFirstObjectByType<ArenaMatchController>();
+            if (match == null) match = FindAnyObjectByType<ArenaMatchController>();
             _safe = UIFactory.CreateCanvas(transform, "ArenaHUDCanvas", sortingOrder, landscape: true, out _);
 
             _top = UIFactory.Label(_safe, "", 48, TextAnchor.UpperCenter, 70f);

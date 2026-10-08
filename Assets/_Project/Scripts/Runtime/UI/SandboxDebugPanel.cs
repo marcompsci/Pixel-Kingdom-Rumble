@@ -23,7 +23,7 @@ namespace PKR
         {
             if (motor != null) _abilities = motor.GetComponent<HeroAbilities>();
             if (motor != null) _attacks = motor.GetComponent<AttackRunner>();
-            _touch = Object.FindFirstObjectByType<TouchControlsUI>();
+            _touch = Object.FindAnyObjectByType<TouchControlsUI>();
         }
 
         void Update()

@@ -42,6 +42,9 @@ namespace PKR
         HitData _currentHit; // the current move's hit, scaled by speed for momentum moves
         float _chainSpeed;   // forward speed when the first move of a chain started (follow-ups reuse it)
         bool _usingOverride;
+        int _runtimeId;
+        /// <summary>Unique id for this play session (one Spark Coil per attacker). See RuntimeIds.</summary>
+        public int RuntimeId => _runtimeId != 0 ? _runtimeId : (_runtimeId = RuntimeIds.Next());
         readonly SwingHitLog _log = new SwingHitLog();
         readonly List<Damageable> _targets = new List<Damageable>();
 
@@ -181,7 +184,7 @@ namespace PKR
             foreach (var target in _targets)
             {
                 if (target == _self) continue;
-                if (!_log.TryRegister(target.GetInstanceID())) continue;
+                if (!_log.TryRegister(target.RuntimeId)) continue;
                 int dir = radius > 0f ? (target.transform.position.x >= center.x ? 1 : -1) : facing;
                 // Source x for shields: the hit's center for circles (shockwaves), the attacker's body for boxes.
                 float sourceX = radius > 0f ? center.x : _motor.Body.position.x;

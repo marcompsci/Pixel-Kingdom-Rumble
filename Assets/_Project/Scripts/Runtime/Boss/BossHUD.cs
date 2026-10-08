@@ -20,7 +20,7 @@ namespace PKR
 
         void Awake()
         {
-            if (boss == null) boss = FindFirstObjectByType<ClockworkWarden>();
+            if (boss == null) boss = FindAnyObjectByType<ClockworkWarden>();
             Build();
         }
 

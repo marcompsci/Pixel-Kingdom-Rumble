@@ -66,15 +66,15 @@ namespace PKR
             Run = new LevelRun(level != null ? level.id : "unknown_level");
             if (level != null) DiscoverCodex(CodexCategory.Place, level.id, level.displayName);
 
-            var spots = FindObjectsByType<PickupSpot>(FindObjectsSortMode.None);
+            var spots = FindObjectsByType<PickupSpot>();
             foreach (var s in spots)
             {
                 if (s.kind == PickupKind.StarShard) TotalShards += s.value;
                 Pickup.Spawn(s.kind, s.value, s.transform.position, SpriteFor(s.kind), spriteMaterial);
             }
-            TotalSecrets = FindObjectsByType<SecretArea>(FindObjectsSortMode.None).Length;
+            TotalSecrets = FindObjectsByType<SecretArea>().Length;
 
-            _enemySpawns = FindObjectsByType<EnemySpawnPoint>(FindObjectsSortMode.None);
+            _enemySpawns = FindObjectsByType<EnemySpawnPoint>();
             SpawnEnemies();
 
             if (PlayerHealth != null) PlayerHealth.Died += OnPlayerDied;

@@ -26,7 +26,7 @@ namespace PKR
         void Awake()
         {
             if (motor == null) motor = GetComponent<PlatformerMotor2D>();
-            if (touchControls == null) touchControls = Object.FindFirstObjectByType<TouchControlsUI>();
+            if (touchControls == null) touchControls = Object.FindAnyObjectByType<TouchControlsUI>();
 
             _move = new InputAction("Move", InputActionType.Value, expectedControlType: "Vector2");
             _move.AddCompositeBinding("2DVector")

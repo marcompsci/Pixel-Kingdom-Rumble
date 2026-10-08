@@ -119,7 +119,7 @@ namespace PKR
         {
             _menu.gameObject.SetActive(false);
             _settingsRoot.gameObject.SetActive(true);
-            var touch = Object.FindFirstObjectByType<TouchControlsUI>();
+            var touch = Object.FindAnyObjectByType<TouchControlsUI>();
             System.Action edit = null;
             if (touch != null) edit = () => BeginLayoutEdit(touch);
             _settings.Open(_settingsRoot, landscape: true, onBack: ShowMenu, onEditLayout: edit);
