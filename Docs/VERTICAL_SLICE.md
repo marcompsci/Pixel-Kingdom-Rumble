@@ -3,7 +3,7 @@
 Feature freeze is on. No new features until this page's three stages are done. The backlog
 ([PHASE2_BACKLOG.md](PHASE2_BACKLOG.md)) waits for the playtest results.
 
-## Stage 1: it compiles and the tests pass (this week)
+## Stage 1: it compiles and the tests pass ✅ (done 2026-10-08, except a human play-through)
 
 1. Push the waiting commits (GitHub Desktop > **Push origin**).
 2. Close this project in Unity if it's open, then double-click **`Tools/unity_check.command`** in Finder.
@@ -18,6 +18,10 @@ Feature freeze is on. No new features until this page's three stages are done. T
 
 Note: the batch check creates default `ProjectSettings/`. Before the iPhone build, set the URP 2D renderer as in
 [SETUP.md](SETUP.md) and commit `ProjectSettings/`.
+
+**Put it on your iPhone:** plug the iPhone into the Mac, unlock it (Developer Mode on), then double-click
+`Tools/ios_build.command` (or, with the watcher running, Claude creates `Logs/ios_request`). It builds, signs,
+installs and launches the game.
 
 **Done when:** 0 errors, green tests, and you can play Boot → Sunspire Meadows → Clockwork Warden → results
 in the Editor without a crash.

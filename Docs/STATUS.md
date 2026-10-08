@@ -277,3 +277,19 @@ banner within two seconds was dropped (they now queue); long hero taglines overl
 
 Found while checking the Mac: the installed Editor is **Unity 6000.6.3f1** (the manifest targets 6.0 LTS packages, so
 the first import will upgrade some packages), and the project has never been opened in Unity (no `ProjectSettings/`).
+
+## Stage 1 result: it compiles, the tests pass, it builds for iPhone (2026-10-08)
+
+First real run, on Omari's Mac with **Unity 6000.6.4f1** via `Tools/unity_check.command` / `unity_check_watch.command`:
+
+| Item | State | Evidence |
+|---|---|---|
+| Compile (Runtime, Editor, both test assemblies) | ✅ | 0 errors after fixing `GetInstanceID` (obsolete-as-error in 6.6) and deprecated find APIs |
+| PKR setup + Build All Scenes in batch mode | ✅ | All 7 scenes + data + sprites generated, after builders were changed to open the new scene before loading assets |
+| EditMode tests | ✅ | 145/145 passed in Unity |
+| PlayMode tests | ✅ | 39/39 passed in Unity (31 existing + 8 new scene smoke tests: every scene loads and runs 3 s without errors; the Story hero runs right) |
+| URP 2D renderer | ✅ | `RenderPipelineSetup` creates/assigns `Settings/Rendering/PKR_URP2D.asset` |
+| iOS build | ✅ | Unity Xcode export + `xcodebuild` with automatic signing (team X6LZQ3FS36): BUILD SUCCEEDED, `PixelKingdomRumble.app` |
+| Install on iPhone | ⬜ | Both iPhones showed "unavailable" (not plugged in / asleep) |
+| Played by a human (Editor or phone) | ⬜ | Nobody has looked at it yet; smoke tests only prove it runs without errors |
+| Project files committed | ✅ | `ProjectSettings/`, upgraded `Packages/`, generated Data/Scenes/Art (bd6fdcd); GitHub CI green |

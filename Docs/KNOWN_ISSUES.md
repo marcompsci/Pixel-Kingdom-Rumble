@@ -1,5 +1,11 @@
 # Known issues and limits
 
+## Verified 2026-10-08
+
+Compiles in Unity 6000.6.4f1, all scenes build, 145 EditMode + 39 PlayMode tests pass in Unity, and the signed iOS
+build succeeds. See STATUS.md "Stage 1 result". Everything below that says "never compiled" is now outdated for
+compiling and tests; **no human has played it yet**, and nothing has run on an iPhone.
+
 ## Not verified yet (the big one)
 
 - **No Unity compile or play session has happened.** All Unity-side code was syntax-checked with Roslyn and
