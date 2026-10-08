@@ -9,6 +9,8 @@
 # The first run imports everything and can take 10-20 minutes.
 
 cd "$(dirname "$0")/.." || exit 1
+# PKR_NO_PAUSE=1 (set by unity_check_watch.command) skips the "Press Return" prompt.
+pause_end() { [ -z "$PKR_NO_PAUSE" ] && read -r -p "Press Return to close." _; }
 PROJ="$(pwd)"
 OUT="$PROJ/Logs/check"
 mkdir -p "$OUT"
@@ -17,7 +19,7 @@ rm -f "$OUT"/*
 UNITY="$(ls -d /Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity 2>/dev/null | sort -V | tail -1)"
 if [ -z "$UNITY" ]; then
   echo "Unity Editor not found under /Applications/Unity/Hub/Editor. Install Unity 6 with Unity Hub." | tee "$OUT/SUMMARY.txt"
-  read -r -p "Press Return to close." _; exit 1
+  pause_end; exit 1
 fi
 
 say() { echo "$@" | tee -a "$OUT/SUMMARY.txt"; }
@@ -38,7 +40,7 @@ if [ "$ERRS" != "0" ]; then
   head -20 "$OUT/compile_errors.txt" | tee -a "$OUT/SUMMARY.txt"
   say ""
   say "STOPPED: fix compile errors first. Tell Claude 'check done'."
-  read -r -p "Press Return to close." _; exit 1
+  pause_end; exit 1
 fi
 
 # 2. PKR setup + scene builders
@@ -71,4 +73,4 @@ run_tests PlayMode 4
 
 say ""
 say "DONE. Tell Claude 'check done'."
-read -r -p "Press Return to close." _
+pause_end

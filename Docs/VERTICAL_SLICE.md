@@ -9,6 +9,8 @@ Feature freeze is on. No new features until this page's three stages are done. T
 2. Close this project in Unity if it's open, then double-click **`Tools/unity_check.command`** in Finder.
    It imports the project, compiles, builds every scene and runs both test suites without opening the
    Editor window, and writes `Logs/check/SUMMARY.txt`. First run: 10–20 minutes.
+   **Hands-off option:** double-click `Tools/unity_check_watch.command` instead and leave its Terminal window open.
+   It reruns the check whenever Claude drops a request file after pulling a fix, so nobody has to click.
 3. Tell Claude "check done". Claude reads the logs, fixes, and sends a new commit. Repeat until the summary says
    **0 compile errors, scenes built OK, all EditMode and PlayMode tests passed**.
 4. Then open the project in the Editor (Unity Hub > Add > `~/GameDev/Pixel-Kingdom-Rumble`) and work through
