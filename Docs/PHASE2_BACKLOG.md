@@ -1,5 +1,7 @@
 # Phase 2 backlog
 
+**Feature freeze (2026-10-08):** nothing below starts until [VERTICAL_SLICE.md](VERTICAL_SLICE.md) is done.
+
 Ordered by what unblocks the most. Step 0 comes first because everything else builds on Phase 1 actually running.
 
 ## 0. Make Phase 1 real (before new features)

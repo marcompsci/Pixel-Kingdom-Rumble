@@ -6,6 +6,10 @@ Claude with the file and line.
 
 ## A. Open the project (about 15 minutes)
 
+**Fastest first check:** double-click `Tools/unity_check.command` in Finder (project closed in Unity). It compiles,
+builds the scenes and runs both test suites without the Editor UI, and writes `Logs/check/SUMMARY.txt` for Claude.
+See [VERTICAL_SLICE.md](VERTICAL_SLICE.md).
+
 - [ ] Create the project as in [SETUP.md](SETUP.md) (Universal 2D template + this repo).
 - [ ] Unity opens with **0 compile errors** in the Console. *If not, this is the first thing to fix:
       copy the first red error (file + line).*

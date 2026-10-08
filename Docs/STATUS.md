@@ -267,3 +267,13 @@ heroes; the shard-changed event fired with the wrong amount, and on equips.
 
 Fixed during review: a method and a property shared the name `Tab` (would not compile); a second "NEW IN CODEX"
 banner within two seconds was dropped (they now queue); long hero taglines overlapped the lore; Nova read as MEDIUM weight.
+
+## Feature freeze: "Make it real" (2026-10-08)
+
+| Item | State | Evidence |
+|---|---|---|
+| `Tools/unity_check.command` + `BatchCheck.SetupAndBuild` (batch compile, PKR setup, scene build, EditMode + PlayMode tests → `Logs/check/SUMMARY.txt`) | 🟡 | Shell syntax checked; never run |
+| Plan: [VERTICAL_SLICE.md](VERTICAL_SLICE.md) (stages, slice targets, playtest kit, decision rubric); [DEVLOG.md](DEVLOG.md) entry 001 | ✅ | Docs |
+
+Found while checking the Mac: the installed Editor is **Unity 6000.6.3f1** (the manifest targets 6.0 LTS packages, so
+the first import will upgrade some packages), and the project has never been opened in Unity (no `ProjectSettings/`).

@@ -12,6 +12,8 @@ compiled or played. Start with the [first-run checklist](Docs/FIRST_RUN.md).
 
 | Doc | What's in it |
 |---|---|
+| [Docs/VERTICAL_SLICE.md](Docs/VERTICAL_SLICE.md) | **Current focus:** feature freeze, one-click Unity check, vertical slice, 5-person playtest, decisions |
+| [Docs/DEVLOG.md](Docs/DEVLOG.md) | Build-in-public devlog entries and post drafts |
 | [Docs/STATUS.md](Docs/STATUS.md) | Honest per-increment log: verified vs written |
 | [Docs/SETUP.md](Docs/SETUP.md) | Create the Unity project, build for iPhone |
 | [Docs/FIRST_RUN.md](Docs/FIRST_RUN.md) | Step-by-step checklist for the first Unity + iPhone run |
