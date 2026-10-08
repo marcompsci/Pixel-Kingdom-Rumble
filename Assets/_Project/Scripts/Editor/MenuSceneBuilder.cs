@@ -29,6 +29,7 @@ namespace PKR.EditorTools
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             EditorUtil.EnsureLayers();
+            RenderPipelineSetup.EnsureURP2D();
             DataAssets.CreateAll();
             SandboxBuilder.BuildNoPrompt();
             StoryLevelBuilder.BuildNoPrompt();

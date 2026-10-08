@@ -13,6 +13,7 @@ namespace PKR.EditorTools
         // Change before App Store submission. Must match the App ID in your Apple Developer account.
         public const string DefaultBundleId = "com.marcompsci.pixelkingdomrumble";
         public const string ProductName = "Pixel Kingdom Rumble";
+        public const string AppleTeamId = "X6LZQ3FS36";
         public const string MinIOSVersion = "15.0";
 
         [MenuItem("PKR/Configure iOS Player Settings", priority = 1)]
@@ -24,8 +25,12 @@ namespace PKR.EditorTools
 
             var ios = NamedBuildTarget.iOS;
             string currentId = PlayerSettings.GetApplicationIdentifier(ios);
-            if (string.IsNullOrEmpty(currentId) || currentId.StartsWith("com.DefaultCompany") || currentId.StartsWith("com.Unity"))
+            if (string.IsNullOrEmpty(currentId) || currentId.StartsWith("com.DefaultCompany") || currentId.StartsWith("com.Unity") ||
+                currentId.Contains("Pixel-Kingdom-Rumble")) // Unity's auto id from the folder name
                 PlayerSettings.SetApplicationIdentifier(ios, DefaultBundleId);
+            // Automatic signing with Omari's Apple Developer team (Team ID is public, not a secret).
+            if (string.IsNullOrEmpty(PlayerSettings.iOS.appleDeveloperTeamID)) PlayerSettings.iOS.appleDeveloperTeamID = AppleTeamId;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = true;
 
             PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
             PlayerSettings.iOS.targetOSVersionString = MinIOSVersion;

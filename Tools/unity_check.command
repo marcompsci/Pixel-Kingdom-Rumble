@@ -11,6 +11,8 @@
 cd "$(dirname "$0")/.." || exit 1
 # PKR_NO_PAUSE=1 (set by unity_check_watch.command) skips the "Press Return" prompt.
 pause_end() { [ -z "$PKR_NO_PAUSE" ] && read -r -p "Press Return to close." _; }
+# The watcher only knows about check requests; an iOS build request rides along with one.
+if [ -f Logs/ios_request ]; then rm -f Logs/ios_request; exec bash Tools/ios_build.command; fi
 PROJ="$(pwd)"
 OUT="$PROJ/Logs/check"
 mkdir -p "$OUT"
