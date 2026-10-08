@@ -44,9 +44,8 @@ namespace PKR.EditorTools
         static void BuildMenusNoPrompt()
         {
             EditorUtil.EnsureLayers();
-            var roster = DataAssets.GetOrCreateRoster();
-            var level = DataAssets.GetOrCreateSunspireTestLevel();
             EditorUtil.EnsureFolder(Folder);
+            // Assets are fetched after each NewUiScene: opening a scene unloads assets loaded before it.
 
             // 00_Boot
             string bootPath = $"{Folder}/{SceneIds.Boot}.unity";
@@ -60,8 +59,8 @@ namespace PKR.EditorTools
             string menuPath = $"{Folder}/{SceneIds.MainMenu}.unity";
             var menu = NewUiScene();
             var menuUi = new GameObject("MainMenu").AddComponent<MainMenuUI>();
-            EditorUtil.SetField(menuUi, "featuredLevel", level);
-            EditorUtil.SetField(menuUi, "roster", roster);
+            EditorUtil.SetField(menuUi, "featuredLevel", DataAssets.GetOrCreateSunspireTestLevel());
+            EditorUtil.SetField(menuUi, "roster", DataAssets.GetOrCreateRoster());
             EditorUtil.SetField(menuUi, "codex", DataAssets.GetOrCreateCodex());
             EditorSceneManager.SaveScene(menu, menuPath);
             EditorUtil.AddSceneToBuild(menuPath);
@@ -70,7 +69,7 @@ namespace PKR.EditorTools
             string selectPath = $"{Folder}/{SceneIds.CharacterSelect}.unity";
             var select = NewUiScene();
             var selectUi = new GameObject("CharacterSelect").AddComponent<CharacterSelectUI>();
-            EditorUtil.SetField(selectUi, "roster", roster);
+            EditorUtil.SetField(selectUi, "roster", DataAssets.GetOrCreateRoster());
             EditorSceneManager.SaveScene(select, selectPath);
             EditorUtil.AddSceneToBuild(selectPath);
 

@@ -37,6 +37,9 @@ namespace PKR.EditorTools
 
             _shardCount = 0;
             EditorUtil.EnsureLayers();
+            // New scene FIRST: opening a scene unloads assets loaded before it, and Unity 6.6 then throws
+            // "has been destroyed" when a builder still holds them (seen in the first batch build).
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var nova = DataAssets.GetOrCreateNova();
             var beetle = DataAssets.GetOrCreateCogBeetle();
             var tick = DataAssets.GetOrCreateSpringTick();
@@ -55,7 +58,6 @@ namespace PKR.EditorTools
             var shard = PlaceholderArt.StarShard();
             var health = PlaceholderArt.HealthCrystal();
 
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // --- Camera ------------------------------------------------------------------------
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };

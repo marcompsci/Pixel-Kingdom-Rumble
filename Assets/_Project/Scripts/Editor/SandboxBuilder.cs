@@ -31,13 +31,15 @@ namespace PKR.EditorTools
         {
 
             EditorUtil.EnsureLayers();
+            // New scene FIRST: opening a scene unloads assets loaded before it, and Unity 6.6 then throws
+            // "has been destroyed" when a builder still holds them (seen in the first batch build).
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var nova = DataAssets.GetOrCreateNova();
             var groundSprite = PlaceholderArt.Ground();
             var stoneSprite = PlaceholderArt.StoneBlock();
             var oneWaySprite = PlaceholderArt.OneWay();
             var mat = EditorUtil.UnlitSpriteMaterial();
 
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // --- Camera -----------------------------------------------------------------------
             var camGo = new GameObject("Main Camera");
