@@ -31,3 +31,6 @@ crashlytics-buildid.txt
 DotnetTests/bin/
 DotnetTests/obj/
 .DS_Store
+
+# Unity 6.6 solution file
+*.slnx

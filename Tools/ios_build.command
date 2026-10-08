@@ -44,10 +44,13 @@ say "      OK: $APP"
 
 say "[3/3] Installing on a connected iPhone..."
 xcrun devicectl list devices > "$OUT/devices.txt" 2>&1
-DEVICE="$(grep -iE "iphone" "$OUT/devices.txt" | grep -iE "available|connected" | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}|[0-9A-F]{8}-[0-9A-F]{16}" | head -1)"
+# Column 4 is the state; "unavailable" means asleep, locked, or not connected.
+DEVICE="$(grep -i "iphone" "$OUT/devices.txt" | grep -viE "unavailable" | grep -iE "available|connected" \
+  | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" | head -1)"
 if [ -z "$DEVICE" ]; then
-  say "      No connected iPhone found (Logs/ios/devices.txt). Plug the iPhone in with a cable, unlock it, tap Trust,"
-  say "      and turn on Developer Mode (Settings > Privacy & Security). Then run this again."
+  say "      No reachable iPhone (Logs/ios/devices.txt lists them; 'unavailable' = not connected or asleep)."
+  say "      Plug the iPhone into the Mac with a cable, unlock it, tap Trust if asked, and make sure Developer Mode"
+  say "      is on (Settings > Privacy & Security). Then run this again; the app is already built."
   pause_end; exit 2
 fi
 xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.log" 2>&1 \
