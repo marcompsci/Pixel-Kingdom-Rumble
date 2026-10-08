@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: Luma
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: luma
+  displayName: Luma
+  tagline: Inventor. Her gloves pull sparks out of thin air.
+  lore: Luma repairs Tickworks relays for a living and builds things she shouldn't in her spare time. Her magnet gloves can drag loose energy shards toward her or lock them into a barrier for a few precious seconds.
+  unlockedByDefault: 0
+  playableInThisBuild: 1
+  unlockByClearingLevelId: sq_sunspire_test
+  unlockMinSecrets: 0
+  unlockHint: Clear Sunspire Meadows
+  placeholderColor: {r: 0.9411765, g: 0.5176471, b: 0.20392157, a: 1}
+  bodySprite: {fileID: 21300000, guid: a20bb55b36f964fbdaa9cc034d43780a, type: 3}
+  portrait: {fileID: 0}
+  movement:
+    runSpeed: 7.2
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3
+    timeToApex: 0.37
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 5
+  weight: 0.95
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 2a1b1d15fb3b7486b8c51324e276f7f9, type: 2}
+  kit: {fileID: 11400000, guid: 832e105231a1f409bb3b369d7c25fea6, type: 2}

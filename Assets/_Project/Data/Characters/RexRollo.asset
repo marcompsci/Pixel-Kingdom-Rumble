@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: RexRollo
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: rex_rollo
+  displayName: Rex Rollo
+  tagline: Roller-skating lizard. Brakes are optional.
+  lore: Rex Rollo learned to skate on the brass rails that ring the floating islands and never saw a reason to stop. The faster he goes, the harder he hits; the trick is getting him to turn.
+  unlockedByDefault: 0
+  playableInThisBuild: 1
+  unlockByClearingLevelId: sq_sunspire_test
+  unlockMinSecrets: 1
+  unlockHint: Clear Sunspire Meadows and find its secret
+  placeholderColor: {r: 0.36078432, g: 0.76862746, b: 0.3764706, a: 1}
+  bodySprite: {fileID: 21300000, guid: ebd49c904e1074d71ac361cd23e29d85, type: 3}
+  portrait: {fileID: 0}
+  movement:
+    runSpeed: 9.5
+    groundAcceleration: 28
+    groundDeceleration: 60
+    airAcceleration: 30
+    airDeceleration: 10
+    jumpHeight: 3
+    timeToApex: 0.36
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: 7
+    skidDeceleration: 45
+    wallRideTime: 0.45
+    wallRideSpeed: 6.5
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 9
+  maxHealth: 5
+  weight: 1
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 12.5
+  dodgeDuration: 0.24
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 46d8840a2776f4750afa52574fb30a9b, type: 2}
+  kit: {fileID: 11400000, guid: f10aea685db874a5fb47c9a75d3abe31, type: 2}

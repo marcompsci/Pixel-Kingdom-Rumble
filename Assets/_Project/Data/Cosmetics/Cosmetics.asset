@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d0cdc5d375fafac2ce9299e462199ca, type: 3}
+  m_Name: Cosmetics
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CosmeticCatalog
+  items:
+  - {fileID: 11400000, guid: 2119e5e22bdcd48e3bd3871804cfda0f, type: 2}
+  - {fileID: 11400000, guid: cc329ab8bd34542e6a11187332ca1ac4, type: 2}
+  - {fileID: 11400000, guid: 2b34f2fc4f1c9452ab1405b1506a7f39, type: 2}
+  - {fileID: 11400000, guid: 0b1052cc02aa94df68c59ddff5da24e7, type: 2}
+  - {fileID: 11400000, guid: 9279326d87cec4ecbb8322b96be7958f, type: 2}
+  - {fileID: 11400000, guid: 88dc32ba971a04f2da2fb7ed8b12f96a, type: 2}
+  - {fileID: 11400000, guid: b776639073c344a29976420173466cde, type: 2}
+  - {fileID: 11400000, guid: 082db9425bc3945d2967ebddb7683ef1, type: 2}
+  - {fileID: 11400000, guid: 728fc1f22a3a741309e3c259824d6e0a, type: 2}
+  - {fileID: 11400000, guid: a62f423508a9f41568d407caa5de8a39, type: 2}
+  - {fileID: 11400000, guid: d966e4746b6434f96864e6dc04f58f11, type: 2}
+  - {fileID: 11400000, guid: 190cf20f49dc241538b7923a447bf3e4, type: 2}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Nova_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: e314e2fae551345b0951ba319e4b4a04, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: de8c0b233f4c24b36ae3c1d8b5a0241e, type: 2}
+  airAttack: {fileID: 11400000, guid: 2fcfc701a3e994ddba9b13543d18ab71, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 46572e6609e9f4d94b6718a58a23f01e, type: 2}
+  airSpecial: {fileID: 0}
+  abilityImpact: {fileID: 11400000, guid: 7cb33529c5c3f4552b1046196776d0c2, type: 2}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Brick_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 382a39338d3cc4e2e9f0b10bfb55bc0c, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 6f7dbea52e0c447e9a69e20595c0254b, type: 2}
+  airAttack: {fileID: 11400000, guid: e097f2a33924e42e8af02c503125b46b, type: 2}
+  groundSpecial: {fileID: 11400000, guid: d4ea8b37e47984a8f9b1c94d8dd8c7b9, type: 2}
+  airSpecial: {fileID: 0}
+  abilityImpact: {fileID: 11400000, guid: 9ff281dc77e5d43f6a9ba59aced39c70, type: 2}

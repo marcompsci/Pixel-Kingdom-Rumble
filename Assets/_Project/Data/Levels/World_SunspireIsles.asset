@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d005f7af1742d24824e4a736037e1b6, type: 3}
+  m_Name: World_SunspireIsles
+  m_EditorClassIdentifier: PKR.Runtime::PKR.WorldDefinition
+  displayName: Sunspire Isles
+  description: Floating meadows held up by the Tickworks. Something in the engine hall is grinding backward.
+  levels:
+  - {fileID: 11400000, guid: c856e40558f7f41eeb84494cc3083949, type: 2}
+  - {fileID: 11400000, guid: eca366cc40a384cd9b3da66e3b94139c, type: 2}

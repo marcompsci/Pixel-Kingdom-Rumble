@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: CogBeetle
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_cog_beetle
+  displayName: Cog Beetle
+  codexEntry: Maintenance drones of the Tickworks. Their shells still turn with the great gears, and they patrol the same path they were wound for centuries ago.
+  sprite: {fileID: 21300000, guid: 81490876a850d431a80d4fe29fe3206a, type: 3}
+  bodySize: {x: 0.9, y: 0.7}
+  maxHealth: 2
+  weight: 1
+  moveSpeed: 0.28
+  behavior: 0
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  shardDrop: 2

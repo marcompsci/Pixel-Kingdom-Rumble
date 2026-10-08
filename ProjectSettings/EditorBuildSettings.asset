@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Project/Scenes/00_Boot.unity
+    guid: 94b829d07b8734d5aa531d97726d0b1b
+  - enabled: 1
+    path: Assets/_Project/Scenes/Sandbox/SQ_MovementSandbox.unity
+    guid: f40f8b382ba1b45b0965ed4d2806e34d
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_SunspireMeadows_Test.unity
+    guid: 3e29ae59b722d4d9c946d649b4db1f4e
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_ClockworkWarden_Test.unity
+    guid: 805700d22c2bf4488a11ce75f477dd54
+  - enabled: 1
+    path: Assets/_Project/Scenes/01_MainMenu.unity
+    guid: 304d7d5e18f704c9b955184411292636
+  - enabled: 1
+    path: Assets/_Project/Scenes/02_CharacterSelect.unity
+    guid: b65c470b8693c457cbbf7859d24958f9
+  - enabled: 1
+    path: Assets/_Project/Scenes/03_LevelSelect.unity
+    guid: 3cde64533ce704ec2a6c0e475d989692
+  - enabled: 1
+    path: Assets/_Project/Scenes/Arena/AC_Skyforge_Test.unity
+    guid: cfff6e7339860490d841e25ed95e9666
+  m_configObjects: {}

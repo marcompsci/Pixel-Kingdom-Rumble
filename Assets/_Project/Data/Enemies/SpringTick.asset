@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: SpringTick
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_spring_tick
+  displayName: Spring Tick
+  codexEntry: A wind-up sentry that coils tight and launches itself at intruders. Wait for it to land, then strike before it rewinds.
+  sprite: {fileID: 21300000, guid: fba1bbef3e623448ab40d7a6d8e29c38, type: 3}
+  bodySize: {x: 0.7, y: 0.75}
+  maxHealth: 2
+  weight: 0.9
+  moveSpeed: 0
+  behavior: 1
+  hopCooldown: 1.5
+  hopRange: 7
+  hopDrift: 0.5
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  shardDrop: 3

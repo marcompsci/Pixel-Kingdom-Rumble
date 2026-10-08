@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_SunspireMeadows_Test
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_sunspire_test
+  displayName: Sunspire Meadows
+  biomeName: Sunspire Meadows
+  sceneName: SQ_SunspireMeadows_Test
+  nextSceneName: SQ_ClockworkWarden_Test
+  codexEntry: Grassland islands stitched together by the Tickworks' oldest machinery. The brass is warm to the touch, and the gears hum just below hearing.
+  parTimeSeconds: 120
+  totalShards: 24
+  totalSecrets: 1
+  skyColor: {r: 1, g: 0.78431374, b: 0.5882353, a: 1}
