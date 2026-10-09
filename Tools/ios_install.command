@@ -17,9 +17,15 @@ if [ -z "$DEVICE" ]; then
   read -r -p "Press Return to close." _; exit 2
 fi
 say "Installing $APP on $DEVICE..."
-if xcrun devicectl device install app --device "$DEVICE" "$APP" >> "$S" 2>&1 && \
-   xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE" >> "$S" 2>&1; then
-  say "INSTALLED AND LAUNCHED."
+if xcrun devicectl device install app --device "$DEVICE" "$APP" >> "$S" 2>&1; then
+  say "INSTALLED. Launching and recording the game's log for 90 s (Logs/ios/device_console.log)..."
+  # --console streams the game's own log (Unity Debug.Log + errors) so Claude can see what happens on the phone.
+  xcrun devicectl device process launch --console --terminate-existing --device "$DEVICE" "$BUNDLE" \
+    > "$OUT/device_console.log" 2>&1 &
+  PID=$!
+  sleep 90
+  kill $PID 2>/dev/null
+  say "LAUNCHED. Log lines: $(wc -l < "$OUT/device_console.log" | tr -d ' ')"
 else
   say "FAILED (see above)."
 fi

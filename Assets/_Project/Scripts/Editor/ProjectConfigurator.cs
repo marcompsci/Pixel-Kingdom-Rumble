@@ -31,6 +31,7 @@ namespace PKR.EditorTools
             // Automatic signing with Omari's Apple Developer team (Team ID is public, not a secret).
             if (string.IsNullOrEmpty(PlayerSettings.iOS.appleDeveloperTeamID)) PlayerSettings.iOS.appleDeveloperTeamID = AppleTeamId;
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
+            EnsureInputSystemOnly();
 
             PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
             PlayerSettings.iOS.targetOSVersionString = MinIOSVersion;
@@ -48,6 +49,27 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"[PKR] iOS Player Settings configured. Bundle ID: {PlayerSettings.GetApplicationIdentifier(ios)}, " +
                       $"min iOS {MinIOSVersion}, IL2CPP, auto-rotation (portrait + landscape).");
+        }
+
+        /// <summary>
+        /// Active Input Handling = Input System Package (New). A project opened straight from the repo defaults to the
+        /// old Input Manager, which turns the Input System off in builds: no taps on menus, no touch controls
+        /// (first iPhone build, 2026-10-08). Takes effect the next time Unity starts or builds.
+        /// Returns true if it had to change.
+        /// </summary>
+        public static bool EnsureInputSystemOnly()
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (assets == null || assets.Length == 0) { Debug.LogError("[PKR] ProjectSettings.asset not found."); return false; }
+            var so = new SerializedObject(assets[0]);
+            var prop = so.FindProperty("activeInputHandler");
+            if (prop == null) { Debug.LogError("[PKR] activeInputHandler not found in Player Settings."); return false; }
+            if (prop.intValue == 1) return false;
+            prop.intValue = 1; // 0 = Input Manager (old), 1 = Input System, 2 = Both
+            so.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[PKR] Active Input Handling set to Input System Package (New). Restart Unity if it is open.");
+            return true;
         }
     }
 }

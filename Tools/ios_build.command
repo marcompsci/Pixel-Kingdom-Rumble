@@ -53,9 +53,13 @@ if [ -z "$DEVICE" ]; then
   say "      is on (Settings > Privacy & Security). Then run this again; the app is already built."
   pause_end; exit 2
 fi
-xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.log" 2>&1 \
-  && xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE" >> "$OUT/install.log" 2>&1
-if [ $? -eq 0 ]; then say "      Installed and launched on $DEVICE"; else say "      Install FAILED (Logs/ios/install.log)"; tail -5 "$OUT/install.log" | tee -a "$OUT/SUMMARY.txt"; fi
+if xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.log" 2>&1; then
+  say "      Installed on $DEVICE. Launching; recording the game's log for 90 s (Logs/ios/device_console.log)..."
+  xcrun devicectl device process launch --console --terminate-existing --device "$DEVICE" "$BUNDLE" \
+    > "$OUT/device_console.log" 2>&1 &
+  PID=$!; sleep 90; kill $PID 2>/dev/null
+  say "      Launched."
+else say "      Install FAILED (Logs/ios/install.log)"; tail -5 "$OUT/install.log" | tee -a "$OUT/SUMMARY.txt"; fi
 
 say ""
 say "DONE."
