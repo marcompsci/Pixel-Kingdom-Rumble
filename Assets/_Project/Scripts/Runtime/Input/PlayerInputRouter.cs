@@ -22,6 +22,8 @@ namespace PKR
         InputAction _move, _jump, _attack, _special, _dodge, _pause;
 
         public FighterIntent Intent => motor != null ? motor.Intent : null;
+        /// <summary>Ignore move/jump/attack input (round intros in Versus) while pause still works.</summary>
+        public bool GameplayLocked { get; set; }
 
         void Awake()
         {
@@ -75,7 +77,7 @@ namespace PKR
             if (motor == null) return;
 
             var intent = motor.Intent;
-            if (state != null && state.IsPaused)
+            if ((state != null && state.IsPaused) || GameplayLocked)
             {
                 intent.ClearAll();
                 return;

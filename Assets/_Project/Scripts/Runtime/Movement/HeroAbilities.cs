@@ -35,6 +35,7 @@ namespace PKR
 
         PlatformerMotor2D _motor;
         AttackRunner _attacks;
+        Damageable _health;
         Invulnerability _invuln;
         float _stateTimer;
         float _dodgeCooldown;
@@ -45,6 +46,7 @@ namespace PKR
         {
             _motor = GetComponent<PlatformerMotor2D>();
             _attacks = GetComponent<AttackRunner>();
+            _health = GetComponent<Damageable>();
             _invuln = GetComponent<Invulnerability>();
             if (_invuln == null) _invuln = gameObject.AddComponent<Invulnerability>();
             if (kit == null && _motor.Definition != null) kit = _motor.Definition.kit as HeroKitDefinition;
@@ -93,6 +95,7 @@ namespace PKR
 
         void FixedUpdate()
         {
+            if (_health != null && _health.IsDead) { if (Current != State.None) Cancel(); return; }
             float dt = Time.fixedDeltaTime;
             float now = Time.time;
             var intent = _motor.Intent;

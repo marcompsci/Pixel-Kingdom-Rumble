@@ -106,6 +106,38 @@ namespace PKR.EditorTools
             if (dirty) EditorUtility.SetDirty(a);
         }
 
+        /// <summary>
+        /// Runs on every build (also for assets made by an older version): makes every combo link a true combo
+        /// (the target is still in hitstun when the next hit lands) and uses the moveset's dive impact radius for
+        /// the kit's landing shockwave.
+        /// </summary>
+        static void Tune(CharacterDefinition def)
+        {
+            var ms = def.moveset;
+            if (ms == null) return;
+            var seen = new HashSet<MoveDefinition>();
+            for (var m = ms.groundAttack; m != null && seen.Add(m); m = m.followUp)
+            {
+                int need = 0;
+                foreach (var next in new[] { m.followUp, m.specialFollowUp })
+                    if (next != null)
+                        need = Math.Max(need, m.frames.active + m.frames.recovery - m.frames.cancelWindow + next.frames.startup + 3);
+                if (need > m.hit.baseHitstunFrames)
+                {
+                    var h = m.hit;
+                    h.baseHitstunFrames = need;
+                    m.hit = h;
+                    EditorUtility.SetDirty(m);
+                }
+            }
+            if (def.kit is HeroKitDefinition kit && kit.hasDive && ms.abilityImpact != null &&
+                !Mathf.Approximately(kit.diveShockwaveRadius, ms.abilityImpact.hitboxRadius))
+            {
+                kit.diveShockwaveRadius = ms.abilityImpact.hitboxRadius;
+                EditorUtility.SetDirty(kit);
+            }
+        }
+
         static Moveset Set(string heroFolder, string prefix, MoveDefinition atk, MoveDefinition up, MoveDefinition air,
                            MoveDefinition sp, MoveDefinition side, MoveDefinition down, MoveDefinition airSp, MoveDefinition impact)
         {
@@ -154,6 +186,7 @@ namespace PKR.EditorTools
             if (def.bodySprite == null) { def.bodySprite = FighterArt.Make("ph_vs_" + id, look); dirty = true; }
             if (def.moveset == null) { def.moveset = moves(); dirty = true; }
             if (dirty) EditorUtility.SetDirty(def);
+            Tune(def);
             return def;
         }
 

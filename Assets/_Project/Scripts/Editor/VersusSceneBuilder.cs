@@ -91,7 +91,7 @@ namespace PKR.EditorTools
             var so = new SerializedObject(match);
             so.FindProperty("playerSpawn").vector2Value = new Vector2(-4f, 1f);
             so.FindProperty("opponentSpawn").vector2Value = new Vector2(4f, 1f);
-            so.FindProperty("stageRect").rectValue = new Rect(-11.5f, -1f, 23f, 1f);
+            so.FindProperty("stageRect").rectValue = new Rect(-13f, -1f, 26f, 1f);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));

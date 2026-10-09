@@ -80,6 +80,37 @@ namespace PKR
             else _holdAttackForChain = false;
             if (_last.special) intent.Special.Press(now);
             if (_last.dodge) intent.Dodge.Press(now);
+            UseSpecials(view, now);
+        }
+
+        /// <summary>
+        /// Fighter-specific moves on top of BotBrain's basics: Special finishers at the end of an Attack combo, and
+        /// side/down Specials when close on the ground. Chance scales with the CPU level.
+        /// </summary>
+        void UseSpecials(BotView view, float now)
+        {
+            if (_attacks == null || _attacks.Moveset == null || !view.hasTarget) return;
+            var intent = _motor.Intent;
+            var cur = _attacks.Current;
+            if (cur != null)
+            {
+                if (cur.specialFollowUp != null && _rng.NextDouble() < difficulty.accuracy * 0.7) intent.Special.Press(now);
+                return;
+            }
+            if (!view.grounded) return;
+            float dx = view.targetPosition.x - view.position.x, dy = view.targetPosition.y - view.position.y;
+            if (Mathf.Abs(dy) > 1.5f || _rng.NextDouble() > difficulty.accuracy * 0.18) return;
+            var ms = _attacks.Moveset;
+            if (ms.downSpecial != null && Mathf.Abs(dx) < 1.6f && _rng.NextDouble() < 0.5)
+            {
+                intent.Move = new Vector2(0f, -1f);
+                intent.Special.Press(now);
+            }
+            else if (ms.sideSpecial != null && Mathf.Abs(dx) > 1.2f && Mathf.Abs(dx) < 5f)
+            {
+                intent.Move = new Vector2(Mathf.Sign(dx), 0f);
+                intent.Special.Press(now);
+            }
         }
 
         BotView BuildView()

@@ -88,6 +88,13 @@ namespace PKR
                 Despawn();
         }
 
+        /// <summary>Removes every live projectile (round resets in Versus).</summary>
+        public static void DespawnAll()
+        {
+            foreach (var p in FindObjectsByType<Projectile>())
+                if (p != null && p.isActiveAndEnabled) p.Despawn();
+        }
+
         void Despawn()
         {
             _owner = null;

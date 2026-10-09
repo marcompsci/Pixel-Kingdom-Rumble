@@ -57,7 +57,7 @@ namespace PKR.Tests
             Assert.AreEqual(VersusRules.HealthFor(vs.Opponent.def.weight), vs.Opponent.health.MaxHealth);
 
             vs.Opponent.health.TakeDirectDamage(vs.Opponent.health.MaxHealth);
-            yield return null;
+            yield return WaitUntil(() => vs.Match.Phase != VersusPhase.Fighting, 2f);
             Assert.AreEqual(1, vs.Match.Wins(0));
             Assert.AreEqual(VersusPhase.RoundOver, vs.Match.Phase);
 

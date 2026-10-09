@@ -75,6 +75,8 @@ namespace PKR
         void FixedUpdate()
         {
             if (moveset == null) return;
+            // A K.O.'d fighter stops whatever it was doing (Versus: no hits from beyond the grave).
+            if (_self != null && _self.IsDead) { if (IsAttacking) Cancel(); return; }
             float now = Time.time;
             var intent = _motor.Intent;
 
@@ -224,7 +226,7 @@ namespace PKR
         void OnDiveImpact(Vector2 position, float radius)
         {
             var impact = moveset != null ? moveset.abilityImpact : null;
-            if (impact == null) return;
+            if (impact == null || (_self != null && _self.IsDead)) return;
             _log.Reset();
             ApplyHits(impact, impact.hit, position + new Vector2(0f, impact.hitboxOffset.y), _motor.Facing, radius > 0f ? radius : impact.hitboxRadius);
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(Mathf.Max(0.15f, impact.shakeAmplitude), impact.shakeDuration);

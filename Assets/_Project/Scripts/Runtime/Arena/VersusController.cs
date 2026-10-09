@@ -39,7 +39,7 @@ namespace PKR
         [SerializeField] Vector2 playerSpawn = new Vector2(-4f, 1f);
         [SerializeField] Vector2 opponentSpawn = new Vector2(4f, 1f);
         [Tooltip("Floor: x range = walls, yMax = floor height. Used by the CPU.")]
-        [SerializeField] Rect stageRect = new Rect(-11f, -1f, 22f, 1f);
+        [SerializeField] Rect stageRect = new Rect(-13f, -1f, 26f, 1f); // wider than the walls so the CPU never sees an edge
         [SerializeField] CameraFollow2D arenaCamera;
         [SerializeField] float roundIntroSeconds = 1.6f;
         [SerializeField] float roundOutroSeconds = 2.2f;
@@ -55,13 +55,13 @@ namespace PKR
         public VersusMatch Match { get; private set; }
         public Fighter Player { get; private set; }
         public Fighter Opponent { get; private set; }
-        public bool IsLive => Match != null && Match.Phase == VersusPhase.Fighting && !_ending;
+        public bool IsLive => Match != null && Match.Phase == VersusPhase.Fighting && !_ending && !_resolving;
         public Rect StageRect => stageRect;
         public bool PerfectRoundWon { get; private set; }
 
         public event Action RoundStarted;
 
-        bool _ending;
+        bool _ending, _resolving;
         Coroutine _flow;
 
         void Start()
@@ -128,8 +128,9 @@ namespace PKR
         {
             if (_flow != null) StopCoroutine(_flow);
             _flow = null;
-            _ending = false;
+            _ending = _resolving = false;
             SparkTrap.DespawnAll();
+            Projectile.DespawnAll();
             if (arenaCamera != null) arenaCamera.group.Clear();
             if (Player != null && Player.go != null) Destroy(Player.go);
             if (Opponent != null && Opponent.go != null) Destroy(Opponent.go);
@@ -153,8 +154,19 @@ namespace PKR
         void OnFighterDied(int slot)
         {
             if (!IsLive) return;
-            bool otherDown = (slot == 0 ? Opponent : Player).health.IsDead;
-            if (otherDown) Match.ReportDoubleKO(); else Match.ReportKO(slot);
+            // Resolve after the physics step so a trade where both fall on the same frame is a double K.O.
+            _resolving = true;
+            _flow = StartCoroutine(ResolveKO());
+        }
+
+        IEnumerator ResolveKO()
+        {
+            yield return new WaitForFixedUpdate();
+            _resolving = false;
+            if (Match.Phase != VersusPhase.Fighting) yield break;
+            bool p = Player.health.IsDead, o = Opponent.health.IsDead;
+            if (p && o) Match.ReportDoubleKO();
+            else Match.ReportKO(p ? 0 : 1);
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(0.4f, 0.35f);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
             _flow = StartCoroutine(RoundOutro(timeUp: false));
@@ -181,13 +193,15 @@ namespace PKR
         {
             _ending = true;
             SetControl(false);
+            Freeze();
             int w = Match.LastRoundWinner;
-            if (w == 0 && Player.health.Health >= Player.health.MaxHealth) PerfectRoundWon = true;
+            bool perfect = w == 0 && Player.health.Health >= Player.health.MaxHealth;
+            if (perfect) PerfectRoundWon = true;
             string headline = timeUp ? "TIME" : (w < 0 ? "DOUBLE K.O." : "K.O.");
             Announce(headline, roundOutroSeconds * 0.45f);
             yield return new WaitForSeconds(roundOutroSeconds * 0.45f);
             string sub = w < 0 ? "DRAW" : w == 0 ? $"{Player.name} WINS" : $"{Opponent.name} WINS";
-            if (w == 0 && Player.health.Health >= Player.health.MaxHealth) sub = "PERFECT!";
+            if (perfect) sub = "PERFECT!";
             Announce(sub, roundOutroSeconds * 0.55f);
             yield return new WaitForSeconds(roundOutroSeconds * 0.55f);
             _ending = false;
@@ -200,12 +214,12 @@ namespace PKR
             _flow = null;
             bool won = Match.Winner == 0;
             int reward = VersusRules.Reward(won, PerfectRoundWon);
-            if (grantRewards && Services.Save != null)
+            if (!grantRewards) reward = 0;
+            else if (Services.Save != null)
             {
                 Services.Save.AddShards(reward);
                 Services.Save.SaveNow();
             }
-            else reward = grantRewards ? reward : 0;
             if (Services.State != null) Services.State.SetState(GameState.Results);
             if (Services.Haptics != null) Services.Haptics.Play(won ? HapticStrength.Heavy : HapticStrength.Medium);
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
@@ -224,19 +238,47 @@ namespace PKR
                 if (f.go.TryGetComponent(out HeroAbilities a)) a.Cancel();
                 if (f.go.TryGetComponent(out AttackRunner atk)) atk.Cancel();
                 f.motor.Intent.ClearAll();
+                SetDownPose(f, false);
+                if (f.go.TryGetComponent(out Invulnerability inv)) inv.Clear();
                 f.motor.Teleport(f.spawn);
                 f.motor.SetFacing(f.spawn.x <= 0f ? 1 : -1);
                 f.health.ResetState();
             }
             SparkTrap.DespawnAll();
+            Projectile.DespawnAll();
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.SnapToTarget();
+        }
+
+        /// <summary>Round over: stop every move, clear projectiles and traps, nobody can be hurt; K.O.'d fighters fall.</summary>
+        void Freeze()
+        {
+            foreach (var f in new[] { Player, Opponent })
+            {
+                if (f == null || f.go == null) continue;
+                if (f.go.TryGetComponent(out HeroAbilities a)) a.Cancel();
+                if (f.go.TryGetComponent(out AttackRunner atk)) atk.Cancel();
+                f.motor.Intent.ClearAll();
+                if (f.go.TryGetComponent(out Invulnerability inv)) inv.Grant(roundOutroSeconds + 1f);
+                if (f.health.IsDead) SetDownPose(f, true);
+            }
+            SparkTrap.DespawnAll();
+            Projectile.DespawnAll();
+        }
+
+        /// <summary>Placeholder K.O. reaction: the body sprite tips over onto its back.</summary>
+        static void SetDownPose(Fighter f, bool down)
+        {
+            if (f.go.transform.childCount == 0) return;
+            var body = f.go.transform.GetChild(0);
+            body.localRotation = down ? Quaternion.Euler(0f, 0f, f.motor.Facing > 0 ? 90f : -90f) : Quaternion.identity;
+            body.localPosition = new Vector3(0f, down ? -0.45f : -0.7f, 0f);
         }
 
         void SetControl(bool on)
         {
             if (Player != null && Player.go != null && Player.go.TryGetComponent(out PlayerInputRouter router))
             {
-                router.enabled = on;
+                router.GameplayLocked = !on; // pause (Esc/P/Start) keeps working between rounds
                 if (!on) Player.motor.Intent.ClearAll();
             }
             if (!on && Opponent != null && Opponent.motor != null) Opponent.motor.Intent.ClearAll();

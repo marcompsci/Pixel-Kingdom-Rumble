@@ -154,8 +154,8 @@ namespace PKR
                         : focus.tagline;
             UIFactory.Label(panel, info, 30, TextAnchor.MiddleCenter, 50f).color = p.subtle;
             if (focus != null && !focusLocked)
-                UIFactory.Label(panel, CodexPanel.HeroStats(focus), 26, TextAnchor.UpperLeft, 300f);
-            else UIFactory.Label(panel, "", 26, TextAnchor.UpperLeft, 300f);
+                UIFactory.Label(panel, CodexPanel.HeroStats(focus, versus: true), 26, TextAnchor.UpperLeft, 370f);
+            else UIFactory.Label(panel, "", 26, TextAnchor.UpperLeft, 370f);
 
             // Fighter grid.
             int cells = Count + 1;

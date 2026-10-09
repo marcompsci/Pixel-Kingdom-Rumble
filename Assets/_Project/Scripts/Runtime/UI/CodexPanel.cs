@@ -291,11 +291,13 @@ namespace PKR
         }
 
         /// <summary>Health, weight, guard pips and the move list (names come from the moveset and kit).</summary>
-        public static string HeroStats(CharacterDefinition h)
+        public static string HeroStats(CharacterDefinition h, bool versus = false)
         {
             var sb = new StringBuilder();
             string weight = h.weight >= 1.3f ? "HEAVY" : h.weight <= 0.9f ? "LIGHT" : "MEDIUM";
-            sb.Append($"HEALTH {h.maxHealth}   ·   {weight}   ·   GUARD {h.guardPips}\n");
+            int health = versus ? PKR.Core.VersusRules.HealthFor(h.weight) : h.maxHealth;
+            sb.Append(versus ? $"HEALTH {health}   ·   {weight}   ·   SPEED {h.movement.runSpeed:0.0}\n"
+                             : $"HEALTH {health}   ·   {weight}   ·   GUARD {h.guardPips}\n");
             var m = h.moveset;
             var kit = h.kit as HeroKitDefinition;
             if (m != null)
