@@ -21,6 +21,7 @@ namespace PKR
             go.GetComponent<Invulnerability>().Clear();
             var ai = go.GetComponent<EnemyAI>();
             ai.Init(def, startDir);
+            if (go.TryGetComponent(out GuardVision vision)) vision.Configure(def.sightRange, def.sightHalfAngle, material);
             return ai;
         }
 
@@ -82,6 +83,8 @@ namespace PKR
                 ssr.sortingOrder = 10;
                 go.AddComponent<ShieldGuard>().Configure(def.shieldBreakDuration, ssr);
             }
+
+            if (def.behavior == EnemyBehavior.Guard) go.AddComponent<GuardVision>();
 
             go.AddComponent<FighterVisual>();
             go.AddComponent<HitFlash>();

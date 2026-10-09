@@ -16,6 +16,11 @@ namespace PKR
         public const string MovementSandbox = "SQ_MovementSandbox";
         public const string VersusSelect = "04_VersusSelect";
         public const string VersusStage = "VS_Dojo";
+        // Phase 3.2/3.3 Story Quest levels, built from text maps (StoryLayouts).
+        public const string SunspireHeights = "SQ_SunspireHeights";
+        public const string GearfallCaverns = "SQ_GearfallCaverns";
+        public const string RooftopRun = "SQ_RooftopRun";
+        public const string NightMarketHeist = "SQ_NightMarketHeist";
 
         /// <summary>Gameplay scenes run in landscape; everything else is portrait.</summary>
         public static bool IsGameplay(string sceneName) =>

@@ -22,6 +22,7 @@ namespace PKR.EditorTools
             GetOrCreateBoltKnight();
             GetOrCreateSunspireTestLevel();
             GetOrCreateWardenLevel();
+            GetOrCreateGearwatchSentry();
             GetOrCreateStoryWorld();
             GetOrCreateCodex();
             AssetDatabase.SaveAssets();
@@ -175,23 +176,85 @@ namespace PKR.EditorTools
                                "The brass is warm to the touch, and the gears hum just below hearing.";
                 l.skyColor = new Color32(255, 200, 150, 255);
             });
-            if (string.IsNullOrEmpty(lvl.nextSceneName)) { lvl.nextSceneName = SceneIds.BossTest; EditorUtility.SetDirty(lvl); }
+            // Phase 3.3: Meadows now leads into Sunspire Heights (it used to go straight to the Warden).
+            if (lvl.nextSceneName != SceneIds.SunspireHeights || lvl.modeTag != "Platform")
+            {
+                lvl.nextSceneName = SceneIds.SunspireHeights; lvl.modeTag = "Platform"; EditorUtility.SetDirty(lvl);
+            }
             return lvl;
         }
+
+        public static EnemyDefinition GetOrCreateGearwatchSentry()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/GearwatchSentry.asset", d =>
+            {
+                d.id = "enemy_gearwatch_sentry"; d.displayName = "Gearwatch Sentry";
+                d.codexEntry = "Lantern-carrying night watch of the Brasslight Quarter. They see far down the street they face " +
+                               "and nothing behind them; stay out of the light, wait in the hay, and a tap on the back ends their shift.";
+                d.bodySize = new Vector2(0.8f, 1.3f); d.maxHealth = 4; d.weight = 1.3f; d.moveSpeed = 0.2f;
+                d.behavior = EnemyBehavior.Guard;
+                d.sightRange = 6f; d.sightHalfAngle = 30f; d.lookBackInterval = 4f; d.lookBackPause = 1.1f; d.chaseSpeed = 0.6f;
+                d.shardDrop = 2;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.GearwatchSentry(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        /// <summary>One of the text-map Story Quest levels (Phase 3.2/3.3).</summary>
+        static LevelDefinition GetOrCreateMapLevel(string file, string id, string name, string biome, string scene, string next,
+                                                   string tag, float par, Color32 sky, string codex)
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            var lvl = GetOrCreate<LevelDefinition>($"{LevelsFolder}/{file}.asset", l =>
+            {
+                l.id = id; l.displayName = name; l.biomeName = biome; l.sceneName = scene; l.parTimeSeconds = par;
+                l.codexEntry = codex; l.skyColor = sky;
+            });
+            if (lvl.nextSceneName != next || lvl.modeTag != tag) { lvl.nextSceneName = next; lvl.modeTag = tag; EditorUtility.SetDirty(lvl); }
+            return lvl;
+        }
+
+        public static LevelDefinition GetOrCreateSunspireHeights() => GetOrCreateMapLevel(
+            "SQ_SunspireHeights", "sq_sunspire_heights", "Sunspire Heights", "Sunspire Meadows", SceneIds.SunspireHeights,
+            SceneIds.GearfallCaverns, "Platform", 150f, new Color32(150, 200, 255, 255),
+            "The windy upper meadows: spring pads, vine-covered pillars and crates packed with shards by careless couriers.");
+
+        public static LevelDefinition GetOrCreateGearfallCaverns() => GetOrCreateMapLevel(
+            "SQ_GearfallCaverns", "sq_gearfall_caverns", "Gearfall Caverns", "Under the Isles", SceneIds.GearfallCaverns,
+            SceneIds.BossTest, "Platform", 170f, new Color32(48, 44, 70, 255),
+            "Hollow roots of the floating isles where broken gears rain down for centuries. The floor is all spikes; the way " +
+            "through is up, on lifts and drifting plates.");
+
+        public static LevelDefinition GetOrCreateRooftopRun() => GetOrCreateMapLevel(
+            "SQ_RooftopRun", "sq_rooftop_run", "Rooftop Run", "Brasslight Quarter", SceneIds.RooftopRun,
+            SceneIds.NightMarketHeist, "Stealth", 160f, new Color32(40, 46, 88, 255),
+            "Tiled roofs of the Brasslight Quarter by night. The Gearwatch walks every ridge; someone has hidden the " +
+            "Gearwright's Ledger up here, and it explains why the Warden went wrong.");
+
+        public static LevelDefinition GetOrCreateNightMarketHeist() => GetOrCreateMapLevel(
+            "SQ_NightMarketHeist", "sq_night_market", "Night Market Heist", "Brasslight Quarter", SceneIds.NightMarketHeist,
+            "", "Stealth", 180f, new Color32(60, 36, 72, 255),
+            "Lantern stalls, hay carts and a counting house on stilts. The real ledger is in the vault above the market, " +
+            "and the whole night watch is between you and it.");
 
         /// <summary>The Story Quest route shown on the level select, in play order.</summary>
         public static WorldDefinition GetOrCreateStoryWorld()
         {
             EditorUtil.EnsureFolder(LevelsFolder);
-            var sunspire = GetOrCreateSunspireTestLevel();
-            var warden = GetOrCreateWardenLevel();
+            var route = new[]
+            {
+                GetOrCreateSunspireTestLevel(), GetOrCreateSunspireHeights(), GetOrCreateGearfallCaverns(),
+                GetOrCreateWardenLevel(), GetOrCreateRooftopRun(), GetOrCreateNightMarketHeist()
+            };
             var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_SunspireIsles.asset", w =>
             {
                 w.displayName = "Sunspire Isles";
                 w.description = "Floating meadows held up by the Tickworks. Something in the engine hall is grinding backward.";
             });
-            if (!world.levels.Contains(sunspire)) world.levels.Add(sunspire);
-            if (!world.levels.Contains(warden)) world.levels.Add(warden);
+            // Play order is fixed by the route above (rebuilt every time so new levels slot in where they belong).
+            world.levels.Clear();
+            world.levels.AddRange(route);
             EditorUtility.SetDirty(world);
             return world;
         }
@@ -205,7 +268,7 @@ namespace PKR.EditorTools
             var codex = GetOrCreate<CodexDefinition>($"{CodexFolder}/Codex.asset", c => { });
             if (codex.roster == null) codex.roster = GetOrCreateRoster();
             if (codex.world == null) codex.world = GetOrCreateStoryWorld();
-            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight() })
+            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry() })
                 if (!codex.enemies.Contains(e)) codex.enemies.Add(e);
             EditorUtility.SetDirty(codex);
             return codex;
@@ -214,7 +277,7 @@ namespace PKR.EditorTools
         public static LevelDefinition GetOrCreateWardenLevel()
         {
             EditorUtil.EnsureFolder(LevelsFolder);
-            return GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_ClockworkWarden_Test.asset", l =>
+            var lvl = GetOrCreate<LevelDefinition>($"{LevelsFolder}/SQ_ClockworkWarden_Test.asset", l =>
             {
                 l.id = "sq_clockwork_warden"; l.displayName = "Clockwork Warden"; l.biomeName = "Tickworks Engine Hall";
                 l.sceneName = SceneIds.BossTest; l.parTimeSeconds = 90f;
@@ -222,6 +285,12 @@ namespace PKR.EditorTools
                                "gears, and it now guards the engine hall against everyone, even the heroes it was built to help.";
                 l.skyColor = new Color32(70, 52, 60, 255);
             });
+            // Phase 3.2: after the Warden, the story moves to the Brasslight Quarter rooftops.
+            if (lvl.nextSceneName != SceneIds.RooftopRun || lvl.modeTag != "Boss")
+            {
+                lvl.nextSceneName = SceneIds.RooftopRun; lvl.modeTag = "Boss"; EditorUtility.SetDirty(lvl);
+            }
+            return lvl;
         }
 
         public static CharacterDefinition GetOrCreateNova()

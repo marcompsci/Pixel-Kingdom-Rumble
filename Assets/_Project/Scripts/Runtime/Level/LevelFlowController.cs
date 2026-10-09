@@ -72,6 +72,7 @@ namespace PKR
                 if (s.kind == PickupKind.StarShard) TotalShards += s.value;
                 Pickup.Spawn(s.kind, s.value, s.transform.position, SpriteFor(s.kind), spriteMaterial);
             }
+            TotalShards += FindObjectsByType<ShardCrate>().Length; // one shard inside each crate
             TotalSecrets = FindObjectsByType<SecretArea>().Length;
 
             _enemySpawns = FindObjectsByType<EnemySpawnPoint>();
@@ -285,7 +286,10 @@ namespace PKR
                 totalSecrets = TotalSecrets,
                 deaths = Run.Deaths,
                 starShardReward = reward,
-                unlockedHeroes = unlockedNames.ToArray()
+                unlockedHeroes = unlockedNames.ToArray(),
+                stealthRank = StealthTracker.Current != null ? StealthTracker.Current.Rank : null,
+                timesSpotted = StealthTracker.Current != null ? StealthTracker.Current.TimesSpotted : 0,
+                takedowns = StealthTracker.Current != null ? StealthTracker.Current.Takedowns : 0
             });
         }
     }

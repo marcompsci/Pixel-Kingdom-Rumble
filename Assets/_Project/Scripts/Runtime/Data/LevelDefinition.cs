@@ -10,6 +10,8 @@ namespace PKR
         public string id = "new_level";
         public string displayName = "New Level";
         public string biomeName = "";
+        [Tooltip("Short play-style tag on the level select: PLATFORM, STEALTH, BOSS... Empty = none.")]
+        public string modeTag = "";
         public string sceneName = "";
         [Tooltip("Scene the level-complete NEXT button loads. Empty = no next level yet.")]
         public string nextSceneName = "";

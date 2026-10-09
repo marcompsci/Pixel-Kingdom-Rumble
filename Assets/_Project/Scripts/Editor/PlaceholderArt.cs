@@ -368,6 +368,98 @@ namespace PKR.EditorTools
             return Clear;
         });
 
+        // ---- Phase 3.2/3.3: stealth and jump-and-run props ------------------------------------------
+        static readonly Color32 Cloak = new Color32(70, 64, 110, 255);
+        static readonly Color32 CloakDark = new Color32(44, 40, 76, 255);
+        static readonly Color32 Lantern = new Color32(255, 214, 110, 255);
+        static readonly Color32 Hay = new Color32(232, 196, 92, 255);
+        static readonly Color32 HayDark = new Color32(186, 146, 60, 255);
+        static readonly Color32 Leaf = new Color32(84, 170, 72, 255);
+        static readonly Color32 LeafDark = new Color32(46, 116, 54, 255);
+        static readonly Color32 Water = new Color32(70, 130, 220, 200);
+        static readonly Color32 WaterLight = new Color32(140, 196, 255, 220);
+        static readonly Color32 Crate = new Color32(196, 120, 60, 255);
+        static readonly Color32 CrateDark = new Color32(130, 74, 36, 255);
+
+        /// <summary>Gearwatch Sentry: a hooded night watchman with a lantern held forward. 14x22, faces right.</summary>
+        public static Sprite GearwatchSentry() => GetOrCreate("ph_gearwatch_sentry", 14, 22, true, (x, y) =>
+        {
+            if (y <= 1) return (x >= 3 && x <= 5) || (x >= 7 && x <= 9) ? Ink : Clear;                 // boots
+            if (y <= 13 && x >= 2 && x <= 10)
+            {
+                if (x == 2 || x == 10) return CloakDark;
+                if (y == 8) return Brass;                                                             // belt
+                return (x + y) % 6 == 0 ? CloakDark : Cloak;
+            }
+            if (y >= 5 && y <= 9 && x >= 11 && x <= 13) return y == 9 || y == 5 ? BrassDark : Lantern; // lantern
+            if (y <= 20 && x >= 3 && x <= 9)
+            {
+                if (y >= 15 && y <= 17 && x >= 6 && x <= 8) return y == 16 && x == 8 ? Lantern : Ink; // face in shadow, one glowing eye
+                return (y == 20 || x == 3) ? CloakDark : Cloak;                                        // hood
+            }
+            if (y == 21 && x >= 4 && x <= 7) return CloakDark;
+            return Clear;
+        });
+
+        /// <summary>Spring pad: a brass coil under a red cap. 16x8.</summary>
+        public static Sprite SpringPad() => GetOrCreate("ph_spring_pad", 16, 8, false, (x, y) =>
+        {
+            if (y >= 6) return x >= 1 && x <= 14 ? (y == 7 ? new Color32(255, 120, 110, 255) : new Color32(220, 70, 70, 255)) : Clear;
+            if (y == 0) return x >= 2 && x <= 13 ? BrassDark : Clear;
+            if (x >= 4 && x <= 11) return (x + y * 2) % 4 < 2 ? Brass : BrassDark;                    // coil
+            return Clear;
+        });
+
+        /// <summary>Shard crate: a riveted wooden crate with a star mark. 16x16.</summary>
+        public static Sprite ShardCrate() => GetOrCreate("ph_shard_crate", 16, 16, false, (x, y) =>
+        {
+            if (x == 0 || y == 0 || x == 15 || y == 15) return CrateDark;
+            if ((x == 2 || x == 13) && (y == 2 || y == 13)) return Brass;
+            float m = Math.Abs(x - 7.5f) + Math.Abs(y - 7.5f);
+            if (m < 3.6f) return m < 2.4f ? ShardLight : ShardGold;
+            return (y % 5 == 0) ? CrateDark : Crate;
+        });
+
+        /// <summary>An opened (empty) shard crate. 16x16.</summary>
+        public static Sprite ShardCrateEmpty() => GetOrCreate("ph_shard_crate_empty", 16, 16, false, (x, y) =>
+        {
+            if (x == 0 || y == 0 || x == 15 || y == 15) return StoneDark;
+            return (y % 5 == 0) ? StoneDark : Stone;
+        });
+
+        /// <summary>Climbing vine segment (tiles vertically). 16x16.</summary>
+        public static Sprite Vine() => GetOrCreate("ph_vine", 16, 16, false, (x, y) =>
+        {
+            int stem = 7 + ((y / 4) % 2 == 0 ? 0 : 1);
+            if (x == stem || x == stem + 1) return LeafDark;
+            if ((y % 6 == 2 && x >= stem - 4 && x < stem) || (y % 6 == 5 && x > stem + 1 && x <= stem + 5)) return Leaf;
+            return Clear;
+        });
+
+        /// <summary>Hay bale / hiding spot (tiles horizontally). 16x16.</summary>
+        public static Sprite HayBale() => GetOrCreate("ph_hay_bale", 16, 16, false, (x, y) =>
+        {
+            if (y > 13 && (x * 3 + y) % 4 == 0) return Clear;                                      // ragged top
+            if (y == 4 || y == 11) return HayDark;                                                  // bindings
+            return (x * 5 + y * 3) % 7 == 0 ? HayDark : Hay;
+        });
+
+        /// <summary>Water surface for pits (decor, tiles). 16x16.</summary>
+        public static Sprite WaterTile() => GetOrCreate("ph_water", 16, 16, false, (x, y) =>
+        {
+            if (y == 15) return (x % 6 < 3) ? WaterLight : Water;
+            return Water;
+        });
+
+        /// <summary>The Gearwright's Ledger: a gold-banded book. 12x12.</summary>
+        public static Sprite Ledger() => GetOrCreate("ph_ledger", 12, 12, false, (x, y) =>
+        {
+            if (x < 1 || x > 10 || y < 1 || y > 10) return Clear;
+            if (x == 1) return BrassDark;                                                           // spine
+            if (y == 5 || y == 6) return Brass;                                                     // band
+            return (x == 10 || y == 1 || y == 10) ? new Color32(110, 30, 40, 255) : new Color32(170, 50, 60, 255);
+        });
+
         /// <summary>Creates (once) a PNG sprite from a pixel function and imports it as a point-filtered sprite.</summary>
         public static Sprite GetOrCreate(string name, int w, int h, bool bottomPivot, Func<int, int, Color32> pixel)
         {

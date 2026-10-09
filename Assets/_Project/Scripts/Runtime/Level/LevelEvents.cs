@@ -24,5 +24,9 @@ namespace PKR
         public int starShardReward;
         /// <summary>Display names of heroes this clear unlocked (empty if none).</summary>
         public string[] unlockedHeroes;
+        /// <summary>Stealth levels only: the grade (GHOST/SHADOW/AGENT/BRAWLER), times spotted and takedowns.</summary>
+        public string stealthRank;
+        public int timesSpotted;
+        public int takedowns;
     }
 }

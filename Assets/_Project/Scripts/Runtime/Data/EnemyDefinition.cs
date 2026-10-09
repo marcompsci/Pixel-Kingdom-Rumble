@@ -11,7 +11,9 @@ namespace PKR
         /// <summary>Hovers at its spawn point and swoops at the hero (Gyro Moth).</summary>
         Flyer,
         /// <summary>Walker with a front shield that turns to face a nearby hero (Bolt Knight).</summary>
-        ShieldWalker
+        ShieldWalker,
+        /// <summary>Patrols, pauses to look back, and watches a sight cone; chases once alerted (Patrol Guard).</summary>
+        Guard
     }
 
     /// <summary>
@@ -58,6 +60,15 @@ namespace PKR
         public float guardRange = 4f;
         public Sprite shieldSprite;
 
+        [Header("Guard (Behavior = Guard)")]
+        public float sightRange = 6f;
+        [Range(5f, 80f)] public float sightHalfAngle = 32f;
+        [Tooltip("Seconds of patrolling between stops to look back the other way.")]
+        public float lookBackInterval = 4f;
+        public float lookBackPause = 1.1f;
+        [Tooltip("Chase speed (fraction of the default run speed) once alerted.")]
+        [Range(0f, 1f)] public float chaseSpeed = 0.62f;
+
         [Header("Contact damage")]
         public HitData contactHit = new HitData
         {
@@ -76,6 +87,7 @@ namespace PKR
             if (behavior == EnemyBehavior.Hopper && (hopCooldown <= 0f || hopRange <= 0f)) e.Add("hop cooldown/range must be positive");
             if (behavior == EnemyBehavior.Flyer && (swoopSpeed <= 0f || swoopTime <= 0f || flyerReturnSpeed <= 0f)) e.Add("flyer speeds/times must be positive");
             if (behavior == EnemyBehavior.ShieldWalker && shieldBreakDuration <= 0f) e.Add("shieldBreakDuration must be positive");
+            if (behavior == EnemyBehavior.Guard && (sightRange <= 0f || lookBackInterval <= 0f)) e.Add("guard sight range / look-back interval must be positive");
             return e;
         }
 

@@ -36,7 +36,7 @@ namespace PKR
             _root.gameObject.SetActive(true);
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1240f, 1000f));
+            var panel = UIFactory.Panel(_root, new Vector2(1240f, string.IsNullOrEmpty(e.stealthRank) ? 1000f : 1040f));
             var p = UITheme.Current;
 
             var rank = ResultsMath.Rank(e.timeSeconds, e.parTimeSeconds, e.shards, e.totalShards,
@@ -51,6 +51,8 @@ namespace PKR
             Row(panel, "Star Shards found", $"{e.shards} / {e.totalShards}  ({ResultsMath.Percent(e.shards, e.totalShards)}%)");
             Row(panel, "Secrets", $"{e.secrets} / {e.totalSecrets}");
             Row(panel, "Falls", e.deaths.ToString());
+            if (!string.IsNullOrEmpty(e.stealthRank))
+                Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             var reward = Row(panel, "Reward", "+0");
             if (newHero)
             {

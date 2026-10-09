@@ -55,10 +55,13 @@ namespace PKR
             UIFactory.Clear(_root);
             _cards.Clear();
             var p = UITheme.Current;
-            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1700f));
+            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1760f));
+            // Six or more levels: shorter cards so the whole route fits the screen.
+            bool compact = world.levels.Count > 4;
+            float cardHeight = compact ? 158f : 230f;
             UIFactory.Label(panel, $"STORY QUEST\n{world.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (!string.IsNullOrEmpty(world.description))
-                UIFactory.Label(panel, world.description, 32, TextAnchor.MiddleCenter, 90f).color = p.subtle;
+                UIFactory.Label(panel, world.description, 32, TextAnchor.MiddleCenter, compact ? 80f : 90f).color = p.subtle;
 
             Button suggested = null;
             for (int i = 0; i < world.levels.Count; i++)
@@ -67,9 +70,9 @@ namespace PKR
                 var slot = _slots[i];
                 int idx = i;
                 bool playable = slot.unlocked && level != null && Application.CanStreamedLevelBeLoaded(level.sceneName);
-                var card = UIFactory.Button(panel, CardText(i, level, slot), () => Play(idx), 230f, interactable: playable);
+                var card = UIFactory.Button(panel, CardText(i, level, slot), () => Play(idx), cardHeight, interactable: playable);
                 var text = card.GetComponentInChildren<Text>();
-                text.fontSize = 38;
+                text.fontSize = compact ? 32 : 38;
                 text.alignment = TextAnchor.MiddleCenter;
                 _cards.Add(card);
                 if (i == SuggestedIndex && playable) suggested = card;
@@ -82,6 +85,7 @@ namespace PKR
         static string CardText(int index, LevelDefinition level, LevelSlot slot)
         {
             string name = level != null ? level.displayName.ToUpperInvariant() : "???";
+            if (level != null && !string.IsNullOrEmpty(level.modeTag)) name += $"  [{level.modeTag.ToUpperInvariant()}]";
             if (!slot.unlocked) return $"{index + 1}. {name}\nLOCKED: CLEAR THE LEVEL BEFORE IT";
             if (!slot.completed) return $"{index + 1}. {name}\nNEW!";
             // Enemy drops can push the collected count past the placed total; cap it for display.

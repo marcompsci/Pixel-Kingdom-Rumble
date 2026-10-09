@@ -13,7 +13,7 @@ namespace PKR
     {
         public int sortingOrder = 50;
 
-        Text _hp, _shards, _time, _secrets, _banner;
+        Text _hp, _shards, _time, _secrets, _banner, _stealth;
         float _bannerUntil;
         readonly System.Collections.Generic.Queue<string> _codexQueue = new System.Collections.Generic.Queue<string>();
         Damageable _playerHealth;
@@ -26,6 +26,7 @@ namespace PKR
             EventBus<SecretFound>.Subscribe(OnSecret);
             EventBus<CodexEntryUnlocked>.Subscribe(OnCodex);
             EventBus<SettingsChanged>.Subscribe(OnSettings);
+            EventBus<StealthNotice>.Subscribe(OnStealth);
         }
 
         void OnDisable()
@@ -34,10 +35,12 @@ namespace PKR
             EventBus<SecretFound>.Unsubscribe(OnSecret);
             EventBus<CodexEntryUnlocked>.Unsubscribe(OnCodex);
             EventBus<SettingsChanged>.Unsubscribe(OnSettings);
+            EventBus<StealthNotice>.Unsubscribe(OnStealth);
         }
 
         void OnCheckpoint(CheckpointActivated e) => ShowBanner("CHECKPOINT", 1.5f);
         void OnSecret(SecretFound e) => ShowBanner($"SECRET FOUND  {e.found}/{e.total}", 2f);
+        void OnStealth(StealthNotice e) => ShowBanner(e.text, e.alarm ? 1.3f : 1.6f);
         void OnCodex(CodexEntryUnlocked e)
         {
             // Never cover a message that is still showing: queue it and show it next.
@@ -69,6 +72,14 @@ namespace PKR
             _shards.text = $"SHARDS {run.Shards}/{flow.TotalShards}";
             _secrets.text = flow.TotalSecrets > 0 ? $"SECRETS {run.SecretsFound}/{flow.TotalSecrets}" : "";
             _time.text = FormatTime(run.ElapsedSeconds);
+            var stealth = StealthTracker.Current;
+            if (stealth != null)
+            {
+                string goal = stealth.HasObjective ? (stealth.ObjectiveTaken ? "OBJECTIVE: ESCAPE!" : "OBJECTIVE: STEAL THE LEDGER") : "";
+                string state = stealth.HeroHidden ? "HIDDEN" : stealth.TimesSpotted == 0 ? "UNSEEN" : $"SPOTTED x{stealth.TimesSpotted}";
+                _stealth.text = $"{goal}\n{state}";
+            }
+            else _stealth.text = "";
 
             if (_banner.enabled && Time.unscaledTime > _bannerUntil) _banner.enabled = false;
             if (!BannerBusy && _codexQueue.Count > 0) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
@@ -105,6 +116,7 @@ namespace PKR
             _hp = Label(safe, "HP", new Vector2(0f, 1f), new Vector2(40f, -30f), TextAnchor.UpperLeft, 44);
             _shards = Label(safe, "Shards", new Vector2(0f, 1f), new Vector2(40f, -90f), TextAnchor.UpperLeft, 40);
             _secrets = Label(safe, "Secrets", new Vector2(0f, 1f), new Vector2(40f, -145f), TextAnchor.UpperLeft, 34);
+            _stealth = Label(safe, "Stealth", new Vector2(0f, 1f), new Vector2(40f, -195f), TextAnchor.UpperLeft, 34);
             _time = Label(safe, "Time", new Vector2(0.5f, 1f), new Vector2(0f, -30f), TextAnchor.UpperCenter, 44);
             _banner = Label(safe, "Banner", new Vector2(0.5f, 0.62f), Vector2.zero, TextAnchor.MiddleCenter, 64);
             _banner.rectTransform.sizeDelta = new Vector2(1600f, 400f);
@@ -136,7 +148,7 @@ namespace PKR
         void ApplyTheme()
         {
             bool hc = Services.Settings != null && Services.Settings.Data.highContrastUI;
-            foreach (var t in new[] { _hp, _shards, _secrets, _time, _banner })
+            foreach (var t in new[] { _hp, _shards, _secrets, _time, _banner, _stealth })
             {
                 if (t == null) continue;
                 t.color = hc ? new Color(1f, 0.92f, 0.1f) : Color.white;

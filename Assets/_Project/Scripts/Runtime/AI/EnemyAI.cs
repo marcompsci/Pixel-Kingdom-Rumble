@@ -9,6 +9,8 @@ namespace PKR
     /// knockback and hitstun rules. Walker: patrols, turning at walls and ledges. Hopper: waits, then hops
     /// toward the player when in range. Flyer: hovers and swoops (Core FlyerLogic) using the motor's velocity
     /// override, so no gravity. ShieldWalker: patrols slowly, and stops to face a nearby hero shield-first.
+    /// Guard: patrols and stops now and then to look back; freezes while suspicious; chases once its
+    /// GuardVision is alerted (never off a ledge).
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D), typeof(Damageable))]
     [DefaultExecutionOrder(-30)]
@@ -27,6 +29,8 @@ namespace PKR
         const float ShieldTurnDelay = 0.5f;
         int _dir = -1;
         bool _hopping;
+        GuardVision _vision;
+        float _patrolTimer, _pauseTimer;
         Vector2 _halfSize = new Vector2(0.45f, 0.4f);
 
         void Awake()
@@ -67,6 +71,9 @@ namespace PKR
             if (TryGetComponent(out ShieldGuard guard)) guard.Shield.Reset();
             _hopping = false;
             _turnTimer = 0f;
+            _vision = def.behavior == EnemyBehavior.Guard ? GetComponent<GuardVision>() : null;
+            _patrolTimer = 0f;
+            _pauseTimer = 0f;
             _motor.Intent.ClearAll();
             _motor.SetFacing(_dir);
         }
@@ -87,6 +94,7 @@ namespace PKR
                 case EnemyBehavior.Hopper: Hop(intent); break;
                 case EnemyBehavior.Flyer: Fly(); break;
                 case EnemyBehavior.ShieldWalker: ShieldWalk(intent); break;
+                case EnemyBehavior.Guard: Guard(intent); break;
             }
             _motor.SetFacing(_dir);
         }
@@ -145,6 +153,46 @@ namespace PKR
                 }
             }
             _turnTimer = 0f;
+            Walk(intent, Definition.moveSpeed);
+        }
+
+        void Guard(FighterIntent intent)
+        {
+            if (_motor.IsControlLocked || _vision == null) { intent.Move = Vector2.zero; return; }
+            float dt = Time.fixedDeltaTime;
+            var player = PlayerMarker.Current;
+            if (_vision.Alerted && player != null)
+            {
+                _pauseTimer = 0f;
+                float dx = player.transform.position.x - _motor.Body.position.x;
+                if (Mathf.Abs(dx) > 0.3f) _dir = dx > 0f ? 1 : -1;
+                Vector2 foot = _motor.Body.position + new Vector2(_dir * (_halfSize.x + 0.08f), -_halfSize.y + 0.05f);
+                bool groundAhead = Physics2D.Raycast(foot, Vector2.down, 0.45f, PKRLayers.GroundMask);
+                bool wall = Physics2D.Raycast(_motor.Body.position, new Vector2(_dir, 0f), _halfSize.x + 0.12f, PKRLayers.GroundMask);
+                intent.Move = groundAhead && !wall && Mathf.Abs(dx) > 0.3f ? new Vector2(_dir * Definition.chaseSpeed, 0f) : Vector2.zero;
+                return;
+            }
+            if (_vision.Awareness == GuardAwareness.Suspicious)
+            {
+                // Stop and stare: the meter drains if the hero breaks line of sight.
+                intent.Move = Vector2.zero;
+                return;
+            }
+            if (_pauseTimer > 0f)
+            {
+                intent.Move = Vector2.zero;
+                _pauseTimer -= dt;
+                if (_pauseTimer <= 0f) _dir = -_dir; // look back the other way, then walk that way
+                return;
+            }
+            _patrolTimer += dt;
+            if (_patrolTimer >= Definition.lookBackInterval)
+            {
+                _patrolTimer = 0f;
+                _pauseTimer = Definition.lookBackPause;
+                intent.Move = Vector2.zero;
+                return;
+            }
             Walk(intent, Definition.moveSpeed);
         }
 
