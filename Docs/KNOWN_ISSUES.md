@@ -53,3 +53,13 @@ compiling and tests; **no human has played it yet**, and nothing has run on an i
 - In the movement sandbox, the debug panel's buttons overlap the joystick zone.
 - Orientation switching forces a rotation, then re-enables auto-rotate 0.25 s later; check on device.
 - Touch controls only appear on devices / in the Device Simulator (or with *Force Show* on `TouchControls`).
+
+
+## Phase 3 (Versus, stealth and platform levels)
+
+- **Not playtested by a person yet.** Fighter balance, CPU difficulty, guard sight ranges and jump gaps were tuned
+  by numbers and a rough reachability script, not by hand.
+- Fighters are paper-doll placeholder sprites without animation frames; specials reuse the existing hitbox and
+  projectile systems.
+- Guards' line of sight is blocked by any ground, including one-way planks.
+- The Rooftop Run secret is entered by dropping onto the low plank in the gap between the second and third roofs.

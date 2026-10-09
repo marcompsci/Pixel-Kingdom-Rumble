@@ -293,3 +293,35 @@ First real run, on Omari's Mac with **Unity 6000.6.4f1** via `Tools/unity_check.
 | Install on iPhone | ⬜ | Both iPhones showed "unavailable" (not plugged in / asleep) |
 | Played by a human (Editor or phone) | ⬜ | Nobody has looked at it yet; smoke tests only prove it runs without errors |
 | Project files committed | ✅ | `ProjectSettings/`, upgraded `Packages/`, generated Data/Scenes/Art (bd6fdcd); GitHub CI green |
+
+
+# Phase 3
+
+## 3.1 — Versus mode and ten new fighters (2026-10-09)
+
+- **Versus · 1 on 1** from the main menu: a fighter grid (P1 then CPU pick, random, CPU level), best of three rounds
+  with a 60 s clock, health bars, ROUND/FIGHT/K.O. calls, double K.O. and time-up rules (`Core/Arena/VersusMatch`).
+- **10 new free fighters** (Kai Tempest, Mara Vex, Volt Ramirez, Sola Brightwing, Grizz, Pixel Pip, Nyx Frost,
+  Blaze Torres, Juno Strike, Ollie Kickflip): each has a 3-hit combo ending in a special finisher, up and air
+  attacks, neutral/side/down specials and an air special or dive. They are also selectable in Story Quest.
+- The CPU uses specials and knows the stage edges. Verified: compile 0 errors, all tests green, installed on iPhone.
+
+## 3.2/3.3 — Stealth and jump-and-run Story levels (2026-10-09)
+
+- Levels are drawn as **text maps** (`Core/Level/StoryLayouts.cs`, legend in `AsciiLevel.cs`) and built into scenes
+  by `AsciiLevelBuilder` (**PKR > Build Map Levels**, part of Build All).
+- **Jump-and-run:** Sunspire Heights and Gearfall Caverns with spring pads, climbable vines, shard crates you bump
+  from below, moving platforms and lifts, spikes, secrets.
+- **Stealth:** Rooftop Run and Night Market Heist. Gearwatch Sentries patrol with a visible sight cone (pale →
+  amber → red), look back now and then, and chase once alerted. Hide in hay bales, hit a guard from behind before
+  it spots you for a **silent takedown**, steal the Gearwright's Ledger, then escape through the gate. The results
+  screen grades the run GHOST / SHADOW / AGENT / BRAWLER.
+- Route: Sunspire Meadows → Sunspire Heights → Gearfall Caverns → Clockwork Warden → Rooftop Run → Night Market Heist.
+
+| Item | State | Evidence |
+|---|---|---|
+| Compile | ✅ | 0 errors (Unity 6000.6.4f1, Mac) |
+| EditMode tests | ✅ | 168/168 (adds stealth rules, map parsing, every map validates) |
+| PlayMode tests | ✅ | 56/56 (adds guard sight/takedown/hiding, spring, vine, crate, and smoke tests for the 4 new scenes) |
+| Reachability | 🟡 | A rough script (jump 3 up / 4 across, springs 9 up) finds every goal, checkpoint, shard and secret reachable; not a substitute for playing |
+| Played by a human | ⬜ | Needs a playtest: jump distances, guard fairness and timing are untested by people |
