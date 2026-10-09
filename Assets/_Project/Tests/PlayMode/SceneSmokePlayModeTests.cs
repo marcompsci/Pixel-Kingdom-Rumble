@@ -18,7 +18,7 @@ namespace PKR.Tests
         static readonly string[] Scenes =
         {
             SceneIds.Boot, SceneIds.MainMenu, SceneIds.CharacterSelect, SceneIds.LevelSelect,
-            SceneIds.StoryTest, SceneIds.BossTest, SceneIds.ArenaTest
+            SceneIds.StoryTest, SceneIds.BossTest, SceneIds.ArenaTest, SceneIds.VersusSelect, SceneIds.VersusStage
         };
 
         [TearDown]

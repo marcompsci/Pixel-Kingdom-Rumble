@@ -5,7 +5,7 @@ namespace PKR
 {
     /// <summary>
     /// Portrait main menu: title, Star Shard total, best result for the test level, and
-    /// Story Quest / Arena Clash / Shop / Settings / Codex. Modes lead to Character Select.
+    /// Story Quest / Arena Clash / Versus / Shop / Settings / Codex. Modes lead to Character Select.
     /// The Shop (Star Shard palettes), Codex and Settings open in place as sub-panels.
     /// Buttons for scenes that aren't in the build yet are shown disabled instead of failing.
     /// </summary>
@@ -89,6 +89,12 @@ namespace PKR
             bool hasArena = Application.CanStreamedLevelBeLoaded(SceneIds.ArenaTest);
             UIFactory.Button(panel, hasArena ? "ARENA CLASH" : "ARENA CLASH (SOON)", () => Choose(SessionMode.ArenaClash),
                              interactable: hasArena);
+            if (Application.CanStreamedLevelBeLoaded(SceneIds.VersusSelect))
+                UIFactory.Button(panel, "VERSUS  ·  1 ON 1", () =>
+                {
+                    GameSession.Mode = SessionMode.Versus;
+                    if (Services.Scenes != null) Services.Scenes.Load(SceneIds.VersusSelect);
+                });
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
                 UIFactory.Button(panel, "SHOP", ShowShop);
             UIFactory.Button(panel, "SETTINGS", ShowSettings);

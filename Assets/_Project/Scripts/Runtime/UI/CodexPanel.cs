@@ -304,6 +304,8 @@ namespace PKR
                 Move(sb, "UP + ATTACK", m.groundUpAttack);
                 Move(sb, "AIR ATTACK", m.airAttack);
                 Move(sb, "SPECIAL", m.groundSpecial);
+                Move(sb, "SIDE + SPECIAL", m.sideSpecial);
+                Move(sb, "DOWN + SPECIAL", m.downSpecial);
                 if (kit == null || !kit.hasDive) Move(sb, "AIR SPECIAL", m.airSpecial);
             }
             if (kit != null)
@@ -320,8 +322,13 @@ namespace PKR
             sb.Append(input).Append(": ").Append(move.displayName);
             // Show a short combo chain (jab > sweep), guarding against loops.
             var seen = new HashSet<MoveDefinition> { move };
+            MoveDefinition finisher = move.specialFollowUp;
             for (var next = move.followUp; next != null && seen.Add(next) && seen.Count <= 3; next = next.followUp)
+            {
                 sb.Append(" > ").Append(next.displayName);
+                if (next.specialFollowUp != null) finisher = next.specialFollowUp;
+            }
+            if (finisher != null) sb.Append(" > (SPECIAL) ").Append(finisher.displayName);
             sb.Append('\n');
         }
 

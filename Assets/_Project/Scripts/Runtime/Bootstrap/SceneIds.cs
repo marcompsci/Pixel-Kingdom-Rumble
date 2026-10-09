@@ -14,10 +14,12 @@ namespace PKR
         public const string BossTest = "SQ_ClockworkWarden_Test";
         public const string ArenaTest = "AC_Skyforge_Test";
         public const string MovementSandbox = "SQ_MovementSandbox";
+        public const string VersusSelect = "04_VersusSelect";
+        public const string VersusStage = "VS_Dojo";
 
         /// <summary>Gameplay scenes run in landscape; everything else is portrait.</summary>
         public static bool IsGameplay(string sceneName) =>
             sceneName == StoryTest || sceneName == ArenaTest ||
-            sceneName.StartsWith("SQ_") || sceneName.StartsWith("AC_");
+            sceneName.StartsWith("SQ_") || sceneName.StartsWith("AC_") || sceneName.StartsWith("VS_");
     }
 }

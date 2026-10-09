@@ -81,7 +81,7 @@ namespace PKR
 
             // Preview with arrows.
             var previewRow = UIFactory.Rect("PreviewRow", panel);
-            previewRow.gameObject.AddComponent<LayoutElement>().preferredHeight = 620f;
+            previewRow.gameObject.AddComponent<LayoutElement>().preferredHeight = 520f;
             var h = previewRow.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.spacing = 20f; h.childAlignment = TextAnchor.MiddleCenter;
             h.childControlWidth = true; h.childControlHeight = true;
@@ -102,22 +102,28 @@ namespace PKR
             _status.color = p.accent;
 
             // Hero cards.
+            // A grid that fits the whole roster (7 per row; 14 heroes since Phase 3.1).
+            const int perRow = 7;
+            int rows = (Count + perRow - 1) / perRow;
+            float cell = Count <= 5 ? 170f : 118f;
             var cardRow = UIFactory.Rect("Cards", panel);
-            cardRow.gameObject.AddComponent<LayoutElement>().preferredHeight = 200f;
-            var ch = cardRow.gameObject.AddComponent<HorizontalLayoutGroup>();
-            ch.spacing = 20f; ch.childAlignment = TextAnchor.MiddleCenter;
-            ch.childControlWidth = true; ch.childControlHeight = true;
-            ch.childForceExpandWidth = true; ch.childForceExpandHeight = true;
+            cardRow.gameObject.AddComponent<LayoutElement>().preferredHeight = rows * cell + (rows - 1) * 10f;
+            var ch = cardRow.gameObject.AddComponent<GridLayoutGroup>();
+            ch.cellSize = new Vector2(cell, cell);
+            ch.spacing = new Vector2(10f, 10f);
+            ch.childAlignment = TextAnchor.UpperCenter;
+            ch.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            ch.constraintCount = Mathf.Min(perRow, Mathf.Max(1, Count));
             for (int i = 0; i < Count; i++)
             {
                 int idx = i;
                 var hero = roster.heroes[i];
-                var card = UIFactory.Button(cardRow, "", () => SetIndex(idx), 200f);
+                var card = UIFactory.Button(cardRow, "", () => SetIndex(idx), cell);
                 var cardRt = (RectTransform)card.transform;
                 var art = UIFactory.Rect("Art", cardRt);
                 UIFactory.Stretch(art);
-                art.offsetMin = new Vector2(16f, 16f);
-                art.offsetMax = new Vector2(-16f, -16f);
+                art.offsetMin = new Vector2(10f, 10f);
+                art.offsetMax = new Vector2(-10f, -10f);
                 var img = art.gameObject.AddComponent<Image>();
                 img.sprite = hero != null ? hero.bodySprite : null;
                 img.preserveAspect = true;

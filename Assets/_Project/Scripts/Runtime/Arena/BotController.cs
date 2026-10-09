@@ -15,7 +15,7 @@ namespace PKR
         public BotDifficulty difficulty = BotDifficulty.For(BotLevel.Normal);
         public bool passive;
 
-        ArenaMatchController _match;
+        IBotArena _match;
         PlatformerMotor2D _motor;
         Damageable _self;
         HeroAbilities _abilities;
@@ -25,7 +25,7 @@ namespace PKR
         BotCommand _last;
         bool _holdAttackForChain;
 
-        public void Init(ArenaMatchController match, BotDifficulty d, int seed, bool isPassive)
+        public void Init(IBotArena match, BotDifficulty d, int seed, bool isPassive)
         {
             _match = match;
             difficulty = d;

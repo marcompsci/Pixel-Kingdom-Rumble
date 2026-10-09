@@ -88,7 +88,7 @@ namespace PKR
                     if (m != null) Begin(m, intent.Move, chained: false);
                     return;
                 }
-                var special = moveset.ForSpecial(grounded);
+                var special = moveset.ForSpecial(grounded, intent.Move);
                 if (special != null && intent.Special.Consume(now)) Begin(special, intent.Move, chained: false);
                 return;
             }
@@ -97,6 +97,12 @@ namespace PKR
             if (Current.followUp != null && CanCancel && intent.Attack.Consume(now))
             {
                 Begin(Current.followUp, intent.Move, chained: true);
+                return;
+            }
+            // Combo finisher on Special (only from a move that has one, and only on the ground or in the air as authored).
+            if (Current.specialFollowUp != null && CanCancel && intent.Special.Consume(now))
+            {
+                Begin(Current.specialFollowUp, intent.Move, chained: true);
                 return;
             }
 

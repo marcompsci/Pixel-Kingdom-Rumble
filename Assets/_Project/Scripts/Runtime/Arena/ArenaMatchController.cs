@@ -26,7 +26,7 @@ namespace PKR
     /// invulnerability, runs the clock and the bridge event, and reports results (with a Star Shard reward).
     /// The match only starts when ArenaSetupUI calls StartMatch.
     /// </summary>
-    public class ArenaMatchController : MonoBehaviour
+    public class ArenaMatchController : MonoBehaviour, IBotArena
     {
         public class Fighter
         {

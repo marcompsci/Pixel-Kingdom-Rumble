@@ -18,6 +18,10 @@ namespace PKR
         [Header("Special button")]
         public MoveDefinition groundSpecial;
         public MoveDefinition airSpecial;
+        [Tooltip("Optional: Special while holding left/right on the ground. Empty = the ground special.")]
+        public MoveDefinition sideSpecial;
+        [Tooltip("Optional: Special while holding down on the ground. Empty = the ground special.")]
+        public MoveDefinition downSpecial;
 
         [Header("Ability hits")]
         [Tooltip("Hit used by an ability's impact (Nova: Meteor Drop landing shockwave).")]
@@ -34,5 +38,17 @@ namespace PKR
         }
 
         public MoveDefinition ForSpecial(bool grounded) => grounded ? groundSpecial : airSpecial;
+
+        /// <summary>Stick past this counts as a direction for side/down specials.</summary>
+        public const float SpecialDirThreshold = 0.6f;
+
+        /// <summary>Directional specials on the ground: down beats side, side beats neutral.</summary>
+        public MoveDefinition ForSpecial(bool grounded, Vector2 stick)
+        {
+            if (!grounded) return airSpecial;
+            if (downSpecial != null && stick.y < -SpecialDirThreshold) return downSpecial;
+            if (sideSpecial != null && Mathf.Abs(stick.x) > SpecialDirThreshold && stick.y > -SpecialDirThreshold) return sideSpecial;
+            return groundSpecial;
+        }
     }
 }

@@ -54,6 +54,8 @@ namespace PKR
         [Header("Chaining")]
         [Tooltip("Pressing the same button inside the cancel window performs this move next.")]
         public MoveDefinition followUp;
+        [Tooltip("Pressing SPECIAL inside the cancel window performs this combo finisher next (e.g. jab, jab, special).")]
+        public MoveDefinition specialFollowUp;
 
         [Header("Projectile (optional)")]
         public bool spawnsProjectile;
@@ -87,6 +89,7 @@ namespace PKR
             if (shape == HitShape.Box && (hitboxSize.x <= 0f || hitboxSize.y <= 0f)) e.Add("hitboxSize must be positive");
             if (shape == HitShape.Circle && hitboxRadius <= 0f) e.Add("hitboxRadius must be positive");
             if (followUp == this) e.Add("followUp cannot be the move itself");
+            if (specialFollowUp == this) e.Add("specialFollowUp cannot be the move itself");
             if (spawnsProjectile && (projectileSpeed <= 0f || projectileLifetime <= 0f)) e.Add("projectile speed/lifetime must be positive");
             if (spawnsProjectile && spawnsTrap) e.Add("a move can spawn a projectile or a trap, not both");
             if ((spawnsProjectile || spawnsTrap) && speedBonus > 0f) e.Add("speedBonus has no effect on projectile or trap moves");

@@ -56,6 +56,9 @@ namespace PKR.EditorTools
                 EditorUtility.SetDirty(roster);
             }
             if (roster.cosmetics == null) { roster.cosmetics = GetOrCreateCosmetics(); EditorUtility.SetDirty(roster); }
+            // Phase 3.1: the ten free Versus fighters join the roster after the original four.
+            foreach (var f in VersusFighters.GetOrCreateAll())
+                if (!roster.heroes.Contains(f)) { roster.heroes.Add(f); EditorUtility.SetDirty(roster); }
             return roster;
         }
 
@@ -701,7 +704,7 @@ namespace PKR.EditorTools
             return set;
         }
 
-        static T GetOrCreate<T>(string path, System.Action<T> init) where T : ScriptableObject
+        internal static T GetOrCreate<T>(string path, System.Action<T> init) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset != null) return asset;

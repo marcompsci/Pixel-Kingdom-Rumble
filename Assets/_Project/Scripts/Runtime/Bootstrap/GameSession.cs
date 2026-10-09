@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum SessionMode { StoryQuest, ArenaClash }
+    public enum SessionMode { StoryQuest, ArenaClash, Versus }
 
     /// <summary>
     /// What the player chose in the menus (mode, hero), carried into the next scene.
@@ -14,7 +14,16 @@ namespace PKR
         public static SessionMode Mode { get; set; } = SessionMode.StoryQuest;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => Mode = SessionMode.StoryQuest;
+        static void ResetStatics()
+        {
+            Mode = SessionMode.StoryQuest;
+            VersusOpponentId = null;
+            VersusBotLevel = BotLevel.Normal;
+        }
+
+        /// <summary>Versus: the CPU's fighter (null = random) and difficulty, chosen on the Versus select screen.</summary>
+        public static string VersusOpponentId { get; set; }
+        public static BotLevel VersusBotLevel { get; set; } = BotLevel.Normal;
 
         public static string SelectedCharacterId
         {
@@ -42,6 +51,7 @@ namespace PKR
             get
             {
                 if (Mode == SessionMode.ArenaClash) return SceneIds.ArenaTest;
+                if (Mode == SessionMode.Versus) return SceneIds.VersusStage;
                 return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;
             }
         }
