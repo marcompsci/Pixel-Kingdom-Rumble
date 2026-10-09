@@ -25,6 +25,8 @@ if xcrun devicectl device install app --device "$DEVICE" "$APP" >> "$S" 2>&1; th
   PID=$!
   sleep 90
   kill $PID 2>/dev/null
+  # Stopping the log stream also closes the game, so start it again (no log) for the player.
+  sleep 2; xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE" > /dev/null 2>&1
   say "LAUNCHED. Log lines: $(wc -l < "$OUT/device_console.log" | tr -d ' ')"
 else
   say "FAILED (see above)."

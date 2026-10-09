@@ -58,6 +58,8 @@ if xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.
   xcrun devicectl device process launch --console --terminate-existing --device "$DEVICE" "$BUNDLE" \
     > "$OUT/device_console.log" 2>&1 &
   PID=$!; sleep 90; kill $PID 2>/dev/null
+  # Stopping the log stream also closes the game, so start it again (no log) for the player.
+  sleep 2; xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE" > /dev/null 2>&1
   say "      Launched."
 else say "      Install FAILED (Logs/ios/install.log)"; tail -5 "$OUT/install.log" | tee -a "$OUT/SUMMARY.txt"; fi
 
