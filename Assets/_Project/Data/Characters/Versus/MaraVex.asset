@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: MaraVex
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: mara_vex
+  displayName: Mara Vex
+  tagline: Shadow runner. Strikes and vanishes.
+  lore: Nobody hires Mara Vex; she picks her own jobs. She moves along the rooftops of the Tickworks towns at night and is gone before the lanterns swing back. She double jumps, and she never fights fair.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.19607843, g: 0.18039216, b: 0.3137255, a: 1}
+  bodySprite: {fileID: 21300000, guid: bdec4f7e138e94d7a8d0dfa7bd573971, type: 3}
+  portrait: {fileID: 0}
+  movement:
+    runSpeed: 8.6
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.4
+    timeToApex: 0.35
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 1
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 4
+  weight: 0.8
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 2bef573693a104d01bfe5e4b41a52716, type: 2}
+  kit: {fileID: 11400000, guid: fb66727d4f15a42a8baf5416f2b62abe, type: 2}

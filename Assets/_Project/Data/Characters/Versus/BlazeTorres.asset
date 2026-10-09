@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: BlazeTorres
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: blaze_torres
+  displayName: Blaze Torres
+  tagline: Firefighter. Runs toward trouble.
+  lore: When a Tickworks boiler blows, Blaze is the first one up the ladder. She swings a rescue axe like it weighs nothing, and her water cannon can push anyone off their feet. Heavy, armored and hard to stop.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.9019608, g: 0.74509805, b: 0.23529412, a: 1}
+  bodySprite: {fileID: 21300000, guid: 847560cf9501547e4a5849c82e21e9c8, type: 3}
+  portrait: {fileID: 0}
+  movement:
+    runSpeed: 6.8
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3
+    timeToApex: 0.39
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 6
+  weight: 1.4
+  armorPercent: 0.1
+  guardPips: 4
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: e4d97b31fe77f46b4bb1955e7fe22de4, type: 2}
+  kit: {fileID: 11400000, guid: d8c4a0701876c48799a2dbbb83be5a9e, type: 2}

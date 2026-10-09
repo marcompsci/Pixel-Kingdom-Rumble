@@ -15,8 +15,9 @@ MonoBehaviour:
   id: sq_sunspire_test
   displayName: Sunspire Meadows
   biomeName: Sunspire Meadows
+  modeTag: Platform
   sceneName: SQ_SunspireMeadows_Test
-  nextSceneName: SQ_ClockworkWarden_Test
+  nextSceneName: SQ_SunspireHeights
   codexEntry: Grassland islands stitched together by the Tickworks' oldest machinery. The brass is warm to the touch, and the gears hum just below hearing.
   parTimeSeconds: 120
   totalShards: 24

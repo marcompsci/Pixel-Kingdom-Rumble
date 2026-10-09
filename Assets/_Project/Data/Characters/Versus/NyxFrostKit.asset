@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 240b43acc21fc234eb6095b3c99776ca, type: 3}
+  m_Name: NyxFrostKit
+  m_EditorClassIdentifier: PKR.Runtime::PKR.NovaKitDefinition
+  airDodgeName: Frost Blink
+  diveName: Icicle Plunge
+  airDodgesPerAirtime: 1
+  airDodgeDuration: 0.14
+  airDodgeInvulnerability: 0.08
+  airDodgeCarryOver: 0.35
+  hasDive: 1
+  diveStartup: 0.1
+  diveFallSpeed: 26
+  diveLandingLag: 0.2
+  diveShockwaveRadius: 1.5
+  diveMaxDuration: 2.5
+  diveArmored: 0
+  airDashSpeed: 18
+  airDashAimDeadzone: 0.35

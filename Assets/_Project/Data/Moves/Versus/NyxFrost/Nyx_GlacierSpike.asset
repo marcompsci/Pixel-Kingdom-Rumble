@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f01ab389b2b7ba3c1601ba72a81d1903, type: 3}
+  m_Name: Nyx_GlacierSpike
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MoveDefinition
+  id: nyx_glacierspike
+  displayName: Glacier Spike
+  description: 'Combo ender: an ice spike from below.'
+  frames:
+    startup: 6
+    active: 4
+    recovery: 16
+    cancelWindow: 0
+  shape: 0
+  hitboxOffset: {x: 0.9, y: 0.3}
+  hitboxSize: {x: 1.2, y: 1.2}
+  hitboxRadius: 0.8
+  hit:
+    damage: 3
+    pipDamage: 2
+    baseKnockback: 8
+    exposedMultiplier: 3
+    angleDegrees: 75
+    baseHitstunFrames: 15
+    hitstopFrames: 6
+    isHeavy: 1
+  rootedOnGround: 1
+  lungeSpeed: 1.5
+  endsOnLanding: 1
+  speedBonus: 0
+  superArmor: 0
+  armorStartFrame: 0
+  armorEndFrame: -1
+  followUp: {fileID: 0}
+  specialFollowUp: {fileID: 0}
+  spawnsProjectile: 0
+  projectileSpawnOffset: {x: 0.7, y: 0.1}
+  projectileSpeed: 12
+  projectileLifetime: 0.6
+  projectileRadius: 0.3
+  projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  spawnsTrap: 0
+  trapArmDelay: 0.35
+  trapLifetime: 6
+  trapRadius: 0.55
+  trapFallSpeed: 14
+  haptic: 1
+  shakeAmplitude: 0.12
+  shakeDuration: 0.12

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f01ab389b2b7ba3c1601ba72a81d1903, type: 3}
+  m_Name: Mara_TwinSlash
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MoveDefinition
+  id: mara_twinslash
+  displayName: Twin Slash
+  description: Second hit. Attack for Shadow Rend, SPECIAL for Vanishing Strike.
+  frames:
+    startup: 3
+    active: 3
+    recovery: 11
+    cancelWindow: 8
+  shape: 0
+  hitboxOffset: {x: 0.75, y: 0.1}
+  hitboxSize: {x: 1, y: 0.7}
+  hitboxRadius: 0.8
+  hit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 3.5
+    exposedMultiplier: 1.6
+    angleDegrees: 20
+    baseHitstunFrames: 14
+    hitstopFrames: 3
+    isHeavy: 0
+  rootedOnGround: 1
+  lungeSpeed: 2.5
+  endsOnLanding: 1
+  speedBonus: 0
+  superArmor: 0
+  armorStartFrame: 0
+  armorEndFrame: -1
+  followUp: {fileID: 11400000, guid: 2f937e34f0d47464fbba58270140bfe1, type: 2}
+  specialFollowUp: {fileID: 11400000, guid: 376ecd418bddf4fe3a669e03bc4731f5, type: 2}
+  spawnsProjectile: 0
+  projectileSpawnOffset: {x: 0.7, y: 0.1}
+  projectileSpeed: 12
+  projectileLifetime: 0.6
+  projectileRadius: 0.3
+  projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  spawnsTrap: 0
+  trapArmDelay: 0.35
+  trapLifetime: 6
+  trapRadius: 0.55
+  trapFallSpeed: 14
+  haptic: 0
+  shakeAmplitude: 0
+  shakeDuration: 0.12

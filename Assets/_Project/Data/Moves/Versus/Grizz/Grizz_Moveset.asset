@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Grizz_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 0e00a9dc4fde648989d08e0523422a80, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 03c8cbf2f755040bea3847057a25386e, type: 2}
+  airAttack: {fileID: 11400000, guid: 8bc294d82aa5645f5885969469954597, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 12b1fcb6f14554dfe9e594b160cf9eb2, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: bcc9dc4a869a241ae82003f65d314a65, type: 2}
+  downSpecial: {fileID: 11400000, guid: 4f18d6293fb374a83b77143d1a990d4b, type: 2}
+  abilityImpact: {fileID: 11400000, guid: f671a46fdab6d44b9b5ec8711fbc03b2, type: 2}

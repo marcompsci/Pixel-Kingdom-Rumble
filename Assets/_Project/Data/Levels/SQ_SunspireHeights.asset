@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_SunspireHeights
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_sunspire_heights
+  displayName: Sunspire Heights
+  biomeName: Sunspire Meadows
+  modeTag: Platform
+  sceneName: SQ_SunspireHeights
+  nextSceneName: SQ_GearfallCaverns
+  codexEntry: 'The windy upper meadows: spring pads, vine-covered pillars and crates packed with shards by careless couriers.'
+  parTimeSeconds: 150
+  totalShards: 31
+  totalSecrets: 1
+  skyColor: {r: 0.5882353, g: 0.78431374, b: 1, a: 1}

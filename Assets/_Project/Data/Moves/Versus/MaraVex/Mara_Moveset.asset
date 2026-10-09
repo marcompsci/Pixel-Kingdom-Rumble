@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Mara_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: d6f76a3658fca43af9799713aef4158c, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 7dea0642b52444ef0a03832e00d455b4, type: 2}
+  airAttack: {fileID: 11400000, guid: d3c29bdb9cefe4de291afd2c12e32064, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 0c31a0daa962a4eaa99c3a85f6d77fed, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: 6ec173c79e29a4c47943bb62c477e761, type: 2}
+  downSpecial: {fileID: 11400000, guid: 2e7f5e350ddd6440eb4dfc3f1890ca9d, type: 2}
+  abilityImpact: {fileID: 11400000, guid: 8d2d1ae96e2ea4c7f9640a20115c130d, type: 2}

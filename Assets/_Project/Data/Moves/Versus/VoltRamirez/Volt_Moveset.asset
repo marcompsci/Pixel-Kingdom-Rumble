@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Volt_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: ed7067b2914084232ad9590f8501dd01, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 26551112449594077b530f5c99e6ecf1, type: 2}
+  airAttack: {fileID: 11400000, guid: 08fb74bd4276e4e8e957b6be0c0640f1, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 3ed80124ebf8144c3b90232bfe6238d1, type: 2}
+  airSpecial: {fileID: 11400000, guid: 3b75cae68f69f4f62a3b3f8841cf7daa, type: 2}
+  sideSpecial: {fileID: 11400000, guid: b20a2df2f914449b0b0afcdb84e06638, type: 2}
+  downSpecial: {fileID: 11400000, guid: 50e650469a03240259f92eaaa498eb6e, type: 2}
+  abilityImpact: {fileID: 0}

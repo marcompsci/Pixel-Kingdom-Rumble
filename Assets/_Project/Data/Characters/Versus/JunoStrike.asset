@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: JunoStrike
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: juno_strike
+  displayName: Juno Strike
+  tagline: Striker. Never stops moving.
+  lore: Juno captains the Meadow Rovers, the best football side in the Isles, and she plays every fight like a cup final. She builds up speed, and the faster she runs the harder her kicks land.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.15686275, g: 0.5882353, b: 0.3529412, a: 1}
+  bodySprite: {fileID: 21300000, guid: bc30ec73ea48c4febaa021f20e36ea90, type: 3}
+  portrait: {fileID: 0}
+  movement:
+    runSpeed: 8.4
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.2
+    timeToApex: 0.36
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: 10
+    skidDeceleration: 42
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 5
+  weight: 0.95
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: ad010d8496b844f23b086a9ada241b14, type: 2}
+  kit: {fileID: 11400000, guid: c6fc0756493b241b8bc7303294aef193, type: 2}

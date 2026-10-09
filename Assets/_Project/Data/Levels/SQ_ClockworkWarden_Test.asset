@@ -15,8 +15,9 @@ MonoBehaviour:
   id: sq_clockwork_warden
   displayName: Clockwork Warden
   biomeName: Tickworks Engine Hall
+  modeTag: Boss
   sceneName: SQ_ClockworkWarden_Test
-  nextSceneName: 
+  nextSceneName: SQ_RooftopRun
   codexEntry: A towering guardian built to keep the Tickworks turning. Its memory has worn down with its gears, and it now guards the engine hall against everyone, even the heroes it was built to help.
   parTimeSeconds: 90
   totalShards: 0

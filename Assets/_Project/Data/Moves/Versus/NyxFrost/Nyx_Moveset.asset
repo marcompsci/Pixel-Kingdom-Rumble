@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Nyx_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 37edbd3158aeb4f9f8ecd58cf4322743, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 95ccd5920186442ee83622e81d650542, type: 2}
+  airAttack: {fileID: 11400000, guid: 16c482e213f2846ed9604d5654aeafad, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 327da444984634f6cb5165052752213a, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: 5b98541d3cb7045b283a00cafee9a7e1, type: 2}
+  downSpecial: {fileID: 11400000, guid: 77db31bf5369443dd830d78882d45909, type: 2}
+  abilityImpact: {fileID: 11400000, guid: a8827626d19db4a7fa1e6b7d6d7e9258, type: 2}

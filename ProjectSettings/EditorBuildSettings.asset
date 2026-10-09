@@ -29,4 +29,22 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Arena/AC_Skyforge_Test.unity
     guid: cfff6e7339860490d841e25ed95e9666
+  - enabled: 1
+    path: Assets/_Project/Scenes/04_VersusSelect.unity
+    guid: b5fc686604c714b7c90c36ab85fb03be
+  - enabled: 1
+    path: Assets/_Project/Scenes/Versus/VS_Dojo.unity
+    guid: cfa3d5e30760f4049927a1c28c78365f
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_SunspireHeights.unity
+    guid: bca71d51b11f24a808eeae4643180af2
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_GearfallCaverns.unity
+    guid: 9242b55b802554ff79e1b87f2c332ef6
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_RooftopRun.unity
+    guid: 6ee1605f609284cea8fd73853710f8b0
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_NightMarketHeist.unity
+    guid: 7596796b70a414625aa22c855ceb67aa
   m_configObjects: {}
