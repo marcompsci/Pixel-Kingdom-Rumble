@@ -65,5 +65,24 @@ namespace PKR.Tests
             Assert.IsNotNull(flow.Run);
             Assert.Greater(flow.Run.ElapsedSeconds, 0f, "the level timer runs");
         }
+
+        // Props must survive being saved into a scene (a MonoBehaviour in a file named after another class doesn't).
+        [UnityTest]
+        public IEnumerator MapLevels_KeepTheirProps()
+        {
+            yield return Load(SceneIds.SunspireHeights);
+            Assert.Greater(Object.FindObjectsByType<SpringPad>().Length, 0, "springs");
+            Assert.Greater(Object.FindObjectsByType<ShardCrate>().Length, 0, "crates");
+            Assert.Greater(Object.FindObjectsByType<ClimbZone>().Length, 0, "vines");
+            yield return Load(SceneIds.RooftopRun);
+            Assert.Greater(Object.FindObjectsByType<HideSpot>().Length, 0, "hiding spots");
+            Assert.AreEqual(1, Object.FindObjectsByType<StealthObjective>().Length, "objective");
+            Assert.IsNotNull(StealthTracker.Current);
+            yield return Load("MS_BellKeeper");
+            Assert.Greater(Object.FindObjectsByType<RelicPickup>().Length, 3, "relics");
+            Assert.AreEqual(1, Object.FindObjectsByType<ClueScroll>().Length, "cipher scroll");
+            Assert.IsNotNull(MissionTracker.Current);
+            Assert.AreEqual(1, StealthTracker.Current.TargetsTotal, "one target");
+        }
     }
 }
