@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3256b210800607d970bf4e0737315a2d, type: 3}
+  m_Name: Contract_MS_CipherCrypt
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionDefinition
+  id: ms_cipher_crypt
+  displayName: The Cipher Crypt
+  briefing: The scroll was a map. Beneath the market lie catacombs packed with relics of the first kings, and the Cipher Key that opens the Order's oldest door. The crypt has its own guards.
+  kind: 1
+  free: 0
+  revealedByClue: clue_cipher_crypt
+  clueHint: Search the back rooms of The Bell Keeper
+  containsClue: 
+  level: {fileID: 11400000, guid: cec64f87e2c1f4b8094003fb40328fa2, type: 2}
+  totalRelics: 8

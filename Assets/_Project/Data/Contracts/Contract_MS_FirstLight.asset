@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3256b210800607d970bf4e0737315a2d, type: 3}
+  m_Name: Contract_MS_FirstLight
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionDefinition
+  id: ms_first_light
+  displayName: First Light
+  briefing: Your first night with the Order of the Hidden Gear. A merchant on the low roofs has stolen the Dawn Lantern. Hide in the hay, climb the vines, slip past the watch and bring it back. Hit a guard from behind before it sees you for a silent takedown.
+  kind: 0
+  free: 1
+  revealedByClue: 
+  clueHint: 
+  containsClue: 
+  level: {fileID: 11400000, guid: 47a8dc1b30126468a9670be87ac42462, type: 2}
+  totalRelics: 5

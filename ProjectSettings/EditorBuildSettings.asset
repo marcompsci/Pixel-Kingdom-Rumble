@@ -47,4 +47,25 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Story/SQ_NightMarketHeist.unity
     guid: 7596796b70a414625aa22c855ceb67aa
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_FirstLight.unity
+    guid: 87f2d82653e1a40d8901824055aafa7c
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_BellKeeper.unity
+    guid: b6fbebeeee8ee4274b16c91b0974a003
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_BrassVault.unity
+    guid: 8f606f8e50ede40d9861b06b26a98b2b
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_LanternHarbor.unity
+    guid: 05b36890dd34446f4bd0585afa173201
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_CipherCrypt.unity
+    guid: 86be780f0a99f4233a2493859d621346
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_ClocktowerShadow.unity
+    guid: 2a7c719994c3f43feaa952a58515fcac
+  - enabled: 1
+    path: Assets/_Project/Scenes/05_ShadowContracts.unity
+    guid: 5f727e3a2d3be43b7a6b1d4e4ed3080e
   m_configObjects: {}

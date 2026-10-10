@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3256b210800607d970bf4e0737315a2d, type: 3}
+  m_Name: Contract_MS_ClocktowerShadow
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionDefinition
+  id: ms_clocktower_shadow
+  displayName: Clocktower Shadow
+  briefing: The last captain of the rival guild waits at the top of the great clock with the Master Key. Three roofs, three climbs, one target. Take him down and take the key.
+  kind: 1
+  free: 0
+  revealedByClue: clue_clocktower
+  clueHint: A scroll hides in the Harbor of Lanterns boathouse
+  containsClue: 
+  level: {fileID: 11400000, guid: cd28cf79e56df414ba8e3d7f2b89fd79, type: 2}
+  totalRelics: 6

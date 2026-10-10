@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_LanternHarbor
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_lantern_harbor
+  displayName: Harbor of Lanterns
+  biomeName: Brasslight Quarter
+  modeTag: Contract
+  sceneName: MS_LanternHarbor
+  nextSceneName: 
+  codexEntry: 'A smuggler captain ships stolen relics out of the lantern harbor tonight. Cross the docks and stop him on the warehouse roof. Check the boathouse: smugglers hide more than cargo.'
+  parTimeSeconds: 170
+  totalShards: 0
+  totalSecrets: 1
+  skyColor: {r: 0.10980392, g: 0.14117648, b: 0.2901961, a: 1}

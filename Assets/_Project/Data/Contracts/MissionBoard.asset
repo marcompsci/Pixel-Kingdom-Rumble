@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db8dcef6cffa0b1232ad30a4795c066d, type: 3}
+  m_Name: MissionBoard
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionBoardDefinition
+  title: SHADOW CONTRACTS
+  description: Missions for the Order of the Hidden Gear.
+  contracts:
+  - {fileID: 11400000, guid: 708d12a2fee4d47838e4be645a412078, type: 2}
+  - {fileID: 11400000, guid: 4cf11ef25f5434a97b3ec481a8adf46b, type: 2}
+  - {fileID: 11400000, guid: 928302d8fc6b04d0cbd42ac74f94a16f, type: 2}
+  - {fileID: 11400000, guid: 38c5b84b93bde48608f4675deb709c66, type: 2}
+  - {fileID: 11400000, guid: 10e5987266e17424b9a0d3d5814cdc0f, type: 2}
+  - {fileID: 11400000, guid: 25e42be38c0b542c19d638b598f05261, type: 2}

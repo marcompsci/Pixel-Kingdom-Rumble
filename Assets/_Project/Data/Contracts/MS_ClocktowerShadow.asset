@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_ClocktowerShadow
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_clocktower_shadow
+  displayName: Clocktower Shadow
+  biomeName: Brasslight Quarter
+  modeTag: Contract
+  sceneName: MS_ClocktowerShadow
+  nextSceneName: 
+  codexEntry: The last captain of the rival guild waits at the top of the great clock with the Master Key. Three roofs, three climbs, one target. Take him down and take the key.
+  parTimeSeconds: 180
+  totalShards: 0
+  totalSecrets: 0
+  skyColor: {r: 0.15686275, g: 0.09411765, b: 0.2509804, a: 1}

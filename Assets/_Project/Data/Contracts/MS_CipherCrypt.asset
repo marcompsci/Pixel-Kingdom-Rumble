@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_CipherCrypt
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_cipher_crypt
+  displayName: The Cipher Crypt
+  biomeName: Brasslight Quarter
+  modeTag: Contract
+  sceneName: MS_CipherCrypt
+  nextSceneName: 
+  codexEntry: The scroll was a map. Beneath the market lie catacombs packed with relics of the first kings, and the Cipher Key that opens the Order's oldest door. The crypt has its own guards.
+  parTimeSeconds: 160
+  totalShards: 0
+  totalSecrets: 0
+  skyColor: {r: 0.078431375, g: 0.07058824, b: 0.15686275, a: 1}

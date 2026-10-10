@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3256b210800607d970bf4e0737315a2d, type: 3}
+  m_Name: Contract_MS_BrassVault
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionDefinition
+  id: ms_brass_vault
+  displayName: Vault of the Brass Kings
+  briefing: The old kings' crown sits in a stepped vault, guarded day and night. Cross the gap, climb the vault walls and lift the Brass Crown from its pedestal. Ancient relics line every ledge.
+  kind: 0
+  free: 0
+  revealedByClue: 
+  clueHint: 
+  containsClue: 
+  level: {fileID: 11400000, guid: d0112387d651b4814a12485fe259309d, type: 2}
+  totalRelics: 6
