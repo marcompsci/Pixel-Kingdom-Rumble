@@ -21,10 +21,14 @@ namespace PKR
         public const string GearfallCaverns = "SQ_GearfallCaverns";
         public const string RooftopRun = "SQ_RooftopRun";
         public const string NightMarketHeist = "SQ_NightMarketHeist";
+        // Shadow Contracts (mission mode): the board and the contract scenes (MS_ prefix).
+        public const string MissionBoard = "05_ShadowContracts";
+        public const string ContractPrefix = "MS_";
 
         /// <summary>Gameplay scenes run in landscape; everything else is portrait.</summary>
         public static bool IsGameplay(string sceneName) =>
             sceneName == StoryTest || sceneName == ArenaTest ||
-            sceneName.StartsWith("SQ_") || sceneName.StartsWith("AC_") || sceneName.StartsWith("VS_");
+            sceneName.StartsWith("SQ_") || sceneName.StartsWith("AC_") || sceneName.StartsWith("VS_") ||
+            sceneName.StartsWith(ContractPrefix);
     }
 }

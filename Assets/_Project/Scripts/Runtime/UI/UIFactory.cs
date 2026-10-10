@@ -134,6 +134,32 @@ namespace PKR
             return rt;
         }
 
+        /// <summary>Give a panel (from Panel) a new height, edge included, e.g. to fit its contents.</summary>
+        public static void ResizePanel(RectTransform panel, float height)
+        {
+            panel.sizeDelta = new Vector2(panel.sizeDelta.x, height);
+            if (panel.parent is RectTransform edge) edge.sizeDelta = new Vector2(edge.sizeDelta.x, height + 12f);
+        }
+
+        /// <summary>Recolor a Button made by Button(): face color and label color.</summary>
+        public static void Tint(Button b, Color face, Color text)
+        {
+            var c = b.colors;
+            c.normalColor = face; c.highlightedColor = face; c.selectedColor = face;
+            c.pressedColor = Color.Lerp(face, Color.white, 0.35f);
+            b.colors = c;
+            var t = b.GetComponentInChildren<Text>();
+            if (t != null) t.color = text;
+        }
+
+        /// <summary>A thick outline around a control (marks the suggested card).</summary>
+        public static void Highlight(Component c, Color color)
+        {
+            var o = c.gameObject.AddComponent<Outline>();
+            o.effectColor = color;
+            o.effectDistance = new Vector2(6f, -6f);
+        }
+
         public static Text Label(RectTransform parent, string text, int size, TextAnchor align = TextAnchor.MiddleCenter,
                                  float height = 70f, bool title = false)
         {

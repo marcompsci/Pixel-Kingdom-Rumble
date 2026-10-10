@@ -21,7 +21,9 @@ namespace PKR.Core
     /// </summary>
     public static class LevelSelect
     {
-        public static LevelSlot[] Build(string[] levelIds, SaveData save)
+        /// <param name="openAll">Every level playable from the start (the Story Quest route since 2026-10-10);
+        /// progress, ranks and NEW tags still show. False = unlock in order.</param>
+        public static LevelSlot[] Build(string[] levelIds, SaveData save, bool openAll = false)
         {
             if (levelIds == null) return Array.Empty<LevelSlot>();
             var slots = new LevelSlot[levelIds.Length];
@@ -33,7 +35,7 @@ namespace PKR.Core
                 slots[i] = new LevelSlot
                 {
                     levelId = levelIds[i],
-                    unlocked = previousCleared || done, // a level you've cleared is never shown locked
+                    unlocked = openAll || previousCleared || done, // a level you've cleared is never shown locked
                     completed = done,
                     bestTimeSeconds = rec != null ? rec.bestTimeSeconds : 0f,
                     shards = rec != null ? rec.mostShardsCollected : 0,

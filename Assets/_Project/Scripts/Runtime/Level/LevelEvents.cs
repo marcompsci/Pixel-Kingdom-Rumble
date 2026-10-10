@@ -28,5 +28,12 @@ namespace PKR
         public string stealthRank;
         public int timesSpotted;
         public int takedowns;
+        /// <summary>Shadow Contracts only (isContract): score, relics and whether this run revealed a secret contract.</summary>
+        public bool isContract;
+        public int contractScore;
+        public bool newBestScore;
+        public int relics;
+        public int totalRelics;
+        public bool clueFound;
     }
 }

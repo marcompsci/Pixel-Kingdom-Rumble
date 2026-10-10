@@ -35,6 +35,7 @@ namespace PKR.EditorTools
             StoryLevelBuilder.BuildNoPrompt();
             BossSceneBuilder.BuildNoPrompt();
             AsciiLevelBuilder.BuildNoPrompt();
+            ContractSceneBuilder.BuildNoPrompt();
             BuildMenusNoPrompt();
             ArenaHook?.Invoke(); // set by the arena builder (increment 7) so this file doesn't depend on it
             VersusSceneBuilder.BuildNoPrompt();

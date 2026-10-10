@@ -76,7 +76,8 @@ namespace PKR
             var p = UITheme.Current;
             var panel = UIFactory.Panel(_root, new Vector2(1000f, 1780f));
 
-            string modeName = GameSession.Mode == SessionMode.ArenaClash ? "ARENA CLASH" : "STORY QUEST";
+            string modeName = GameSession.Mode == SessionMode.ArenaClash ? "ARENA CLASH"
+                            : GameSession.Mode == SessionMode.Contracts ? "SHADOW CONTRACTS" : "STORY QUEST";
             UIFactory.Label(panel, $"{modeName}\nCHOOSE YOUR HERO", 56, TextAnchor.MiddleCenter, 150f, title: true);
 
             // Preview with arrows.
@@ -139,7 +140,12 @@ namespace PKR
             bh.spacing = 24f;
             bh.childControlWidth = true; bh.childControlHeight = true;
             bh.childForceExpandWidth = true; bh.childForceExpandHeight = true;
-            UIFactory.Button(buttons, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); });
+            UIFactory.Button(buttons, "BACK", () =>
+            {
+                if (Services.Scenes == null) return;
+                // Shadow Contracts: back goes to the board you came from.
+                Services.Scenes.Load(GameSession.Mode == SessionMode.Contracts ? SceneIds.MissionBoard : SceneIds.MainMenu);
+            });
             _confirm = UIFactory.Button(buttons, "CONFIRM", Confirm);
 
             Refresh();

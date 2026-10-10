@@ -41,6 +41,7 @@ namespace PKR.Tests
             _host.SetActive(false);
             var ui = _host.AddComponent<LevelSelectUI>();
             ui.SetWorld(_world);
+            ui.openAll = false; // the old in-order rule (the game itself opens every level)
             _host.SetActive(true);
             yield return null; // Start builds the screen
 
@@ -50,6 +51,22 @@ namespace PKR.Tests
             Assert.AreEqual(0, ui.SuggestedIndex);
             Assert.IsFalse(ui.Cards[1].interactable, "locked level can't be started");
             StringAssert.Contains("LOCKED", ui.Cards[1].GetComponentInChildren<UnityEngine.UI.Text>().text);
+        }
+    
+        [UnityTest]
+        public IEnumerator Game_OpensEveryLevel()
+        {
+            _world = ScriptableObject.CreateInstance<WorldDefinition>();
+            _world.levels.Add(Level("pkr_test_level_a", "Test Meadow"));
+            _world.levels.Add(Level("pkr_test_level_b", "Test Boss"));
+            _host = new GameObject("LevelSelect");
+            _host.SetActive(false);
+            var ui = _host.AddComponent<LevelSelectUI>();
+            ui.SetWorld(_world);
+            _host.SetActive(true);
+            yield return null;
+            Assert.IsTrue(ui.Slots[1].unlocked);
+            StringAssert.DoesNotContain("LOCKED", ui.Cards[1].GetComponentInChildren<UnityEngine.UI.Text>().text);
         }
     }
 }

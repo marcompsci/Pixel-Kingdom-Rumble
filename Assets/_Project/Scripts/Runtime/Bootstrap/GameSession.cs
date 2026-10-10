@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum SessionMode { StoryQuest, ArenaClash, Versus }
+    public enum SessionMode { StoryQuest, ArenaClash, Versus, Contracts }
 
     /// <summary>
     /// What the player chose in the menus (mode, hero), carried into the next scene.
@@ -19,7 +19,11 @@ namespace PKR
             Mode = SessionMode.StoryQuest;
             VersusOpponentId = null;
             VersusBotLevel = BotLevel.Normal;
+            ContractScene = null;
         }
+
+        /// <summary>Shadow Contracts: the contract scene picked on the board (loaded after Character Select).</summary>
+        public static string ContractScene { get; set; }
 
         /// <summary>Versus: the CPU's fighter (null = random) and difficulty, chosen on the Versus select screen.</summary>
         public static string VersusOpponentId { get; set; }
@@ -52,6 +56,8 @@ namespace PKR
             {
                 if (Mode == SessionMode.ArenaClash) return SceneIds.ArenaTest;
                 if (Mode == SessionMode.Versus) return SceneIds.VersusStage;
+                if (Mode == SessionMode.Contracts)
+                    return !string.IsNullOrEmpty(ContractScene) ? ContractScene : SceneIds.MissionBoard;
                 return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;
             }
         }

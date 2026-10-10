@@ -69,15 +69,20 @@ namespace PKR
 
             var run = flow.Run;
             if (_playerHealth != null) _hp.text = "HP " + Bar(_playerHealth.Health, _playerHealth.MaxHealth);
-            _shards.text = $"SHARDS {run.Shards}/{flow.TotalShards}";
+            _shards.text = flow.TotalShards > 0 || MissionTracker.Current == null ? $"SHARDS {run.Shards}/{flow.TotalShards}" : "";
             _secrets.text = flow.TotalSecrets > 0 ? $"SECRETS {run.SecretsFound}/{flow.TotalSecrets}" : "";
             _time.text = FormatTime(run.ElapsedSeconds);
             var stealth = StealthTracker.Current;
             if (stealth != null)
             {
-                string goal = stealth.HasObjective ? (stealth.ObjectiveTaken ? "OBJECTIVE: ESCAPE!" : "OBJECTIVE: STEAL THE LEDGER") : "";
+                string goal;
+                if (stealth.TargetsTotal > 0 && !stealth.TargetsDone) goal = $"TARGET: TAKE DOWN THE CAPTAIN ({stealth.TargetsDown}/{stealth.TargetsTotal})";
+                else if (stealth.HasObjective && !stealth.ObjectiveTaken) goal = $"OBJECTIVE: STEAL {stealth.objectiveName.ToUpperInvariant()}";
+                else goal = stealth.HasObjective || stealth.TargetsTotal > 0 ? "OBJECTIVE: ESCAPE!" : "";
                 string state = stealth.HeroHidden ? "HIDDEN" : stealth.TimesSpotted == 0 ? "UNSEEN" : $"SPOTTED x{stealth.TimesSpotted}";
-                _stealth.text = $"{goal}\n{state}";
+                var mission = MissionTracker.Current;
+                string relics = mission != null ? $"   RELICS {mission.Relics}/{mission.TotalRelics}" : "";
+                _stealth.text = $"{goal}\n{state}{relics}";
             }
             else _stealth.text = "";
 

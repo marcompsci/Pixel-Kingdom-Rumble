@@ -65,7 +65,7 @@ namespace PKR
         {
             _lastHighContrast = Services.Settings != null && Services.Settings.Data.highContrastUI;
             UIFactory.Clear(_menuRoot);
-            var panel = UIFactory.Panel(_menuRoot, new Vector2(960f, 1560f));
+            var panel = UIFactory.Panel(_menuRoot, new Vector2(960f, 1680f));
 
             UIFactory.Label(panel, "PIXEL KINGDOM\nRUMBLE", 96, TextAnchor.MiddleCenter, 260f, title: true);
             UIFactory.Label(panel, "Adventures of the Sunspire Isles", 40, TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
@@ -95,6 +95,15 @@ namespace PKR
                     GameSession.Mode = SessionMode.Versus;
                     if (Services.Scenes != null) Services.Scenes.Load(SceneIds.VersusSelect);
                 });
+            if (Application.CanStreamedLevelBeLoaded(SceneIds.MissionBoard))
+            {
+                var contracts = UIFactory.Button(panel, "SHADOW CONTRACTS", () =>
+                {
+                    GameSession.Mode = SessionMode.Contracts;
+                    if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MissionBoard);
+                });
+                UIFactory.Tint(contracts, new Color32(124, 104, 214, 255), Color.white);
+            }
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
                 UIFactory.Button(panel, "SHOP", ShowShop);
             UIFactory.Button(panel, "SETTINGS", ShowSettings);

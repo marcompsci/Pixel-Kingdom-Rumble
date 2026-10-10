@@ -26,6 +26,12 @@ namespace PKR
         public string Rank => StealthRules.Rank(TimesSpotted, Takedowns);
         /// <summary>True while the hero is tucked inside a hiding spot (guards can't see them).</summary>
         public bool HeroHidden { get; private set; }
+        /// <summary>Shadow Contracts: marked targets (Gearwatch Captains) that must be taken down before the gate opens.</summary>
+        public int TargetsTotal { get; private set; }
+        public int TargetsDown { get; private set; }
+        public bool TargetsDone => TargetsDown >= TargetsTotal;
+        /// <summary>Objectives completed (item stolen + targets down), for contract scoring.</summary>
+        public int ObjectivesDone => (ObjectiveTaken ? 1 : 0) + Mathf.Min(TargetsDown, TargetsTotal);
 
         float _gateNagUntil;
 
@@ -33,11 +39,31 @@ namespace PKR
         {
             Current = this;
             HasObjective = FindObjectsByType<StealthObjective>().Length > 0;
+            foreach (var sp in FindObjectsByType<EnemySpawnPoint>())
+                if (sp != null && sp.enemy != null && sp.enemy.isMissionTarget) TargetsTotal++;
+            EventBus<PlayerRespawned>.Subscribe(OnRespawned);
         }
 
         void OnDestroy()
         {
             if (Current == this) Current = null;
+            EventBus<PlayerRespawned>.Unsubscribe(OnRespawned);
+        }
+
+        // A full death respawns every enemy, targets included, so they have to be taken down again.
+        void OnRespawned(PlayerRespawned e)
+        {
+            if (e.afterDeath) TargetsDown = 0;
+        }
+
+        public void ReportTargetDown(string name)
+        {
+            if (TargetsDown >= TargetsTotal) return;
+            TargetsDown++;
+            string next = !TargetsDone ? $"{TargetsTotal - TargetsDown} TARGET(S) LEFT"
+                        : HasObjective && !ObjectiveTaken ? $"NOW FIND {objectiveName.ToUpperInvariant()}" : "ESCAPE TO THE GATE";
+            EventBus<StealthNotice>.Raise(new StealthNotice { text = $"TARGET ELIMINATED\n{next}" });
+            if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
         }
 
         void FixedUpdate()
@@ -65,18 +91,21 @@ namespace PKR
         {
             if (ObjectiveTaken) return;
             ObjectiveTaken = true;
-            EventBus<StealthNotice>.Raise(new StealthNotice { text = $"{displayName.ToUpperInvariant()} STOLEN!\nESCAPE TO THE GATE" });
+            string next = TargetsDone ? "ESCAPE TO THE GATE" : "NOW TAKE DOWN THE TARGET";
+            EventBus<StealthNotice>.Raise(new StealthNotice { text = $"{displayName.ToUpperInvariant()} STOLEN!\n{next}" });
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
         }
 
         /// <summary>The gate only opens once the objective is taken. Returns false (and nags) if it isn't.</summary>
         public bool CanFinish()
         {
-            if (!HasObjective || ObjectiveTaken) return true;
+            bool itemOk = !HasObjective || ObjectiveTaken;
+            if (itemOk && TargetsDone) return true;
             if (Time.time >= _gateNagUntil)
             {
                 _gateNagUntil = Time.time + 2.5f;
-                EventBus<StealthNotice>.Raise(new StealthNotice { text = $"FIND {objectiveName.ToUpperInvariant()} FIRST!", alarm = true });
+                string need = !TargetsDone ? "TAKE DOWN THE TARGET" : $"FIND {objectiveName.ToUpperInvariant()}";
+                EventBus<StealthNotice>.Raise(new StealthNotice { text = $"{need} FIRST!", alarm = true });
             }
             return false;
         }

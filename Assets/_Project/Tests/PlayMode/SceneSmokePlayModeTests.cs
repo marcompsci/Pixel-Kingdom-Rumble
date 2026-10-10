@@ -19,7 +19,8 @@ namespace PKR.Tests
         {
             SceneIds.Boot, SceneIds.MainMenu, SceneIds.CharacterSelect, SceneIds.LevelSelect,
             SceneIds.StoryTest, SceneIds.BossTest, SceneIds.ArenaTest, SceneIds.VersusSelect, SceneIds.VersusStage,
-            SceneIds.SunspireHeights, SceneIds.GearfallCaverns, SceneIds.RooftopRun, SceneIds.NightMarketHeist
+            SceneIds.SunspireHeights, SceneIds.GearfallCaverns, SceneIds.RooftopRun, SceneIds.NightMarketHeist,
+            SceneIds.MissionBoard, "MS_FirstLight", "MS_ClocktowerShadow"
         };
 
         [TearDown]

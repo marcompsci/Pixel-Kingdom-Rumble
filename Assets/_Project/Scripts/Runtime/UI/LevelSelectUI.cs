@@ -7,7 +7,8 @@ namespace PKR
 {
     /// <summary>
     /// Portrait Story Quest route (03_LevelSelect): one big card per level in play order, showing best rank, time,
-    /// Star Shards and secrets. Levels unlock in order; locked cards say what opens them. Opened after Character Select.
+    /// Star Shards and secrets. Every level is open (2026-10-10); cards are colored by play style and the suggested
+    /// (first uncleared) level is outlined. Opened after Character Select.
     /// </summary>
     public class LevelSelectUI : MonoBehaviour
     {
@@ -49,16 +50,20 @@ namespace PKR
         void Build()
         {
             if (_root == null || world == null) return;
-            _slots = LevelSelect.Build(world.LevelIds(), Services.Save != null ? Services.Save.Data : null);
+            _slots = LevelSelect.Build(world.LevelIds(), Services.Save != null ? Services.Save.Data : null, openAll);
             SuggestedIndex = LevelSelect.Suggested(_slots);
 
             UIFactory.Clear(_root);
             _cards.Clear();
             var p = UITheme.Current;
-            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1760f));
             // Six or more levels: shorter cards so the whole route fits the screen.
             bool compact = world.levels.Count > 4;
             float cardHeight = compact ? 158f : 230f;
+            bool hasDescription = !string.IsNullOrEmpty(world.description);
+            // Panel sized to its contents (no dead space at the bottom), centered on screen.
+            float height = 80f + 150f + 18f + (hasDescription ? (compact ? 80f : 90f) + 18f : 0f) +
+                           world.levels.Count * (cardHeight + 18f) + UIFactory.RowHeight;
+            var panel = UIFactory.Panel(_root, new Vector2(1000f, Mathf.Min(1840f, height)));
             UIFactory.Label(panel, $"STORY QUEST\n{world.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (!string.IsNullOrEmpty(world.description))
                 UIFactory.Label(panel, world.description, 32, TextAnchor.MiddleCenter, compact ? 80f : 90f).color = p.subtle;
@@ -71,15 +76,39 @@ namespace PKR
                 int idx = i;
                 bool playable = slot.unlocked && level != null && Application.CanStreamedLevelBeLoaded(level.sceneName);
                 var card = UIFactory.Button(panel, CardText(i, level, slot), () => Play(idx), cardHeight, interactable: playable);
+                if (playable && level != null) UIFactory.Tint(card, ModeColor(level.modeTag, p), ModeTextColor(level.modeTag, p));
                 var text = card.GetComponentInChildren<Text>();
                 text.fontSize = compact ? 32 : 38;
                 text.alignment = TextAnchor.MiddleCenter;
+                if (i == SuggestedIndex && playable) UIFactory.Highlight(card, p.title);
                 _cards.Add(card);
                 if (i == SuggestedIndex && playable) suggested = card;
             }
 
             UIFactory.Button(panel, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect); });
             if (suggested != null) UIFactory.Select(suggested);
+        }
+
+        /// <summary>False only in tests that check the old unlock-in-order rule.</summary>
+        public bool openAll = true;
+
+        // Play-style colors so the route reads at a glance (high-contrast mode keeps the theme button color).
+        static Color ModeColor(string tag, UITheme.Palette p)
+        {
+            if (Services.Settings != null && Services.Settings.Data.highContrastUI) return p.button;
+            switch ((tag ?? "").ToLowerInvariant())
+            {
+                case "platform": return new Color32(84, 196, 120, 255);
+                case "boss": return new Color32(232, 104, 84, 255);
+                case "stealth": return new Color32(124, 104, 214, 255);
+                default: return p.button;
+            }
+        }
+
+        static Color ModeTextColor(string tag, UITheme.Palette p)
+        {
+            if (Services.Settings != null && Services.Settings.Data.highContrastUI) return p.buttonText;
+            return (tag ?? "").ToLowerInvariant() == "stealth" ? Color.white : p.buttonText;
         }
 
         static string CardText(int index, LevelDefinition level, LevelSlot slot)

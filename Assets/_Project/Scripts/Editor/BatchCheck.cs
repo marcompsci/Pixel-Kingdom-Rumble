@@ -54,8 +54,12 @@ namespace PKR.EditorTools
                     scenes = scenes.ToArray(),
                     locationPathName = "Builds/iOS",
                     target = BuildTarget.iOS,
-                    options = BuildOptions.None
+                    options = BuildOptions.None,
+                    // Tester builds (the default from Tools/ios_build.command) get a "TESTER BUILD: UNLOCK ALL" button on the
+                    // Shadow Contracts board. App Store builds must set PKR_RELEASE=1 so it is compiled out.
+                    extraScriptingDefines = Environment.GetEnvironmentVariable("PKR_RELEASE") == "1" ? new string[0] : new[] { "PKR_TESTER" }
                 };
+                Debug.Log("[PKR BuildIOS] " + (options.extraScriptingDefines.Length > 0 ? "Tester build (PKR_TESTER)." : "Release build."));
                 var report = UnityEditor.BuildPipeline.BuildPlayer(options);
                 Debug.Log($"[PKR BuildIOS] {report.summary.result}: {report.summary.totalErrors} errors, " +
                           $"{report.summary.totalSize / (1024 * 1024)} MB, {report.summary.totalTime}");

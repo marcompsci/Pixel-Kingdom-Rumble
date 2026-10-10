@@ -36,7 +36,7 @@ namespace PKR
             _root.gameObject.SetActive(true);
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1240f, string.IsNullOrEmpty(e.stealthRank) ? 1000f : 1040f));
+            var panel = UIFactory.Panel(_root, new Vector2(1240f, string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f));
             var p = UITheme.Current;
 
             var rank = ResultsMath.Rank(e.timeSeconds, e.parTimeSeconds, e.shards, e.totalShards,
@@ -48,12 +48,25 @@ namespace PKR
 
             string best = e.newBestTime ? "   NEW BEST!" : "";
             Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){best}");
-            Row(panel, "Star Shards found", $"{e.shards} / {e.totalShards}  ({ResultsMath.Percent(e.shards, e.totalShards)}%)");
-            Row(panel, "Secrets", $"{e.secrets} / {e.totalSecrets}");
+            if (e.isContract)
+            {
+                Row(panel, "Contract score", $"{e.contractScore:N0}{(e.newBestScore ? "   NEW BEST!" : "")}").color = p.title;
+                Row(panel, "Ancient relics", $"{e.relics} / {e.totalRelics}");
+            }
+            else
+            {
+                Row(panel, "Star Shards found", $"{e.shards} / {e.totalShards}  ({ResultsMath.Percent(e.shards, e.totalShards)}%)");
+                Row(panel, "Secrets", $"{e.secrets} / {e.totalSecrets}");
+            }
             Row(panel, "Falls", e.deaths.ToString());
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             var reward = Row(panel, "Reward", "+0");
+            if (e.clueFound)
+            {
+                var clue = UIFactory.Label(panel, "SECRET CONTRACT REVEALED ON THE BOARD!", 44, TextAnchor.MiddleCenter, 60f, title: true);
+                clue.color = p.accent;
+            }
             if (newHero)
             {
                 var unlock = UIFactory.Label(panel, $"NEW HERO UNLOCKED: {string.Join(", ", e.unlockedHeroes).ToUpperInvariant()}!",
@@ -69,18 +82,19 @@ namespace PKR
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             // Back to the level select when it exists, else the main menu.
-            bool hasLevels = Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect);
+            bool hasLevels = Application.CanStreamedLevelBeLoaded(e.isContract ? SceneIds.MissionBoard : SceneIds.LevelSelect);
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
-            string backScene = hasLevels ? SceneIds.LevelSelect : SceneIds.MainMenu;
-            UIFactory.Button(buttons, hasLevels ? "LEVELS" : (hasMenu ? "MAIN MENU" : "MENU (SOON)"),
+            string backScene = hasLevels ? (e.isContract ? SceneIds.MissionBoard : SceneIds.LevelSelect) : SceneIds.MainMenu;
+            UIFactory.Button(buttons, hasLevels ? (e.isContract ? "CONTRACTS" : "LEVELS") : (hasMenu ? "MAIN MENU" : "MENU (SOON)"),
                              () => { if (Services.Scenes != null) Services.Scenes.Load(backScene); },
                              interactable: hasLevels || hasMenu);
             var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
             string next = flowLevel != null ? flowLevel.nextSceneName : "";
             bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);
-            UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",
-                             () => { if (Services.Scenes != null) Services.Scenes.Load(next); },
-                             interactable: hasNext);
+            if (!e.isContract) // contracts are picked on the board, so no NEXT there
+                UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",
+                                 () => { if (Services.Scenes != null) Services.Scenes.Load(next); },
+                                 interactable: hasNext);
             UIFactory.Select(again);
 
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);

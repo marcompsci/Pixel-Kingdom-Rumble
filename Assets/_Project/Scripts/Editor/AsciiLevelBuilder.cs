@@ -17,12 +17,25 @@ namespace PKR.EditorTools
     public static class AsciiLevelBuilder
     {
         public const string Folder = "Assets/_Project/Scenes/Story";
+        public const string ContractFolder = "Assets/_Project/Scenes/Contracts";
 
         static Material _mat;
         static Transform _root;
         static int _shards, _crates;
         static Sprite _ground, _stone, _oneWay, _plate, _spikes, _flag, _gate, _gear, _crate, _crateEmpty,
-                      _vine, _hay, _water, _spring, _ledger, _shard;
+                      _vine, _hay, _water, _spring, _ledger, _shard, _scroll;
+        static Sprite[] _relics;
+        static int _relicIndex;
+
+        /// <summary>Shadow Contracts extras for one map: ids, what to steal, and where to save scores.</summary>
+        public class ContractOptions
+        {
+            public string contractId, clueId, objectiveName = "the relic", objectiveDisplay = "Ancient Relic";
+            public Sprite objectiveSprite;
+        }
+
+        static ContractOptions _contract;
+        static readonly string[] RelicNames = { "Sun Idol", "Jade Mask", "Moon Amulet", "Gilded Gear", "Storm Coin", "Star Chalice" };
 
         [MenuItem("PKR/Build Map Levels", priority = 23)]
         public static void Build()
@@ -41,8 +54,25 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        static void BuildLevel(string sceneName, string[] rows, System.Func<LevelDefinition> levelAsset)
+        /// <summary>Builds the six Shadow Contracts scenes (MS_*) from ContractLayouts.</summary>
+        public static void BuildContracts()
         {
+            foreach (var spec in DataAssets.ContractSpecs)
+            {
+                var s = spec;
+                BuildLevel(s.sceneName, s.rows, () => DataAssets.GetOrCreateContractLevel(s), new ContractOptions
+                {
+                    contractId = s.id, clueId = s.containsClue, objectiveName = s.objectiveName, objectiveDisplay = s.objectiveDisplay
+                });
+            }
+            DataAssets.GetOrCreateMissionBoard();
+            AssetDatabase.SaveAssets();
+        }
+
+        static void BuildLevel(string sceneName, string[] rows, System.Func<LevelDefinition> levelAsset, ContractOptions contract = null)
+        {
+            _contract = contract;
+            _relicIndex = 0;
             var map = new AsciiLevel(rows);
             var errors = map.Validate();
             if (errors.Count > 0)
@@ -60,7 +90,7 @@ namespace PKR.EditorTools
             LoadArt();
             _shards = 0;
             _crates = 0;
-            bool stealth = map.Count('g') > 0;
+            bool stealth = map.Count('g') > 0 || map.Count('V') > 0;
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -123,6 +153,9 @@ namespace PKR.EditorTools
                     case 'M': Enemy(DataAssets.GetOrCreateGyroMoth(), cx, p.y + 0.5f); break;
                     case 'K': Enemy(DataAssets.GetOrCreateBoltKnight(), cx, p.y); break;
                     case 'g': Enemy(DataAssets.GetOrCreateGearwatchSentry(), cx, p.y); break;
+                    case 'V': Enemy(DataAssets.GetOrCreateGearwatchCaptain(), cx, p.y); break;
+                    case 'R': Relic(new Vector2(cx, p.y + 0.5f)); break;
+                    case 'Z': Scroll(new Vector2(cx, p.y + 0.5f)); break;
                 }
             }
             if (map.HasSecret)
@@ -148,7 +181,17 @@ namespace PKR.EditorTools
             EditorUtil.SetField(flow, "spriteMaterial", _mat);
             EditorUtil.SetField(flow, "shardSprite", _shard);
             EditorUtil.SetField(flow, "healthSprite", PlaceholderArt.HealthCrystal());
-            if (stealth) new GameObject("StealthTracker").AddComponent<StealthTracker>();
+            if (stealth)
+            {
+                var tracker = new GameObject("StealthTracker").AddComponent<StealthTracker>();
+                if (_contract != null) tracker.objectiveName = _contract.objectiveName;
+            }
+            if (_contract != null)
+            {
+                var mt = new GameObject("MissionTracker").AddComponent<MissionTracker>();
+                mt.contractId = _contract.contractId;
+                mt.clueId = _contract.clueId ?? "";
+            }
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             var touch = new GameObject("TouchControls").AddComponent<TouchControlsUI>();
@@ -161,11 +204,12 @@ namespace PKR.EditorTools
             level.totalSecrets = map.HasSecret ? 1 : 0;
             EditorUtility.SetDirty(level);
 
-            string path = $"{Folder}/{sceneName}.unity";
-            EditorUtil.EnsureFolder(Folder);
+            string folder = _contract != null ? ContractFolder : Folder;
+            string path = $"{folder}/{sceneName}.unity";
+            EditorUtil.EnsureFolder(folder);
             EditorSceneManager.SaveScene(scene, path);
             EditorUtil.AddSceneToBuild(path);
-            Debug.Log($"[PKR] Built {path}: {map.Width}x{map.Height}, {level.totalShards} shards, {map.Count('g')} guards.");
+            Debug.Log($"[PKR] Built {path}: {map.Width}x{map.Height}, {level.totalShards} shards, {map.Count('g')} guards, {map.Count('R')} relics.");
         }
 
         static void LoadArt()
@@ -187,6 +231,8 @@ namespace PKR.EditorTools
             _spring = PlaceholderArt.SpringPad();
             _ledger = PlaceholderArt.Ledger();
             _shard = PlaceholderArt.StarShard();
+            _scroll = PlaceholderArt.CipherScroll();
+            _relics = new[] { PlaceholderArt.RelicIdol(), PlaceholderArt.RelicMask(), PlaceholderArt.RelicAmulet() };
         }
 
         // ---- Pieces ----------------------------------------------------------------------------------
@@ -303,13 +349,46 @@ namespace PKR.EditorTools
             col.isTrigger = true;
             col.radius = 0.6f;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = _ledger;
+            sr.sprite = _contract != null ? PlaceholderArt.ContractPrize() : _ledger;
             if (_mat != null) sr.sharedMaterial = _mat;
             sr.sortingOrder = 15;
-            go.AddComponent<StealthObjective>().displayName = "Gearwright's Ledger";
+            go.AddComponent<StealthObjective>().displayName = _contract != null ? _contract.objectiveDisplay : "Gearwright's Ledger";
             var glow = Decor(pos, 0.7f); // a glow behind it so it reads at a distance (goes away with it)
             glow.color = new Color(1f, 0.9f, 0.5f, 0.5f);
             glow.transform.SetParent(go.transform, true);
+        }
+
+        static void Relic(Vector2 pos)
+        {
+            var go = new GameObject("Relic") { layer = PKRLayers.Pickup };
+            go.transform.SetParent(_root, false);
+            go.transform.position = pos;
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.55f;
+            var art = new GameObject("Art");
+            art.transform.SetParent(go.transform, false);
+            var sr = art.AddComponent<SpriteRenderer>();
+            sr.sprite = _relics[_relicIndex % _relics.Length];
+            if (_mat != null) sr.sharedMaterial = _mat;
+            sr.sortingOrder = 15;
+            go.AddComponent<RelicPickup>().relicName = RelicNames[_relicIndex % RelicNames.Length];
+            _relicIndex++;
+        }
+
+        static void Scroll(Vector2 pos)
+        {
+            var go = new GameObject("CipherScroll") { layer = PKRLayers.Pickup };
+            go.transform.SetParent(_root, false);
+            go.transform.position = pos;
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.55f;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _scroll;
+            if (_mat != null) sr.sharedMaterial = _mat;
+            sr.sortingOrder = 15;
+            go.AddComponent<ClueScroll>();
         }
 
         static void Enemy(EnemyDefinition def, float x, float feetY)

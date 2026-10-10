@@ -23,6 +23,7 @@ namespace PKR.EditorTools
             GetOrCreateSunspireTestLevel();
             GetOrCreateWardenLevel();
             GetOrCreateGearwatchSentry();
+            GetOrCreateGearwatchCaptain();
             GetOrCreateStoryWorld();
             GetOrCreateCodex();
             AssetDatabase.SaveAssets();
@@ -201,6 +202,135 @@ namespace PKR.EditorTools
             return e;
         }
 
+        // ---- Shadow Contracts ---------------------------------------------------------------------------
+
+        public const string ContractsFolder = "Assets/_Project/Data/Contracts";
+
+        /// <summary>Everything the builder and the board need for one contract.</summary>
+        public class ContractSpec
+        {
+            public string id, displayName, sceneName, briefing, objectiveName, objectiveDisplay, containsClue, revealedByClue, clueHint;
+            public ContractKind kind;
+            public bool free;
+            public float par;
+            public Color32 sky;
+            public string[] rows;
+        }
+
+        public static readonly ContractSpec[] ContractSpecs =
+        {
+            new ContractSpec
+            {
+                id = "ms_first_light", displayName = "First Light", sceneName = "MS_FirstLight", kind = ContractKind.Main, free = true,
+                par = 120f, sky = new Color32(46, 40, 92, 255), rows = ContractLayouts.FirstLight,
+                objectiveName = "the Dawn Lantern", objectiveDisplay = "Dawn Lantern",
+                briefing = "Your first night with the Order of the Hidden Gear. A merchant on the low roofs has stolen the " +
+                           "Dawn Lantern. Hide in the hay, climb the vines, slip past the watch and bring it back. " +
+                           "Hit a guard from behind before it sees you for a silent takedown."
+            },
+            new ContractSpec
+            {
+                id = "ms_bell_keeper", displayName = "The Bell Keeper", sceneName = "MS_BellKeeper", kind = ContractKind.Main,
+                par = 150f, sky = new Color32(36, 30, 72, 255), rows = ContractLayouts.BellKeeper, containsClue = "clue_cipher_crypt",
+                objectiveName = "the target", objectiveDisplay = "Target",
+                briefing = "Captain Ruskin rings the alarm bell whenever the Order moves. Climb the bell tower and take him " +
+                           "down, then vanish into the crowd. Rumor says a back room on this street holds a coded scroll."
+            },
+            new ContractSpec
+            {
+                id = "ms_brass_vault", displayName = "Vault of the Brass Kings", sceneName = "MS_BrassVault", kind = ContractKind.Main,
+                par = 180f, sky = new Color32(54, 34, 70, 255), rows = ContractLayouts.BrassVault,
+                objectiveName = "the Brass Crown", objectiveDisplay = "Brass Crown",
+                briefing = "The old kings' crown sits in a stepped vault, guarded day and night. Cross the gap, climb the " +
+                           "vault walls and lift the Brass Crown from its pedestal. Ancient relics line every ledge."
+            },
+            new ContractSpec
+            {
+                id = "ms_lantern_harbor", displayName = "Harbor of Lanterns", sceneName = "MS_LanternHarbor", kind = ContractKind.Main,
+                par = 170f, sky = new Color32(28, 36, 74, 255), rows = ContractLayouts.LanternHarbor, containsClue = "clue_clocktower",
+                objectiveName = "the target", objectiveDisplay = "Target",
+                briefing = "A smuggler captain ships stolen relics out of the lantern harbor tonight. Cross the docks and " +
+                           "stop him on the warehouse roof. Check the boathouse: smugglers hide more than cargo."
+            },
+            new ContractSpec
+            {
+                id = "ms_cipher_crypt", displayName = "The Cipher Crypt", sceneName = "MS_CipherCrypt", kind = ContractKind.Secret,
+                par = 160f, sky = new Color32(20, 18, 40, 255), rows = ContractLayouts.CipherCrypt, revealedByClue = "clue_cipher_crypt",
+                clueHint = "Search the back rooms of The Bell Keeper",
+                objectiveName = "the Cipher Key", objectiveDisplay = "Cipher Key",
+                briefing = "The scroll was a map. Beneath the market lie catacombs packed with relics of the first kings, " +
+                           "and the Cipher Key that opens the Order's oldest door. The crypt has its own guards."
+            },
+            new ContractSpec
+            {
+                id = "ms_clocktower_shadow", displayName = "Clocktower Shadow", sceneName = "MS_ClocktowerShadow", kind = ContractKind.Secret,
+                par = 180f, sky = new Color32(40, 24, 64, 255), rows = ContractLayouts.ClocktowerShadow, revealedByClue = "clue_clocktower",
+                clueHint = "A scroll hides in the Harbor of Lanterns boathouse",
+                objectiveName = "the Master Key", objectiveDisplay = "Master Key",
+                briefing = "The last captain of the rival guild waits at the top of the great clock with the Master Key. " +
+                           "Three roofs, three climbs, one target. Take him down and take the key."
+            },
+        };
+
+        public static LevelDefinition GetOrCreateContractLevel(ContractSpec s)
+        {
+            EditorUtil.EnsureFolder(ContractsFolder);
+            var lvl = GetOrCreate<LevelDefinition>($"{ContractsFolder}/{s.sceneName}.asset", l =>
+            {
+                l.id = s.id; l.displayName = s.displayName; l.biomeName = "Brasslight Quarter";
+                l.sceneName = s.sceneName; l.parTimeSeconds = s.par; l.skyColor = s.sky;
+                l.codexEntry = s.briefing;
+            });
+            if (lvl.modeTag != "Contract" || !string.IsNullOrEmpty(lvl.nextSceneName))
+            {
+                lvl.modeTag = "Contract"; lvl.nextSceneName = ""; EditorUtility.SetDirty(lvl);
+            }
+            return lvl;
+        }
+
+        public static MissionBoardDefinition GetOrCreateMissionBoard()
+        {
+            EditorUtil.EnsureFolder(ContractsFolder);
+            var board = GetOrCreate<MissionBoardDefinition>($"{ContractsFolder}/MissionBoard.asset", b =>
+            {
+                b.title = "SHADOW CONTRACTS";
+                b.description = "Missions for the Order of the Hidden Gear.";
+            });
+            board.contracts.Clear();
+            foreach (var s in ContractSpecs)
+            {
+                var m = GetOrCreate<MissionDefinition>($"{ContractsFolder}/Contract_{s.sceneName}.asset", d => { });
+                m.id = s.id; m.displayName = s.displayName; m.briefing = s.briefing; m.kind = s.kind; m.free = s.free;
+                m.revealedByClue = s.revealedByClue ?? ""; m.clueHint = s.clueHint ?? ""; m.containsClue = s.containsClue ?? "";
+                m.level = GetOrCreateContractLevel(s);
+                m.totalRelics = new AsciiLevel(s.rows).Count('R');
+                EditorUtility.SetDirty(m);
+                board.contracts.Add(m);
+            }
+            EditorUtility.SetDirty(board);
+            return board;
+        }
+
+        public static EnemyDefinition GetOrCreateGearwatchCaptain()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/GearwatchCaptain.asset", d =>
+            {
+                d.id = "enemy_gearwatch_captain"; d.displayName = "Gearwatch Captain";
+                d.codexEntry = "Officers of the night watch, marked for the Order's contracts. Tougher than a sentry and quick " +
+                               "to raise the alarm, but just as blind behind.";
+                d.bodySize = new Vector2(0.85f, 1.35f); d.maxHealth = 6; d.weight = 1.5f; d.moveSpeed = 0.16f;
+                d.behavior = EnemyBehavior.Guard;
+                d.sightRange = 6.5f; d.sightHalfAngle = 32f; d.lookBackInterval = 3.2f; d.lookBackPause = 1.3f; d.chaseSpeed = 0.68f;
+                d.shardDrop = 5;
+            });
+            bool dirty = false;
+            if (!e.isMissionTarget) { e.isMissionTarget = true; dirty = true; }
+            if (e.sprite == null) { e.sprite = PlaceholderArt.GearwatchCaptain(); dirty = true; }
+            if (dirty) EditorUtility.SetDirty(e);
+            return e;
+        }
+
         /// <summary>One of the text-map Story Quest levels (Phase 3.2/3.3).</summary>
         static LevelDefinition GetOrCreateMapLevel(string file, string id, string name, string biome, string scene, string next,
                                                    string tag, float par, Color32 sky, string codex)
@@ -268,7 +398,7 @@ namespace PKR.EditorTools
             var codex = GetOrCreate<CodexDefinition>($"{CodexFolder}/Codex.asset", c => { });
             if (codex.roster == null) codex.roster = GetOrCreateRoster();
             if (codex.world == null) codex.world = GetOrCreateStoryWorld();
-            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry() })
+            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry(), GetOrCreateGearwatchCaptain() })
                 if (!codex.enemies.Contains(e)) codex.enemies.Add(e);
             EditorUtility.SetDirty(codex);
             return codex;

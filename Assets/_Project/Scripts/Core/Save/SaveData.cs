@@ -42,6 +42,10 @@ namespace PKR.Core
         public List<EnemyTally> enemyDefeats = new List<EnemyTally>();
         public List<string> achievements = new List<string>();
         public List<LevelRecord> levels = new List<LevelRecord>();
+        /// <summary>Shadow Contracts: the one-time unlock ($3.99), clues found, and best results per contract.</summary>
+        public bool contractsUnlocked;
+        public List<string> foundClues = new List<string>();
+        public List<MissionRecord> missions = new List<MissionRecord>();
         public string lastSelectedCharacter = DefaultCharacterId;
 
         public static SaveData CreateNew() => new SaveData();
@@ -99,6 +103,39 @@ namespace PKR.Core
             return true;
         }
 
+        public MissionRecord GetMission(string contractId)
+        {
+            if (string.IsNullOrEmpty(contractId) || missions == null) return null;
+            foreach (var m in missions) if (m != null && m.contractId == contractId) return m;
+            return null;
+        }
+
+        /// <summary>Records a finished contract. Returns true if the score is a new best.</summary>
+        public bool RecordMission(string contractId, int score, int relics)
+        {
+            if (string.IsNullOrEmpty(contractId)) return false;
+            if (missions == null) missions = new List<MissionRecord>();
+            var m = GetMission(contractId);
+            if (m == null) { m = new MissionRecord { contractId = contractId }; missions.Add(m); }
+            bool best = !m.completed || score > m.bestScore;
+            m.completed = true;
+            if (score > m.bestScore) m.bestScore = score;
+            if (relics > m.bestRelics) m.bestRelics = relics;
+            return best;
+        }
+
+        public bool HasClue(string clueId) => !string.IsNullOrEmpty(clueId) && foundClues != null && foundClues.Contains(clueId);
+
+        /// <summary>Returns true the first time a clue is found.</summary>
+        public bool FindClue(string clueId)
+        {
+            if (string.IsNullOrEmpty(clueId)) return false;
+            if (foundClues == null) foundClues = new List<string>();
+            if (foundClues.Contains(clueId)) return false;
+            foundClues.Add(clueId);
+            return true;
+        }
+
         /// <summary>Repairs nulls/negatives and upgrades old versions. Safe to call on any loaded data.</summary>
         public void SanitizeAndMigrate()
         {
@@ -118,6 +155,11 @@ namespace PKR.Core
             foreach (var t in enemyDefeats) if (t.defeated < 0) t.defeated = 0;
             if (achievements == null) achievements = new List<string>();
             if (levels == null) levels = new List<LevelRecord>();
+            if (foundClues == null) foundClues = new List<string>();
+            foundClues.RemoveAll(string.IsNullOrEmpty);
+            if (missions == null) missions = new List<MissionRecord>();
+            missions.RemoveAll(m => m == null || string.IsNullOrEmpty(m.contractId));
+            foreach (var m in missions) { if (m.bestScore < 0) m.bestScore = 0; if (m.bestRelics < 0) m.bestRelics = 0; }
             levels.RemoveAll(l => l == null || string.IsNullOrEmpty(l.levelId));
             foreach (var l in levels)
             {

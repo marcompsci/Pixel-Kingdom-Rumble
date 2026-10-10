@@ -460,6 +460,89 @@ namespace PKR.EditorTools
             return (x == 10 || y == 1 || y == 10) ? new Color32(110, 30, 40, 255) : new Color32(170, 50, 60, 255);
         });
 
+        // ---- Shadow Contracts ------------------------------------------------------------------------
+        static readonly Color32 Jade = new Color32(70, 200, 150, 255);
+        static readonly Color32 JadeDark = new Color32(36, 130, 100, 255);
+        static readonly Color32 Moon = new Color32(170, 200, 255, 255);
+        static readonly Color32 Parchment = new Color32(240, 222, 170, 255);
+        static readonly Color32 ParchmentDark = new Color32(196, 168, 110, 255);
+        static readonly Color32 Violet = new Color32(150, 110, 230, 255);
+        static readonly Color32 Crimson = new Color32(190, 50, 60, 255);
+
+        /// <summary>Relic: a small golden sun idol. 12x12.</summary>
+        public static Sprite RelicIdol() => GetOrCreate("ph_relic_idol", 12, 12, false, (x, y) =>
+        {
+            float d = Dist(x, y, 5.5f, 7f);
+            if (y <= 1) return x >= 3 && x <= 8 ? BrassDark : Clear;                                // base
+            if (y <= 4) return x >= 4 && x <= 7 ? Brass : Clear;                                    // body
+            if (d <= 3.2f) return (x == 4 || x == 7) && y == 7 ? Ink : ShardGold;                   // face
+            if (d <= 4.8f && (x + y) % 2 == 0) return Brass;                                       // rays
+            return Clear;
+        });
+
+        /// <summary>Relic: a jade mask. 12x12.</summary>
+        public static Sprite RelicMask() => GetOrCreate("ph_relic_mask", 12, 12, false, (x, y) =>
+        {
+            if (y < 1 || y > 10 || x < 1 || x > 10) return Clear;
+            float d = Dist(x, y, 5.5f, 6f);
+            if (d > 5.2f) return Clear;
+            if (y == 6 && (x == 3 || x == 4 || x == 7 || x == 8)) return Ink;                       // eye slits
+            if (y == 3 && x >= 4 && x <= 7) return JadeDark;                                       // mouth
+            return d > 4.3f ? JadeDark : Jade;
+        });
+
+        /// <summary>Relic: a moonstone amulet on a chain. 12x12.</summary>
+        public static Sprite RelicAmulet() => GetOrCreate("ph_relic_amulet", 12, 12, false, (x, y) =>
+        {
+            if (y >= 9 && (x == 3 + (11 - y) || x == 8 - (11 - y))) return Brass;                 // chain
+            float d = Dist(x, y, 5.5f, 4.5f);
+            if (d <= 2.2f) return x < 6 && y > 4 ? new Color32(230, 240, 255, 255) : Moon;
+            if (d <= 3.6f) return BrassDark;
+            return Clear;
+        });
+
+        /// <summary>Cipher scroll: a parchment roll with a violet seal. 12x12.</summary>
+        public static Sprite CipherScroll() => GetOrCreate("ph_cipher_scroll", 12, 12, false, (x, y) =>
+        {
+            if (y < 2 || y > 9) return Clear;
+            if (x == 1 || x == 10) return (y >= 2 && y <= 9) ? ParchmentDark : Clear;               // rolled ends
+            if (x < 1 || x > 10) return Clear;
+            if (Dist(x, y, 5.5f, 5.5f) <= 1.6f) return Violet;                                      // seal
+            return y % 3 == 0 ? ParchmentDark : Parchment;
+        });
+
+        /// <summary>The prize of a contract (lantern, crown, key): a glowing jewel box. 14x14.</summary>
+        public static Sprite ContractPrize() => GetOrCreate("ph_contract_prize", 14, 14, false, (x, y) =>
+        {
+            if (y <= 6 && x >= 1 && x <= 12) return (x == 1 || x == 12 || y == 0 || y == 6) ? BrassDark : Crimson;  // box
+            if (y == 3 && x >= 5 && x <= 8) return ShardGold;                                                   // clasp
+            float d = Dist(x, y, 6.5f, 9.5f);
+            if (d <= 3.4f) return d <= 1.6f ? ShardLight : Violet;                                              // jewel
+            return Clear;
+        });
+
+        /// <summary>Gearwatch Captain: the sentry in a crimson coat with a gold-plumed hat. 14x24, faces right.</summary>
+        public static Sprite GearwatchCaptain() => GetOrCreate("ph_gearwatch_captain", 14, 24, true, (x, y) =>
+        {
+            if (y <= 1) return (x >= 3 && x <= 5) || (x >= 7 && x <= 9) ? Ink : Clear;
+            if (y <= 13 && x >= 2 && x <= 10)
+            {
+                if (x == 2 || x == 10) return new Color32(120, 30, 40, 255);
+                if (y == 8) return Brass;
+                if (x == 6 && y > 8 && y % 2 == 0) return Brass;                                   // buttons
+                return Crimson;
+            }
+            if (y >= 5 && y <= 9 && x >= 11 && x <= 13) return y == 9 || y == 5 ? BrassDark : Lantern;
+            if (y <= 19 && x >= 3 && x <= 9)
+            {
+                if (y >= 15 && y <= 17 && x >= 6 && x <= 8) return y == 16 && x == 8 ? Lantern : Ink;
+                return (y == 19 || x == 3) ? CloakDark : Cloak;
+            }
+            if (y >= 20 && y <= 21 && x >= 2 && x <= 10) return Ink;                                 // hat brim + crown
+            if (y >= 22 && x >= 7 && x <= 9) return ShardGold;                                       // plume
+            return Clear;
+        });
+
         /// <summary>Creates (once) a PNG sprite from a pixel function and imports it as a point-filtered sprite.</summary>
         public static Sprite GetOrCreate(string name, int w, int h, bool bottomPivot, Func<int, int, Color32> pixel)
         {

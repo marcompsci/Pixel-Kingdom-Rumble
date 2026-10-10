@@ -69,6 +69,9 @@ namespace PKR
         [Tooltip("Chase speed (fraction of the default run speed) once alerted.")]
         [Range(0f, 1f)] public float chaseSpeed = 0.62f;
 
+        [Tooltip("Shadow Contracts: defeating this enemy completes a 'take down the target' objective.")]
+        public bool isMissionTarget;
+
         [Header("Contact damage")]
         public HitData contactHit = new HitData
         {

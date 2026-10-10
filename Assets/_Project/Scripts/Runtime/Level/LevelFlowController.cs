@@ -128,6 +128,7 @@ namespace PKR
         void OnEnemyDefeated(EnemyAI e)
         {
             var def = e != null ? e.Definition : null;
+            if (def != null && def.isMissionTarget && StealthTracker.Current != null) StealthTracker.Current.ReportTargetDown(def.displayName);
             var save = Services.Save;
             if (def != null && save != null)
             {
@@ -264,6 +265,18 @@ namespace PKR
                     unlockedNames.Add(hero != null ? hero.displayName : id);
                 }
             }
+            // Shadow Contracts: score the run and keep the best.
+            var mission = MissionTracker.Current;
+            var stealth = StealthTracker.Current;
+            int contractScore = 0;
+            bool newBestScore = false;
+            if (mission != null)
+            {
+                contractScore = MissionScore.Compute(stealth != null ? stealth.ObjectivesDone : 0, mission.Relics,
+                                                     stealth != null ? stealth.Takedowns : 0, stealth != null ? stealth.TimesSpotted : 0,
+                                                     Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f);
+                if (data != null) newBestScore = data.RecordMission(mission.contractId, contractScore, mission.Relics);
+            }
             if (save != null) save.SaveNow();
 
             // Freeze the hero in a victory pose; LevelCompleteScreen takes over.
@@ -289,7 +302,13 @@ namespace PKR
                 unlockedHeroes = unlockedNames.ToArray(),
                 stealthRank = StealthTracker.Current != null ? StealthTracker.Current.Rank : null,
                 timesSpotted = StealthTracker.Current != null ? StealthTracker.Current.TimesSpotted : 0,
-                takedowns = StealthTracker.Current != null ? StealthTracker.Current.Takedowns : 0
+                takedowns = StealthTracker.Current != null ? StealthTracker.Current.Takedowns : 0,
+                isContract = mission != null,
+                contractScore = contractScore,
+                newBestScore = newBestScore,
+                relics = mission != null ? mission.Relics : 0,
+                totalRelics = mission != null ? mission.TotalRelics : 0,
+                clueFound = mission != null && mission.ClueFoundThisRun && !mission.ClueAlreadyKnown
             });
         }
     }

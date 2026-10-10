@@ -15,6 +15,7 @@ namespace PKR.Core
     ///   H  hay / hiding spot                O  stealth objective (the item to steal)
     ///   m  moving platform (horizontal)     u  lift (vertical)
     ///   B  Cog Beetle    T  Spring Tick     M  Gyro Moth       K  Bolt Knight   g  Patrol Guard (faces left)
+    ///   V  contract target (Gearwatch Captain)  R  ancient relic (points)  Z  cipher scroll (reveals a secret contract)
     ///   s  secret room cell (the bounding box of all 's' becomes one secret room behind a fake wall)
     ///   .  or space: empty
     /// </summary>
@@ -36,7 +37,7 @@ namespace PKR.Core
         public int SecretMaxY { get; private set; }
 
         public const string RunTiles = "#X=^~LH";
-        public const string PointTiles = "PGC*+?JOmuBTMKg";
+        public const string PointTiles = "PGC*+?JOmuBTMKgVRZ";
 
         readonly char[,] _grid;
 
