@@ -32,6 +32,7 @@ namespace PKR.EditorTools
             if (string.IsNullOrEmpty(PlayerSettings.iOS.appleDeveloperTeamID)) PlayerSettings.iOS.appleDeveloperTeamID = AppleTeamId;
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
             EnsureInputSystemOnly();
+            ApplyAppIcon();
 
             PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
             PlayerSettings.iOS.targetOSVersionString = MinIOSVersion;
@@ -49,6 +50,36 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"[PKR] iOS Player Settings configured. Bundle ID: {PlayerSettings.GetApplicationIdentifier(ios)}, " +
                       $"min iOS {MinIOSVersion}, IL2CPP, auto-rotation (portrait + landscape).");
+        }
+
+        public const string AppIconPath = "Assets/_Project/Art/AppIcon/PKR_AppIcon.png";
+
+        /// <summary>
+        /// App icon: "Rooftop Shadow" (chosen by Omari 2026-10-09), a 1024x1024 opaque pixel-art PNG. Set as the default
+        /// icon so Unity generates every iOS size (home screen, Settings, Spotlight, App Store) from it.
+        /// </summary>
+        public static void ApplyAppIcon()
+        {
+            if (AssetImporter.GetAtPath(AppIconPath) is TextureImporter ti)
+            {
+                bool dirty = ti.textureType != TextureImporterType.Default || ti.filterMode != FilterMode.Point ||
+                             ti.textureCompression != TextureImporterCompression.Uncompressed || ti.mipmapEnabled ||
+                             ti.npotScale != TextureImporterNPOTScale.None || ti.maxTextureSize < 1024;
+                if (dirty)
+                {
+                    ti.textureType = TextureImporterType.Default;
+                    ti.filterMode = FilterMode.Point;  // keep the pixels crisp when Unity downsizes
+                    ti.textureCompression = TextureImporterCompression.Uncompressed;
+                    ti.mipmapEnabled = false;
+                    ti.npotScale = TextureImporterNPOTScale.None;
+                    ti.maxTextureSize = 1024;
+                    ti.SaveAndReimport();
+                }
+            }
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(AppIconPath);
+            if (icon == null) { Debug.LogWarning($"[PKR] App icon not found at {AppIconPath}."); return; }
+            PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+            Debug.Log("[PKR] App icon set (Rooftop Shadow).");
         }
 
         /// <summary>
