@@ -63,3 +63,9 @@ compiling and tests; **no human has played it yet**, and nothing has run on an i
   projectile systems.
 - Guards' line of sight is blocked by any ground, including one-way planks.
 - The Rooftop Run secret is entered by dropping onto the low plank in the gap between the second and third roofs.
+
+## Shadow Contracts (2026-10-10)
+
+- The $3.99 unlock can't be bought on a device until the in-app purchase exists in App Store Connect (see SHADOW_CONTRACTS.md). Tester builds have an unlock button instead.
+- Unity IAP 4.15 is deprecated by Unity (IAP 5 is current). Migrate before release.
+- Fixed: vines, springs, crates, hay, objectives, relics and scrolls were missing from built scenes, because Unity only saves a component whose file has the same name. Each is now in its own file, and a smoke test guards this.
