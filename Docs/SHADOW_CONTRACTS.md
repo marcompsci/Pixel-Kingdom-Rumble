@@ -43,7 +43,7 @@ The maps are text in `Core/Level/ContractLayouts.cs`:
 - **What it unlocks:** every contract except First Light.
 - **Code:**
   - `Runtime/Store/PurchaseService.cs`
-  - `Assets/_Project/IAP/UnityIapBackend.cs` (Unity IAP 4.15, the version in the project).
+  - `Assets/_Project/IAP/UnityIapBackend.cs` (Unity IAP 5.0, StoreController API).
 - **Restore:** RESTORE PURCHASE is on the board, as Apple requires for non-consumables.
 - **Tester builds** (the default from `Tools/ios_build.command`) show **TESTER BUILD: UNLOCK ALL** so you can play everything before the App Store side exists. For an App Store build, run the build with `PKR_RELEASE=1` so that button is compiled out.
 
@@ -62,5 +62,4 @@ The maps are text in `Core/Level/ContractLayouts.cs`:
 
 ### Known limits
 
-- Unity marks IAP 4 as deprecated: "unsupported as of June 8, 2026. IAP 5 is the supported version". It compiles and works today; move to IAP 5 before a public release.
 - The purchase itself has only been checked in code and tests. A real sandbox purchase needs the steps above.
