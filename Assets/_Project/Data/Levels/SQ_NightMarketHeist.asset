@@ -17,7 +17,7 @@ MonoBehaviour:
   biomeName: Brasslight Quarter
   modeTag: Stealth
   sceneName: SQ_NightMarketHeist
-  nextSceneName: 
+  nextSceneName: SQ_FrostgearAscent
   codexEntry: Lantern stalls, hay carts and a counting house on stilts. The real ledger is in the vault above the market, and the whole night watch is between you and it.
   parTimeSeconds: 180
   totalShards: 11

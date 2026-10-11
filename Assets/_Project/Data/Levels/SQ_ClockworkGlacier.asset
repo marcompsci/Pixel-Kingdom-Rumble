@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_ClockworkGlacier
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_clockwork_glacier
+  displayName: Clockwork Glacier
+  biomeName: Frostgear Peaks
+  modeTag: Platform
+  sceneName: SQ_ClockworkGlacier
+  nextSceneName: 
+  codexEntry: A whole engine floor frozen solid, its spikes rimed with ice. Lifts still rise and plates still drift on their old schedules; ride them tower to tower to reach the heart of the cold.
+  parTimeSeconds: 200
+  totalShards: 25
+  totalSecrets: 1
+  skyColor: {r: 0.47058824, g: 0.6666667, b: 0.8627451, a: 1}

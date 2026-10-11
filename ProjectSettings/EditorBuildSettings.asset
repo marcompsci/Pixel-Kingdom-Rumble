@@ -74,4 +74,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Contracts/MS_SkybridgeGala.unity
     guid: 3cc85a8e76b194b76bb3ea1bbee1a5d4
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_FrostgearAscent.unity
+    guid: 05620fbc10915494485514fb2b6420b2
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_ClockworkGlacier.unity
+    guid: 7540f9dbd89f848e199372d8990c33fd
   m_configObjects: {}
