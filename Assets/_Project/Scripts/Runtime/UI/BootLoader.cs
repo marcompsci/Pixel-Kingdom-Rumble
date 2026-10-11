@@ -24,7 +24,7 @@ namespace PKR
         IEnumerator Start()
         {
             yield return new WaitForSecondsRealtime(minimumSeconds);
-            string start = StartSceneFromArgs(System.Environment.GetCommandLineArgs());
+            string start = StartSceneFromArgs(System.Environment.GetCommandLineArgs()) ?? StartSceneFromEnv();
             if (start != null && start.StartsWith(SceneIds.ContractPrefix))
             {
                 GameSession.Mode = SessionMode.Contracts;
@@ -38,6 +38,13 @@ namespace PKR
         /// App Store screenshot runs launch the app with "-pkrScene SCENE" (e.g. xcrun simctl launch ... -pkrScene
         /// MS_FirstLight) to open straight into one scene. Only scenes in the build are accepted.
         /// </summary>
+        /// <summary>Same as -pkrScene, from the PKR_SCENE environment variable (simctl launch passes SIMCTL_CHILD_PKR_SCENE).</summary>
+        public static string StartSceneFromEnv()
+        {
+            string s = System.Environment.GetEnvironmentVariable("PKR_SCENE");
+            return !string.IsNullOrEmpty(s) && Application.CanStreamedLevelBeLoaded(s) ? s : null;
+        }
+
         public static string StartSceneFromArgs(string[] args)
         {
             if (args == null) return null;

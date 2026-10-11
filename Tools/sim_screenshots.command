@@ -45,12 +45,14 @@ xcrun simctl install "$UDID" "$APP"
 say "      OK: $UDID"
 
 say "[4/4] Screenshots..."
+# Warm-up launch: the first run on a fresh simulator compiles shaders and is slow.
+xcrun simctl launch "$UDID" "$BUNDLE" > /dev/null; sleep 25
 n=0
 for S in $SCENES; do
   n=$((n+1))
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null; sleep 1
-  xcrun simctl launch "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
-  sleep "${PKR_SHOT_WAIT:-9}"
+  SIMCTL_CHILD_PKR_SCENE="$S" xcrun simctl launch "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
+  sleep "${PKR_SHOT_WAIT:-18}"
   xcrun simctl io "$UDID" screenshot "$OUT/$(printf %02d $n)_$S.png" > /dev/null 2>&1 && say "      $S" || say "      $S FAILED"
 done
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null
