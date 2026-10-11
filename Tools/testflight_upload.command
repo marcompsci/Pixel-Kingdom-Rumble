@@ -17,11 +17,15 @@ say() { echo "$@" | tee -a "$OUT/SUMMARY.txt"; }
 TEAM="X6LZQ3FS36"
 export PKR_RELEASE=1
 export PKR_BUILD_NUMBER="${PKR_BUILD_NUMBER:-$(date +%Y%m%d).$(date +%H%M)}"
+# PKR_UPLOAD_ONLY=1 (or Logs/upload_request via the watcher): skip the build and upload Builds/PixelKingdomRumble.xcarchive
+# again, e.g. after an upload failed because the Mac was locked ("Failed to Use Accounts").
+UPLOAD_ONLY="${PKR_UPLOAD_ONLY:-0}"
 
 UNITY="$(ls -d /Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity 2>/dev/null | sort -V | tail -1)"
 say "PKR TestFlight upload  $(date)"
 say "Build number: $PKR_BUILD_NUMBER"
 
+if [ "$UPLOAD_ONLY" != "1" ]; then
 say "[1/3] Unity: exporting the release Xcode project..."
 rm -rf Builds/iOS
 "$UNITY" -batchmode -nographics -projectPath "$PROJ" -buildTarget iOS -logFile "$OUT/unity.log" \
@@ -46,6 +50,10 @@ if ! grep -q "ARCHIVE SUCCEEDED" "$OUT/archive.log"; then
   pause_end; exit 1
 fi
 say "      OK: $ARCHIVE"
+else
+ARCHIVE="Builds/PixelKingdomRumble.xcarchive"
+say "Upload only: $ARCHIVE ($(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCHIVE/Info.plist" 2>/dev/null))"
+fi
 
 say "[3/3] Uploading to App Store Connect..."
 cat > Builds/ExportOptions.plist <<PLIST
@@ -70,6 +78,7 @@ if grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded " "$OUT/upload.log" && !
 else
   say "      FAILED (Logs/testflight/upload.log)"
   grep -E "error|Error|FAILED" "$OUT/upload.log" | sort -u | head -20 | tee -a "$OUT/SUMMARY.txt"
+  grep -q "Failed to Use Accounts" "$OUT/upload.log" && say "      The Mac was probably locked (Xcode could not read its Apple ID). Unlock it, then touch Logs/upload_request Logs/check_request."
   pause_end; exit 1
 fi
 say ""
