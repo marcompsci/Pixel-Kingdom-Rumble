@@ -325,3 +325,31 @@ First real run, on Omari's Mac with **Unity 6000.6.4f1** via `Tools/unity_check.
 | PlayMode tests | ✅ | 56/56 (adds guard sight/takedown/hiding, spring, vine, crate, and smoke tests for the 4 new scenes) |
 | Reachability | 🟡 | A rough script (jump 3 up / 4 across, springs 9 up) finds every goal, checkpoint, shard and secret reachable; not a substitute for playing |
 | Played by a human | ⬜ | Needs a playtest: jump distances, guard fairness and timing are untested by people |
+
+## Phase 4 — Feel, Game Center, first-time tips, more contracts, TestFlight (2026-10-11)
+
+- **Sound and music:** `Tools/make_audio.py` synthesizes 19 original chiptune sound effects and 3 music loops
+  (story/menus, stealth/contracts, versus/arena) into `Resources/Audio`. No samples or third-party audio.
+  `Sfx` plays them (with slight pitch variation); `AudioDirector` picks the music per scene and plays event sounds.
+- **Animation:** `FighterVisual` adds a run bob and lean, idle breathing, a tilt in the air, a lean into attacks, a flinch
+  when hit and a knocked-down pose (Versus KO).
+- **Game Center:** native GameKit bridge (`Plugins/iOS/PKRGameCenter.mm`) and `GameCenterService`: sign-in at launch,
+  10 achievements, a Shadow Contracts leaderboard, and a GAME CENTER button on the main menu (iPhone only).
+  Achievements are saved first and re-sent after sign-in. IDs: `PKR.Core.Achievements`.
+- **First-time tips:** 8 tips (move, attack, dodge, climb, stealth, takedown, relics, checkpoint), each shown once per save.
+- **More content:** two new main contracts, *The Gearworks Foundry* (steal the Forge Seal **and** take down the captain)
+  and *The Skybridge Gala*. The board now has 8 contracts.
+- **Release pipeline:** version 0.4.0; `IOSPostBuild` adds Game Center + In-App Purchase capabilities and
+  `ITSAppUsesNonExemptEncryption=NO`; `Tools/testflight_upload.command` builds a release (no tester unlock), archives
+  and uploads.
+
+| Item | State | Evidence |
+|---|---|---|
+| Compile | ✅ | 0 errors (Unity 6000.6.4f1, Mac) |
+| EditMode tests | ✅ | 182/182 (adds achievement rules, save fields, both new maps validate) |
+| PlayMode tests | ✅ | 70/70 (adds audio clips load, music per scene, hints, smoke tests for the 2 new contracts) |
+| Reachability of new maps | 🟡 | Rough script finds every relic, objective, target and the gate reachable |
+| Release archive + upload | ✅ | Build 0.4.0 (20261011.0632) archived and uploaded: `** EXPORT SUCCEEDED **`, "Upload succeeded" |
+| Shows in TestFlight | 🟡 | Uploaded; Apple processes builds before they appear (not yet confirmed at time of writing) |
+| Game Center live | ⬜ | Leaderboard and achievements must also exist in App Store Connect with the same IDs before scores post |
+| Sound mix, animation feel on device | ⬜ | Not yet heard or seen on the iPhone by a person |

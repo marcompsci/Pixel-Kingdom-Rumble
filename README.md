@@ -355,6 +355,9 @@ pipeline (damage + push, same-team immunity, one hit per swing), moving-platform
 ## Repo tools
 
 - `Tools/gen_metas.py`: creates missing `.meta` files with stable GUIDs for files added outside Unity.
+- `Tools/make_audio.py`: regenerates the original chiptune sound effects and music in `Resources/Audio`.
+- `Tools/testflight_upload.command`: release build → Xcode archive → upload to App Store Connect / TestFlight
+  (Mac, Xcode signed in to team X6LZQ3FS36). Results in `Logs/testflight/SUMMARY.txt`.
 - `.github/workflows/core-tests.yml`: runs `DotnetTests/` (Core + EditMode tests, no Unity) on every push and pull request.
 
 ## Design notes
