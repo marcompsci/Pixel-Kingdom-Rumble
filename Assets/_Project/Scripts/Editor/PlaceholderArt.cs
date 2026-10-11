@@ -147,6 +147,25 @@ namespace PKR.EditorTools
             return Clear;
         });
 
+        static readonly Color32 Ice = new Color32(170, 226, 255, 255);
+        static readonly Color32 IceDark = new Color32(90, 150, 210, 255);
+        static readonly Color32 IceLight = new Color32(236, 250, 255, 255);
+
+        /// <summary>Frost Mite: a low ice-shelled mite with crystal spikes on its back. 16x12, faces right.</summary>
+        public static Sprite FrostMite() => GetOrCreate("ph_frost_mite", 16, 12, true, (x, y) =>
+        {
+            if (y <= 1) return (x == 3 || x == 5 || x == 10 || x == 12) ? Ink : Clear;                 // legs
+            if (y >= 7 && y <= 10 && (x == 4 || x == 7 || x == 10) && y - 7 <= (x == 7 ? 3 : 2)) return IceLight; // spikes
+            float d = Dist(x, y, 7.5f, 2.5f);
+            if (y >= 2 && y <= 7 && d <= 6.5f)
+            {
+                if (x >= 12 && y >= 3 && y <= 5) return (x == 13 && y == 4) ? Ink : IceDark;            // face
+                if (d > 5.6f) return IceDark;
+                return ((x + y) % 4 == 0) ? IceLight : Ice;
+            }
+            return Clear;
+        });
+
         /// <summary>Spring Tick: a round clockwork critter on a coiled spring. 14x14, faces right.</summary>
         public static Sprite SpringTick() => GetOrCreate("ph_spring_tick", 14, 14, true, (x, y) =>
         {

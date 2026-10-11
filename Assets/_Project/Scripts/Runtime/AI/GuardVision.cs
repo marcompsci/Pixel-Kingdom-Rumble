@@ -18,6 +18,8 @@ namespace PKR
         public bool Alerted => _meter.Awareness == GuardAwareness.Alerted;
         public float Meter => _meter.Value;
 
+        /// <summary>Assist mode: guards notice (and calm down) at 60% speed.</summary>
+        public const float AssistNoticeScale = 0.6f;
         readonly DetectionMeter _meter = new DetectionMeter(1.5f, 0.45f, 4f);
         PlatformerMotor2D _motor;
         Damageable _health;
@@ -83,7 +85,7 @@ namespace PKR
                     closeness = 1f;
                 }
             }
-            if (_meter.Tick(Time.fixedDeltaTime, sees, closeness) && tracker != null) tracker.ReportSpotted();
+            if (_meter.Tick(Time.fixedDeltaTime * (LevelFlowController.AssistMode ? AssistNoticeScale : 1f), sees, closeness) && tracker != null) tracker.ReportSpotted();
             if (_contact != null) _contact.enabled = Alerted;
             _awarenessAtHit = _meter.Awareness;
             UpdateVisual();

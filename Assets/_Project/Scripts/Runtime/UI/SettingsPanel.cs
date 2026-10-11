@@ -47,14 +47,14 @@ namespace PKR
 
             UIFactory.Dim(_container);
             // Landscape: two columns so everything fits on a phone in one screen. Portrait: one column.
-            var panel = UIFactory.Panel(_container, _landscape ? new Vector2(1400f, 820f) : new Vector2(980f, 1500f));
+            var panel = UIFactory.Panel(_container, _landscape ? new Vector2(1400f, 950f) : new Vector2(980f, 1640f));
             UIFactory.Label(panel, "SETTINGS", 60, TextAnchor.MiddleCenter, 80f, title: true);
 
             RectTransform colA = panel, colB = panel;
             if (_landscape)
             {
                 var cols = UIFactory.Rect("Columns", panel);
-                cols.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 5 * UIFactory.RowHeight + 4 * 18f;
+                cols.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 6 * UIFactory.RowHeight + 5 * 18f;
                 var h = cols.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
                 h.spacing = 48f;
                 h.childControlWidth = true; h.childControlHeight = true;
@@ -69,6 +69,7 @@ namespace PKR
             UIFactory.Toggle(colA, "Screen shake", d.screenShakeEnabled, settings.SetScreenShake);
             UIFactory.Toggle(colA, "High contrast", d.highContrastUI, settings.SetHighContrast);
             UIFactory.Toggle(colB, "Floating stick", d.floatingJoystick, settings.SetFloatingJoystick);
+            UIFactory.Toggle(colB, "Assist mode", d.assistMode, settings.SetAssistMode);
             UIFactory.Slider(colB, "Control size", settings.ControlScale,
                              PKR.Core.SettingsData.MinControlScale, PKR.Core.SettingsData.MaxControlScale,
                              settings.SetControlScale, v => v.ToString("0.0") + "x");

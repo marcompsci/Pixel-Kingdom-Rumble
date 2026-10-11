@@ -58,7 +58,8 @@ namespace PKR
             var p = UITheme.Current;
             // Six or more levels: shorter cards so the whole route fits the screen.
             bool compact = world.levels.Count > 4;
-            float cardHeight = compact ? 158f : 230f;
+            bool tight = world.levels.Count > 6; // two worlds: keep all eight cards on one screen
+            float cardHeight = tight ? 128f : compact ? 158f : 230f;
             bool hasDescription = !string.IsNullOrEmpty(world.description);
             // Panel sized to its contents (no dead space at the bottom), centered on screen.
             float height = 80f + 150f + 18f + (hasDescription ? (compact ? 80f : 90f) + 18f : 0f) +
@@ -78,7 +79,7 @@ namespace PKR
                 var card = UIFactory.Button(panel, CardText(i, level, slot), () => Play(idx), cardHeight, interactable: playable);
                 if (playable && level != null) UIFactory.Tint(card, ModeColor(level.modeTag, p), ModeTextColor(level.modeTag, p));
                 var text = card.GetComponentInChildren<Text>();
-                text.fontSize = compact ? 32 : 38;
+                text.fontSize = tight ? 29 : compact ? 32 : 38;
                 text.alignment = TextAnchor.MiddleCenter;
                 if (i == SuggestedIndex && playable) UIFactory.Highlight(card, p.title);
                 _cards.Add(card);

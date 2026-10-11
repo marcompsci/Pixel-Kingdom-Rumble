@@ -56,6 +56,9 @@ namespace PKR
             }
         }
 
+        public const int AssistBonusHealth = 2;
+        public static bool AssistMode => Services.Settings != null && Services.Settings.Data.assistMode;
+
         void OnDestroy()
         {
             if (Current == this) Current = null;
@@ -64,6 +67,11 @@ namespace PKR
         void Start()
         {
             Run = new LevelRun(level != null ? level.id : "unknown_level");
+            if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
+            {
+                PlayerHealth.bonusMaxHealth = AssistMode ? AssistBonusHealth : 0;
+                PlayerHealth.ResetState();
+            }
             if (level != null) DiscoverCodex(CodexCategory.Place, level.id, level.displayName);
 
             var spots = FindObjectsByType<PickupSpot>();

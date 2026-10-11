@@ -49,10 +49,13 @@ namespace PKR.EditorTools
                 var scenes = new System.Collections.Generic.List<string>();
                 foreach (var s in EditorBuildSettings.scenes) if (s.enabled) scenes.Add(s.path);
                 if (scenes.Count == 0) throw new Exception("No scenes in Build Settings. Run PKR > Build All Scenes first.");
+                // PKR_SIMULATOR=1: an iOS Simulator build (for App Store screenshots), exported to Builds/iOSSim.
+                bool sim = Environment.GetEnvironmentVariable("PKR_SIMULATOR") == "1";
+                PlayerSettings.iOS.sdkVersion = sim ? iOSSdkVersion.SimulatorSDK : iOSSdkVersion.DeviceSDK;
                 var options = new BuildPlayerOptions
                 {
                     scenes = scenes.ToArray(),
-                    locationPathName = "Builds/iOS",
+                    locationPathName = sim ? "Builds/iOSSim" : "Builds/iOS",
                     target = BuildTarget.iOS,
                     options = BuildOptions.None,
                     // Tester builds (the default from Tools/ios_build.command) get a "TESTER BUILD: UNLOCK ALL" button on the
@@ -63,6 +66,7 @@ namespace PKR.EditorTools
                 var report = UnityEditor.BuildPipeline.BuildPlayer(options);
                 Debug.Log($"[PKR BuildIOS] {report.summary.result}: {report.summary.totalErrors} errors, " +
                           $"{report.summary.totalSize / (1024 * 1024)} MB, {report.summary.totalTime}");
+                if (sim) PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK; // never leave the project on the simulator SDK
                 if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) code = 1;
                 else Debug.Log("[PKR BuildIOS] OK");
             }

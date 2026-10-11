@@ -47,6 +47,8 @@ namespace PKR.Core
         public bool screenShakeEnabled = true;
         /// <summary>0 = fixed joystick, 1 = floating joystick that recenters on touch.</summary>
         public bool floatingJoystick = true;
+        /// <summary>Assist mode: +2 max health in Story and Contracts, and guards take longer to notice the hero.</summary>
+        public bool assistMode;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>

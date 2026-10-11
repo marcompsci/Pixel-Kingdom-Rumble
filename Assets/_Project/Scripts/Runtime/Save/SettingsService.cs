@@ -61,6 +61,7 @@ namespace PKR
         public void SetSfxVolume(float v) { Data.sfxVolume = v; Commit(); }
         public void SetHaptics(bool on) { Data.hapticsEnabled = on; Commit(); }
         public void SetHighContrast(bool on) { Data.highContrastUI = on; Commit(); }
+        public void SetAssistMode(bool on) { Data.assistMode = on; Commit(); }
         public void SetScreenShake(bool on) { Data.screenShakeEnabled = on; Commit(); }
         public void ResetControlLayout() { Data.ResetLayout(); Commit(); }
         public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }

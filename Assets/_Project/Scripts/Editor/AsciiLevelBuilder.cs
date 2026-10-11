@@ -50,6 +50,8 @@ namespace PKR.EditorTools
             BuildLevel(SceneIds.GearfallCaverns, StoryLayouts.GearfallCaverns, () => DataAssets.GetOrCreateGearfallCaverns());
             BuildLevel(SceneIds.RooftopRun, StoryLayouts.RooftopRun, () => DataAssets.GetOrCreateRooftopRun());
             BuildLevel(SceneIds.NightMarketHeist, StoryLayouts.NightMarketHeist, () => DataAssets.GetOrCreateNightMarketHeist());
+            BuildLevel(SceneIds.FrostgearAscent, StoryLayouts.FrostgearAscent, () => DataAssets.GetOrCreateFrostgearAscent());
+            BuildLevel(SceneIds.ClockworkGlacier, StoryLayouts.ClockworkGlacier, () => DataAssets.GetOrCreateClockworkGlacier());
             DataAssets.GetOrCreateStoryWorld(); // keep the level select route in order
             AssetDatabase.SaveAssets();
         }
@@ -105,8 +107,11 @@ namespace PKR.EditorTools
             _root = new GameObject("Level").transform;
 
             // --- Terrain ---------------------------------------------------------------------------------
-            foreach (var r in map.MergedRects('#')) Block("Ground", _ground, r);
-            foreach (var r in map.MergedRects('X')) Block("Stone", _stone, r);
+            // Frostgear Peaks: the same tiles, tinted icy blue-white.
+            bool frost = level.biomeName == "Frostgear Peaks";
+            Color terrainTint = frost ? new Color(0.78f, 0.9f, 1f) : Color.white;
+            foreach (var r in map.MergedRects('#')) Block("Ground", _ground, r).GetComponent<SpriteRenderer>().color = terrainTint;
+            foreach (var r in map.MergedRects('X')) Block("Stone", _stone, r).GetComponent<SpriteRenderer>().color = terrainTint;
             foreach (var r in map.MergedRects('~')) Water(r);
             foreach (var r in map.MergedRects('L')) Vine(map, r);
             foreach (var run in map.Runs)
@@ -152,6 +157,7 @@ namespace PKR.EditorTools
                     case 'T': Enemy(DataAssets.GetOrCreateSpringTick(), cx, p.y); break;
                     case 'M': Enemy(DataAssets.GetOrCreateGyroMoth(), cx, p.y + 0.5f); break;
                     case 'K': Enemy(DataAssets.GetOrCreateBoltKnight(), cx, p.y); break;
+                    case 'F': Enemy(DataAssets.GetOrCreateFrostMite(), cx, p.y); break;
                     case 'g': Enemy(DataAssets.GetOrCreateGearwatchSentry(), cx, p.y); break;
                     case 'V': Enemy(DataAssets.GetOrCreateGearwatchCaptain(), cx, p.y); break;
                     case 'R': Relic(new Vector2(cx, p.y + 0.5f)); break;

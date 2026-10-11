@@ -24,8 +24,27 @@ namespace PKR
         IEnumerator Start()
         {
             yield return new WaitForSecondsRealtime(minimumSeconds);
-            if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu);
+            string start = StartSceneFromArgs(System.Environment.GetCommandLineArgs());
+            if (start != null && start.StartsWith(SceneIds.ContractPrefix))
+            {
+                GameSession.Mode = SessionMode.Contracts;
+                GameSession.ContractScene = start;
+            }
+            if (Services.Scenes != null) Services.Scenes.Load(start ?? SceneIds.MainMenu);
             else Debug.LogError("[BootLoader] Services missing; GameBootstrap did not run.");
+        }
+
+        /// <summary>
+        /// App Store screenshot runs launch the app with "-pkrScene SCENE" (e.g. xcrun simctl launch ... -pkrScene
+        /// MS_FirstLight) to open straight into one scene. Only scenes in the build are accepted.
+        /// </summary>
+        public static string StartSceneFromArgs(string[] args)
+        {
+            if (args == null) return null;
+            for (int i = 0; i + 1 < args.Length; i++)
+                if (args[i] == "-pkrScene" && !string.IsNullOrEmpty(args[i + 1]) && Application.CanStreamedLevelBeLoaded(args[i + 1]))
+                    return args[i + 1];
+            return null;
         }
     }
 }

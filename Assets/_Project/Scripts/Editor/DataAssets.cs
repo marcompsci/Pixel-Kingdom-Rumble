@@ -24,6 +24,7 @@ namespace PKR.EditorTools
             GetOrCreateWardenLevel();
             GetOrCreateGearwatchSentry();
             GetOrCreateGearwatchCaptain();
+            GetOrCreateFrostMite();
             GetOrCreateStoryWorld();
             GetOrCreateCodex();
             AssetDatabase.SaveAssets();
@@ -380,9 +381,37 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateNightMarketHeist() => GetOrCreateMapLevel(
             "SQ_NightMarketHeist", "sq_night_market", "Night Market Heist", "Brasslight Quarter", SceneIds.NightMarketHeist,
-            "", "Stealth", 180f, new Color32(60, 36, 72, 255),
+            SceneIds.FrostgearAscent, "Stealth", 180f, new Color32(60, 36, 72, 255),
             "Lantern stalls, hay carts and a counting house on stilts. The real ledger is in the vault above the market, " +
             "and the whole night watch is between you and it.");
+
+        // ---- World 2: Frostgear Peaks (Phase 5) ----------------------------------------------------------------
+        public static LevelDefinition GetOrCreateFrostgearAscent() => GetOrCreateMapLevel(
+            "SQ_FrostgearAscent", "sq_frostgear_ascent", "Frostgear Ascent", "Frostgear Peaks", SceneIds.FrostgearAscent,
+            SceneIds.ClockworkGlacier, "Platform", 190f, new Color32(170, 210, 240, 255),
+            "The ledger points north, to the peaks where the Tickworks' cooling gears turn under the ice. Frost Mites " +
+            "chew the frozen teeth, and the old shelves are only reachable on steam springs and drifting plates.");
+
+        public static LevelDefinition GetOrCreateClockworkGlacier() => GetOrCreateMapLevel(
+            "SQ_ClockworkGlacier", "sq_clockwork_glacier", "Clockwork Glacier", "Frostgear Peaks", SceneIds.ClockworkGlacier,
+            "", "Platform", 200f, new Color32(120, 170, 220, 255),
+            "A whole engine floor frozen solid, its spikes rimed with ice. Lifts still rise and plates still drift on " +
+            "their old schedules; ride them tower to tower to reach the heart of the cold.");
+
+        public static EnemyDefinition GetOrCreateFrostMite()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/FrostMite.asset", d =>
+            {
+                d.id = "enemy_frost_mite"; d.displayName = "Frost Mite";
+                d.codexEntry = "Ice-shelled mites that gnaw the frozen gears of the Frostgear Peaks. Quicker than a Cog " +
+                               "Beetle and a little tougher; they skitter back and forth across their patch of ice.";
+                d.bodySize = new Vector2(0.85f, 0.65f); d.maxHealth = 3; d.weight = 1f; d.moveSpeed = 0.4f;
+                d.behavior = EnemyBehavior.Walker; d.shardDrop = 3;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.FrostMite(); EditorUtility.SetDirty(e); }
+            return e;
+        }
 
         /// <summary>The Story Quest route shown on the level select, in play order.</summary>
         public static WorldDefinition GetOrCreateStoryWorld()
@@ -391,7 +420,8 @@ namespace PKR.EditorTools
             var route = new[]
             {
                 GetOrCreateSunspireTestLevel(), GetOrCreateSunspireHeights(), GetOrCreateGearfallCaverns(),
-                GetOrCreateWardenLevel(), GetOrCreateRooftopRun(), GetOrCreateNightMarketHeist()
+                GetOrCreateWardenLevel(), GetOrCreateRooftopRun(), GetOrCreateNightMarketHeist(),
+                GetOrCreateFrostgearAscent(), GetOrCreateClockworkGlacier()
             };
             var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_SunspireIsles.asset", w =>
             {

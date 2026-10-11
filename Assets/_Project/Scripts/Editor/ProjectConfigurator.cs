@@ -15,7 +15,7 @@ namespace PKR.EditorTools
         public const string ProductName = "Pixel Kingdom Rumble";
         public const string AppleTeamId = "X6LZQ3FS36";
         public const string MinIOSVersion = "15.0";
-        public const string AppVersion = "0.4.0";
+        public const string AppVersion = "0.5.0";
 
         [MenuItem("PKR/Configure iOS Player Settings", priority = 1)]
         public static void ConfigureIOS()

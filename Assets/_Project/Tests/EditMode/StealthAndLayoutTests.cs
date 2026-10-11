@@ -217,7 +217,7 @@ namespace PKR.Tests
         [Test]
         public void PlatformLevels_HaveCratesSpringsAndMovers()
         {
-            foreach (var layout in new[] { StoryLayouts.SunspireHeights, StoryLayouts.GearfallCaverns })
+            foreach (var layout in new[] { StoryLayouts.SunspireHeights, StoryLayouts.GearfallCaverns, StoryLayouts.FrostgearAscent, StoryLayouts.ClockworkGlacier })
             {
                 var lvl = new AsciiLevel(layout);
                 Assert.Greater(lvl.Count('?'), 0, "crates");

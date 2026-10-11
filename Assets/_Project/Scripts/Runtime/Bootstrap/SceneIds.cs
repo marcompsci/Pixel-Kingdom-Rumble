@@ -21,6 +21,8 @@ namespace PKR
         public const string GearfallCaverns = "SQ_GearfallCaverns";
         public const string RooftopRun = "SQ_RooftopRun";
         public const string NightMarketHeist = "SQ_NightMarketHeist";
+        public const string FrostgearAscent = "SQ_FrostgearAscent";
+        public const string ClockworkGlacier = "SQ_ClockworkGlacier";
         // Shadow Contracts (mission mode): the board and the contract scenes (MS_ prefix).
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";

@@ -54,6 +54,8 @@ namespace PKR
         public DamageModel Model { get => model; set { model = value; ResetState(); } }
         public int Team { get => team; set => team = value; }
         public int MaxHealth { get; private set; }
+        /// <summary>Extra max health on top of the definition (Assist mode). Applied on the next ResetState.</summary>
+        public int bonusMaxHealth;
         public int Health { get; private set; }
         public GuardPipState Pips { get; private set; }
         public bool IsDead { get; private set; }
@@ -108,7 +110,7 @@ namespace PKR
         public void ResetState()
         {
             var def = _motor != null ? _motor.Definition : null;
-            MaxHealth = maxHealthOverride > 0 ? maxHealthOverride : (def != null ? def.maxHealth : 3);
+            MaxHealth = (maxHealthOverride > 0 ? maxHealthOverride : (def != null ? def.maxHealth : 3)) + Mathf.Max(0, bonusMaxHealth);
             Health = MaxHealth;
             Pips = new GuardPipState(def != null ? Mathf.Max(1, def.guardPips) : 3);
             IsDead = false;
