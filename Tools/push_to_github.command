@@ -1,0 +1,8 @@
+#!/bin/bash
+# Pixel Kingdom Rumble: push main to GitHub using this Mac's saved GitHub login (Keychain / GitHub Desktop).
+cd "$(dirname "$0")/.." || exit 1
+echo "=== $(date)  Push to GitHub"
+git push origin main 2>&1 | tee Logs/push.log
+echo "Local:  $(git rev-parse --short HEAD)"
+echo "GitHub: $(git ls-remote origin refs/heads/main | cut -c1-7)"
+echo "=== finished. You can close this window."
