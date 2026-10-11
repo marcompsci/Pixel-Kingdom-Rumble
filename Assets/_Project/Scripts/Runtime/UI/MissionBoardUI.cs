@@ -73,7 +73,7 @@ namespace PKR
             UIFactory.Clear(_root);
             _cards.Clear();
             var p = UITheme.Current;
-            const float card = 150f;
+            float card = board.contracts.Count > 6 ? 112f : 150f; // eight contracts still fit without scrolling
             float height = 80f + 130f + 60f + (owned ? 0f : UIFactory.RowHeight + 70f + 36f) + (string.IsNullOrEmpty(_status) ? 0f : 60f + 18f) +
                            board.contracts.Count * (card + 18f) + UIFactory.RowHeight + 5 * 18f;
 #if PKR_TESTER || UNITY_EDITOR
@@ -109,7 +109,7 @@ namespace PKR
                 bool tappable = playable || slot.state == ContractState.NeedsUnlock;
                 var b = UIFactory.Button(panel, CardText(i, c, slot), () => Tap(idx), card, interactable: tappable);
                 var t = b.GetComponentInChildren<Text>();
-                t.fontSize = 32;
+                t.fontSize = card < 150f ? 30 : 32;
                 if (playable)
                     UIFactory.Tint(b, c.kind == ContractKind.Secret ? SecretColor : c.free && !owned ? FreeColor : p.button,
                                    c.kind == ContractKind.Secret ? Color.white : p.buttonText);

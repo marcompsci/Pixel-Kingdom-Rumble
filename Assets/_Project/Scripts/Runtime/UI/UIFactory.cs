@@ -201,7 +201,7 @@ namespace PKR
             btn.colors = colors;
             btn.interactable = interactable;
             if (onClick != null) btn.onClick.AddListener(onClick);
-            btn.onClick.AddListener(() => { if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light); });
+            btn.onClick.AddListener(() => { if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light); Sfx.Play(Sfx.Click, 0.7f, 0f); });
 
             var le = rt.gameObject.AddComponent<LayoutElement>();
             le.preferredHeight = height;

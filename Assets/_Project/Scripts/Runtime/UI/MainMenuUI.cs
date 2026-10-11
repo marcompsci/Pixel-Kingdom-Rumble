@@ -1,5 +1,6 @@
 using PKR.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PKR
 {
@@ -113,7 +114,12 @@ namespace PKR
                 UIFactory.Button(panel, unseen > 0 ? $"CODEX  ·  {unseen} NEW" : "CODEX", ShowCodex);
             }
             else UIFactory.Button(panel, "CODEX", null, interactable: false);
-            UIFactory.Label(panel, "Prototype · placeholder art", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
+            if (GameCenterService.Available)
+            {
+                var gc = UIFactory.Button(panel, "GAME CENTER  ·  ACHIEVEMENTS & RANKS", GameCenterService.ShowDashboard, 80f);
+                gc.GetComponentInChildren<Text>().fontSize = 30;
+            }
+            else UIFactory.Label(panel, "Prototype · placeholder art", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Select(story);
         }
 

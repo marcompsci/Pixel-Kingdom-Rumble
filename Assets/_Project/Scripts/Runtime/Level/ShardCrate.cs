@@ -33,6 +33,7 @@ namespace PKR
             Vector2 top = (Vector2)transform.position + Vector2.up * 0.9f;
             PuffEffect.Play(top, new Color32(255, 220, 90, 255), art != null ? art.sharedMaterial : null, 0.18f, 3f, 0.4f);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
+            Sfx.Play(Sfx.Crate);
             if (shardSprite != null) StartCoroutine(RiseShard(top));
         }
 

@@ -207,9 +207,11 @@ namespace PKR
             {
                 // Shield clank: brief, no shake.
                 if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
+                Sfx.Play(Sfx.Crate, 0.6f);
                 HitLanded?.Invoke(target, result);
                 return;
             }
+            Sfx.Play(result.isLaunch ? Sfx.HitHeavy : Sfx.Hit);
             if (Services.Haptics != null)
                 Services.Haptics.Play(result.isLaunch ? HapticStrength.Heavy : (move != null ? move.haptic : HapticStrength.Light));
             float shake = move != null ? move.shakeAmplitude : 0f;

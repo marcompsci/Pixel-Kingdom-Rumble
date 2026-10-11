@@ -103,6 +103,7 @@ namespace PKR
             Color c = Kind == PickupKind.StarShard ? new Color32(255, 220, 90, 255) : new Color32(255, 110, 120, 255);
             PuffEffect.Play(transform.position, c, _material, 0.14f, 2.5f, 0.25f);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
+            Sfx.Play(Kind == PickupKind.Health ? Sfx.Heal : Sfx.Shard, 0.8f, 0.1f);
             PoolService.Release(PoolKey(Kind), gameObject);
         }
     }

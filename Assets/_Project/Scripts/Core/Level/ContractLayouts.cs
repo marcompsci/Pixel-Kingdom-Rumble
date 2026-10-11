@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PKR.Core
 {
     /// <summary>
-    /// The six Shadow Contracts: four main contracts (the first is the free teaser) and two secret contracts
+    /// The eight Shadow Contracts: six main contracts (the first is the free teaser) and two secret contracts
     /// revealed by cipher scrolls hidden in The Bell Keeper and Harbor of Lanterns.
     /// </summary>
     public static class ContractLayouts
@@ -141,6 +141,50 @@ namespace PKR.Core
             "X###################XXXXXXXXXXX#############XXXXXXXXXXXXXXXXXXXXXXXXXXX######################################X",
         };
 
+        public static readonly string[] GearworksFoundry =
+        {
+            "X......................................................................................................................X",
+            "X......................................................................................................................X",
+            "X......................................................................................................................X",
+            "X......................................................................................................................X",
+            "X......................................................................................................................X",
+            "X.................................................R......O.............................................................X",
+            "X...............................................HH...g.........R.......................................................X",
+            "X............................................LXXXXXXXXXXXXX............................................................X",
+            "X............................................LXXXXXXXXXXXXX..====......................................................X",
+            "X............................................LXXXXXXXXXXXXX....................R.......................................X",
+            "X............................R...............LXXXXXXXXXXXXX............g.....V.........................................X",
+            "X.....................HH...g.................LXXXXXXXXXXXXX.......LXXXXXXXXXXXXXX............................R.........X",
+            "X..................LXXXXXXXXXXX..............LXXXXXXXXXXXXX.......LXXXXXXXXXXXXXX..........................g...........X",
+            "X..................LXXXXXXXXXXX..............LXXXXXXXXXXXXX.......LXXXXXXXXXXXXXX.....................LXXXXXXXX........X",
+            "X......R...........LXXXXXXXXXXX..............LXXXXXXXXXXXXX.......LXXXXXXXXXXXXXX...............R.....LXXXXXXXX........X",
+            "X..P......HH...g...LXXXXXXXXXXX...........C.JLXXXXXXXXXXXXX.......LXXXXXXXXXXXXXX...C..HH...g.........LXXXXXXXX.....G..X",
+            "X###################XXXXXXXXXXX##========#####XXXXXXXXXXXXX########XXXXXXXXXXXXXX######################XXXXXXXX########X",
+            "X###################XXXXXXXXXXX##~~~~~~~~#####XXXXXXXXXXXXX########XXXXXXXXXXXXXX######################XXXXXXXX########X",
+        };
+
+        public static readonly string[] SkybridgeGala =
+        {
+            "X..................................................................................................................X",
+            "X..................................................................................................................X",
+            "X..................................................................................................................X",
+            "X...........................................................R......................................................X",
+            "X....................................................R.............................................................X",
+            "X...................................R.......HH...g.....============................................................X",
+            "X........................................LXXXXXXXXXXXXX........................R...................................X",
+            "X.............................===========LXXXXXXXXXXXXX...............g.HH..V......................................X",
+            "X..........................R.............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX..................................X",
+            "X........................g...............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX..................................X",
+            "X..................LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX..................................X",
+            "X..................LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX......................R...........X",
+            "X..................LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX........................g.........X",
+            "X..................LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX..................LXXXXXXX........X",
+            "X................R.LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX................R.LXXXXXXX........X",
+            "X..P....HH...g.....LXXXXXXXXX............LXXXXXXXXXXXXX...........LXXXXXXXXXXXXXX...C...HH...g.....LXXXXXXX.....G..X",
+            "X###################XXXXXXXXX#############XXXXXXXXXXXXX############XXXXXXXXXXXXXX###################XXXXXXX########X",
+            "X###################XXXXXXXXX#############XXXXXXXXXXXXX############XXXXXXXXXXXXXX###################XXXXXXX########X",
+        };
+
         public static IEnumerable<KeyValuePair<string, string[]>> All()
         {
             yield return new KeyValuePair<string, string[]>("FirstLight", FirstLight);
@@ -149,6 +193,8 @@ namespace PKR.Core
             yield return new KeyValuePair<string, string[]>("LanternHarbor", LanternHarbor);
             yield return new KeyValuePair<string, string[]>("CipherCrypt", CipherCrypt);
             yield return new KeyValuePair<string, string[]>("ClocktowerShadow", ClocktowerShadow);
+            yield return new KeyValuePair<string, string[]>("GearworksFoundry", GearworksFoundry);
+            yield return new KeyValuePair<string, string[]>("SkybridgeGala", SkybridgeGala);
         }
     }
 }

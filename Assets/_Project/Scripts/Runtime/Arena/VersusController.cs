@@ -169,6 +169,7 @@ namespace PKR
             else Match.ReportKO(p ? 0 : 1);
             if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(0.4f, 0.35f);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+            Sfx.Play(Sfx.KO, 0.9f, 0.03f);
             _flow = StartCoroutine(RoundOutro(timeUp: false));
         }
 
@@ -268,6 +269,7 @@ namespace PKR
         /// <summary>Placeholder K.O. reaction: the body sprite tips over onto its back.</summary>
         static void SetDownPose(Fighter f, bool down)
         {
+            if (f.go.TryGetComponent(out FighterVisual visual)) { visual.SetDownPose(down); return; }
             if (f.go.transform.childCount == 0) return;
             var body = f.go.transform.GetChild(0);
             body.localRotation = down ? Quaternion.Euler(0f, 0f, f.motor.Facing > 0 ? 90f : -90f) : Quaternion.identity;

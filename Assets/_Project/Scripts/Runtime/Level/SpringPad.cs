@@ -25,6 +25,7 @@ namespace PKR
             motor.ApplyKnockback(new Vector2(motor.Velocity.x, vy), 0f);
             _squash = 0.15f;
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
+            Sfx.Play(Sfx.Spring);
         }
     }
 }

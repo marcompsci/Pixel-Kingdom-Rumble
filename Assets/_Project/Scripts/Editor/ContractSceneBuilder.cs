@@ -7,7 +7,7 @@ using UnityEngine.InputSystem.UI;
 namespace PKR.EditorTools
 {
     /// <summary>
-    /// PKR > Build Shadow Contracts: the six contract scenes (MS_*, from ContractLayouts) and the portrait board
+    /// PKR > Build Shadow Contracts: the eight contract scenes (MS_*, from ContractLayouts) and the portrait board
     /// 05_ShadowContracts. Part of PKR > Build All Scenes.
     /// </summary>
     public static class ContractSceneBuilder

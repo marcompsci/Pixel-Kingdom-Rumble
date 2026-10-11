@@ -54,7 +54,7 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>Builds the six Shadow Contracts scenes (MS_*) from ContractLayouts.</summary>
+        /// <summary>Builds the eight Shadow Contracts scenes (MS_*) from ContractLayouts.</summary>
         public static void BuildContracts()
         {
             foreach (var spec in DataAssets.ContractSpecs)

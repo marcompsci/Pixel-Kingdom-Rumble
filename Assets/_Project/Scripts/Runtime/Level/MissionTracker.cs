@@ -40,6 +40,7 @@ namespace PKR
             {
                 text = $"{relicName.ToUpperInvariant()}  +{MissionScore.RelicPoints}\nRELICS {Relics}/{TotalRelics}"
             });
+            Sfx.Play(Sfx.Relic, 0.9f, 0f);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light);
         }
 

@@ -15,6 +15,7 @@ namespace PKR.EditorTools
         public const string ProductName = "Pixel Kingdom Rumble";
         public const string AppleTeamId = "X6LZQ3FS36";
         public const string MinIOSVersion = "15.0";
+        public const string AppVersion = "0.4.0";
 
         [MenuItem("PKR/Configure iOS Player Settings", priority = 1)]
         public static void ConfigureIOS()
@@ -33,6 +34,13 @@ namespace PKR.EditorTools
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
             EnsureInputSystemOnly();
             ApplyAppIcon();
+
+            // Version shown in TestFlight/App Store. Every upload needs a new build number: the TestFlight script passes
+            // PKR_BUILD_NUMBER (a timestamp); local test builds keep whatever is set.
+            PlayerSettings.bundleVersion = AppVersion;
+            string build = System.Environment.GetEnvironmentVariable("PKR_BUILD_NUMBER");
+            if (!string.IsNullOrEmpty(build)) PlayerSettings.iOS.buildNumber = build;
+            else if (string.IsNullOrEmpty(PlayerSettings.iOS.buildNumber) || PlayerSettings.iOS.buildNumber == "0") PlayerSettings.iOS.buildNumber = "1";
 
             PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
             PlayerSettings.iOS.targetOSVersionString = MinIOSVersion;

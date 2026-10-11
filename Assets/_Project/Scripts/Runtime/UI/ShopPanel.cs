@@ -60,6 +60,7 @@ namespace PKR
                 if (result != PurchaseResult.Success && result != PurchaseResult.AlreadyOwned) { Rebuild(); return result; }
                 _status = $"BOUGHT {item.displayName.ToUpperInvariant()}!";
                 if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
+                Sfx.Play(Sfx.Purchase, 0.9f, 0f);
                 if (result == PurchaseResult.Success)
                     EventBus<ShardsChanged>.Raise(new ShardsChanged { total = save.Data.starShards, delta = -item.cost });
             }

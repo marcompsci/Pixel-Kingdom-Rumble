@@ -149,6 +149,7 @@ namespace PKR
                 // Velocity so far is in world space; treat the platform's share as carry so we switch to its frame.
                 _carryX = _platform != null ? _platform.Velocity.x : 0f;
                 Landed?.Invoke(Mathf.Max(0f, -_lastAirVy));
+                if (IsHeroSound && _lastAirVy < -6f) Sfx.Play(Sfx.Land, Mathf.Clamp01(-_lastAirVy / 20f));
             }
             else if (!IsGrounded && wasGrounded)
             {
@@ -287,6 +288,18 @@ namespace PKR
             _jumpArc = true;
             _cutApplied = false;
             Jumped?.Invoke();
+            if (IsHeroSound) Sfx.Play(Sfx.Jump, 0.8f);
+        }
+
+        int _heroSound = -1;
+        /// <summary>Only the hero (and versus fighters) make movement sounds; enemies stay quiet.</summary>
+        bool IsHeroSound
+        {
+            get
+            {
+                if (_heroSound < 0) _heroSound = GetComponent<PlayerMarker>() != null || GetComponent<FighterVisual>() != null ? 1 : 0;
+                return _heroSound == 1;
+            }
         }
 
         /// <summary>A solid wall within WallProbeDistance on side dir (+1 right, -1 left). One-way planks don't count.</summary>

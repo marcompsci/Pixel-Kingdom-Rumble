@@ -13,12 +13,19 @@ namespace PKR
     {
         public int sortingOrder = 50;
 
-        Text _hp, _shards, _time, _secrets, _banner, _stealth;
+        Text _hp, _shards, _time, _secrets, _banner, _stealth, _hint;
+        float _hintUntil;
+        readonly System.Collections.Generic.Queue<string> _hintQueue = new System.Collections.Generic.Queue<string>();
+        public string CurrentHint => _hint != null && _hint.enabled ? _hint.text : "";
         float _bannerUntil;
         readonly System.Collections.Generic.Queue<string> _codexQueue = new System.Collections.Generic.Queue<string>();
         Damageable _playerHealth;
 
-        void Awake() => Build();
+        void Awake()
+        {
+            Build();
+            gameObject.AddComponent<FirstTimeHints>();
+        }
 
         void OnEnable()
         {
@@ -27,6 +34,7 @@ namespace PKR
             EventBus<CodexEntryUnlocked>.Subscribe(OnCodex);
             EventBus<SettingsChanged>.Subscribe(OnSettings);
             EventBus<StealthNotice>.Subscribe(OnStealth);
+            EventBus<GameHint>.Subscribe(OnHint);
         }
 
         void OnDisable()
@@ -36,6 +44,7 @@ namespace PKR
             EventBus<CodexEntryUnlocked>.Unsubscribe(OnCodex);
             EventBus<SettingsChanged>.Unsubscribe(OnSettings);
             EventBus<StealthNotice>.Unsubscribe(OnStealth);
+            EventBus<GameHint>.Unsubscribe(OnHint);
         }
 
         void OnCheckpoint(CheckpointActivated e) => ShowBanner("CHECKPOINT", 1.5f);
@@ -48,6 +57,19 @@ namespace PKR
             if (!BannerBusy) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
         }
         const float CodexBannerSeconds = 1.8f;
+        const float HintSeconds = 4.5f;
+        void OnHint(GameHint e)
+        {
+            if (string.IsNullOrEmpty(e.text)) return;
+            if (_hint.enabled && Time.unscaledTime <= _hintUntil) { _hintQueue.Enqueue(e.text); return; }
+            ShowHint(e.text);
+        }
+        void ShowHint(string text)
+        {
+            _hint.text = text;
+            _hint.enabled = true;
+            _hintUntil = Time.unscaledTime + HintSeconds;
+        }
         bool BannerBusy => _banner.enabled && Time.unscaledTime <= _bannerUntil;
         void OnSettings(SettingsChanged e) => ApplyTheme();
 
@@ -87,6 +109,8 @@ namespace PKR
             else _stealth.text = "";
 
             if (_banner.enabled && Time.unscaledTime > _bannerUntil) _banner.enabled = false;
+            if (_hint.enabled && Time.unscaledTime > _hintUntil) _hint.enabled = false;
+            if (!_hint.enabled && _hintQueue.Count > 0) ShowHint(_hintQueue.Dequeue());
             if (!BannerBusy && _codexQueue.Count > 0) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
         }
 
@@ -126,6 +150,10 @@ namespace PKR
             _banner = Label(safe, "Banner", new Vector2(0.5f, 0.62f), Vector2.zero, TextAnchor.MiddleCenter, 64);
             _banner.rectTransform.sizeDelta = new Vector2(1600f, 400f);
             _banner.enabled = false;
+            // First-time tips sit under the timer, away from the touch controls and the centre banner.
+            _hint = Label(safe, "Hint", new Vector2(0.5f, 1f), new Vector2(0f, -100f), TextAnchor.UpperCenter, 40);
+            _hint.rectTransform.sizeDelta = new Vector2(1400f, 120f);
+            _hint.enabled = false;
             ApplyTheme();
         }
 
@@ -153,7 +181,7 @@ namespace PKR
         void ApplyTheme()
         {
             bool hc = Services.Settings != null && Services.Settings.Data.highContrastUI;
-            foreach (var t in new[] { _hp, _shards, _secrets, _time, _banner, _stealth })
+            foreach (var t in new[] { _hp, _shards, _secrets, _time, _banner, _stealth, _hint })
             {
                 if (t == null) continue;
                 t.color = hc ? new Color(1f, 0.92f, 0.1f) : Color.white;
@@ -161,6 +189,7 @@ namespace PKR
                 o.effectColor = hc ? Color.black : new Color(0f, 0f, 0f, 0.6f);
                 o.effectDistance = hc ? new Vector2(4f, -4f) : new Vector2(2f, -2f);
             }
+            if (_hint != null && !hc) _hint.color = new Color(1f, 0.88f, 0.5f);
         }
     }
 }

@@ -208,6 +208,7 @@ namespace PKR
             Current = State.DiveLanding;
             _stateTimer = kit.diveLandingLag;
             DiveImpact?.Invoke(transform.position, kit.diveShockwaveRadius);
+            Sfx.Play(Sfx.HitHeavy, 0.7f);
             Services.Haptics?.Play(HapticStrength.Heavy);
         }
 

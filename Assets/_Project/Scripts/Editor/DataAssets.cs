@@ -254,6 +254,22 @@ namespace PKR.EditorTools
             },
             new ContractSpec
             {
+                id = "ms_gearworks_foundry", displayName = "The Gearworks Foundry", sceneName = "MS_GearworksFoundry", kind = ContractKind.Main,
+                par = 190f, sky = new Color32(70, 34, 30, 255), rows = ContractLayouts.GearworksFoundry,
+                objectiveName = "the Forge Seal", objectiveDisplay = "Forge Seal",
+                briefing = "The foundry captain stamps every forged pass in the city with the Forge Seal. Ride the steam " +
+                           "spring to the furnace roof, lift the seal, then take the captain down before the night shift ends."
+            },
+            new ContractSpec
+            {
+                id = "ms_skybridge_gala", displayName = "The Skybridge Gala", sceneName = "MS_SkybridgeGala", kind = ContractKind.Main,
+                par = 175f, sky = new Color32(60, 40, 100, 255), rows = ContractLayouts.SkybridgeGala,
+                objectiveName = "the target", objectiveDisplay = "Target",
+                briefing = "The rival guild's paymaster is hosting a gala on the lantern bridges above the square. Cross " +
+                           "the bridges, stay in the shadows of the hay carts and take him down. Leave no witnesses awake."
+            },
+            new ContractSpec
+            {
                 id = "ms_cipher_crypt", displayName = "The Cipher Crypt", sceneName = "MS_CipherCrypt", kind = ContractKind.Secret,
                 par = 160f, sky = new Color32(20, 18, 40, 255), rows = ContractLayouts.CipherCrypt, revealedByClue = "clue_cipher_crypt",
                 clueHint = "Search the back rooms of The Bell Keeper",

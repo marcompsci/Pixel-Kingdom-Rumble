@@ -41,6 +41,8 @@ namespace PKR
             Services.Scenes = _root.AddComponent<SceneLoader>();
             Services.Audio = _root.AddComponent<AudioService>();
             Services.Haptics = _root.AddComponent<HapticsService>();
+            _root.AddComponent<AudioDirector>();
+            _root.AddComponent<GameCenterService>();
 
             Services.Settings.Load();
             Services.Save.Load();

@@ -40,12 +40,15 @@ namespace PKR.Core
         /// <summary>Codex entries the player has opened (no NEW badge).</summary>
         public List<string> seenCodexEntries = new List<string>();
         public List<EnemyTally> enemyDefeats = new List<EnemyTally>();
+        /// <summary>Game Center achievement ids earned on this device (re-sent after sign-in, so none are lost offline).</summary>
         public List<string> achievements = new List<string>();
         public List<LevelRecord> levels = new List<LevelRecord>();
         /// <summary>Shadow Contracts: the one-time unlock ($3.99), clues found, and best results per contract.</summary>
         public bool contractsUnlocked;
         public List<string> foundClues = new List<string>();
         public List<MissionRecord> missions = new List<MissionRecord>();
+        /// <summary>First-time hints already shown (by hint id), so each one only appears once.</summary>
+        public List<string> seenHints = new List<string>();
         public string lastSelectedCharacter = DefaultCharacterId;
 
         public static SaveData CreateNew() => new SaveData();
@@ -136,6 +139,26 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>Records an achievement id; true only the first time.</summary>
+        public bool EarnAchievement(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+            if (achievements == null) achievements = new List<string>();
+            if (achievements.Contains(id)) return false;
+            achievements.Add(id);
+            return true;
+        }
+
+        /// <summary>Marks a first-time hint as seen; true only the first time (so the caller shows it once).</summary>
+        public bool MarkHintSeen(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+            if (seenHints == null) seenHints = new List<string>();
+            if (seenHints.Contains(id)) return false;
+            seenHints.Add(id);
+            return true;
+        }
+
         /// <summary>Repairs nulls/negatives and upgrades old versions. Safe to call on any loaded data.</summary>
         public void SanitizeAndMigrate()
         {
@@ -157,6 +180,9 @@ namespace PKR.Core
             if (levels == null) levels = new List<LevelRecord>();
             if (foundClues == null) foundClues = new List<string>();
             foundClues.RemoveAll(string.IsNullOrEmpty);
+            achievements.RemoveAll(string.IsNullOrEmpty);
+            if (seenHints == null) seenHints = new List<string>();
+            seenHints.RemoveAll(string.IsNullOrEmpty);
             if (missions == null) missions = new List<MissionRecord>();
             missions.RemoveAll(m => m == null || string.IsNullOrEmpty(m.contractId));
             foreach (var m in missions) { if (m.bestScore < 0) m.bestScore = 0; if (m.bestRelics < 0) m.bestRelics = 0; }

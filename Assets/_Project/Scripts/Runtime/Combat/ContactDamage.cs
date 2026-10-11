@@ -51,6 +51,7 @@ namespace PKR
                 {
                     HitStop.Request(result.hitstopFrames);
                     if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
+                    Sfx.Play(Sfx.Hurt);
                     if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(0.12f, 0.15f);
                 }
             }
