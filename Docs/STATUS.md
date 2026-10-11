@@ -353,3 +353,25 @@ First real run, on Omari's Mac with **Unity 6000.6.4f1** via `Tools/unity_check.
 | Shows in TestFlight | 🟡 | Uploaded; Apple processes builds before they appear (not yet confirmed at time of writing) |
 | Game Center live | ⬜ | Leaderboard and achievements must also exist in App Store Connect with the same IDs before scores post |
 | Sound mix, animation feel on device | ⬜ | Not yet heard or seen on the iPhone by a person |
+
+## Phase 5 — Game Center live, Frostgear Peaks, Assist mode, App Store prep (2026-10-11)
+
+- **Game Center in App Store Connect:** leaderboard `pkr.lb.contracts` and all 10 achievements created with matching
+  IDs, points, descriptions and original 512 px pixel-art badges (verified through App Store Connect's own data).
+- **World 2, Frostgear Peaks:** *Frostgear Ascent* and *Clockwork Glacier* (icy-tinted terrain, springs, lifts,
+  drifting plates over spikes, a secret each) and a new enemy, the **Frost Mite** (`F` in maps). Night Market Heist now
+  leads into it; the level select fits all eight levels.
+- **Assist mode** (Settings): +2 max health in Story and Contracts, guards notice at 60% speed.
+- **App Store prep:** version 1.0; listing text, keywords, URLs, copyright and manual release saved in App Store
+  Connect (Docs/AppStore/LISTING.md); PRIVACY.md and SUPPORT.md; the unused legacy analytics package removed.
+  `Tools/sim_screenshots.command` makes 6.9-inch screenshots in the Simulator (`PKR_SCENE` opens a scene directly).
+
+| Item | State | Evidence |
+|---|---|---|
+| Compile | ✅ | 0 errors (Mac) |
+| EditMode tests | ✅ | 182/182 (new maps validate; platform-level checks include both Frostgear levels) |
+| PlayMode tests | ✅ | 72/72 (smoke tests load both new scenes) |
+| Reachability of new maps | 🟡 | Rough script: every shard, checkpoint, secret and the gate reachable |
+| Simulator screenshots | ✅ | 7 shots at 1320x2868 / 2868x1320 in Docs/AppStore |
+| TestFlight build with Phase 5 | ⬜ | Not uploaded yet: the Mac is reserved for Retro Hoops until 23 Oct unless Omari says otherwise |
+| App Review contact phone, screenshots uploaded, IAP screenshot | ⬜ | Need Omari's phone number; screenshot upload waits for the GitHub push |
