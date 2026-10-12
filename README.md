@@ -1,5 +1,9 @@
 # Pixel Kingdom Rumble (working title)
 
+> ### 🎮 Play the beta on iPhone: **[testflight.apple.com/join/U6MgRyyP](https://testflight.apple.com/join/U6MgRyyP)**
+> [![Join the TestFlight beta](https://img.shields.io/badge/▶%20PRESS%20START-Join%20the%20beta-ff3d7f?style=for-the-badge&logo=apple&logoColor=white&labelColor=26183a)](https://testflight.apple.com/join/U6MgRyyP)
+> Get TestFlight → open the link → Install. See **[PLAYTEST.md](PLAYTEST.md)** for what to play and how to send feedback.
+
 An original 2D pixel-art action platformer + arena brawler for iPhone, built in Unity 6 LTS (2D URP, C#).
 
 > All names, characters, art, audio and levels are original or placeholder. See [Docs/NAMING.md](Docs/NAMING.md)
