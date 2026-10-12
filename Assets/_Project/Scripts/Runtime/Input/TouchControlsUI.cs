@@ -31,6 +31,36 @@ namespace PKR
 
         readonly Dictionary<string, TouchActionButton> _buttons = new Dictionary<string, TouchActionButton>();
         Canvas _canvas;
+        RectTransform _leftHalf, _rightHalf;
+        Text _tag;
+        float _layoutScale = 1f;
+
+        /// <summary>True while this overlay covers only part of the screen (couch play).</summary>
+        public bool IsSplit { get; private set; }
+
+        /// <summary>
+        /// Couch play on one screen: confine this overlay to [xMin, xMax] of the screen (stick in the left part,
+        /// buttons in the right part, same saved layout), shrink it, and label it "P1"/"P2".
+        /// SetRegion(0, 1, 1, null) restores the normal full-screen controls.
+        /// </summary>
+        public void SetRegion(float xMin, float xMax, float scale, string playerTag)
+        {
+            xMin = Mathf.Clamp01(xMin); xMax = Mathf.Clamp(xMax, xMin + 0.1f, 1f);
+            float mid = (xMin + xMax) * 0.5f;
+            if (_leftHalf != null) { _leftHalf.anchorMin = new Vector2(xMin, 0f); _leftHalf.anchorMax = new Vector2(mid, 1f); }
+            if (_rightHalf != null) { _rightHalf.anchorMin = new Vector2(mid, 0f); _rightHalf.anchorMax = new Vector2(xMax, 1f); }
+            _layoutScale = Mathf.Clamp(scale, 0.4f, 1.5f);
+            IsSplit = xMin > 0.001f || xMax < 0.999f;
+            if (_tag != null)
+            {
+                _tag.text = playerTag ?? "";
+                _tag.enabled = !string.IsNullOrEmpty(playerTag);
+                var rt = _tag.rectTransform;
+                rt.anchorMin = rt.anchorMax = new Vector2(mid, 0.93f);
+                rt.anchoredPosition = Vector2.zero;
+            }
+            ApplyLayout();
+        }
 
         public Vector2 StickValue => Joystick != null && Visible ? Joystick.Value : Vector2.zero;
 
@@ -132,13 +162,14 @@ namespace PKR
             foreach (var p in data.controlLayout)
             {
                 var pos = new Vector2(p.x, p.y);
+                float scale = p.scale * _layoutScale;
                 if (p.controlId == ControlIds.Joystick)
                 {
-                    if (Joystick) Joystick.SetHome(pos, p.scale);
+                    if (Joystick) Joystick.SetHome(pos, scale);
                 }
                 else if (_buttons.TryGetValue(p.controlId, out var b))
                 {
-                    b.SetHome(pos, p.scale);
+                    b.SetHome(pos, scale);
                 }
             }
             if (Joystick) Joystick.floating = data.floatingJoystick;
@@ -197,12 +228,25 @@ namespace PKR
             right.anchorMin = new Vector2(0.5f, 0f); right.anchorMax = new Vector2(1f, 1f);
             right.offsetMin = right.offsetMax = Vector2.zero;
 
+            _leftHalf = left;
+            _rightHalf = right;
             BuildJoystick(left);
             BuildButton(right, ControlIds.Jump, "JUMP");
             BuildButton(right, ControlIds.Attack, "ATK");
             BuildButton(right, ControlIds.Special, "SPL");
             BuildButton(right, ControlIds.Dodge, "DODGE");
             BuildEditBar(safe);
+
+            var tagRt = NewRect("PlayerTag", safe);
+            tagRt.sizeDelta = new Vector2(200f, 80f);
+            _tag = tagRt.gameObject.AddComponent<Text>();
+            _tag.font = UISprites.Font;
+            _tag.fontSize = 56;
+            _tag.fontStyle = FontStyle.Bold;
+            _tag.alignment = TextAnchor.MiddleCenter;
+            _tag.color = new Color(1f, 1f, 1f, 0.55f);
+            _tag.raycastTarget = false;
+            _tag.enabled = false;
         }
 
         void BuildJoystick(RectTransform leftHalf)

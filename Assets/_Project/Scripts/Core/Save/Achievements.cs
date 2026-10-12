@@ -20,6 +20,8 @@ namespace PKR.Core
     public static class Achievements
     {
         public const string LeaderboardContracts = "pkr.lb.contracts";
+        /// <summary>Rumble Rating (Arena Clash / Versus / Daily Rumble). Best score, high to low.</summary>
+        public const string LeaderboardRumble = "pkr.lb.rumble";
 
         public const string FirstSteps = "pkr.ach.first_steps";
         public const string Warden = "pkr.ach.warden";

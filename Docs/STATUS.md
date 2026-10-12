@@ -2,6 +2,17 @@
 
 Legend: ✅ verified by actually running · 🟡 written, not yet compiled in Unity · ⬜ not started
 
+## Rumble update (2026-10-12): Rumble Rating, Auto CPU, Daily Rumble, couch 2P
+- Rumble Rating: ranked points for solo Arena Clash / Versus / Daily Rumble.
+  - Placement-first scoring with a capped style bonus, so a better placement always wins.
+  - Itemised results, Bronze to Legend tiers, and no-tilt protection.
+  - Game Center leaderboard `pkr.lb.rumble`.
+- Auto CPU level adapts to your results. Harder CPUs pay more.
+- Daily Rumble: one twist per day (low gravity, heavy hitters, giants, one stock) with a streak bonus. Twists are also selectable in custom matches.
+- Couch 2P on one device: two controllers, one controller plus touch, or split-screen touch.
+- First Blood / Revenge call-outs in the arena HUD.
+- See Docs/RUMBLE_RATING.md. Core tests: 203 pass in the cloud. Unity compile and PlayMode tests run on the Mac.
+
 ## Phase 1 summary (2026-10-06): code-complete, not yet run in Unity
 
 | Area | State | What that means |

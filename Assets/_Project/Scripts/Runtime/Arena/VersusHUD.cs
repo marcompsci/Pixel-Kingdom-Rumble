@@ -152,16 +152,23 @@ namespace PKR
             _results.gameObject.SetActive(true);
             UIFactory.Clear(_results);
             UIFactory.Dim(_results);
-            var panel = UIFactory.Panel(_results, new Vector2(1100f, 860f));
+            var panel = UIFactory.Panel(_results, new Vector2(1400f, 1000f));
             string head = e.winner == 0 ? "YOU WIN!" : e.winner == 1 ? "YOU LOSE" : "DRAW";
-            UIFactory.Label(panel, head, 96, TextAnchor.MiddleCenter, 130f, title: true);
+            UIFactory.Label(panel, head, 80, TextAnchor.MiddleCenter, 100f, title: true);
             UIFactory.Label(panel, $"{e.playerName}  {e.playerRounds} - {e.opponentRounds}  {e.opponentName}", 44,
                             TextAnchor.MiddleCenter, 70f);
             if (e.starShardReward > 0)
-                UIFactory.Label(panel, $"+{e.starShardReward} STAR SHARDS", 44, TextAnchor.MiddleCenter, 70f).color = UITheme.Current.accent;
-            var again = UIFactory.Button(panel, "REMATCH", Rematch);
-            UIFactory.Button(panel, "NEW FIGHTERS", () => Load(SceneIds.VersusSelect));
-            UIFactory.Button(panel, "MAIN MENU", () => Load(SceneIds.MainMenu));
+                UIFactory.Label(panel, $"+{e.starShardReward} STAR SHARDS", 40, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.accent;
+            if (e.rumble != null) RumbleUI.AddResults(panel, e.rumble);
+            var row = UIFactory.Rect("Buttons", panel);
+            row.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var h = row.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+            h.spacing = 24f;
+            h.childControlWidth = true; h.childControlHeight = true;
+            h.childForceExpandWidth = true; h.childForceExpandHeight = true;
+            var again = UIFactory.Button(row, "REMATCH", Rematch);
+            UIFactory.Button(row, "NEW FIGHTERS", () => Load(SceneIds.VersusSelect));
+            UIFactory.Button(row, "MAIN MENU", () => Load(SceneIds.MainMenu));
             UIFactory.Select(again);
         }
 

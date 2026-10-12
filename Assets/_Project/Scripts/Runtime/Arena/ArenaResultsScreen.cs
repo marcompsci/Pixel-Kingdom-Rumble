@@ -35,12 +35,12 @@ namespace PKR
             _root.gameObject.SetActive(true);
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1300f, 940f));
+            var panel = UIFactory.Panel(_root, new Vector2(1500f, 1000f));
             var p = UITheme.Current;
 
             int winner = System.Array.IndexOf(e.placements, 1);
-            string title = e.playerPlacement == 1 ? "YOU WIN!" : (winner >= 0 ? $"{e.names[winner]} WINS" : "MATCH OVER");
-            UIFactory.Label(panel, title, 80, TextAnchor.MiddleCenter, 110f, title: true);
+            string title = e.humans < 2 && e.playerPlacement == 1 ? "YOU WIN!" : (winner >= 0 ? $"{e.names[winner]} WINS" : "MATCH OVER");
+            UIFactory.Label(panel, title, 70, TextAnchor.MiddleCenter, 90f, title: true);
 
             // Standings, best placement first.
             var order = new int[e.placements.Length];
@@ -50,13 +50,14 @@ namespace PKR
             {
                 string score = e.mode == MatchMode.Timed ? $"   score {e.scores[slot]}" : "";
                 var row = UIFactory.Label(panel, $"{Ordinal(e.placements[slot])}   {e.names[slot]}   KOs {e.knockouts[slot]}   falls {e.falls[slot]}{score}",
-                                          40, TextAnchor.MiddleLeft, 64f);
+                                          36, TextAnchor.MiddleLeft, 52f);
                 row.color = slot < ArenaMatchController.SlotColors.Length ? ArenaMatchController.SlotColors[slot] : p.text;
             }
             if (e.mode != MatchMode.Training)
             {
                 int total = Services.Save != null ? Services.Save.Data.starShards : 0;
-                UIFactory.Label(panel, $"+{e.starShardReward} Star Shards   (total {total})", 44, TextAnchor.MiddleCenter, 70f).color = p.title;
+                UIFactory.Label(panel, $"+{e.starShardReward} Star Shards   (total {total})", 38, TextAnchor.MiddleCenter, 54f).color = p.title;
+                RumbleUI.AddResults(panel, e.rumble);
             }
 
             var buttons = UIFactory.Rect("Buttons", panel);

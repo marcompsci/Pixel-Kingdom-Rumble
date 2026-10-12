@@ -14,6 +14,8 @@ namespace PKR
         public string playerName, opponentName;
         public int playerRounds, opponentRounds;
         public int starShardReward;
+        /// <summary>Rumble Rating result (null when not rated, e.g. in tests).</summary>
+        public RumbleOutcome rumble;
     }
 
     /// <summary>
@@ -62,6 +64,10 @@ namespace PKR
         public event Action RoundStarted;
 
         bool _ending, _resolving;
+        bool _auto;
+        BotLevel _level;
+        bool _trailed;      // you were a round down at some point (for the Comeback bonus)
+        bool _decider;      // the final round was played at match point for both
         Coroutine _flow;
 
         void Start()
@@ -78,6 +84,9 @@ namespace PKR
             Clear();
             Match = new VersusMatch();
             PerfectRoundWon = false;
+            _auto = autoStart ? GameSession.VersusAutoLevel : false;
+            _level = level;
+            _trailed = _decider = false;
             var playerDef = Pick(playerId, null);
             var opponentDef = Pick(opponentId, playerDef);
             Player = Spawn(playerDef, playerSpawn, 0, human: true, level);
@@ -118,7 +127,7 @@ namespace PKR
             }
             else
             {
-                go.AddComponent<BotController>().Init(this, BotDifficulty.For(level), 7919 + RuntimeIds.Next(), isPassive: false);
+                go.AddComponent<BotController>().Init(this, RumbleRecorder.BotTuning(_auto, level), 7919 + RuntimeIds.Next(), isPassive: false);
             }
             if (arenaCamera != null) arenaCamera.group.Add(go.transform);
             return new Fighter { name = name, def = def, go = go, health = dmg, motor = motor, spawn = at };
@@ -180,6 +189,8 @@ namespace PKR
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             int next = Match.Round + 1;
             bool finalRound = Match.Wins(0) == Match.RoundsToWin - 1 && Match.Wins(1) == Match.RoundsToWin - 1;
+            if (finalRound) _decider = true;
+            if (Match.Wins(1) > Match.Wins(0)) _trailed = true;
             Announce(finalRound ? "FINAL ROUND" : $"ROUND {next}", roundIntroSeconds * 0.6f);
             yield return new WaitForSeconds(roundIntroSeconds * 0.6f);
             Announce("FIGHT!", roundIntroSeconds * 0.4f);
@@ -221,12 +232,25 @@ namespace PKR
                 Services.Save.AddShards(reward);
                 Services.Save.SaveNow();
             }
+            RumbleOutcome rumble = null;
+            if (grantRewards && Services.Save != null)
+            {
+                int lost = Match.Wins(1);
+                rumble = RumbleRecorder.Record(new RumbleMatchReport
+                {
+                    fighters = 2, placement = won ? 1 : 2,
+                    knockouts = Match.Wins(0), falls = lost,
+                    comeback = won && _trailed,
+                    clutch = won && _decider,
+                    difficulty = RumbleRecorder.Difficulty(_auto, _level),
+                }, daily: false);
+            }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             if (Services.Haptics != null) Services.Haptics.Play(won ? HapticStrength.Heavy : HapticStrength.Medium);
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
             {
                 winner = Match.Winner, playerName = Player.name, opponentName = Opponent.name,
-                playerRounds = Match.Wins(0), opponentRounds = Match.Wins(1), starShardReward = reward
+                playerRounds = Match.Wins(0), opponentRounds = Match.Wins(1), starShardReward = reward, rumble = rumble
             });
         }
 

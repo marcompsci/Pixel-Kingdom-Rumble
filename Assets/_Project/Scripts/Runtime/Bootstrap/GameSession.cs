@@ -19,6 +19,7 @@ namespace PKR
             Mode = SessionMode.StoryQuest;
             VersusOpponentId = null;
             VersusBotLevel = BotLevel.Normal;
+            VersusAutoLevel = true;
             ContractScene = null;
             ContractWorldPage = -1;
             PendingWorldDoor = -1;
@@ -36,6 +37,8 @@ namespace PKR
         /// <summary>Versus: the CPU's fighter (null = random) and difficulty, chosen on the Versus select screen.</summary>
         public static string VersusOpponentId { get; set; }
         public static BotLevel VersusBotLevel { get; set; } = BotLevel.Normal;
+        /// <summary>Versus CPU follows your Rumble skill (Auto) instead of VersusBotLevel.</summary>
+        public static bool VersusAutoLevel { get; set; } = true;
 
         public static string SelectedCharacterId
         {

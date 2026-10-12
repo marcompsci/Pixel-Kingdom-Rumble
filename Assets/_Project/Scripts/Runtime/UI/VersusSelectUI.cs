@@ -113,8 +113,10 @@ namespace PKR
 
         void CycleLevel()
         {
-            GameSession.VersusBotLevel = GameSession.VersusBotLevel == BotLevel.Easy ? BotLevel.Normal
-                                       : GameSession.VersusBotLevel == BotLevel.Normal ? BotLevel.Hard : BotLevel.Easy;
+            // Auto -> Easy -> Normal -> Hard -> Auto
+            if (GameSession.VersusAutoLevel) { GameSession.VersusAutoLevel = false; GameSession.VersusBotLevel = BotLevel.Easy; }
+            else if (GameSession.VersusBotLevel == BotLevel.Hard) GameSession.VersusAutoLevel = true;
+            else GameSession.VersusBotLevel = GameSession.VersusBotLevel == BotLevel.Easy ? BotLevel.Normal : BotLevel.Hard;
             Build();
         }
 
@@ -178,7 +180,7 @@ namespace PKR
             bh.spacing = 14f; bh.childControlWidth = true; bh.childControlHeight = true;
             bh.childForceExpandWidth = true; bh.childForceExpandHeight = true;
             UIFactory.Button(row, "BACK", Back, 110f).GetComponentInChildren<Text>().fontSize = 36;
-            UIFactory.Button(row, $"CPU: {GameSession.VersusBotLevel.ToString().ToUpperInvariant()}", CycleLevel, 110f)
+            UIFactory.Button(row, $"CPU: {RumbleRecorder.LevelLabel(GameSession.VersusAutoLevel, GameSession.VersusBotLevel)}", CycleLevel, 110f)
                      .GetComponentInChildren<Text>().fontSize = 36;
             string pickLabel = _cpuChosen ? "FIGHT!" : "PICK";
             var go = UIFactory.Button(row, pickLabel, () => { if (_cpuChosen) Fight(); else Pick(_highlight); }, 110f,

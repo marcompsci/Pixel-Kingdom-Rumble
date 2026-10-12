@@ -63,6 +63,9 @@ namespace PKR
             EventBus<ArenaKO>.Unsubscribe(OnKO);
         }
 
+        bool _anyKO;
+        int _lastKiller = -1;
+
         void OnStarted(ArenaMatchStarted e)
         {
             UIFactory.Clear(_cardsRow);
@@ -89,13 +92,28 @@ namespace PKR
                 lrt.offsetMin = new Vector2(34f, 6f); lrt.offsetMax = new Vector2(-8f, -6f);
                 _cardTexts.Add(label);
             }
-            ShowBanner(e.mode == MatchMode.Training ? "TRAINING" : "FIGHT!", 1.2f);
+            _anyKO = false;
+            _lastKiller = -1;
+            string twist = ArenaMods.Active != Mutator.None ? "\n" + DailyRumble.Describe(ArenaMods.Active).ToUpperInvariant() : "";
+            ShowBanner((e.mode == MatchMode.Training ? "TRAINING" : "FIGHT!") + twist, 1.6f);
         }
 
         void OnKO(ArenaKO e)
         {
             string who = match.Fighters.Count > e.victimSlot ? match.Fighters[e.victimSlot].name : "";
-            ShowBanner(e.eliminated ? $"{who} OUT!" : "KO!", 1.1f);
+            string text = e.eliminated ? $"{who} OUT!" : "KO!";
+            // Call out Rumble bonuses as they happen (P1 only; same rules as RumbleTracker).
+            if (e.attackerSlot == 0 && e.victimSlot != 0)
+            {
+                if (!_anyKO) text = "FIRST BLOOD!  +" + RumblePoints.FirstBlood;
+                else if (e.victimSlot == _lastKiller) { text = "REVENGE!  +" + RumblePoints.PerRevenge; _lastKiller = -1; }
+            }
+            if (e.attackerSlot >= 0 && e.attackerSlot != e.victimSlot)
+            {
+                _anyKO = true;
+                if (e.victimSlot == 0) _lastKiller = e.attackerSlot;
+            }
+            ShowBanner(text, 1.1f);
         }
 
         void ShowBanner(string text, float seconds)

@@ -268,7 +268,7 @@ namespace PKR
             else if (!riding)
             {
                 float mult = JumpPhysics.GravityMultiplier(v.y, Intent.Jump.Held && _jumpArc, s);
-                v.y -= _gravity * mult * dt;
+                v.y -= _gravity * mult * ArenaMods.GravityScale * dt;
                 v.y = Mathf.Max(v.y, -s.maxFallSpeed);
             }
 

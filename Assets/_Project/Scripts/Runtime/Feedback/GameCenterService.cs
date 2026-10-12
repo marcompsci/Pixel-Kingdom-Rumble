@@ -83,6 +83,13 @@ namespace PKR
             foreach (var id in save.achievements) Send(id);
             int total = MissionBoard.TotalScore(save);
             if (total > 0) SendScore(Achievements.LeaderboardContracts, total);
+            if (save.rumble != null && save.rumble.bestRating > 0) SendScore(Achievements.LeaderboardRumble, save.rumble.bestRating);
+        }
+
+        /// <summary>Posts the Rumble Rating (Game Center keeps each player's best).</summary>
+        public static void SubmitRumble(int rating)
+        {
+            if (rating > 0) SendScore(Achievements.LeaderboardRumble, rating);
         }
 
         public void Earn(string id)

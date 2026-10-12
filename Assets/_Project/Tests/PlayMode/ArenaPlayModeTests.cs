@@ -67,5 +67,53 @@ namespace PKR.Tests
             Assert.AreEqual(1, _result.falls[1]);
             Assert.IsFalse(match.IsLive);
         }
+
+        ArenaMatchController NewArena()
+        {
+            _host = new GameObject("Arena");
+            var match = _host.AddComponent<ArenaMatchController>();
+            match.grantRewards = false;
+            match.Configure(_hero, new[] { _s1.transform, _s2.transform },
+                            new Rect(-15f, -8f, 30f, 20f), new Rect(-9f, -1f, 18f, 1f));
+            return match;
+        }
+
+        [UnityTest]
+        public IEnumerator CouchMatch_TwoHumans_NoBots_SplitTouchRestoredAfter()
+        {
+            var match = NewArena();
+            yield return null;
+            match.StartMatch(new ArenaMatchConfig { mode = MatchMode.Stock, humans = 2, botCount = 0, stocks = 1 });
+            Assert.AreEqual(2, match.Fighters.Count);
+            Assert.IsNotNull(match.Fighters[0].go.GetComponent<PlayerInputRouter>());
+            Assert.IsNotNull(match.Fighters[1].go.GetComponent<PlayerInputRouter>());
+            Assert.IsNull(match.Fighters[1].go.GetComponent<BotController>());
+            StringAssert.StartsWith("P2", match.Fighters[1].name);
+
+            match.Fighters[0].motor.Teleport(new Vector2(0f, -20f));
+            for (int i = 0; i < 5; i++) yield return new WaitForFixedUpdate();
+            yield return null;
+            Assert.IsTrue(_ended);
+            Assert.AreEqual(2, _result.humans);
+            Assert.IsNull(_result.rumble, "couch matches are unrated");
+            Assert.AreEqual(1, _result.placements[1]);
+        }
+
+        [UnityTest]
+        public IEnumerator Mutators_ApplyDuringMatch_ResetWhenCleared()
+        {
+            var match = NewArena();
+            yield return null;
+            match.StartMatch(new ArenaMatchConfig { mode = MatchMode.Stock, botCount = 1, stocks = 3,
+                                                    mutators = Mutator.LowGravity | Mutator.Giants | Mutator.SuddenDeath });
+            Assert.AreEqual(ArenaMods.LowGravityScale, ArenaMods.GravityScale, 0.0001f);
+            Assert.Greater(match.Fighters[1].go.transform.localScale.x, 1.2f, "giants");
+            Assert.AreEqual(1, match.Config.stocks, "one stock in Sudden Death");
+            Object.Destroy(_host);
+            _host = null;
+            yield return null;
+            Assert.AreEqual(1f, ArenaMods.GravityScale, 0.0001f);
+            Assert.AreEqual(Mutator.None, ArenaMods.Active);
+        }
     }
 }

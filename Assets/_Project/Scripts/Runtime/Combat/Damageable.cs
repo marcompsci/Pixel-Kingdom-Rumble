@@ -156,6 +156,7 @@ namespace PKR
             if (!armored)
             {
                 var kb = new Vector2(result.knockbackVelocity.x, result.knockbackVelocity.y);
+                if (model == DamageModel.ArenaPips) kb *= ArenaMods.KnockbackScale; // Daily Rumble: Heavy Hitters
                 float stunSeconds = result.hitstunFrames / 60f;
                 if (_motor != null) _motor.ApplyKnockback(kb, stunSeconds);
                 else if (_body != null && _body.bodyType == RigidbodyType2D.Dynamic) _body.linearVelocity = kb;

@@ -51,6 +51,8 @@ namespace PKR.Core
         public List<int> openedWorldDoors = new List<int>();
         /// <summary>First-time hints already shown (by hint id), so each one only appears once.</summary>
         public List<string> seenHints = new List<string>();
+        /// <summary>Rumble Rating (ranked points, tier, auto CPU skill, Daily Rumble streak).</summary>
+        public RumbleProfile rumble = new RumbleProfile();
         public string lastSelectedCharacter = DefaultCharacterId;
 
         public static SaveData CreateNew() => new SaveData();
@@ -195,6 +197,8 @@ namespace PKR.Core
             if (openedWorldDoors == null) openedWorldDoors = new List<int>();
             if (seenHints == null) seenHints = new List<string>();
             seenHints.RemoveAll(string.IsNullOrEmpty);
+            if (rumble == null) rumble = new RumbleProfile();
+            rumble.Sanitize();
             if (missions == null) missions = new List<MissionRecord>();
             missions.RemoveAll(m => m == null || string.IsNullOrEmpty(m.contractId));
             foreach (var m in missions) { if (m.bestScore < 0) m.bestScore = 0; if (m.bestRelics < 0) m.bestRelics = 0; }

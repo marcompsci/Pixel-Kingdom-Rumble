@@ -19,18 +19,25 @@ namespace PKR
         [Tooltip("Optional. Found in the scene automatically if empty.")]
         [SerializeField] TouchControlsUI touchControls;
 
+        InputActionMap _map;
         InputAction _move, _jump, _attack, _special, _dodge, _pause;
+        bool _devicesOff;
 
         public FighterIntent Intent => motor != null ? motor.Intent : null;
+        /// <summary>The touch overlay this fighter reads (the scene's one unless Bind gave another).</summary>
+        public TouchControlsUI Touch => touchControls;
         /// <summary>Ignore move/jump/attack input (round intros in Versus) while pause still works.</summary>
         public bool GameplayLocked { get; set; }
+        /// <summary>Couch play: "P1" / "P2" (null in single player).</summary>
+        public string PlayerTag { get; private set; }
 
         void Awake()
         {
             if (motor == null) motor = GetComponent<PlatformerMotor2D>();
             if (touchControls == null) touchControls = Object.FindAnyObjectByType<TouchControlsUI>();
 
-            _move = new InputAction("Move", InputActionType.Value, expectedControlType: "Vector2");
+            _map = new InputActionMap("Player");
+            _move = _map.AddAction("Move", InputActionType.Value, expectedControlLayout: "Vector2");
             _move.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/w").With("Down", "<Keyboard>/s")
                 .With("Left", "<Keyboard>/a").With("Right", "<Keyboard>/d");
@@ -47,33 +54,46 @@ namespace PKR
             _pause = Button("Pause", "<Keyboard>/escape", "<Keyboard>/p", "<Gamepad>/start");
         }
 
-        static InputAction Button(string name, params string[] bindings)
+        InputAction Button(string name, params string[] bindings)
         {
-            var a = new InputAction(name, InputActionType.Button);
+            var a = _map.AddAction(name, InputActionType.Button);
             foreach (var b in bindings) a.AddBinding(b);
             return a;
         }
 
+        /// <summary>
+        /// Couch play: limit this fighter to some devices and (optionally) its own touch controls.
+        /// devices: null = every device (single player); an empty array = touch only.
+        /// </summary>
+        public void Bind(InputDevice[] devices, TouchControlsUI touch, string playerTag)
+        {
+            bool wasEnabled = _map.enabled;
+            _map.Disable();
+            _devicesOff = devices != null && devices.Length == 0;
+            if (devices == null || devices.Length == 0) _map.devices = null;
+            else _map.devices = devices;
+            touchControls = touch;
+            PlayerTag = playerTag;
+            if (wasEnabled && !_devicesOff) _map.Enable();
+        }
+
         void OnEnable()
         {
-            _move.Enable(); _jump.Enable(); _attack.Enable(); _special.Enable(); _dodge.Enable(); _pause.Enable();
+            if (!_devicesOff) _map.Enable();
         }
 
         void OnDisable()
         {
-            _move.Disable(); _jump.Disable(); _attack.Disable(); _special.Disable(); _dodge.Disable(); _pause.Disable();
+            _map.Disable();
             if (motor != null) motor.Intent.ClearAll();
         }
 
-        void OnDestroy()
-        {
-            _move?.Dispose(); _jump?.Dispose(); _attack?.Dispose(); _special?.Dispose(); _dodge?.Dispose(); _pause?.Dispose();
-        }
+        void OnDestroy() => _map?.Dispose();
 
         void Update()
         {
             var state = Services.State;
-            if (_pause.WasPressedThisFrame() && state != null) state.TogglePause();
+            if (!_devicesOff && _pause.WasPressedThisFrame() && state != null) state.TogglePause();
             if (motor == null) return;
 
             var intent = motor.Intent;
@@ -84,7 +104,7 @@ namespace PKR
             }
 
             bool touch = touchControls != null && touchControls.Visible && !touchControls.EditMode;
-            Vector2 keys = _move.ReadValue<Vector2>();
+            Vector2 keys = _devicesOff ? Vector2.zero : _move.ReadValue<Vector2>();
             Vector2 stick = touch ? touchControls.StickValue : Vector2.zero;
             intent.Move = Vector2.ClampMagnitude(stick.sqrMagnitude > keys.sqrMagnitude ? stick : keys, 1f);
 
@@ -97,8 +117,8 @@ namespace PKR
 
         void Route(ActionBuffer buffer, InputAction action, string touchId, bool touch, float now)
         {
-            bool pressed = action.WasPressedThisFrame();
-            bool held = action.IsPressed();
+            bool pressed = !_devicesOff && action.WasPressedThisFrame();
+            bool held = !_devicesOff && action.IsPressed();
             if (touch)
             {
                 pressed |= touchControls.ConsumePressed(touchId);

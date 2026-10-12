@@ -18,6 +18,10 @@ namespace PKR
         public int[] scores;
         public int playerPlacement;
         public int starShardReward;
+        /// <summary>1, or 2 for couch play.</summary>
+        public int humans;
+        /// <summary>Rumble Rating result for P1 (null when the match wasn't rated).</summary>
+        public RumbleOutcome rumble;
     }
 
     /// <summary>
@@ -72,9 +76,12 @@ namespace PKR
         public IReadOnlyList<Fighter> Fighters => _fighters;
         public Rect StageRect => stageRect;
         public Rect BlastZone => blastZone;
+        public CharacterRoster Roster => roster;
 
         readonly List<Fighter> _fighters = new List<Fighter>();
         readonly HashSet<int> _respawning = new HashSet<int>();
+        RumbleTracker _tracker;
+        TouchControlsUI _p1Touch, _p2Touch;
 
         /// <summary>Runtime setup (tests, or building an arena in code). The scene builder fills the serialized fields instead.</summary>
         public void Configure(CharacterDefinition hero, Transform[] spawns, Rect blast, Rect stage, Material material = null)
@@ -116,36 +123,53 @@ namespace PKR
             Config = config;
             Config.Clamp();
             Match = Config.CreateMatch();
+            ArenaMods.Apply(Config.mutators);
+            _tracker = new RumbleTracker(0);
+            bool couch = Config.humans >= 2;
+            var couchPlan = couch ? CouchInput.Make() : default;
+            if (couch && couchPlan.splitTouch) SetupSplitTouch();
 
             var playerDef = roster != null ? roster.Find(GameSession.SelectedCharacterId) : null;
             if (playerDef == null || !playerDef.playableInThisBuild) playerDef = fallbackHero;
+            CharacterDefinition p2Def = null;
+            if (couch)
+            {
+                p2Def = roster != null && !string.IsNullOrEmpty(Config.p2CharacterId) ? roster.Find(Config.p2CharacterId) : null;
+                if (p2Def == null || !p2Def.playableInThisBuild) p2Def = null;
+            }
             // CPU fighters pick random selectable heroes (seeded per match so a rematch can differ).
             var cpuRng = new System.Random(unchecked(System.Environment.TickCount * 31 + Config.FighterCount));
 
             if (arenaCamera != null) arenaCamera.group.Clear();
             for (int slot = 0; slot < Config.FighterCount; slot++)
             {
-                bool human = slot == 0;
-                var def = human ? playerDef : PickCpuHero(cpuRng);
+                bool human = slot < Config.humans;
+                var def = slot == 0 ? playerDef : (human ? (p2Def ?? PickCpuHero(cpuRng)) : PickCpuHero(cpuRng));
                 Vector2 pos = spawnPoints != null && spawnPoints.Length > 0
                     ? (Vector2)spawnPoints[slot % spawnPoints.Length].position
                     : new Vector2(-6f + slot * 4f, 2f);
-                string name = human ? $"P1 {def.displayName.ToUpperInvariant()}" : $"CPU {slot + 1}";
-                // You wear your shop palette; CPUs are tinted by slot so they're easy to tell apart.
-                Color tint = human && roster != null ? roster.TintFor(def.id) : SlotTints[slot];
+                string name = human ? $"P{slot + 1} {def.displayName.ToUpperInvariant()}" : $"CPU {slot + 1}";
+                // You wear your shop palette; CPUs (and couch P2) are tinted by slot so they're easy to tell apart.
+                Color tint = slot == 0 && roster != null ? roster.TintFor(def.id) : SlotTints[slot];
                 var go = FighterFactory.CreateHero(def, spriteMaterial, pos, slot, DamageModel.ArenaPips, tint, name);
                 var motor = go.GetComponent<PlatformerMotor2D>();
                 motor.SetFacing(pos.x <= 0f ? 1 : -1);
+                if (ArenaMods.SizeScale != 1f) go.transform.localScale *= ArenaMods.SizeScale;
 
                 if (human)
                 {
-                    go.AddComponent<PlayerInputRouter>();
-                    go.AddComponent<PlayerMarker>();
+                    var router = go.AddComponent<PlayerInputRouter>();
+                    if (slot == 0) go.AddComponent<PlayerMarker>();
+                    if (couch)
+                    {
+                        if (slot == 0) router.Bind(couchPlan.p1Devices, couchPlan.splitTouch ? _p1Touch : router.Touch, "P1");
+                        else router.Bind(couchPlan.p2Devices, couchPlan.splitTouch ? _p2Touch : null, "P2");
+                    }
                 }
                 else
                 {
                     var bot = go.AddComponent<BotController>();
-                    bot.Init(this, BotDifficulty.For(Config.botLevel), 7919 * (slot + 1), Config.mode == MatchMode.Training);
+                    bot.Init(this, RumbleRecorder.BotTuning(Config.autoLevel, Config.botLevel), 7919 * (slot + 1), Config.mode == MatchMode.Training);
                 }
 
                 _fighters.Add(new Fighter
@@ -172,9 +196,34 @@ namespace PKR
             return k >= 0 ? roster.heroes[k] : fallbackHero;
         }
 
+        /// <summary>Couch play without controllers: shrink the normal touch controls to the left half, add P2's on the right.</summary>
+        void SetupSplitTouch()
+        {
+            _p1Touch = FindAnyObjectByType<TouchControlsUI>();
+            var go = new GameObject("P2TouchControls");
+            go.transform.SetParent(transform, false);
+            _p2Touch = go.AddComponent<TouchControlsUI>();
+            if (_p1Touch != null)
+            {
+                _p2Touch.forceShow = _p1Touch.forceShow;
+                _p1Touch.SetRegion(0f, 0.5f, 0.8f, "P1");
+            }
+            _p2Touch.SetRegion(0.5f, 1f, 0.8f, "P2");
+        }
+
+        void ClearSplitTouch()
+        {
+            if (_p2Touch != null) Destroy(_p2Touch.gameObject);
+            _p2Touch = null;
+            if (_p1Touch != null) _p1Touch.SetRegion(0f, 1f, 1f, null);
+            _p1Touch = null;
+        }
+
         void ClearFighters()
         {
             StopAllCoroutines();
+            ClearSplitTouch();
+            ArenaMods.Reset();
             SparkTrap.DespawnAll();
             _respawning.Clear();
             foreach (var f in _fighters) if (f.go != null) Destroy(f.go);
@@ -202,7 +251,8 @@ namespace PKR
             var result = new ArenaMatchEnded
             {
                 mode = Config.mode, placements = placements, names = new string[n], knockouts = new int[n],
-                falls = new int[n], scores = new int[n], playerPlacement = placements.Length > 0 ? placements[0] : 0
+                falls = new int[n], scores = new int[n], playerPlacement = placements.Length > 0 ? placements[0] : 0,
+                humans = Config.humans
             };
             for (int i = 0; i < n; i++)
             {
@@ -217,6 +267,21 @@ namespace PKR
                 result.starShardReward = Economy.ArenaReward(result.playerPlacement);
                 Services.Save.AddShards(result.starShardReward);
                 Services.Save.SaveNow();
+            }
+            if (Config.Rated && grantRewards && Services.Save != null && n >= 2)
+            {
+                var me = Match.Get(0);
+                var report = new RumbleMatchReport
+                {
+                    fighters = n, placement = placements[0], knockouts = me.knockouts, falls = me.falls,
+                    selfDestructs = _tracker != null ? _tracker.SelfDestructs : 0,
+                    firstBlood = _tracker != null && _tracker.FirstBlood,
+                    revengeKOs = _tracker != null ? _tracker.RevengeKOs : 0,
+                    comeback = _tracker != null && _tracker.WasLast,
+                    clutch = Config.mode == MatchMode.Stock && Config.stocks > 1 && me.stocks == 1 && !me.IsEliminated,
+                    difficulty = RumbleRecorder.Difficulty(Config.autoLevel, Config.botLevel),
+                };
+                result.rumble = RumbleRecorder.Record(report, Config.daily);
             }
 
             if (Services.State != null) Services.State.SetState(GameState.Results);
@@ -240,6 +305,7 @@ namespace PKR
             if (f.human && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
 
             bool respawn = Match.ReportFall(f.slot, attacker);
+            _tracker?.OnFall(f.slot, attacker, Match.Placements());
             EventBus<ArenaKO>.Raise(new ArenaKO { victimSlot = f.slot, attackerSlot = attacker, eliminated = !respawn });
 
             if (f.go.TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
