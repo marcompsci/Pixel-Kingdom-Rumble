@@ -5,7 +5,7 @@ namespace PKR.Core
     public enum PurchaseResult { Success, AlreadyOwned, NotEnoughShards, InvalidItem }
 
     /// <summary>
-    /// Star Shard rules. Cosmetics only: nothing purchasable changes stats, by design.
+    /// Star Shard rules. Shards are earned in play only (never sold); they buy palettes and the Story-only upgrades.
     /// Reward numbers live here so they can be tuned in one place and unit-tested.
     /// </summary>
     public static class Economy

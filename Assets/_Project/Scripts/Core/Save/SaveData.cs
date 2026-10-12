@@ -53,6 +53,12 @@ namespace PKR.Core
         public List<string> seenHints = new List<string>();
         /// <summary>Rumble Rating (ranked points, tier, auto CPU skill, Daily Rumble streak).</summary>
         public RumbleProfile rumble = new RumbleProfile();
+        /// <summary>Permanent Story upgrades bought with Star Shards (see Upgrades).</summary>
+        public List<UpgradeRecord> upgrades = new List<UpgradeRecord>();
+        /// <summary>Story comic scenes already shown (StoryBeats ids).</summary>
+        public List<string> seenCutscenes = new List<string>();
+        /// <summary>Story worlds whose completion bonus was paid (StoryWorlds index).</summary>
+        public List<int> claimedWorldRewards = new List<int>();
         public string lastSelectedCharacter = DefaultCharacterId;
 
         public static SaveData CreateNew() => new SaveData();
@@ -199,6 +205,17 @@ namespace PKR.Core
             seenHints.RemoveAll(string.IsNullOrEmpty);
             if (rumble == null) rumble = new RumbleProfile();
             rumble.Sanitize();
+            if (upgrades == null) upgrades = new List<UpgradeRecord>();
+            upgrades.RemoveAll(u => u == null || !Upgrades.Find(u.id).HasValue);
+            foreach (var u in upgrades)
+            {
+                var spec = Upgrades.Find(u.id).Value;
+                if (u.level < 0) u.level = 0;
+                if (u.level > spec.MaxLevel) u.level = spec.MaxLevel;
+            }
+            if (seenCutscenes == null) seenCutscenes = new List<string>();
+            seenCutscenes.RemoveAll(string.IsNullOrEmpty);
+            if (claimedWorldRewards == null) claimedWorldRewards = new List<int>();
             if (missions == null) missions = new List<MissionRecord>();
             missions.RemoveAll(m => m == null || string.IsNullOrEmpty(m.contractId));
             foreach (var m in missions) { if (m.bestScore < 0) m.bestScore = 0; if (m.bestRelics < 0) m.bestRelics = 0; }

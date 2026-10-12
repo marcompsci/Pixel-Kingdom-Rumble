@@ -22,6 +22,11 @@ namespace PKR
         public int totalSecrets;
         public int deaths;
         public int starShardReward;
+        /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
+        public int luckyBonus;
+        /// <summary>Story world whose every level this clear completed for the first time ("" if none), and its bonus.</summary>
+        public string worldCompleted;
+        public int worldBonus;
         /// <summary>Display names of heroes this clear unlocked (empty if none).</summary>
         public string[] unlockedHeroes;
         /// <summary>Stealth levels only: the grade (GHOST/SHADOW/AGENT/BRAWLER), times spotted and takedowns.</summary>

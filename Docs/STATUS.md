@@ -2,6 +2,25 @@
 
 Legend: ✅ verified by actually running · 🟡 written, not yet compiled in Unity · ⬜ not started
 
+## Phase 7 (2026-10-12): game feel, story scenes, upgrades, ship prep
+- Game feel (JuiceDirector, added to every Story/Contract level automatically):
+  - Jump, landing and running dust.
+  - Death slow-mo and a red flash.
+  - Level title card (biome / name / par).
+  - Lava and geyser embers, current bubbles.
+- Story scenes (StoryBeats + CutscenePlayer): comic panels with NEXT/SKIP, each played once.
+  - Prologue.
+  - Warden intro and defeat.
+  - The Ledger, north to the peaks, the four realms.
+  - Sovereign intro and the ending.
+- Upgrades (Shop > UPGRADES), Story/Contracts only, 2 levels each:
+  - Extra Heart (+1 HP per level).
+  - Shard Magnet.
+  - Lucky Shards (+10% clear reward per level).
+- World bonus: +200 Star Shards the first time every level of a Story world is cleared.
+- Ship prep: Docs/AppStore/REVIEW_NOTES.md.
+- Core tests: 214 pass in the cloud.
+
 ## Phase 6 (2026-10-12): Story Quest World 3, The Shattered Realms
 - 5 new levels + boss:
   - Ember Wastes.

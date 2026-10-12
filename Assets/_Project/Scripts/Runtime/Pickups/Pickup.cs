@@ -64,11 +64,32 @@ namespace PKR
             _collectDelay = _popping ? 0.3f : 0f;
         }
 
+        /// <summary>Shard Magnet upgrade: Star Shards within this distance fly to the hero (set by the Story level flow).</summary>
+        public static float MagnetRadius;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => MagnetRadius = 0f;
+
         void Update()
         {
             float dt = Time.deltaTime;
             _age += dt;
             if (_collectDelay > 0f) _collectDelay -= dt;
+
+            if (MagnetRadius > 0f && Kind == PickupKind.StarShard && _collectDelay <= 0f && PlayerMarker.Current != null)
+            {
+                Vector2 hero = (Vector2)PlayerMarker.Current.transform.position + Vector2.up * 0.5f;
+                Vector2 me = transform.position;
+                float d = Vector2.Distance(me, hero);
+                if (d < MagnetRadius)
+                {
+                    _popping = false;
+                    float speed = Mathf.Lerp(14f, 5f, d / MagnetRadius);
+                    transform.position = Vector2.MoveTowards(me, hero, speed * dt);
+                    _home = transform.position;
+                    return;
+                }
+            }
 
             if (_popping)
             {

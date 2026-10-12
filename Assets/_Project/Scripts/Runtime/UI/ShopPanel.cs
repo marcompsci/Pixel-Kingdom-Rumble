@@ -18,6 +18,8 @@ namespace PKR
         Action _onBack;
         int _heroIndex;
         string _status = "";
+        bool _upgrades; // false = palettes, true = upgrades
+        public bool ShowingUpgrades => _upgrades;
         readonly List<CharacterDefinition> _heroes = new List<CharacterDefinition>();
 
         public int HeroCount => _heroes.Count;
@@ -101,6 +103,8 @@ namespace PKR
             UIFactory.Label(panel, "STAR SHARD SHOP", 64, TextAnchor.MiddleCenter, 100f, title: true);
             var save = Services.Save != null ? Services.Save.Data : null;
             UIFactory.Label(panel, $"STAR SHARDS  {(save != null ? save.starShards : 0)}", 46, TextAnchor.MiddleCenter, 70f).color = p.title;
+            ModeRow(panel);
+            if (_upgrades) { BuildUpgrades(panel, save); return; }
             UIFactory.Label(panel, "Palettes are cosmetic only. They show in Story Quest, Arena Clash and Character Select.",
                             28, TextAnchor.MiddleCenter, 70f).color = p.subtle;
 
@@ -148,6 +152,72 @@ namespace PKR
             status.color = p.accent;
             var back = UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(back);
+        }
+
+        void ModeRow(RectTransform panel)
+        {
+            var row = UIFactory.Rect("Modes", panel);
+            row.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var h = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 24f;
+            h.childControlWidth = true; h.childControlHeight = true;
+            h.childForceExpandWidth = true; h.childForceExpandHeight = true;
+            var pal = UIFactory.Button(row, "PALETTES", () => SetMode(false));
+            var upg = UIFactory.Button(row, "UPGRADES", () => SetMode(true));
+            UIFactory.Highlight(_upgrades ? upg : pal, UITheme.Current.title);
+        }
+
+        public void SetMode(bool upgrades)
+        {
+            _upgrades = upgrades;
+            _status = "";
+            Rebuild();
+        }
+
+        void BuildUpgrades(RectTransform panel, SaveData save)
+        {
+            var p = UITheme.Current;
+            UIFactory.Label(panel, "Permanent boosts for Story Quest and Shadow Contracts. Arena and Versus stay even.",
+                            28, TextAnchor.MiddleCenter, 70f).color = p.subtle;
+            foreach (var spec in Upgrades.All)
+            {
+                int lvl = Upgrades.Level(save, spec.id);
+                int cost = Upgrades.NextCost(save, spec.id);
+                string state = cost < 0 ? "MAXED" : $"{cost} SHARDS";
+                var id = spec.id;
+                var b = UIFactory.Button(panel, $"{spec.name.ToUpperInvariant()}  ·  LV {lvl}/{spec.MaxLevel}  ·  {state}", () => BuyUpgrade(id), 120f,
+                                         interactable: cost >= 0);
+                b.GetComponentInChildren<Text>().fontSize = 38;
+                UIFactory.Label(panel, spec.description, 30, TextAnchor.MiddleCenter, 56f).color = p.subtle;
+            }
+            UIFactory.Label(panel, $"Clear every level of a Story world for a one-time +{StoryWorlds.CompletionBonus} bonus.",
+                            30, TextAnchor.MiddleCenter, 60f).color = p.subtle;
+            var status = UIFactory.Label(panel, _status, 34, TextAnchor.MiddleCenter, 60f);
+            status.color = p.accent;
+            var back = UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
+            UIFactory.Select(back);
+        }
+
+        public PurchaseResult BuyUpgrade(string id)
+        {
+            var save = Services.Save;
+            if (save == null) return PurchaseResult.InvalidItem;
+            int cost = Upgrades.NextCost(save.Data, id);
+            var result = Upgrades.Buy(save.Data, id);
+            var spec = Upgrades.Find(id);
+            if (result == PurchaseResult.Success)
+            {
+                _status = $"{spec.Value.name.ToUpperInvariant()} UPGRADED TO LV {Upgrades.Level(save.Data, id)}!";
+                Sfx.Play(Sfx.Purchase, 0.9f, 0f);
+                if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
+                EventBus<ShardsChanged>.Raise(new ShardsChanged { total = save.Data.starShards, delta = -cost });
+                save.MarkDirty();
+                save.SaveNow();
+            }
+            else if (result == PurchaseResult.NotEnoughShards)
+                _status = $"YOU NEED {cost - save.Data.starShards} MORE STAR SHARDS";
+            Rebuild();
+            return result;
         }
 
         void Arrow(RectTransform parent, string label, int dir)

@@ -62,6 +62,12 @@ namespace PKR
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             var reward = Row(panel, "Reward", "+0");
+            if (e.luckyBonus > 0 || e.worldBonus > 0)
+            {
+                string extra = e.worldBonus > 0 ? $"{e.worldCompleted.ToUpperInvariant()} COMPLETE!  +{e.worldBonus} world bonus" : "";
+                if (e.luckyBonus > 0) extra += (extra.Length > 0 ? "   ·   " : "") + $"+{e.luckyBonus} Lucky Shards";
+                UIFactory.Label(panel, extra, 38, TextAnchor.MiddleCenter, 56f, title: true).color = p.title;
+            }
             if (e.clueFound)
             {
                 var clue = UIFactory.Label(panel, "SECRET CONTRACT REVEALED ON THE BOARD!", 44, TextAnchor.MiddleCenter, 60f, title: true);

@@ -20,7 +20,7 @@ namespace PKR
         BridgeCycle _cycle;
         float _t;
 
-        public BridgePhase Phase => _cycle.PhaseAt(_t);
+        public BridgePhase Phase => _cycle.PhaseAt(_t + offset);
 
         void Awake() => _cycle = new BridgeCycle(dormant, warning, erupting);
 

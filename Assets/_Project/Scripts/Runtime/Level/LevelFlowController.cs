@@ -46,6 +46,7 @@ namespace PKR
         void Awake()
         {
             Current = this;
+            if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (roster == null)
                 Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +
                                  "Re-run PKR > Build Story Test Level.", this);
@@ -62,14 +63,17 @@ namespace PKR
         void OnDestroy()
         {
             if (Current == this) Current = null;
+            Pickup.MagnetRadius = 0f;
         }
+
+        SaveData SaveOrNull => Services.Save != null ? Services.Save.Data : null;
 
         void Start()
         {
             Run = new LevelRun(level != null ? level.id : "unknown_level");
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
-                PlayerHealth.bonusMaxHealth = AssistMode ? AssistBonusHealth : 0;
+                PlayerHealth.bonusMaxHealth = (AssistMode ? AssistBonusHealth : 0) + Upgrades.BonusHealth(SaveOrNull);
                 PlayerHealth.ResetState();
             }
             if (level != null) DiscoverCodex(CodexCategory.Place, level.id, level.displayName);
@@ -86,9 +90,26 @@ namespace PKR
             _enemySpawns = FindObjectsByType<EnemySpawnPoint>();
             SpawnEnemies();
 
+            Pickup.MagnetRadius = Upgrades.MagnetRadius(SaveOrNull);
+
             if (PlayerHealth != null) PlayerHealth.Died += OnPlayerDied;
             if (Services.State != null) Services.State.SetState(GameState.Playing);
+
+            // A story scene before the level (once), then the title card.
+            var beat = level != null ? StoryBeats.Pending(SaveOrNull, level.id, BeatTiming.BeforeLevel) : null;
+            var juice = GetComponent<JuiceDirector>();
+            if (beat.HasValue && CutscenePlayer.Allowed)
+                CutscenePlayer.Play(beat.Value, () => { MarkBeatSeen(beat.Value.id); if (juice != null) juice.ShowIntro(level); });
+            else if (juice != null) juice.ShowIntro(level);
         }
+
+        static void MarkBeatSeen(string id)
+        {
+            var save = Services.Save;
+            if (save != null && StoryBeats.MarkSeen(save.Data, id)) save.SaveNow();
+        }
+
+        bool _completing;
 
         Sprite SpriteFor(PickupKind kind) => kind == PickupKind.Health ? healthSprite : shardSprite;
 
@@ -253,11 +274,31 @@ namespace PKR
 
         public void CompleteLevel()
         {
+            if (Run == null || IsComplete || _completing) return;
+            // A boss's defeat (or another after-clear scene) plays first, then the results.
+            var beat = level != null ? StoryBeats.Pending(SaveOrNull, level.id, BeatTiming.AfterClear) : null;
+            if (beat.HasValue && CutscenePlayer.Allowed)
+            {
+                _completing = true;
+                if (player.TryGetComponent(out Invulnerability guard)) guard.Grant(9999f);
+                CutscenePlayer.Play(beat.Value, () => { MarkBeatSeen(beat.Value.id); _completing = false; FinishComplete(); });
+                return;
+            }
+            FinishComplete();
+        }
+
+        void FinishComplete()
+        {
             if (Run == null || IsComplete) return;
             var save = Services.Save;
             var data = save != null ? save.Data : null;
             float previousBest = data != null && data.GetLevel(Run.LevelId) != null ? data.GetLevel(Run.LevelId).bestTimeSeconds : 0f;
             int reward = Run.Complete(data);
+            int lucky = data != null ? Upgrades.LuckyBonus(data, reward) : 0;
+            if (lucky > 0) Economy.Grant(data, lucky);
+            int worldIndex = data != null ? StoryWorlds.ClaimIfComplete(data, Run.LevelId) : -1;
+            int worldBonus = worldIndex >= 0 ? StoryWorlds.CompletionBonus : 0;
+            reward += lucky + worldBonus;
             if (data != null)
             {
                 var rank = ResultsMath.Rank(Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f, Run.Shards, TotalShards,
@@ -307,6 +348,9 @@ namespace PKR
                 totalSecrets = TotalSecrets,
                 deaths = Run.Deaths,
                 starShardReward = reward,
+                luckyBonus = lucky,
+                worldCompleted = worldIndex >= 0 ? StoryWorlds.All[worldIndex].name : "",
+                worldBonus = worldBonus,
                 unlockedHeroes = unlockedNames.ToArray(),
                 stealthRank = StealthTracker.Current != null ? StealthTracker.Current.Rank : null,
                 timesSpotted = StealthTracker.Current != null ? StealthTracker.Current.TimesSpotted : 0,
