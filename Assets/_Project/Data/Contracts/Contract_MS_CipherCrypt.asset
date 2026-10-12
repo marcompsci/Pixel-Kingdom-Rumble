@@ -20,5 +20,6 @@ MonoBehaviour:
   revealedByClue: clue_cipher_crypt
   clueHint: Search the back rooms of The Bell Keeper
   containsClue: 
+  world: 0
   level: {fileID: 11400000, guid: cec64f87e2c1f4b8094003fb40328fa2, type: 2}
   totalRelics: 8

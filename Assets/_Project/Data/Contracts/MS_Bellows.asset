@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_Bellows
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_bellows
+  displayName: The Bellows
+  biomeName: Sky Foundry
+  modeTag: Contract
+  sceneName: MS_Bellows
+  nextSceneName: 
+  codexEntry: 'The foundry''s lungs: steam springs, a lift and floors of spikes. The Bellows Master runs the furnace from the top deck. Take him down.'
+  parTimeSeconds: 230
+  totalShards: 0
+  totalSecrets: 0
+  skyColor: {r: 0.5882353, g: 0.3529412, b: 0.23529412, a: 1}

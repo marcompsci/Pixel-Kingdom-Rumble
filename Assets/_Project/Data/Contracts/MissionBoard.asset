@@ -23,3 +23,25 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 403cc9858a42f461f919c5f4252ebdc5, type: 2}
   - {fileID: 11400000, guid: 10e5987266e17424b9a0d3d5814cdc0f, type: 2}
   - {fileID: 11400000, guid: 25e42be38c0b542c19d638b598f05261, type: 2}
+  - {fileID: 11400000, guid: 5b39d9a9c7c0c4abca5e74f4e9a37277, type: 2}
+  - {fileID: 11400000, guid: fa8cfc1ce86334bd6a91d76e29246de0, type: 2}
+  - {fileID: 11400000, guid: 8ea73a1da658d4f94b893453697dc085, type: 2}
+  - {fileID: 11400000, guid: ae4fcdfb39bf84224834a8b846977948, type: 2}
+  - {fileID: 11400000, guid: 670b941c686c848b2b8e473be1bf96cd, type: 2}
+  - {fileID: 11400000, guid: 9a87a7101d63e4db2a9054f21876a5e4, type: 2}
+  - {fileID: 11400000, guid: e59c5f5c9103d4c32bc50b7c2201e139, type: 2}
+  - {fileID: 11400000, guid: 03d235d5bcf1b4ef799ff8f3559d601b, type: 2}
+  - {fileID: 11400000, guid: c23b461b0e6a747a2875b2954acb80fc, type: 2}
+  worlds:
+  - name: Brasslight Quarter
+    tagline: The rooftops and docks of the city where the Order began.
+    color: {r: 0.4862745, g: 0.40784314, b: 0.8392157, a: 1}
+  - name: Frost Citadel
+    tagline: A fortress carved into the glacier. Frost Mites gnaw the halls and the moats are full of ice spikes.
+    color: {r: 0.3372549, g: 0.6431373, b: 0.8627451, a: 1}
+  - name: Sky Foundry
+    tagline: Floating forges above the clouds. Ride steam springs and drifting plates past the Gearwatch Elite.
+    color: {r: 0.8627451, g: 0.47058824, b: 0.23529412, a: 1}
+  - name: Shadow Spire
+    tagline: The Gearwatch's own tower. Elites on every floor, spikes below, and the Grandmaster at the top.
+    color: {r: 0.47058824, g: 0.23529412, b: 0.6666667, a: 1}

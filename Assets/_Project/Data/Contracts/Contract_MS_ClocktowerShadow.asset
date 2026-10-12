@@ -20,5 +20,6 @@ MonoBehaviour:
   revealedByClue: clue_clocktower
   clueHint: A scroll hides in the Harbor of Lanterns boathouse
   containsClue: 
+  world: 0
   level: {fileID: 11400000, guid: cd28cf79e56df414ba8e3d7f2b89fd79, type: 2}
   totalRelics: 6

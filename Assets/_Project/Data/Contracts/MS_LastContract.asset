@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_LastContract
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_last_contract
+  displayName: The Last Contract
+  biomeName: Shadow Spire
+  modeTag: Contract
+  sceneName: MS_LastContract
+  nextSceneName: 
+  codexEntry: The top of the Shadow Spire. Climb the three tiers, take the Grandmaster's Gear and take down the Grandmaster himself. End the Gearwatch, and walk out a legend of the Order.
+  parTimeSeconds: 300
+  totalShards: 0
+  totalSecrets: 0
+  skyColor: {r: 0.13333334, g: 0.039215688, b: 0.11764706, a: 1}

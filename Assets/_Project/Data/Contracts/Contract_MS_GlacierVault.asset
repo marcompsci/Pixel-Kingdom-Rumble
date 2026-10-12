@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3256b210800607d970bf4e0737315a2d, type: 3}
+  m_Name: Contract_MS_GlacierVault
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MissionDefinition
+  id: ms_glacier_vault
+  displayName: The Glacier Vault
+  briefing: 'The citadel''s treasury: three tiers of ice and stone. Steal the Frost Crown from the top and take down the Vault Keeper. Clear this and the door to the Sky Foundry opens.'
+  kind: 0
+  free: 0
+  revealedByClue: 
+  clueHint: 
+  containsClue: 
+  world: 1
+  level: {fileID: 11400000, guid: 41eb7767e53ac428789bfb910b4bfdda, type: 2}
+  totalRelics: 7

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: MS_HallOfIcicles
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: ms_hall_of_icicles
+  displayName: Hall of Icicles
+  biomeName: Frost Citadel
+  modeTag: Contract
+  sceneName: MS_HallOfIcicles
+  nextSceneName: 
+  codexEntry: A long frozen hall under a low ceiling of ice. The Ice Warden walks the upper gallery. Take him down without waking the whole hall.
+  parTimeSeconds: 210
+  totalShards: 0
+  totalSecrets: 0
+  skyColor: {r: 0.07058824, g: 0.13333334, b: 0.25882354, a: 1}

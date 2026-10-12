@@ -20,5 +20,6 @@ MonoBehaviour:
   revealedByClue: 
   clueHint: 
   containsClue: clue_cipher_crypt
+  world: 0
   level: {fileID: 11400000, guid: 90dee442638eb47f3b0e340726d52a92, type: 2}
   totalRelics: 6

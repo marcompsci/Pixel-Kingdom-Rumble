@@ -80,4 +80,31 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Story/SQ_ClockworkGlacier.unity
     guid: 7540f9dbd89f848e199372d8990c33fd
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_FrozenGate.unity
+    guid: 0f41ab3f864f94317be577f372502dfc
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_HallOfIcicles.unity
+    guid: 2213bc20cbe334612b727d936858ba8f
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_GlacierVault.unity
+    guid: 14747bbeb0d59474eafce39c803e1717
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_CloudDocks.unity
+    guid: accf98921eba94ede9818db0427e691e
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_Bellows.unity
+    guid: 078323f28db084c96bfc1b56fd215370
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_FurnaceCrown.unity
+    guid: 0b56e6f19316c4bb7ae829c194eab994
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_SpireGate.unity
+    guid: 9e89bab790a5248a5a2cd08428e51893
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_MirrorGalleries.unity
+    guid: 5118601372efb4145b8d27c84b76700a
+  - enabled: 1
+    path: Assets/_Project/Scenes/Contracts/MS_LastContract.unity
+    guid: b58f3dfb5417843b3ae6495d4f644eac
   m_configObjects: {}

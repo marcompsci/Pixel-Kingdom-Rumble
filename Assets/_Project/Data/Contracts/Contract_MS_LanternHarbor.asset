@@ -20,5 +20,6 @@ MonoBehaviour:
   revealedByClue: 
   clueHint: 
   containsClue: clue_clocktower
+  world: 0
   level: {fileID: 11400000, guid: 0a3446008659a46559887e6015f137e6, type: 2}
   totalRelics: 5
