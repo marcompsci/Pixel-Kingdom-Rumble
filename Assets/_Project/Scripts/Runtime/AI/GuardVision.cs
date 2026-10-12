@@ -20,7 +20,7 @@ namespace PKR
 
         /// <summary>Assist mode: guards notice (and calm down) at 60% speed.</summary>
         public const float AssistNoticeScale = 0.6f;
-        readonly DetectionMeter _meter = new DetectionMeter(1.5f, 0.45f, 4f);
+        DetectionMeter _meter = new DetectionMeter(1.5f, 0.45f, 4f);
         PlatformerMotor2D _motor;
         Damageable _health;
         ContactDamage _contact;
@@ -50,10 +50,12 @@ namespace PKR
         void OnDisable() => _health.Hit -= OnHit;
 
         /// <summary>Called by EnemyAI.Init (spawn and respawn).</summary>
-        public void Configure(float sightRange, float sightHalfAngle, Material material)
+        public void Configure(float sightRange, float sightHalfAngle, Material material, float noticeRate = 1.5f)
         {
             range = sightRange;
             halfAngle = sightHalfAngle;
+            if (noticeRate > 0f && !Mathf.Approximately(noticeRate, _meter.FillPerSecond))
+                _meter = new DetectionMeter(noticeRate, 0.45f, 4f);
             if (material != null) _cone.sharedMaterial = material;
             _meter.Reset();
             _awarenessAtHit = GuardAwareness.Calm;

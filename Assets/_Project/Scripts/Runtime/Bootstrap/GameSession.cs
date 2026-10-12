@@ -20,7 +20,15 @@ namespace PKR
             VersusOpponentId = null;
             VersusBotLevel = BotLevel.Normal;
             ContractScene = null;
+            ContractWorldPage = -1;
+            PendingWorldDoor = -1;
         }
+
+        /// <summary>Shadow Contracts: the world page the board was last showing (-1 = pick automatically).</summary>
+        public static int ContractWorldPage { get; set; } = -1;
+        /// <summary>Set by the results screen when the player walks through a door into a new world; the board plays the
+        /// door opening for that world and then opens the world's first contract.</summary>
+        public static int PendingWorldDoor { get; set; } = -1;
 
         /// <summary>Shadow Contracts: the contract scene picked on the board (loaded after Character Select).</summary>
         public static string ContractScene { get; set; }

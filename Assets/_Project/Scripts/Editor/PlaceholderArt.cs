@@ -420,6 +420,30 @@ namespace PKR.EditorTools
             return Clear;
         });
 
+        /// <summary>Gearwatch Elite: the Spire's own guard, steel armor over a dark cloak and two glowing eyes. 14x22.</summary>
+        public static Sprite GearwatchElite() => GetOrCreate("ph_gearwatch_elite", 14, 22, true, (x, y) =>
+        {
+            Color32 steel = new Color32(120, 136, 170, 255), steelDark = new Color32(70, 80, 112, 255);
+            Color32 cloak = new Color32(40, 34, 60, 255), eye = new Color32(120, 220, 255, 255);
+            if (y <= 1) return (x >= 3 && x <= 5) || (x >= 7 && x <= 9) ? Ink : Clear;                 // boots
+            if (y <= 13 && x >= 2 && x <= 10)
+            {
+                if (x == 2 || x == 10) return steelDark;                                               // pauldrons/edges
+                if (y == 8) return Brass;                                                             // belt
+                if (y >= 9 && x >= 4 && x <= 8) return (x + y) % 3 == 0 ? steelDark : steel;           // breastplate
+                return cloak;
+            }
+            if (y >= 4 && y <= 10 && x == 11) return steelDark;                                        // halberd shaft
+            if (y >= 11 && y <= 13 && x >= 11 && x <= 12) return steel;                                // blade
+            if (y <= 20 && x >= 3 && x <= 9)
+            {
+                if (y >= 15 && y <= 17 && x >= 5 && x <= 8) return (y == 16 && (x == 6 || x == 8)) ? eye : Ink;
+                return (y == 20 || x == 3) ? steelDark : steel;                                       // helm
+            }
+            if (y == 21 && x >= 5 && x <= 7) return new Color32(200, 60, 70, 255);                     // crest
+            return Clear;
+        });
+
         /// <summary>Spring pad: a brass coil under a red cap. 16x8.</summary>
         public static Sprite SpringPad() => GetOrCreate("ph_spring_pad", 16, 8, false, (x, y) =>
         {

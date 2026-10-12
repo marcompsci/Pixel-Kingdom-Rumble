@@ -68,6 +68,8 @@ namespace PKR
         public float lookBackPause = 1.1f;
         [Tooltip("Chase speed (fraction of the default run speed) once alerted.")]
         [Range(0f, 1f)] public float chaseSpeed = 0.62f;
+        [Tooltip("How fast the guard's detection meter fills while it sees the hero (per second). Elites are quicker.")]
+        public float noticeRate = 1.5f;
 
         [Tooltip("Shadow Contracts: defeating this enemy completes a 'take down the target' objective.")]
         public bool isMissionTarget;

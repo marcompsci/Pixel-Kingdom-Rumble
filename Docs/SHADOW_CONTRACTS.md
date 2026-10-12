@@ -63,3 +63,26 @@ The maps are text in `Core/Level/ContractLayouts.cs`:
 ### Known limits
 
 - The purchase itself has only been checked in code and tests. A real sandbox purchase needs the steps above.
+
+## Worlds and doors (2026-10-11)
+
+The board is split into four worlds. Each world's door opens when every **main** contract of the world before it is
+cleared (secret contracts never block a door). The first time a world opens, the board plays a door-opening scene in
+that world's colors. Inside a world the contracts chain: the results screen's **NEXT DOOR** goes straight into the next
+contract, and after a world's last contract **ENTER <WORLD>** walks through the big door (door scene, then the new world's
+first briefing). Every contract opens with a "WORLD n · NAME / CONTRACT" banner.
+
+| World | Name | Contracts | What's new |
+|---|---|---|---|
+| 1 | Brasslight Quarter | First Light (free), The Bell Keeper, Vault of the Brass Kings, Harbor of Lanterns, The Gearworks Foundry, The Skybridge Gala + secrets The Cipher Crypt, Clocktower Shadow | the basics |
+| 2 | Frost Citadel | The Frozen Gate, Hall of Icicles, The Glacier Vault | Frost Mites on patrol, spike moats, icy tint |
+| 3 | Sky Foundry | Cloud Docks, The Bellows, Furnace Crown | open-sky gaps, drifting plates, steam springs, lifts, **Gearwatch Elite** |
+| 4 | Shadow Spire | The Spire Gate, The Mirror Galleries (two targets), The Last Contract | Elites everywhere, few hiding spots, three-tier finale |
+
+**Gearwatch Elite** (`E` in maps): sight 7.5 (sentry 6), 36° cone, notices 60% faster (`EnemyDefinition.noticeRate`
+2.4 vs 1.5), looks back every 2.8 s and chases faster. Still no eyes in the back.
+
+Code: `MissionBoard.WorldOpen / WorldProgress / NextThroughDoor` (Core, unit-tested), `ContractInfo.world`,
+`MissionBoardDefinition.worlds`, `MissionBoardUI` (world pages + door scene), `LevelCompleteScreen.ContractDoorButton`,
+`MissionTracker.board` (set by the builder), `SaveData.openedWorldDoors`. Maps: `ContractLayouts` (all reachable by
+the rough jump checker).

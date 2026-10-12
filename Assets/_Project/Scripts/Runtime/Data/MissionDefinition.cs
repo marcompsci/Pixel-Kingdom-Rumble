@@ -21,10 +21,12 @@ namespace PKR
         public string clueHint = "";
         [Tooltip("The cipher scroll id found inside this contract's map (empty if none).")]
         public string containsClue = "";
+        [Tooltip("World on the board (0 = Brasslight Quarter). A world's door opens when the world before it is cleared.")]
+        public int world;
         public LevelDefinition level;
         public int totalRelics;
 
-        public ContractInfo ToInfo() => new ContractInfo { id = id, kind = kind, free = free, revealedByClue = revealedByClue };
+        public ContractInfo ToInfo() => new ContractInfo { id = id, kind = kind, free = free, revealedByClue = revealedByClue, world = world };
     }
 
 }

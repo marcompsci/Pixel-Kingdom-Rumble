@@ -47,6 +47,8 @@ namespace PKR.Core
         public bool contractsUnlocked;
         public List<string> foundClues = new List<string>();
         public List<MissionRecord> missions = new List<MissionRecord>();
+        /// <summary>Shadow Contracts worlds whose door-opening scene has been shown (by world index).</summary>
+        public List<int> openedWorldDoors = new List<int>();
         /// <summary>First-time hints already shown (by hint id), so each one only appears once.</summary>
         public List<string> seenHints = new List<string>();
         public string lastSelectedCharacter = DefaultCharacterId;
@@ -149,6 +151,15 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>Records that a world's door-opening scene was shown; true only the first time.</summary>
+        public bool MarkWorldDoorOpened(int world)
+        {
+            if (openedWorldDoors == null) openedWorldDoors = new List<int>();
+            if (openedWorldDoors.Contains(world)) return false;
+            openedWorldDoors.Add(world);
+            return true;
+        }
+
         /// <summary>Marks a first-time hint as seen; true only the first time (so the caller shows it once).</summary>
         public bool MarkHintSeen(string id)
         {
@@ -181,6 +192,7 @@ namespace PKR.Core
             if (foundClues == null) foundClues = new List<string>();
             foundClues.RemoveAll(string.IsNullOrEmpty);
             achievements.RemoveAll(string.IsNullOrEmpty);
+            if (openedWorldDoors == null) openedWorldDoors = new List<int>();
             if (seenHints == null) seenHints = new List<string>();
             seenHints.RemoveAll(string.IsNullOrEmpty);
             if (missions == null) missions = new List<MissionRecord>();

@@ -91,10 +91,12 @@ namespace PKR
             var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
             string next = flowLevel != null ? flowLevel.nextSceneName : "";
             bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);
-            if (!e.isContract) // contracts are picked on the board, so no NEXT there
+            if (!e.isContract)
                 UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",
                                  () => { if (Services.Scenes != null) Services.Scenes.Load(next); },
                                  interactable: hasNext);
+            else
+                ContractDoorButton(buttons);
             UIFactory.Select(again);
 
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
@@ -111,6 +113,44 @@ namespace PKR
                 yield return null;
             }
             reward.text = $"+{e.starShardReward} Star Shards   (total {total})";
+        }
+
+        /// <summary>
+        /// Shadow Contracts: the exit door. Leads to the next contract in the same world, or, after a world's last
+        /// contract, through the big door into the next world (the board plays the door opening). Nothing when the next
+        /// contract isn't playable yet (unlock not owned, or this world isn't fully cleared).
+        /// </summary>
+        static void ContractDoorButton(RectTransform buttons)
+        {
+            var mt = MissionTracker.Current;
+            var board = mt != null ? mt.board : null;
+            if (board == null) return;
+            var infos = board.Infos();
+            var save = Services.Save != null ? Services.Save.Data : null;
+            int idx = MissionBoard.NextThroughDoor(infos, save, mt.contractId, out bool crosses);
+            if (idx < 0) return;
+            var next = board.contracts[idx];
+            if (next == null || next.level == null || !Application.CanStreamedLevelBeLoaded(next.level.sceneName)) return;
+            if (crosses)
+            {
+                var b = UIFactory.Button(buttons, $"ENTER {board.World(next.world).name.ToUpperInvariant()}", () =>
+                {
+                    GameSession.Mode = SessionMode.Contracts;
+                    GameSession.PendingWorldDoor = next.world;
+                    if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MissionBoard);
+                });
+                UIFactory.Tint(b, board.World(next.world).color, Color.white);
+            }
+            else
+            {
+                UIFactory.Button(buttons, "NEXT DOOR", () =>
+                {
+                    GameSession.Mode = SessionMode.Contracts;
+                    GameSession.ContractScene = next.level.sceneName;
+                    GameSession.ContractWorldPage = next.world;
+                    if (Services.Scenes != null) Services.Scenes.Load(next.level.sceneName);
+                });
+            }
         }
 
         /// <summary>"Name ........ value" row; returns the value label so it can be animated.</summary>

@@ -12,6 +12,8 @@ namespace PKR
         public static MissionTracker Current { get; private set; }
 
         public string contractId = "";
+        [Tooltip("The Shadow Contracts board, so the results screen can open the door to the next contract.")]
+        public MissionBoardDefinition board;
         [Tooltip("Cipher scroll id hidden in this map (empty if none).")]
         public string clueId = "";
 
@@ -26,6 +28,19 @@ namespace PKR
             TotalRelics = FindObjectsByType<RelicPickup>().Length;
             var save = Services.Save;
             ClueAlreadyKnown = save != null && save.Data.HasClue(clueId);
+        }
+
+        void Start()
+        {
+            // "WORLD 2 · FROST CITADEL / THE FROZEN GATE": every contract opens with where you are.
+            if (board == null) return;
+            int i = board.IndexOf(contractId);
+            if (i < 0) return;
+            var c = board.contracts[i];
+            EventBus<StealthNotice>.Raise(new StealthNotice
+            {
+                text = $"WORLD {c.world + 1} · {board.World(c.world).name.ToUpperInvariant()}\n{c.displayName.ToUpperInvariant()}"
+            });
         }
 
         void OnDestroy()

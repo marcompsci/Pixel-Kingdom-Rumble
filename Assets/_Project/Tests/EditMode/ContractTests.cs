@@ -92,6 +92,66 @@ namespace PKR.Tests
             Assert.AreEqual(0, LevelSelect.Suggested(slots));
         }
 
+        static readonly ContractInfo[] Worlds =
+        {
+            new ContractInfo { id = "a1", kind = ContractKind.Main, free = true, world = 0 },
+            new ContractInfo { id = "a2", kind = ContractKind.Main, world = 0 },
+            new ContractInfo { id = "as", kind = ContractKind.Secret, world = 0, revealedByClue = "clue" },
+            new ContractInfo { id = "b1", kind = ContractKind.Main, world = 1 },
+            new ContractInfo { id = "b2", kind = ContractKind.Main, world = 1 },
+            new ContractInfo { id = "c1", kind = ContractKind.Main, world = 2 },
+        };
+
+        static SaveData Owned() { var s = SaveData.CreateNew(); s.contractsUnlocked = true; return s; }
+
+        [Test]
+        public void WorldDoors_OpenInOrder_SecretsDontBlock()
+        {
+            var save = Owned();
+            Assert.AreEqual(3, MissionBoard.WorldCount(Worlds));
+            Assert.IsTrue(MissionBoard.WorldOpen(Worlds, save, 0));
+            Assert.IsFalse(MissionBoard.WorldOpen(Worlds, save, 1));
+            var slots = MissionBoard.Build(Worlds, save);
+            Assert.AreEqual(ContractState.WorldSealed, slots[3].state);
+            Assert.AreEqual(ContractState.WorldSealed, slots[5].state);
+
+            save.RecordMission("a1", 100, 0);
+            Assert.IsFalse(MissionBoard.WorldOpen(Worlds, save, 1), "every main contract must be cleared");
+            save.RecordMission("a2", 100, 0);
+            Assert.IsTrue(MissionBoard.WorldOpen(Worlds, save, 1), "the secret contract doesn't block the door");
+            Assert.IsFalse(MissionBoard.WorldOpen(Worlds, save, 2));
+            Assert.AreEqual(ContractState.Open, MissionBoard.Build(Worlds, save)[3].state);
+            var p = MissionBoard.WorldProgress(Worlds, save, 0);
+            Assert.AreEqual(2, p.done); Assert.AreEqual(2, p.total);
+        }
+
+        [Test]
+        public void NextThroughDoor_ChainsWithinAWorld_ThenCrossesWhenCleared()
+        {
+            var save = Owned();
+            Assert.AreEqual(1, MissionBoard.NextThroughDoor(Worlds, save, "a1", out bool cross));
+            Assert.IsFalse(cross);
+            save.RecordMission("a1", 1, 0);
+            Assert.AreEqual(-1, MissionBoard.NextThroughDoor(Worlds, save, "a2", out _), "world 2 still sealed");
+            save.RecordMission("a2", 1, 0);
+            Assert.AreEqual(3, MissionBoard.NextThroughDoor(Worlds, save, "a2", out cross), "skips the secret, enters world 2");
+            Assert.IsTrue(cross);
+            Assert.AreEqual(4, MissionBoard.NextThroughDoor(Worlds, save, "b1", out cross));
+            Assert.IsFalse(cross);
+            Assert.AreEqual(-1, MissionBoard.NextThroughDoor(Worlds, save, "c1", out _), "last contract has no door");
+            Assert.AreEqual(-1, MissionBoard.NextThroughDoor(Worlds, SaveData.CreateNew(), "a1", out _), "needs the unlock");
+        }
+
+        [Test]
+        public void WorldDoorScene_ShownOnce()
+        {
+            var save = SaveData.CreateNew();
+            Assert.IsTrue(save.MarkWorldDoorOpened(1));
+            Assert.IsFalse(save.MarkWorldDoorOpened(1));
+            save.openedWorldDoors = null; save.SanitizeAndMigrate();
+            Assert.IsNotNull(save.openedWorldDoors);
+        }
+
         [Test]
         public void ContractMaps_AreValid_AndHaveTheirPieces()
         {
@@ -102,7 +162,7 @@ namespace PKR.Tests
                 var errors = lvl.Validate();
                 Assert.AreEqual(0, errors.Count, $"{kv.Key}: {string.Join("; ", errors)}");
                 Assert.Greater(lvl.Count('R'), 3, kv.Key + " relics");
-                Assert.Greater(lvl.Count('g'), 2, kv.Key + " guards");
+                Assert.Greater(lvl.Count('g') + lvl.Count('E'), 2, kv.Key + " guards");
                 Assert.Greater(lvl.Count('O') + lvl.Count('V'), 0, kv.Key + " needs a steal or a target");
                 foreach (var row in kv.Value) Assert.AreEqual(kv.Value[0].Length, row.Length, kv.Key + " row width");
                 scrolls += lvl.Count('Z');

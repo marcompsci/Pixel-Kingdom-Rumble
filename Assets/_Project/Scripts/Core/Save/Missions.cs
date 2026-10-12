@@ -14,7 +14,9 @@ namespace PKR.Core
         /// <summary>Listed, but needs the one-time Shadow Contracts unlock.</summary>
         NeedsUnlock,
         /// <summary>A secret contract whose cipher scroll hasn't been found yet (shown as "???").</summary>
-        Hidden
+        Hidden,
+        /// <summary>Its world's door is still sealed: finish every main contract in the world before it.</summary>
+        WorldSealed
     }
 
     /// <summary>The board's view of a contract (engine-free mirror of MissionDefinition).</summary>
@@ -26,6 +28,8 @@ namespace PKR.Core
         public bool free;
         /// <summary>Secret contracts: the clue (cipher scroll) that reveals this one.</summary>
         public string revealedByClue;
+        /// <summary>Which world (0 = the first) the contract belongs to. Worlds open in order, like doors.</summary>
+        public int world;
     }
 
     public struct ContractSlot
@@ -62,6 +66,8 @@ namespace PKR.Core
                 ContractState state;
                 if (c.kind == ContractKind.Secret && !(save != null && save.HasClue(c.revealedByClue)) && !(rec != null && rec.completed))
                     state = ContractState.Hidden;
+                else if (!WorldOpen(contracts, save, c.world))
+                    state = ContractState.WorldSealed;
                 else
                     state = c.free || owned ? ContractState.Open : ContractState.NeedsUnlock;
                 slots[i] = new ContractSlot
@@ -73,6 +79,70 @@ namespace PKR.Core
                 };
             }
             return slots;
+        }
+
+        /// <summary>Number of worlds on the board (highest world index + 1).</summary>
+        public static int WorldCount(IList<ContractInfo> contracts)
+        {
+            int n = 0;
+            if (contracts != null) foreach (var c in contracts) n = Math.Max(n, c.world + 1);
+            return n;
+        }
+
+        /// <summary>
+        /// A world's door is open when every MAIN contract of the world before it is completed (secret contracts never
+        /// block a door). World 0 is always open.
+        /// </summary>
+        public static bool WorldOpen(IList<ContractInfo> contracts, SaveData save, int world)
+        {
+            if (world <= 0) return true;
+            if (!WorldOpen(contracts, save, world - 1)) return false;
+            bool any = false;
+            foreach (var c in contracts)
+            {
+                if (c.world != world - 1 || c.kind != ContractKind.Main) continue;
+                any = true;
+                var rec = save != null ? save.GetMission(c.id) : null;
+                if (rec == null || !rec.completed) return false;
+            }
+            return any;
+        }
+
+        /// <summary>Main contracts of a world that are completed / in total (for the board's world header).</summary>
+        public static (int done, int total) WorldProgress(IList<ContractInfo> contracts, SaveData save, int world)
+        {
+            int done = 0, total = 0;
+            foreach (var c in contracts)
+            {
+                if (c.world != world || c.kind != ContractKind.Main) continue;
+                total++;
+                var rec = save != null ? save.GetMission(c.id) : null;
+                if (rec != null && rec.completed) done++;
+            }
+            return (done, total);
+        }
+
+        /// <summary>
+        /// The contract behind the exit door of <paramref name="currentId"/>: the next main contract in board order. It
+        /// may be in the next world (then <paramref name="crossesWorld"/> is true). Returns -1 when there is none or it
+        /// can't be played yet (world still sealed, or the unlock isn't owned).
+        /// </summary>
+        public static int NextThroughDoor(IList<ContractInfo> contracts, SaveData save, string currentId, out bool crossesWorld)
+        {
+            crossesWorld = false;
+            if (contracts == null) return -1;
+            int cur = -1;
+            for (int i = 0; i < contracts.Count; i++) if (contracts[i].id == currentId) { cur = i; break; }
+            if (cur < 0) return -1;
+            var slots = Build(contracts, save);
+            for (int i = cur + 1; i < contracts.Count; i++)
+            {
+                if (contracts[i].kind != ContractKind.Main) continue;
+                if (!slots[i].Playable) return -1;
+                crossesWorld = contracts[i].world != contracts[cur].world;
+                return i;
+            }
+            return -1;
         }
 
         /// <summary>Sum of best scores: the "Shadow Rank" total on the board.</summary>

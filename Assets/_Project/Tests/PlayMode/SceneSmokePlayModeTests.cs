@@ -20,7 +20,7 @@ namespace PKR.Tests
             SceneIds.Boot, SceneIds.MainMenu, SceneIds.CharacterSelect, SceneIds.LevelSelect,
             SceneIds.StoryTest, SceneIds.BossTest, SceneIds.ArenaTest, SceneIds.VersusSelect, SceneIds.VersusStage,
             SceneIds.SunspireHeights, SceneIds.GearfallCaverns, SceneIds.RooftopRun, SceneIds.NightMarketHeist, SceneIds.FrostgearAscent, SceneIds.ClockworkGlacier,
-            SceneIds.MissionBoard, "MS_FirstLight", "MS_ClocktowerShadow", "MS_GearworksFoundry", "MS_SkybridgeGala"
+            SceneIds.MissionBoard, "MS_FirstLight", "MS_ClocktowerShadow", "MS_GearworksFoundry", "MS_SkybridgeGala", "MS_FrozenGate", "MS_CloudDocks", "MS_LastContract"
         };
 
         [TearDown]

@@ -21,7 +21,7 @@ namespace PKR
             go.GetComponent<Invulnerability>().Clear();
             var ai = go.GetComponent<EnemyAI>();
             ai.Init(def, startDir);
-            if (go.TryGetComponent(out GuardVision vision)) vision.Configure(def.sightRange, def.sightHalfAngle, material);
+            if (go.TryGetComponent(out GuardVision vision)) vision.Configure(def.sightRange, def.sightHalfAngle, material, def.noticeRate);
             return ai;
         }
 

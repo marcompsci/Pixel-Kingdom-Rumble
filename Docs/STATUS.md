@@ -375,3 +375,15 @@ First real run, on Omari's Mac with **Unity 6000.6.4f1** via `Tools/unity_check.
 | Simulator screenshots | ✅ | 7 shots at 1320x2868 / 2868x1320 in Docs/AppStore |
 | TestFlight build with Phase 5 | ⬜ | Not uploaded yet: the Mac is reserved for Retro Hoops until 23 Oct unless Omari says otherwise |
 | App Review contact phone, screenshots uploaded, IAP screenshot | ⬜ | Need Omari's phone number; screenshot upload waits for the GitHub push |
+
+## Shadow Contracts worlds (2026-10-11)
+
+Four worlds with doors (see SHADOW_CONTRACTS.md): 9 new, harder contracts in Frost Citadel, Sky Foundry and Shadow
+Spire; the Gearwatch Elite; door-opening scene; contracts chain door to door.
+
+| Item | State | Evidence |
+|---|---|---|
+| Core rules (world doors, next door) | ✅ | .NET: 185/185 (3 new tests); all 17 contract maps validate |
+| Reachability of the 9 new maps | 🟡 | Rough checker: every relic, objective, target, checkpoint and gate reachable |
+| Unity compile / PlayMode / scenes | ⬜ | Not yet run on the Mac |
+| Played by a person | ⬜ | Difficulty is untested |

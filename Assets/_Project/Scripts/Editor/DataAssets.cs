@@ -25,6 +25,7 @@ namespace PKR.EditorTools
             GetOrCreateGearwatchSentry();
             GetOrCreateGearwatchCaptain();
             GetOrCreateFrostMite();
+            GetOrCreateGearwatchElite();
             GetOrCreateStoryWorld();
             GetOrCreateCodex();
             AssetDatabase.SaveAssets();
@@ -206,11 +207,24 @@ namespace PKR.EditorTools
         // ---- Shadow Contracts ---------------------------------------------------------------------------
 
         public const string ContractsFolder = "Assets/_Project/Data/Contracts";
+        public const string BoardAssetPath = ContractsFolder + "/MissionBoard.asset";
+
+        /// <summary>The four worlds of the board. Each door opens when the world before it is cleared.</summary>
+        public static readonly (string name, string tagline, Color32 color)[] ContractWorlds =
+        {
+            ("Brasslight Quarter", "The rooftops and docks of the city where the Order began.", new Color32(124, 104, 214, 255)),
+            ("Frost Citadel", "A fortress carved into the glacier. Frost Mites gnaw the halls and the moats are full of ice spikes.", new Color32(86, 164, 220, 255)),
+            ("Sky Foundry", "Floating forges above the clouds. Ride steam springs and drifting plates past the Gearwatch Elite.", new Color32(220, 120, 60, 255)),
+            ("Shadow Spire", "The Gearwatch's own tower. Elites on every floor, spikes below, and the Grandmaster at the top.", new Color32(120, 60, 170, 255)),
+        };
 
         /// <summary>Everything the builder and the board need for one contract.</summary>
         public class ContractSpec
         {
             public string id, displayName, sceneName, briefing, objectiveName, objectiveDisplay, containsClue, revealedByClue, clueHint;
+            /// <summary>World on the board (0 = Brasslight Quarter) and the biome name that picks the terrain tint.</summary>
+            public int world;
+            public string biome = "Brasslight Quarter";
             public ContractKind kind;
             public bool free;
             public float par;
@@ -287,6 +301,82 @@ namespace PKR.EditorTools
                 briefing = "The last captain of the rival guild waits at the top of the great clock with the Master Key. " +
                            "Three roofs, three climbs, one target. Take him down and take the key."
             },
+
+            // ---- World 2: Frost Citadel ----
+            new ContractSpec
+            {
+                id = "ms_frozen_gate", displayName = "The Frozen Gate", sceneName = "MS_FrozenGate", kind = ContractKind.Main,
+                world = 1, biome = "Frost Citadel", par = 200f, sky = new Color32(24, 40, 78, 255), rows = ContractLayouts.FrozenGate,
+                objectiveName = "the Rime Seal", objectiveDisplay = "Rime Seal",
+                briefing = "Through the door lies the Frost Citadel. Cross the spiked moat, climb the gatehouse and lift the " +
+                           "Rime Seal that keeps its doors frozen shut. Frost Mites patrol the ice: they don't look, but they bite."
+            },
+            new ContractSpec
+            {
+                id = "ms_hall_of_icicles", displayName = "Hall of Icicles", sceneName = "MS_HallOfIcicles", kind = ContractKind.Main,
+                world = 1, biome = "Frost Citadel", par = 210f, sky = new Color32(18, 34, 66, 255), rows = ContractLayouts.HallOfIcicles,
+                objectiveName = "the target", objectiveDisplay = "Target",
+                briefing = "A long frozen hall under a low ceiling of ice. The Ice Warden walks the upper gallery. Take him down " +
+                           "without waking the whole hall."
+            },
+            new ContractSpec
+            {
+                id = "ms_glacier_vault", displayName = "The Glacier Vault", sceneName = "MS_GlacierVault", kind = ContractKind.Main,
+                world = 1, biome = "Frost Citadel", par = 230f, sky = new Color32(30, 46, 90, 255), rows = ContractLayouts.GlacierVault,
+                objectiveName = "the Frost Crown", objectiveDisplay = "Frost Crown",
+                briefing = "The citadel's treasury: three tiers of ice and stone. Steal the Frost Crown from the top and take down " +
+                           "the Vault Keeper. Clear this and the door to the Sky Foundry opens."
+            },
+            // ---- World 3: Sky Foundry ----
+            new ContractSpec
+            {
+                id = "ms_cloud_docks", displayName = "Cloud Docks", sceneName = "MS_CloudDocks", kind = ContractKind.Main,
+                world = 2, biome = "Sky Foundry", par = 200f, sky = new Color32(110, 150, 210, 255), rows = ContractLayouts.CloudDocks,
+                objectiveName = "the Foundry Pass", objectiveDisplay = "Foundry Pass",
+                briefing = "Airship docks hanging over open sky. Ride the drifting plates, spring onto the cargo tower and steal " +
+                           "the Foundry Pass. Watch for the Gearwatch Elite: sharper eyes, faster to notice."
+            },
+            new ContractSpec
+            {
+                id = "ms_bellows", displayName = "The Bellows", sceneName = "MS_Bellows", kind = ContractKind.Main,
+                world = 2, biome = "Sky Foundry", par = 230f, sky = new Color32(150, 90, 60, 255), rows = ContractLayouts.Bellows,
+                objectiveName = "the target", objectiveDisplay = "Target",
+                briefing = "The foundry's lungs: steam springs, a lift and floors of spikes. The Bellows Master runs the furnace " +
+                           "from the top deck. Take him down."
+            },
+            new ContractSpec
+            {
+                id = "ms_furnace_crown", displayName = "Furnace Crown", sceneName = "MS_FurnaceCrown", kind = ContractKind.Main,
+                world = 2, biome = "Sky Foundry", par = 260f, sky = new Color32(120, 60, 40, 255), rows = ContractLayouts.FurnaceCrown,
+                objectiveName = "the Ember Key", objectiveDisplay = "Ember Key",
+                briefing = "The top of the foundry. Climb the three-tier crown, steal the Ember Key and take down the Foundry Lord. " +
+                           "Beyond it waits the door to the Shadow Spire."
+            },
+            // ---- World 4: Shadow Spire ----
+            new ContractSpec
+            {
+                id = "ms_spire_gate", displayName = "The Spire Gate", sceneName = "MS_SpireGate", kind = ContractKind.Main,
+                world = 3, biome = "Shadow Spire", par = 240f, sky = new Color32(26, 16, 40, 255), rows = ContractLayouts.SpireGate,
+                objectiveName = "the Spire Sigil", objectiveDisplay = "Spire Sigil",
+                briefing = "The Gearwatch's own fortress. Elites on every wall and hardly any hay to hide in. Steal the Spire " +
+                           "Sigil from the gatehouse roof and get inside."
+            },
+            new ContractSpec
+            {
+                id = "ms_mirror_galleries", displayName = "The Mirror Galleries", sceneName = "MS_MirrorGalleries", kind = ContractKind.Main,
+                world = 3, biome = "Shadow Spire", par = 260f, sky = new Color32(20, 12, 34, 255), rows = ContractLayouts.MirrorGalleries,
+                objectiveName = "the targets", objectiveDisplay = "Targets",
+                briefing = "Vaulted galleries under a low ceiling, a lift between floors and two marked inquisitors. Both must " +
+                           "fall before the far door will open."
+            },
+            new ContractSpec
+            {
+                id = "ms_last_contract", displayName = "The Last Contract", sceneName = "MS_LastContract", kind = ContractKind.Main,
+                world = 3, biome = "Shadow Spire", par = 300f, sky = new Color32(34, 10, 30, 255), rows = ContractLayouts.LastContract,
+                objectiveName = "the Grandmaster's Gear", objectiveDisplay = "Grandmaster's Gear",
+                briefing = "The top of the Shadow Spire. Climb the three tiers, take the Grandmaster's Gear and take down the " +
+                           "Grandmaster himself. End the Gearwatch, and walk out a legend of the Order."
+            },
         };
 
         public static LevelDefinition GetOrCreateContractLevel(ContractSpec s)
@@ -294,13 +384,13 @@ namespace PKR.EditorTools
             EditorUtil.EnsureFolder(ContractsFolder);
             var lvl = GetOrCreate<LevelDefinition>($"{ContractsFolder}/{s.sceneName}.asset", l =>
             {
-                l.id = s.id; l.displayName = s.displayName; l.biomeName = "Brasslight Quarter";
+                l.id = s.id; l.displayName = s.displayName; l.biomeName = s.biome;
                 l.sceneName = s.sceneName; l.parTimeSeconds = s.par; l.skyColor = s.sky;
                 l.codexEntry = s.briefing;
             });
-            if (lvl.modeTag != "Contract" || !string.IsNullOrEmpty(lvl.nextSceneName))
+            if (lvl.modeTag != "Contract" || !string.IsNullOrEmpty(lvl.nextSceneName) || lvl.biomeName != s.biome)
             {
-                lvl.modeTag = "Contract"; lvl.nextSceneName = ""; EditorUtility.SetDirty(lvl);
+                lvl.modeTag = "Contract"; lvl.nextSceneName = ""; lvl.biomeName = s.biome; EditorUtility.SetDirty(lvl);
             }
             return lvl;
         }
@@ -313,12 +403,15 @@ namespace PKR.EditorTools
                 b.title = "SHADOW CONTRACTS";
                 b.description = "Missions for the Order of the Hidden Gear.";
             });
+            board.worlds.Clear();
+            foreach (var w in ContractWorlds) board.worlds.Add(new ContractWorld { name = w.name, tagline = w.tagline, color = w.color });
             board.contracts.Clear();
             foreach (var s in ContractSpecs)
             {
                 var m = GetOrCreate<MissionDefinition>($"{ContractsFolder}/Contract_{s.sceneName}.asset", d => { });
                 m.id = s.id; m.displayName = s.displayName; m.briefing = s.briefing; m.kind = s.kind; m.free = s.free;
                 m.revealedByClue = s.revealedByClue ?? ""; m.clueHint = s.clueHint ?? ""; m.containsClue = s.containsClue ?? "";
+                m.world = s.world;
                 m.level = GetOrCreateContractLevel(s);
                 m.totalRelics = new AsciiLevel(s.rows).Count('R');
                 EditorUtility.SetDirty(m);
@@ -326,6 +419,23 @@ namespace PKR.EditorTools
             }
             EditorUtility.SetDirty(board);
             return board;
+        }
+
+        public static EnemyDefinition GetOrCreateGearwatchElite()
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/GearwatchElite.asset", d =>
+            {
+                d.id = "enemy_gearwatch_elite"; d.displayName = "Gearwatch Elite";
+                d.codexEntry = "The Spire's own guard. They see farther, notice faster and look back more often than any sentry, " +
+                               "and they chase hard. Their armor still has no eyes in the back.";
+                d.bodySize = new Vector2(0.85f, 1.35f); d.maxHealth = 5; d.weight = 1.4f; d.moveSpeed = 0.22f;
+                d.behavior = EnemyBehavior.Guard;
+                d.sightRange = 7.5f; d.sightHalfAngle = 36f; d.lookBackInterval = 2.8f; d.lookBackPause = 1.2f; d.chaseSpeed = 0.72f;
+                d.noticeRate = 2.4f; d.shardDrop = 4;
+            });
+            if (e.sprite == null) { e.sprite = PlaceholderArt.GearwatchElite(); EditorUtility.SetDirty(e); }
+            return e;
         }
 
         public static EnemyDefinition GetOrCreateGearwatchCaptain()

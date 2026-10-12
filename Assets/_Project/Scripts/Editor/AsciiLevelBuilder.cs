@@ -56,9 +56,11 @@ namespace PKR.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>Builds the eight Shadow Contracts scenes (MS_*) from ContractLayouts.</summary>
+        /// <summary>Builds every Shadow Contracts scene (MS_*) from ContractLayouts.</summary>
         public static void BuildContracts()
         {
+            DataAssets.GetOrCreateMissionBoard(); // first, so every contract scene can point at it
+            AssetDatabase.SaveAssets();
             foreach (var spec in DataAssets.ContractSpecs)
             {
                 var s = spec;
@@ -69,6 +71,19 @@ namespace PKR.EditorTools
             }
             DataAssets.GetOrCreateMissionBoard();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Terrain tint per biome: one tile set, many worlds.</summary>
+        public static Color TintFor(string biome)
+        {
+            switch (biome)
+            {
+                case "Frostgear Peaks": return new Color(0.78f, 0.9f, 1f);
+                case "Frost Citadel": return new Color(0.7f, 0.86f, 1f);
+                case "Sky Foundry": return new Color(1f, 0.78f, 0.6f);
+                case "Shadow Spire": return new Color(0.66f, 0.56f, 0.9f);
+                default: return Color.white;
+            }
         }
 
         static void BuildLevel(string sceneName, string[] rows, System.Func<LevelDefinition> levelAsset, ContractOptions contract = null)
@@ -92,7 +107,7 @@ namespace PKR.EditorTools
             LoadArt();
             _shards = 0;
             _crates = 0;
-            bool stealth = map.Count('g') > 0 || map.Count('V') > 0;
+            bool stealth = map.Count('g') > 0 || map.Count('E') > 0 || map.Count('V') > 0;
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -107,9 +122,8 @@ namespace PKR.EditorTools
             _root = new GameObject("Level").transform;
 
             // --- Terrain ---------------------------------------------------------------------------------
-            // Frostgear Peaks: the same tiles, tinted icy blue-white.
-            bool frost = level.biomeName == "Frostgear Peaks";
-            Color terrainTint = frost ? new Color(0.78f, 0.9f, 1f) : Color.white;
+            // Each world/biome reuses the same tiles with its own tint (icy, copper, violet...).
+            Color terrainTint = TintFor(level.biomeName);
             foreach (var r in map.MergedRects('#')) Block("Ground", _ground, r).GetComponent<SpriteRenderer>().color = terrainTint;
             foreach (var r in map.MergedRects('X')) Block("Stone", _stone, r).GetComponent<SpriteRenderer>().color = terrainTint;
             foreach (var r in map.MergedRects('~')) Water(r);
@@ -159,6 +173,7 @@ namespace PKR.EditorTools
                     case 'K': Enemy(DataAssets.GetOrCreateBoltKnight(), cx, p.y); break;
                     case 'F': Enemy(DataAssets.GetOrCreateFrostMite(), cx, p.y); break;
                     case 'g': Enemy(DataAssets.GetOrCreateGearwatchSentry(), cx, p.y); break;
+                    case 'E': Enemy(DataAssets.GetOrCreateGearwatchElite(), cx, p.y); break;
                     case 'V': Enemy(DataAssets.GetOrCreateGearwatchCaptain(), cx, p.y); break;
                     case 'R': Relic(new Vector2(cx, p.y + 0.5f)); break;
                     case 'Z': Scroll(new Vector2(cx, p.y + 0.5f)); break;
@@ -197,6 +212,8 @@ namespace PKR.EditorTools
                 var mt = new GameObject("MissionTracker").AddComponent<MissionTracker>();
                 mt.contractId = _contract.contractId;
                 mt.clueId = _contract.clueId ?? "";
+                // The board tells the results screen which contract is behind this map's exit door.
+                mt.board = AssetDatabase.LoadAssetAtPath<MissionBoardDefinition>(DataAssets.BoardAssetPath);
             }
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
