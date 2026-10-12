@@ -107,4 +107,22 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Contracts/MS_LastContract.unity
     guid: b58f3dfb5417843b3ae6495d4f644eac
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_FourfoldSovereign.unity
+    guid: 51559d61e0158427ca6f9fe89263bc2f
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_EmberWastes.unity
+    guid: 25959fadb68634867ad569033f8bb52a
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_SkyGardens.unity
+    guid: c78fdacffac88496e9ded12b164c5dbd
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_SunkenClockworks.unity
+    guid: 04f57b65e2b154cac8a320f46804b349
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_ToyFortress.unity
+    guid: 5ec413b0a27e74a01b273fe9c7636ecc
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_ShatteredCrossing.unity
+    guid: 8c9974eb81cfb461f8915e2f8bf83ff9
   m_configObjects: {}

@@ -17,7 +17,7 @@ MonoBehaviour:
   biomeName: Frostgear Peaks
   modeTag: Platform
   sceneName: SQ_ClockworkGlacier
-  nextSceneName: 
+  nextSceneName: SQ_EmberWastes
   codexEntry: A whole engine floor frozen solid, its spikes rimed with ice. Lifts still rise and plates still drift on their old schedules; ride them tower to tower to reach the heart of the cold.
   parTimeSeconds: 200
   totalShards: 25

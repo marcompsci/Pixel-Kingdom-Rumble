@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: PuffGlider
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_puff_glider
+  displayName: Puff Glider
+  codexEntry: Weather drones from the Sky Gardens, still sowing clouds over gardens that drifted away long ago. They hang on the wind and dive at anything that jumps past.
+  sprite: {fileID: 21300000, guid: 6e40fee6f0a424484b40f0ac4ab1c899, type: 3}
+  bodySize: {x: 0.9, y: 0.6}
+  maxHealth: 1
+  weight: 0.6
+  moveSpeed: 0
+  behavior: 2
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6.5
+  swoopSpeed: 8
+  swoopTime: 0.9
+  swoopWindup: 0.6
+  flyerReturnSpeed: 3.5
+  swoopCooldown: 1.8
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  shardDrop: 2

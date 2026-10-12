@@ -23,3 +23,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dd4b51ffbd0644c22b52e5681254b2c6, type: 2}
   - {fileID: 11400000, guid: 99901c413531e456d982f9acbfb455c1, type: 2}
   - {fileID: 11400000, guid: c32447e6a23fb4a5bb4ccf5279f92531, type: 2}
+  sectioned: 0
+  sectionColors: []
+  sectionNotes: []

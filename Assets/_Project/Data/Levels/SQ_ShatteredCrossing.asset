@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_ShatteredCrossing
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_shattered_crossing
+  displayName: The Shattered Crossing
+  biomeName: Shattered Crossing
+  modeTag: Platform
+  sceneName: SQ_ShatteredCrossing
+  nextSceneName: SQ_FourfoldSovereign
+  codexEntry: 'Where the four realms grind against each other: lava gives way to wind, wind to water, water to the toy belts. One long run through every rule at once, to the door of the engine''s heart.'
+  parTimeSeconds: 260
+  totalShards: 34
+  totalSecrets: 1
+  skyColor: {r: 0.15686275, g: 0.11764706, b: 0.2509804, a: 1}
