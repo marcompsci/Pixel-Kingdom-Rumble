@@ -23,6 +23,13 @@ namespace PKR
         public const string NightMarketHeist = "SQ_NightMarketHeist";
         public const string FrostgearAscent = "SQ_FrostgearAscent";
         public const string ClockworkGlacier = "SQ_ClockworkGlacier";
+        // Story world 3: The Shattered Realms
+        public const string EmberWastes = "SQ_EmberWastes";
+        public const string SkyGardens = "SQ_SkyGardens";
+        public const string SunkenClockworks = "SQ_SunkenClockworks";
+        public const string ToyFortress = "SQ_ToyFortress";
+        public const string ShatteredCrossing = "SQ_ShatteredCrossing";
+        public const string FourfoldSovereign = "SQ_FourfoldSovereign";
         // Shadow Contracts (mission mode): the board and the contract scenes (MS_ prefix).
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";

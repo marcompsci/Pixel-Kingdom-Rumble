@@ -20,7 +20,7 @@ namespace PKR
     [RequireComponent(typeof(Damageable))]
     public class ClockworkWarden : MonoBehaviour
     {
-        public const int MaxCogs = 5;
+        public const int MaxCogs = 7;
 
         [Header("Arena (world units)")]
         [SerializeField] float arenaLeft = -10f;
@@ -37,6 +37,15 @@ namespace PKR
         [SerializeField] float gearDiameter = 2.2f;
         [SerializeField] float cogDiameter = 0.9f;
 
+        [Header("Variant (the Fourfold Sovereign reuses this fight)")]
+        [SerializeField] string bossName = "CLOCKWORK WARDEN";
+        [Tooltip("1 = the Warden's speed. 1.25 = every attack 25% faster.")]
+        [SerializeField] float tempo = 1f;
+        [Tooltip("Extra cogs in every Cog Volley.")]
+        [SerializeField] int extraCogs;
+        [Tooltip("Body color per phase (1, 2, 3). Empty = the Warden's brass.")]
+        [SerializeField] Color[] phaseTints = new Color[0];
+
         [Header("Placeholder art")]
         [SerializeField] Material spriteMaterial;
         [SerializeField] Sprite bodySprite;
@@ -45,13 +54,15 @@ namespace PKR
 
         public WardenBrain Brain { get; private set; }
         public Damageable Health { get; private set; }
-        public string DisplayName => "CLOCKWORK WARDEN";
+        public string DisplayName => string.IsNullOrEmpty(bossName) ? "CLOCKWORK WARDEN" : bossName;
 
         static readonly Color CoreIdle = new Color32(120, 90, 60, 255);
         static readonly Color CoreExposed = new Color32(255, 220, 90, 255);
         static readonly Color Telegraph = new Color32(255, 80, 60, 200);
 
         Transform _piston, _gear;
+        SpriteRenderer _body;
+        WardenPhase _tintedPhase;
         SpriteRenderer _coreSprite, _marker;
         Collider2D _coreCollider;
         ContactDamage _pistonHurt, _gearHurt;
@@ -68,7 +79,7 @@ namespace PKR
 
         void Awake()
         {
-            Brain = new WardenBrain(arenaLeft + 1.5f, arenaRight - 1.5f);
+            Brain = new WardenBrain(arenaLeft + 1.5f, arenaRight - 1.5f, WardenTuning.Scaled(tempo));
             Health = GetComponent<Damageable>();
             Health.Configure(DamageModel.StoryHealth, TeamIds.Enemy, maxHealth, 3f, 0f, 0.12f);
             BuildParts();
@@ -131,6 +142,8 @@ namespace PKR
             StopAllCoroutines();
             _completing = false;
             Brain.Reset();
+            _tintedPhase = 0;
+            TintForPhase();
             Health.ResetState();
             _introLeft = introDelay;
             _piston.position = new Vector2((arenaLeft + arenaRight) * 0.5f, PistonUpY);
@@ -176,7 +189,8 @@ namespace PKR
                     SetVulnerable(true);
                     break;
                 case WardenAction.VolleyWindup:
-                    var xs = Brain.VolleyPositions(heroX, Brain.Phase == WardenPhase.Three ? 5 : 3, cogSpacing);
+                    int cogs = Mathf.Min(MaxCogs, (Brain.Phase == WardenPhase.Three ? 5 : 3) + Mathf.Max(0, extraCogs));
+                    var xs = Brain.VolleyPositions(heroX, cogs, cogSpacing);
                     _cogCount = xs.Length;
                     for (int i = 0; i < MaxCogs; i++)
                     {
@@ -200,7 +214,18 @@ namespace PKR
                     if (from == WardenAction.Volley) HideCogs();
                     break;
             }
+            TintForPhase();
             Raise();
+        }
+
+        /// <summary>Variant bosses change color with each phase (the Sovereign cycles its realms).</summary>
+        void TintForPhase()
+        {
+            if (_body == null || phaseTints == null || phaseTints.Length == 0 || _tintedPhase == Brain.Phase) return;
+            _tintedPhase = Brain.Phase;
+            int i = Mathf.Clamp((int)Brain.Phase - 1, 0, phaseTints.Length - 1);
+            _body.color = phaseTints[i];
+            if (CameraFollow2D.Main != null && Brain.Phase != WardenPhase.One) CameraFollow2D.Main.Shake(0.3f, 0.4f);
         }
 
         void Animate(float dt)
@@ -305,6 +330,8 @@ namespace PKR
         {
             // Decorative body looming at the back of the arena.
             var body = Sprite("Body", transform, bodySprite != null ? bodySprite : gearSprite, new Color32(150, 120, 80, 255), -20);
+            _body = body;
+            if (phaseTints != null && phaseTints.Length > 0) body.color = phaseTints[0];
             body.transform.position = new Vector2((arenaLeft + arenaRight) * 0.5f, ceilingY - 1f);
             body.transform.localScale = Vector3.one * 6f;
 

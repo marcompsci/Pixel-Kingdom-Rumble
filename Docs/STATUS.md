@@ -2,6 +2,25 @@
 
 Legend: ✅ verified by actually running · 🟡 written, not yet compiled in Unity · ⬜ not started
 
+## Phase 6 (2026-10-12): Story Quest World 3, The Shattered Realms
+- 5 new levels + boss:
+  - Ember Wastes.
+  - Sky Gardens.
+  - Sunken Clockworks.
+  - Toy Fortress.
+  - The Shattered Crossing (all four realms in one sectioned map).
+  - The Fourfold Sovereign.
+- New mechanics:
+  - Lava.
+  - Crumbling platforms and trapdoors.
+  - Fire geysers.
+  - Wind.
+  - Water currents.
+  - Conveyors.
+- New foes: Cinder Crawler, Puff Glider, Rust Crab, Wind-up Soldier.
+- The level select is paged by world; World 3 draws its four realms as one map split into sections.
+- See Docs/SHATTERED_REALMS.md. Core tests: 207 pass in the cloud.
+
 ## Rumble update (2026-10-12): Rumble Rating, Auto CPU, Daily Rumble, couch 2P
 - Rumble Rating: ranked points for solo Arena Clash / Versus / Daily Rumble.
   - Placement-first scoring with a capped style bonus, so a better placement always wins.

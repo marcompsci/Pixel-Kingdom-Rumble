@@ -26,7 +26,9 @@ namespace PKR.EditorTools
             GetOrCreateGearwatchCaptain();
             GetOrCreateFrostMite();
             GetOrCreateGearwatchElite();
+            GetOrCreateCinderCrawler(); GetOrCreatePuffGlider(); GetOrCreateRustCrab(); GetOrCreateWindupSoldier();
             GetOrCreateStoryWorld();
+            GetOrCreateShatteredRealms();
             GetOrCreateCodex();
             AssetDatabase.SaveAssets();
         }
@@ -504,7 +506,7 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateClockworkGlacier() => GetOrCreateMapLevel(
             "SQ_ClockworkGlacier", "sq_clockwork_glacier", "Clockwork Glacier", "Frostgear Peaks", SceneIds.ClockworkGlacier,
-            "", "Platform", 200f, new Color32(120, 170, 220, 255),
+            SceneIds.EmberWastes, "Platform", 200f, new Color32(120, 170, 220, 255),
             "A whole engine floor frozen solid, its spikes rimed with ice. Lifts still rise and plates still drift on " +
             "their old schedules; ride them tower to tower to reach the heart of the cold.");
 
@@ -521,6 +523,113 @@ namespace PKR.EditorTools
             });
             if (e.sprite == null) { e.sprite = PlaceholderArt.FrostMite(); EditorUtility.SetDirty(e); }
             return e;
+        }
+
+        // ---- World 3: The Shattered Realms -----------------------------------------------------------------------
+        // Under the glacier sat the Tickworks' mainspring. Freeing it cracked the engine's heart into four sealed
+        // realms, each running on its own broken rule, and the core mind that split them waits where they meet.
+        public static readonly (string name, string tagline, Color32 color)[] ShatteredRealmSections =
+        {
+            ("EMBER WASTES", "Lava, falling basalt, fire geysers", new Color32(232, 96, 48, 255)),
+            ("SKY GARDENS", "Wind that carries you off ledges", new Color32(120, 196, 240, 255)),
+            ("SUNKEN CLOCKWORKS", "Currents and drowned gears", new Color32(48, 170, 160, 255)),
+            ("TOY FORTRESS", "Conveyors, trapdoors, wind-up guards", new Color32(214, 84, 150, 255)),
+        };
+
+        public static LevelDefinition GetOrCreateEmberWastes() => GetOrCreateMapLevel(
+            "SQ_EmberWastes", "sq_ember_wastes", "Ember Wastes", "Ember Wastes", SceneIds.EmberWastes,
+            SceneIds.SkyGardens, "Platform", 200f, new Color32(70, 26, 24, 255),
+            "The first realm the mainspring cracked open: a basalt desert over a sea of lava. The bridges crumble under " +
+            "your boots, geysers keep time like a broken clock, and Cinder Crawlers drag their glowing backs across it all.");
+
+        public static LevelDefinition GetOrCreateSkyGardens() => GetOrCreateMapLevel(
+            "SQ_SkyGardens", "sq_sky_gardens", "Sky Gardens", "Sky Gardens", SceneIds.SkyGardens,
+            SceneIds.SunkenClockworks, "Platform", 200f, new Color32(168, 214, 255, 255),
+            "Hanging gardens torn loose and set adrift. The Tickworks' fans still blow, so the wind decides where a jump " +
+            "lands. Puff Gliders ride the gusts; vines are the only things that hold still.");
+
+        public static LevelDefinition GetOrCreateSunkenClockworks() => GetOrCreateMapLevel(
+            "SQ_SunkenClockworks", "sq_sunken_clockworks", "Sunken Clockworks", "Sunken Clockworks", SceneIds.SunkenClockworks,
+            SceneIds.ToyFortress, "Platform", 210f, new Color32(20, 64, 86, 255),
+            "A machine city that sank into the engine's coolant. Currents tug you along the old pipe-streets, drowned " +
+            "gears still turn as platforms, and Rust Crabs guard every dry ledge.");
+
+        public static LevelDefinition GetOrCreateToyFortress() => GetOrCreateMapLevel(
+            "SQ_ToyFortress", "sq_toy_fortress", "Toy Fortress", "Toy Fortress", SceneIds.ToyFortress,
+            SceneIds.ShatteredCrossing, "Platform", 210f, new Color32(48, 30, 60, 255),
+            "The Gearwright's old toy workshop, wound up and left running for a hundred years. Belts carry you toward " +
+            "trapdoors, and the Wind-up Soldiers march their rounds whether anyone is watching or not.");
+
+        public static LevelDefinition GetOrCreateShatteredCrossing() => GetOrCreateMapLevel(
+            "SQ_ShatteredCrossing", "sq_shattered_crossing", "The Shattered Crossing", "Shattered Crossing", SceneIds.ShatteredCrossing,
+            SceneIds.FourfoldSovereign, "Platform", 260f, new Color32(40, 30, 64, 255),
+            "Where the four realms grind against each other: lava gives way to wind, wind to water, water to the toy " +
+            "belts. One long run through every rule at once, to the door of the engine's heart.");
+
+        public static LevelDefinition GetOrCreateSovereignLevel() => GetOrCreateMapLevel(
+            "SQ_FourfoldSovereign", "sq_fourfold_sovereign", "The Fourfold Sovereign", "Sovereign's Core", SceneIds.FourfoldSovereign,
+            "", "Boss", 150f, new Color32(26, 16, 36, 255),
+            "The Tickworks' core mind, split four ways. It fights like the Warden it once commanded, only faster, and it " +
+            "changes realms as it weakens. Strike its core while it's stuck after a slam.");
+
+        static EnemyDefinition GetOrCreateRealmFoe(string file, string id, string name, string codex, EnemyBehavior behavior,
+                                                   Vector2 size, int hp, float speed, int drop, System.Func<Sprite> art,
+                                                   System.Action<EnemyDefinition> extra = null)
+        {
+            EditorUtil.EnsureFolder(EnemiesFolder);
+            var e = GetOrCreate<EnemyDefinition>($"{EnemiesFolder}/{file}.asset", d =>
+            {
+                d.id = id; d.displayName = name; d.codexEntry = codex;
+                d.bodySize = size; d.maxHealth = hp; d.weight = 1f; d.moveSpeed = speed;
+                d.behavior = behavior; d.shardDrop = drop;
+                extra?.Invoke(d);
+            });
+            if (e.sprite == null) { e.sprite = art(); EditorUtility.SetDirty(e); }
+            return e;
+        }
+
+        public static EnemyDefinition GetOrCreateCinderCrawler() => GetOrCreateRealmFoe("CinderCrawler", "enemy_cinder_crawler",
+            "Cinder Crawler", "Basalt slugs that grew in the Ember Wastes' heat. Slow and stubborn, with a back too hot to stand on; " +
+            "a solid hit cracks the crust.", EnemyBehavior.Walker, new Vector2(1f, 0.6f), 3, 0.22f, 3, PlaceholderArt.CinderCrawler);
+
+        public static EnemyDefinition GetOrCreatePuffGlider() => GetOrCreateRealmFoe("PuffGlider", "enemy_puff_glider",
+            "Puff Glider", "Weather drones from the Sky Gardens, still sowing clouds over gardens that drifted away long ago. " +
+            "They hang on the wind and dive at anything that jumps past.", EnemyBehavior.Flyer, new Vector2(0.9f, 0.6f), 1, 0f, 2,
+            PlaceholderArt.PuffGlider, d => { d.aggroRange = 6.5f; d.swoopSpeed = 8f; d.swoopTime = 0.9f; d.swoopWindup = 0.6f;
+                                              d.flyerReturnSpeed = 3.5f; d.swoopCooldown = 1.8f; d.weight = 0.6f; });
+
+        public static EnemyDefinition GetOrCreateRustCrab() => GetOrCreateRealmFoe("RustCrab", "enemy_rust_crab",
+            "Rust Crab", "Repair crabs of the sunken machine city. The coolant rusted their shells but not their routines: " +
+            "they scuttle their ledge end to end, quicker than they look.", EnemyBehavior.Walker, new Vector2(0.95f, 0.7f), 3, 0.45f, 3,
+            PlaceholderArt.RustCrab);
+
+        public static EnemyDefinition GetOrCreateWindupSoldier() => GetOrCreateRealmFoe("WindupSoldier", "enemy_windup_soldier",
+            "Wind-up Soldier", "Toy guards from the Gearwright's workshop, wound so tight they never stopped marching. " +
+            "Tougher than they look; two good hits knock the key loose.", EnemyBehavior.Walker, new Vector2(0.7f, 1.1f), 4, 0.35f, 4,
+            PlaceholderArt.WindupSoldier);
+
+        /// <summary>Story world 3 on the level select: four realms, the crossing that joins them, and the boss.</summary>
+        public static WorldDefinition GetOrCreateShatteredRealms()
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            var route = new[]
+            {
+                GetOrCreateEmberWastes(), GetOrCreateSkyGardens(), GetOrCreateSunkenClockworks(), GetOrCreateToyFortress(),
+                GetOrCreateShatteredCrossing(), GetOrCreateSovereignLevel()
+            };
+            var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_ShatteredRealms.asset", w =>
+            {
+                w.displayName = "The Shattered Realms";
+                w.description = "The mainspring cracked the engine's heart into four sealed realms. Cross them all, then wind the Sovereign back.";
+            });
+            world.levels.Clear();
+            world.levels.AddRange(route);
+            world.sectioned = true;
+            world.sectionColors.Clear();
+            world.sectionNotes.Clear();
+            foreach (var sec in ShatteredRealmSections) { world.sectionColors.Add(sec.color); world.sectionNotes.Add(sec.tagline); }
+            EditorUtility.SetDirty(world);
+            return world;
         }
 
         /// <summary>The Story Quest route shown on the level select, in play order.</summary>
@@ -554,7 +663,9 @@ namespace PKR.EditorTools
             var codex = GetOrCreate<CodexDefinition>($"{CodexFolder}/Codex.asset", c => { });
             if (codex.roster == null) codex.roster = GetOrCreateRoster();
             if (codex.world == null) codex.world = GetOrCreateStoryWorld();
-            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry(), GetOrCreateGearwatchCaptain() })
+            if (!codex.moreWorlds.Contains(GetOrCreateShatteredRealms())) codex.moreWorlds.Add(GetOrCreateShatteredRealms());
+            foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry(), GetOrCreateGearwatchCaptain(),
+                                      GetOrCreateCinderCrawler(), GetOrCreatePuffGlider(), GetOrCreateRustCrab(), GetOrCreateWindupSoldier() })
                 if (!codex.enemies.Contains(e)) codex.enemies.Add(e);
             EditorUtility.SetDirty(codex);
             return codex;

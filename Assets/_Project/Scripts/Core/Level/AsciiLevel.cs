@@ -18,6 +18,11 @@ namespace PKR.Core
     ///   F  Frost Mite (Frostgear Peaks)   E  Gearwatch Elite (sharper-eyed guard, Shadow Contracts worlds 3-4)
     ///   V  contract target (Gearwatch Captain)  R  ancient relic (points)  Z  cipher scroll (reveals a secret contract)
     ///   s  secret room cell (the bounding box of all 's' becomes one secret room behind a fake wall)
+    ///   Shattered Realms (Story world 3):
+    ///   a  lava (hurts and launches, like spikes)   c  crumbling block (solid; falls a moment after you land, comes back)
+    ///   >  <  wind pushing right / left     )  (  water current pushing right / left (both: no collider)
+    ///   }  {  conveyor floor moving right / left (solid)
+    ///   f  fire geyser (erupts on a timer)   Y  Cinder Crawler   Q  Puff Glider   D  Rust Crab   W  Wind-up Soldier
     ///   .  or space: empty
     /// </summary>
     public class AsciiLevel
@@ -37,8 +42,8 @@ namespace PKR.Core
         public int SecretMaxX { get; private set; }
         public int SecretMaxY { get; private set; }
 
-        public const string RunTiles = "#X=^~LH";
-        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZ";
+        public const string RunTiles = "#X=^~LHac<>(){}";
+        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZfYQDW";
 
         readonly char[,] _grid;
 
@@ -64,7 +69,7 @@ namespace PKR.Core
         public bool IsSolid(int x, int y)
         {
             char c = At(x, y);
-            return c == '#' || c == 'X' || c == '?';
+            return c == '#' || c == 'X' || c == '?' || c == 'c' || c == '{' || c == '}';
         }
 
         public int Count(char tile)

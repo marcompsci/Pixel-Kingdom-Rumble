@@ -52,7 +52,14 @@ namespace PKR.EditorTools
             BuildLevel(SceneIds.NightMarketHeist, StoryLayouts.NightMarketHeist, () => DataAssets.GetOrCreateNightMarketHeist());
             BuildLevel(SceneIds.FrostgearAscent, StoryLayouts.FrostgearAscent, () => DataAssets.GetOrCreateFrostgearAscent());
             BuildLevel(SceneIds.ClockworkGlacier, StoryLayouts.ClockworkGlacier, () => DataAssets.GetOrCreateClockworkGlacier());
+            // Story world 3: The Shattered Realms (the boss arena is built by BossSceneBuilder).
+            BuildLevel(SceneIds.EmberWastes, StoryLayouts.EmberWastes, () => DataAssets.GetOrCreateEmberWastes());
+            BuildLevel(SceneIds.SkyGardens, StoryLayouts.SkyGardens, () => DataAssets.GetOrCreateSkyGardens());
+            BuildLevel(SceneIds.SunkenClockworks, StoryLayouts.SunkenClockworks, () => DataAssets.GetOrCreateSunkenClockworks());
+            BuildLevel(SceneIds.ToyFortress, StoryLayouts.ToyFortress, () => DataAssets.GetOrCreateToyFortress());
+            BuildLevel(SceneIds.ShatteredCrossing, StoryLayouts.ShatteredCrossing, () => DataAssets.GetOrCreateShatteredCrossing());
             DataAssets.GetOrCreateStoryWorld(); // keep the level select route in order
+            DataAssets.GetOrCreateShatteredRealms();
             AssetDatabase.SaveAssets();
         }
 
@@ -82,6 +89,11 @@ namespace PKR.EditorTools
                 case "Frost Citadel": return new Color(0.7f, 0.86f, 1f);
                 case "Sky Foundry": return new Color(1f, 0.78f, 0.6f);
                 case "Shadow Spire": return new Color(0.66f, 0.56f, 0.9f);
+                case "Ember Wastes": return new Color(0.62f, 0.42f, 0.38f);
+                case "Sky Gardens": return new Color(0.92f, 1f, 0.86f);
+                case "Sunken Clockworks": return new Color(0.55f, 0.82f, 0.8f);
+                case "Toy Fortress": return new Color(1f, 0.78f, 0.9f);
+                case "Shattered Crossing": return new Color(0.8f, 0.74f, 0.95f);
                 default: return Color.white;
             }
         }
@@ -141,8 +153,22 @@ namespace PKR.EditorTools
                     case 'H':
                         Hay(run);
                         break;
+                    case 'a':
+                        Lava(map, run);
+                        break;
+                    case 'c':
+                        Crumble(run, terrainTint);
+                        break;
+                    case '}':
+                    case '{':
+                        Conveyor(run, run.tile == '}' ? 1 : -1);
+                        break;
                 }
             }
+            foreach (var r in map.MergedRects('>')) Push(r, ForceKind.Wind, 1);
+            foreach (var r in map.MergedRects('<')) Push(r, ForceKind.Wind, -1);
+            foreach (var r in map.MergedRects(')')) Push(r, ForceKind.Current, 1);
+            foreach (var r in map.MergedRects('(')) Push(r, ForceKind.Current, -1);
 
             // --- Things ----------------------------------------------------------------------------------
             Vector2 start = Vector2.zero;
@@ -177,6 +203,11 @@ namespace PKR.EditorTools
                     case 'V': Enemy(DataAssets.GetOrCreateGearwatchCaptain(), cx, p.y); break;
                     case 'R': Relic(new Vector2(cx, p.y + 0.5f)); break;
                     case 'Z': Scroll(new Vector2(cx, p.y + 0.5f)); break;
+                    case 'f': Geyser(new Vector2(cx, p.y), p.x); break;
+                    case 'Y': Enemy(DataAssets.GetOrCreateCinderCrawler(), cx, p.y); break;
+                    case 'Q': Enemy(DataAssets.GetOrCreatePuffGlider(), cx, p.y + 0.5f); break;
+                    case 'D': Enemy(DataAssets.GetOrCreateRustCrab(), cx, p.y); break;
+                    case 'W': Enemy(DataAssets.GetOrCreateWindupSoldier(), cx, p.y); break;
                 }
             }
             if (map.HasSecret)
@@ -324,6 +355,119 @@ namespace PKR.EditorTools
             // Spikes need something under them, or a launched hero could fall through the strip.
             if (!level.IsSolid(run.x, run.y - 1))
                 SandboxBuilder.Block(_root, "SpikeBed", _stone, _mat, new Vector2(run.x + run.length * 0.5f, run.y - 0.5f), new Vector2(run.length, 1f));
+        }
+
+        // ---- Shattered Realms props -----------------------------------------------------------------------------
+
+        static readonly Color LavaColor = new Color(1f, 0.42f, 0.12f);
+
+        /// <summary>Lava: a glowing strip that hurts and launches like spikes, over a stone bed.</summary>
+        static void Lava(AsciiLevel level, AsciiLevel.Run run)
+        {
+            var art = Art("Lava", _water, new Vector2(run.x + run.length * 0.5f, run.y + 0.3f), new Vector2(run.length, 0.8f), 6);
+            art.color = LavaColor;
+            var go = art.gameObject;
+            go.layer = PKRLayers.Hazard;
+            var cd = go.AddComponent<ContactDamage>();
+            cd.team = TeamIds.Enemy;
+            cd.size = new Vector2(run.length - 0.1f, 0.5f);
+            cd.launchUpward = true;
+            cd.inactiveWhileStunned = false;
+            cd.hit = new HitData
+            {
+                damage = 1, pipDamage = 1, baseKnockback = 13f, exposedMultiplier = 1f,
+                angleDegrees = 82f, baseHitstunFrames = 16, hitstopFrames = 4, isHeavy = false
+            };
+            if (!level.IsSolid(run.x, run.y - 1))
+                SandboxBuilder.Block(_root, "LavaBed", _stone, _mat, new Vector2(run.x + run.length * 0.5f, run.y - 0.5f), new Vector2(run.length, 1f))
+                    .GetComponent<SpriteRenderer>().color = new Color(0.35f, 0.2f, 0.18f);
+        }
+
+        /// <summary>Crumbling basalt / trapdoor: solid until you stand on it, then it drops out and comes back.</summary>
+        static void Crumble(AsciiLevel.Run run, Color tint)
+        {
+            var go = SandboxBuilder.Block(_root, "Crumble", _plate, _mat, new Vector2(run.x + run.length * 0.5f, run.y + 0.5f), new Vector2(run.length, 1f));
+            go.GetComponent<SpriteRenderer>().color = tint * new Color(0.8f, 0.7f, 0.7f);
+            go.AddComponent<CrumblePlatform>();
+        }
+
+        /// <summary>Conveyor floor: solid, and carries a hero standing on it.</summary>
+        static void Conveyor(AsciiLevel.Run run, int dir)
+        {
+            var center = new Vector2(run.x + run.length * 0.5f, run.y + 0.5f);
+            var go = SandboxBuilder.Block(_root, dir > 0 ? "Conveyor_Right" : "Conveyor_Left", _plate, _mat, center, new Vector2(run.length, 1f));
+            go.GetComponent<SpriteRenderer>().color = new Color(0.55f, 0.5f, 0.6f);
+            var zone = go.AddComponent<ForceZone>();
+            zone.kind = ForceKind.Conveyor;
+            zone.direction = dir;
+            zone.size = new Vector2(run.length, 1f);
+            zone.strength = 3.2f;
+            zone.streakSpeed = zone.strength;
+            zone.streaks = Streaks(go.transform, run.length, 0.42f, 0.12f, new Color(1f, 0.85f, 0.3f, 0.9f), Mathf.Max(2, run.length));
+        }
+
+        /// <summary>Wind (pale streaks) or water current (teal, with a little lift) over a block of cells.</summary>
+        static void Push(AsciiLevel.Rect r, ForceKind kind, int dir)
+        {
+            var center = new Vector2(r.x + r.w * 0.5f, r.y + r.h * 0.5f);
+            var go = new GameObject(kind == ForceKind.Current ? "Current" : "Wind");
+            go.transform.SetParent(_root, false);
+            go.transform.position = center;
+            var zone = go.AddComponent<ForceZone>();
+            zone.kind = kind;
+            zone.direction = dir;
+            zone.size = new Vector2(r.w, r.h);
+            zone.strength = kind == ForceKind.Current ? 26f : 34f;
+            zone.lift = kind == ForceKind.Current ? 7f : 0f;
+            zone.streakSpeed = kind == ForceKind.Current ? 3f : 6f;
+            var color = kind == ForceKind.Current ? new Color(0.4f, 1f, 0.9f, 0.35f) : new Color(1f, 1f, 1f, 0.35f);
+            if (kind == ForceKind.Current)
+                Art("CurrentWater", _water, center, new Vector2(r.w, r.h), -3).color = new Color(0.3f, 0.75f, 0.8f, 0.35f);
+            int count = Mathf.Max(2, r.w * r.h / 3);
+            zone.streaks = Streaks(go.transform, r.w, r.h * 0.5f, 0.08f, color, count, r.h);
+        }
+
+        static SpriteRenderer[] Streaks(Transform parent, float width, float yOrHalfHeight, float thickness, Color color, int count, float height = 0f)
+        {
+            var list = new SpriteRenderer[count];
+            var rng = new System.Random(count * 7919 + (int)(width * 31));
+            for (int i = 0; i < count; i++)
+            {
+                float y = height > 0f ? (float)(rng.NextDouble() * height - height * 0.5f) : yOrHalfHeight;
+                var sr = Art("Streak", _oneWay, (Vector2)parent.position + new Vector2(-width * 0.5f + (i + 0.5f) * width / count, y),
+                             new Vector2(0.7f, thickness), 8, parent);
+                sr.color = color;
+                list[i] = sr;
+            }
+            return list;
+        }
+
+        /// <summary>Fire geyser: a vent on the ground that erupts a 4-tall fire column on a timer.</summary>
+        static void Geyser(Vector2 groundPos, int cellX)
+        {
+            var go = new GameObject("FireGeyser");
+            go.transform.SetParent(_root, false);
+            go.transform.position = groundPos;
+            var g = go.AddComponent<FireGeyser>();
+            g.offset = (cellX * 0.37f) % 3.5f;
+            g.vent = Art("Vent", _plate, groundPos + new Vector2(0f, 0.1f), new Vector2(1f, 0.25f), 7, go.transform);
+            var col = Art("Fire", _water, groundPos, new Vector2(0.8f, 0.01f), 9, go.transform);
+            g.column = col;
+            var hurtGo = new GameObject("FireHurt") { layer = PKRLayers.Hazard };
+            hurtGo.transform.SetParent(go.transform, false);
+            hurtGo.transform.localPosition = new Vector3(0f, g.height * 0.5f, 0f);
+            var cd = hurtGo.AddComponent<ContactDamage>();
+            cd.team = TeamIds.Enemy;
+            cd.size = new Vector2(0.7f, g.height);
+            cd.launchUpward = true;
+            cd.inactiveWhileStunned = false;
+            cd.hit = new HitData
+            {
+                damage = 1, pipDamage = 1, baseKnockback = 12f, exposedMultiplier = 1f,
+                angleDegrees = 75f, baseHitstunFrames = 16, hitstopFrames = 4, isHeavy = false
+            };
+            cd.enabled = false;
+            g.hurt = cd;
         }
 
         static void Spot(PickupKind kind, Vector2 pos)

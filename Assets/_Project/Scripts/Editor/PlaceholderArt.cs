@@ -166,6 +166,61 @@ namespace PKR.EditorTools
             return Clear;
         });
 
+        // ---- Shattered Realms foes (Story world 3) --------------------------------------------------------------
+        static readonly Color32 Ember = new Color32(255, 120, 40, 255);
+        static readonly Color32 EmberDark = new Color32(150, 50, 30, 255);
+        static readonly Color32 EmberGlow = new Color32(255, 220, 120, 255);
+        static readonly Color32 Cloud = new Color32(240, 246, 255, 255);
+        static readonly Color32 CloudDark = new Color32(170, 196, 230, 255);
+        static readonly Color32 Rust = new Color32(196, 104, 64, 255);
+        static readonly Color32 RustDark = new Color32(120, 60, 40, 255);
+        static readonly Color32 Teal = new Color32(60, 190, 180, 255);
+        static readonly Color32 ToyRed = new Color32(220, 60, 70, 255);
+        static readonly Color32 ToyBlue = new Color32(70, 100, 210, 255);
+
+        /// <summary>Cinder Crawler: a basalt slug with a glowing crack down its back. 16x10, faces right.</summary>
+        public static Sprite CinderCrawler() => GetOrCreate("ph_cinder_crawler", 16, 10, true, (x, y) =>
+        {
+            float d = Dist(x, y, 7.5f, 1.5f);
+            if (y > 7 || d > 7.4f || (y == 0 && (x < 2 || x > 13))) return Clear;
+            if (x == 12 && y == 4) return Ink;                                                       // eye
+            if (y >= 4 && (x + y) % 5 == 0) return EmberGlow;                                        // crack sparks
+            if (y >= 3 && y <= 5 && x >= 3 && x <= 11 && (x % 3 != 0)) return Ember;                 // glowing crack
+            return d > 6.5f ? Ink : EmberDark;
+        });
+
+        /// <summary>Puff Glider: a little cloud with a propeller tail. 16x12, faces right.</summary>
+        public static Sprite PuffGlider() => GetOrCreate("ph_puff_glider", 16, 12, false, (x, y) =>
+        {
+            if (x <= 2 && y >= 5 && y <= 7) return (y == 6) ? SteelDark : (x == 1 ? Steel : Clear);  // propeller
+            float d = Math.Min(Dist(x, y, 6f, 6f), Math.Min(Dist(x, y, 10f, 5.5f), Dist(x, y, 8f, 8f)));
+            if (d > 3.6f) return Clear;
+            if (x == 11 && y == 6) return Ink;                                                       // eye
+            return d > 2.9f ? CloudDark : Cloud;
+        });
+
+        /// <summary>Rust Crab: a brass-and-rust crab with one big claw. 16x12, faces right.</summary>
+        public static Sprite RustCrab() => GetOrCreate("ph_rust_crab", 16, 12, true, (x, y) =>
+        {
+            if (y <= 1) return (x == 3 || x == 6 || x == 9 || x == 12) ? RustDark : Clear;            // legs
+            if (x >= 12 && y >= 6 && y <= 9 && Dist(x, y, 13.5f, 7.5f) <= 2.2f) return (y == 7 && x >= 14) ? Clear : Brass; // claw
+            if (y >= 8 && (x == 6 || x == 9)) return y == 9 ? Ink : RustDark;                        // eye stalks
+            float d = Dist(x, y, 7.5f, 4f);
+            if (y >= 2 && y <= 7 && d <= 5.2f) return d > 4.4f ? RustDark : ((x + y) % 4 == 0 ? Teal : Rust);
+            return Clear;
+        });
+
+        /// <summary>Wind-up Soldier: a toy guard with a drum-shaped body and a winding key. 12x16, faces right.</summary>
+        public static Sprite WindupSoldier() => GetOrCreate("ph_windup_soldier", 12, 16, true, (x, y) =>
+        {
+            if (y <= 2) return (x == 4 || x == 7) ? Ink : Clear;                                     // legs
+            if (y >= 3 && y <= 9 && x >= 3 && x <= 8) return (y == 6) ? Brass : (x == 3 || x == 8 ? ToyBlue : ToyRed); // drum body
+            if (x >= 0 && x <= 2 && y >= 5 && y <= 7) return (y == 6 || x == 1) ? Brass : Clear;    // winding key
+            if (y >= 10 && y <= 12 && x >= 4 && x <= 7) return (x == 6 && y == 11) ? Ink : NovaSkin; // face
+            if (y >= 13 && y <= 15 && x >= 3 && x <= 8) return y == 13 ? Brass : Ink;               // tall hat
+            return Clear;
+        });
+
         /// <summary>Spring Tick: a round clockwork critter on a coiled spring. 14x14, faces right.</summary>
         public static Sprite SpringTick() => GetOrCreate("ph_spring_tick", 14, 14, true, (x, y) =>
         {

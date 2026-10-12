@@ -30,6 +30,24 @@ namespace PKR.Core
             idle = 0.8f, sweepWindup = 0.9f, sweep = 1.6f, slamWindup = 0.9f, slam = 0.3f, stagger = 2.5f,
             volleyWindup = 0.7f, volley = 1.2f, phaseTwoAt = 0.6f, phaseThreeAt = 0.25f, slamTrackFraction = 0.6f
         };
+
+        /// <summary>
+        /// The same fight at a faster tempo (1.25 = every action takes 80% as long). The stagger window shrinks
+        /// less than the attacks so a faster boss stays fair. Health thresholds are unchanged.
+        /// </summary>
+        public static WardenTuning Scaled(float tempo)
+        {
+            if (float.IsNaN(tempo) || tempo <= 0f) tempo = 1f;
+            var d = Default;
+            float k = 1f / tempo;
+            return new WardenTuning
+            {
+                idle = d.idle * k, sweepWindup = d.sweepWindup * k, sweep = d.sweep * k,
+                slamWindup = d.slamWindup * k, slam = d.slam * k, stagger = d.stagger * (0.5f + 0.5f * k),
+                volleyWindup = d.volleyWindup * k, volley = d.volley * k,
+                phaseTwoAt = d.phaseTwoAt, phaseThreeAt = d.phaseThreeAt, slamTrackFraction = d.slamTrackFraction
+            };
+        }
     }
 
     /// <summary>

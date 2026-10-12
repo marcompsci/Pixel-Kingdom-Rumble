@@ -47,6 +47,23 @@ namespace PKR
         public int AirJumpsLeft => _airJumpsLeft;
         /// <summary>The moving platform we're standing on, if any.</summary>
         public MovingPlatform Platform => _platform;
+
+        // Pushes from ForceZones (wind, water currents, conveyors), gathered during a step and used by the next one.
+        Vector2 _pushAccel, _pushAccelNext;
+        float _conveyor, _conveyorNext;
+
+        /// <summary>
+        /// Wind / current: acceleration (units/s²) applied on the next physics step.
+        /// Conveyor: a floor speed (units/s) that carries you while you stand on it, like a moving platform.
+        /// </summary>
+        public void AddPush(Vector2 acceleration, float conveyorSpeed = 0f)
+        {
+            _pushAccelNext += acceleration;
+            _conveyorNext += conveyorSpeed;
+        }
+
+        /// <summary>Extra speed wind can add on top of the hero's run speed.</summary>
+        public const float MaxPushSpeed = 6f;
         /// <summary>Set by abilities to freeze facing (e.g. during a dash).</summary>
         public bool FacingLocked { get; set; }
 
@@ -133,6 +150,8 @@ namespace PKR
             float dt = Time.fixedDeltaTime;
             var s = Stats;
             Vector2 v = Body.linearVelocity;
+            _pushAccel = _pushAccelNext; _pushAccelNext = Vector2.zero;
+            _conveyor = _conveyorNext; _conveyorNext = 0f;
 
             // --- Ground state ---------------------------------------------------------------
             bool wasGrounded = IsGrounded;
@@ -183,13 +202,20 @@ namespace PKR
             // --- Horizontal -----------------------------------------------------------------
             // Work in the platform's frame while grounded; leaving the ground keeps the carried momentum.
             if (IsGrounded) v.x -= _carryX;
-            float carry = _platform != null ? _platform.Velocity.x : 0f;
+            float carry = (_platform != null ? _platform.Velocity.x : 0f) + (IsGrounded ? _conveyor : 0f);
             if (canAct)
                 v.x = JumpPhysics.NextHorizontalVelocity(v.x, Intent.Move.x, s, IsGrounded, dt);
             else
                 v.x = JumpPhysics.MoveTowards(v.x, 0f, s.airDeceleration * 0.5f * dt); // knockback drift
             v.x += carry;
             _carryX = carry;
+            if (_pushAccel.x != 0f)
+            {
+                // Wind pushes harder on a hero in the air than on one braced on the ground.
+                v.x += _pushAccel.x * (IsGrounded ? 0.45f : 1f) * dt;
+                float cap = s.runSpeed + MaxPushSpeed;
+                v.x = Mathf.Clamp(v.x, -cap, cap);
+            }
 
             // --- Wall ride (only heroes whose stats enable it) -------------------------------
             // Runs before the jump section so a wall jump owns the jump press for this step.
@@ -269,6 +295,7 @@ namespace PKR
             {
                 float mult = JumpPhysics.GravityMultiplier(v.y, Intent.Jump.Held && _jumpArc, s);
                 v.y -= _gravity * mult * ArenaMods.GravityScale * dt;
+                v.y += _pushAccel.y * dt; // updrafts and rising currents
                 v.y = Mathf.Max(v.y, -s.maxFallSpeed);
             }
 

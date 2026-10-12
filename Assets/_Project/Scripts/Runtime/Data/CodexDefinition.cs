@@ -16,6 +16,8 @@ namespace PKR
         public List<EnemyDefinition> enemies = new List<EnemyDefinition>();
         [Tooltip("Places come from this world's levels, in play order.")]
         public WorldDefinition world;
+        [Tooltip("Later Story Quest worlds; their levels are listed after the first world's.")]
+        public List<WorldDefinition> moreWorlds = new List<WorldDefinition>();
 
         public List<CharacterDefinition> Heroes()
         {
@@ -38,6 +40,9 @@ namespace PKR
             var list = new List<LevelDefinition>();
             if (world != null)
                 foreach (var l in world.levels) if (l != null && !string.IsNullOrEmpty(l.id)) list.Add(l);
+            if (moreWorlds != null)
+                foreach (var w in moreWorlds)
+                    if (w != null) foreach (var l in w.levels) if (l != null && !string.IsNullOrEmpty(l.id) && !list.Contains(l)) list.Add(l);
             return list;
         }
 

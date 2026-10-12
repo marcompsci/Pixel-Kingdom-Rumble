@@ -24,7 +24,19 @@ namespace PKR.EditorTools
             BuildNoPrompt();
         }
 
+        public const string SovereignScenePath = "Assets/_Project/Scenes/Story/" + SceneIds.FourfoldSovereign + ".unity";
+
         public static void BuildNoPrompt()
+        {
+            BuildArena(ScenePath, false);
+            BuildArena(SovereignScenePath, true);
+        }
+
+        /// <summary>
+        /// One boss arena. sovereign = the Shattered Realms finale: the same fight engine as the Warden but faster
+        /// (tempo 1.25), tougher (36 HP), two extra cogs per volley, and its body changes realm color each phase.
+        /// </summary>
+        static void BuildArena(string scenePath, bool sovereign)
         {
             EditorUtil.EnsureLayers();
             // New scene FIRST: opening a scene unloads assets loaded before it, and Unity 6.6 then throws
@@ -32,8 +44,8 @@ namespace PKR.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var roster = DataAssets.GetOrCreateRoster();
             var nova = DataAssets.GetOrCreateNova();
-            var level = DataAssets.GetOrCreateWardenLevel();
-            DataAssets.GetOrCreateSunspireTestLevel(); // makes sure Sunspire's NEXT points here
+            var level = sovereign ? DataAssets.GetOrCreateSovereignLevel() : DataAssets.GetOrCreateWardenLevel();
+            if (!sovereign) DataAssets.GetOrCreateSunspireTestLevel(); // makes sure Sunspire's NEXT points here
             var mat = EditorUtil.UnlitSpriteMaterial();
             var stone = PlaceholderArt.StoneBlock();
             var ground = PlaceholderArt.Ground();
@@ -53,7 +65,8 @@ namespace PKR.EditorTools
             follow.bounds = new Rect(Left - 1f, Floor - 2f, Right - Left + 2f, Ceiling + 6f);
 
             var root = new GameObject("Arena").transform;
-            SandboxBuilder.Block(root, "Floor", ground, mat, new Vector2(0f, Floor - 1f), new Vector2(Right - Left + 2f, 2f));
+            var floorGo = SandboxBuilder.Block(root, "Floor", ground, mat, new Vector2(0f, Floor - 1f), new Vector2(Right - Left + 2f, 2f));
+            if (sovereign) floorGo.GetComponent<SpriteRenderer>().color = AsciiLevelBuilder.TintFor("Shattered Crossing");
             SandboxBuilder.Block(root, "Wall_Left", stone, mat, new Vector2(Left - 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
             SandboxBuilder.Block(root, "Wall_Right", stone, mat, new Vector2(Right + 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
             SandboxBuilder.Block(root, "Ceiling", stone, mat, new Vector2(0f, Ceiling + 2.5f), new Vector2(Right - Left + 2f, 1f));
@@ -71,7 +84,7 @@ namespace PKR.EditorTools
             var start = new GameObject("StartPoint").transform;
             start.position = new Vector2(Left + 2f, 1.2f);
 
-            var bossGo = new GameObject("ClockworkWarden");
+            var bossGo = new GameObject(sovereign ? "FourfoldSovereign" : "ClockworkWarden");
             bossGo.AddComponent<Damageable>();
             var warden = bossGo.AddComponent<ClockworkWarden>();
             EditorUtil.SetFloat(warden, "arenaLeft", Left);
@@ -82,6 +95,21 @@ namespace PKR.EditorTools
             EditorUtil.SetField(warden, "bodySprite", gear);
             EditorUtil.SetField(warden, "gearSprite", gear);
             EditorUtil.SetField(warden, "pistonSprite", plate);
+            if (sovereign)
+            {
+                var so = new SerializedObject(warden);
+                so.FindProperty("bossName").stringValue = "THE FOURFOLD SOVEREIGN";
+                so.FindProperty("tempo").floatValue = 1.25f;
+                so.FindProperty("extraCogs").intValue = 2;
+                so.FindProperty("maxHealth").intValue = 36;
+                var tints = so.FindProperty("phaseTints");
+                var realm = DataAssets.ShatteredRealmSections;
+                tints.arraySize = 3;
+                tints.GetArrayElementAtIndex(0).colorValue = realm[0].color; // ember
+                tints.GetArrayElementAtIndex(1).colorValue = realm[1].color; // sky
+                tints.GetArrayElementAtIndex(2).colorValue = realm[3].color; // toy (the last stand)
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             var hero = SandboxBuilder.BuildHero(nova, mat, start.position, roster);
             follow.target = hero.transform;
@@ -109,11 +137,11 @@ namespace PKR.EditorTools
             level.totalSecrets = 0;
             EditorUtility.SetDirty(level);
 
-            EditorUtil.EnsureFolder(Path.GetDirectoryName(ScenePath).Replace('\\', '/'));
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorUtil.AddSceneToBuild(ScenePath);
+            EditorUtil.EnsureFolder(Path.GetDirectoryName(scenePath).Replace('\\', '/'));
+            EditorSceneManager.SaveScene(scene, scenePath);
+            EditorUtil.AddSceneToBuild(scenePath);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PKR] Clockwork Warden arena built at {ScenePath}. Press Play, or reach it from Sunspire Meadows > NEXT.");
+            Debug.Log($"[PKR] Boss arena built at {scenePath}.");
         }
     }
 }
