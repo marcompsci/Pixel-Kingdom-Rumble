@@ -133,11 +133,29 @@ namespace PKR.EditorTools
 
             _root = new GameObject("Level").transform;
 
+            // --- Backdrop + HD post-processing ------------------------------------------------------------
+            string theme = PixelArt.ThemeFor(level.biomeName);
+            var startCell = map.First('P');
+            float groundY = startCell.HasValue ? startCell.Value.y : 1f;
+            PixelArt.Backdrop(theme, level.skyColor, groundY, _mat, new Vector2(4f, 4f));
+            PixelArt.PostFX(cam);
+
             // --- Terrain ---------------------------------------------------------------------------------
-            // Each world/biome reuses the same tiles with its own tint (icy, copper, violet...).
-            Color terrainTint = TintFor(level.biomeName);
-            foreach (var r in map.MergedRects('#')) Block("Ground", _ground, r).GetComponent<SpriteRenderer>().color = terrainTint;
-            foreach (var r in map.MergedRects('X')) Block("Stone", _stone, r).GetComponent<SpriteRenderer>().color = terrainTint;
+            // Each world has its own tile set (grass, snow, brass roofs, basalt...); the tint is the fallback
+            // when a world's art is missing.
+            bool themed = PixelArt.HasTiles(theme);
+            Color terrainTint = themed ? Color.white : TintFor(level.biomeName);
+            foreach (var r in map.MergedRects('#'))
+            {
+                if (themed) PixelArt.Ground(_root, "Ground", theme, _mat, r.x, r.y, r.w, r.h, map.IsSolid);
+                else Block("Ground", _ground, r).GetComponent<SpriteRenderer>().color = terrainTint;
+            }
+            foreach (var r in map.MergedRects('X'))
+            {
+                if (themed) PixelArt.Ground(_root, "Stone", theme, _mat, r.x, r.y, r.w, r.h, null, stone: true);
+                else Block("Stone", _stone, r).GetComponent<SpriteRenderer>().color = terrainTint;
+            }
+            var plank = themed && PixelArt.Tile(theme, "plank") != null ? PixelArt.Tile(theme, "plank") : _oneWay;
             foreach (var r in map.MergedRects('~')) Water(r);
             foreach (var r in map.MergedRects('L')) Vine(map, r);
             foreach (var run in map.Runs)
@@ -145,7 +163,7 @@ namespace PKR.EditorTools
                 switch (run.tile)
                 {
                     case '=':
-                        SandboxBuilder.OneWay(_root, "Plank", _oneWay, _mat, new Vector2(run.x + run.length * 0.5f, run.y + 0.5f), run.length);
+                        SandboxBuilder.OneWay(_root, "Plank", plank, _mat, new Vector2(run.x + run.length * 0.5f, run.y + 0.5f), run.length);
                         break;
                     case '^':
                         Spikes(map, run);

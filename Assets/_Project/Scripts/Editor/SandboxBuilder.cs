@@ -51,6 +51,8 @@ namespace PKR.EditorTools
             cam.backgroundColor = SkyColor;
             camGo.transform.position = new Vector3(0f, 2f, -10f);
             var follow = camGo.AddComponent<CameraFollow2D>();
+            PixelArt.Backdrop("meadow", SkyColor, 0f, mat, new Vector2(0f, 2f));
+            PixelArt.PostFX(cam);
 
             // --- Course -----------------------------------------------------------------------
             var level = new GameObject("Course").transform;
@@ -150,6 +152,7 @@ namespace PKR.EditorTools
             var visual = go.AddComponent<FighterVisual>();
             EditorUtil.SetField(visual, "body", body.transform);
             EditorUtil.SetField(visual, "bodyRenderer", sr);
+            if (def != null) EditorUtil.SetField(visual, "character", def);
             var flash = go.AddComponent<HitFlash>();
             EditorUtil.SetField(flash, "target", sr);
             go.AddComponent<StatusPips>();

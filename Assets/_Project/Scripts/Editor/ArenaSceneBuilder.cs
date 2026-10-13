@@ -53,6 +53,10 @@ namespace PKR.EditorTools
             camGo.transform.position = new Vector3(0f, 2.5f, -10f);
             var follow = camGo.AddComponent<CameraFollow2D>();
             follow.bounds = new Rect(-24f, -10f, 48f, 30f);
+            PixelArt.Backdrop("foundry", ForgeSky, -2f, mat, new Vector2(0f, 2.5f));
+            PixelArt.PostFX(cam);
+            stone = PixelArt.Tile("foundry", "stone") ?? stone;
+            oneWay = PixelArt.Tile("foundry", "plank") ?? oneWay;
 
             var stage = new GameObject("Stage").transform;
             // Main platforms: x -9..-2 and 2..9, top at y = 0.

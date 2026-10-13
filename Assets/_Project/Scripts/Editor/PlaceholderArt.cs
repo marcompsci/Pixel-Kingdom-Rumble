@@ -13,7 +13,7 @@ namespace PKR.EditorTools
     public static class PlaceholderArt
     {
         public const string Folder = "Assets/_Project/Art/Placeholder/Sprites";
-        public const int PPU = 16;
+        public const int PPU = 16; // fallback only: the committed art is drawn at 2x and imported at 32 PPU (Tools/art/build_all.py)
 
         // Palette: warm, high-contrast for small screens.
         static readonly Color32 Clear = new Color32(0, 0, 0, 0);
@@ -640,6 +640,10 @@ namespace PKR.EditorTools
             if (y >= 22 && x >= 7 && x <= 9) return ShardGold;                                       // plume
             return Clear;
         });
+
+        /// <summary>The boss's clockwork face (generated art; this fallback is a plain brass disc). 64x64 at 32 PPU.</summary>
+        public static Sprite WardenBody() => GetOrCreate("ph_warden_body", 32, 32, false, (x, y) =>
+            (x - 15.5f) * (x - 15.5f) + (y - 15.5f) * (y - 15.5f) < 225f ? Brass : Clear);
 
         /// <summary>Creates (once) a PNG sprite from a pixel function and imports it as a point-filtered sprite.</summary>
         public static Sprite GetOrCreate(string name, int w, int h, bool bottomPivot, Func<int, int, Color32> pixel)

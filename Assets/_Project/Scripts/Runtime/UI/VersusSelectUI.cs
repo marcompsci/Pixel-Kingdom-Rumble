@@ -153,7 +153,7 @@ namespace PKR
                             56, TextAnchor.MiddleCenter, 70f, title: true);
             string info = focus == null ? "The CPU picks any fighter."
                         : focusLocked ? (string.IsNullOrEmpty(focus.unlockHint) ? "Locked" : "LOCKED: " + focus.unlockHint.ToUpperInvariant())
-                        : focus.tagline;
+                        : focus.tagline + WeaponLine(focus);
             UIFactory.Label(panel, info, 30, TextAnchor.MiddleCenter, 50f).color = p.subtle;
             if (focus != null && !focusLocked)
                 UIFactory.Label(panel, CodexPanel.HeroStats(focus, versus: true), 26, TextAnchor.UpperLeft, 370f);
@@ -253,5 +253,8 @@ namespace PKR
             img.raycastTarget = false;
             img.color = roster.IsSelectable(def) ? roster.TintFor(def.id) : Silhouette;
         }
+
+        static string WeaponLine(CharacterDefinition def) =>
+            def.frames != null && !string.IsNullOrEmpty(def.frames.weaponName) ? "  ·  Weapon: " + def.frames.weaponName : "";
     }
 }

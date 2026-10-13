@@ -55,6 +55,8 @@ namespace PKR
             _material = material;
             if (material != null) _sr.sharedMaterial = material;
             _sr.transform.localPosition = Vector3.zero;
+            GlowHalo.Attach(_sr.transform, kind == PickupKind.Health ? new Color(1f, 0.35f, 0.45f, 0.5f) : new Color(1f, 0.82f, 0.3f, 0.5f),
+                            1.5f, _sr.sortingOrder, material);
             transform.position = position;
             _home = position;
             _age = Random.value * 3f; // desync the bobbing

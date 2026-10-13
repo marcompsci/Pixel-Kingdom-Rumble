@@ -65,6 +65,8 @@ namespace PKR.EditorTools
             // Phase 3.1: the ten free Versus fighters join the roster after the original four.
             foreach (var f in VersusFighters.GetOrCreateAll())
                 if (!roster.heroes.Contains(f)) { roster.heroes.Add(f); EditorUtility.SetDirty(roster); }
+            // Generated pixel art: animation frames, signature weapons and projectile art for every hero.
+            foreach (var h in roster.heroes) PixelArt.ApplyFighter(h);
             return roster;
         }
 

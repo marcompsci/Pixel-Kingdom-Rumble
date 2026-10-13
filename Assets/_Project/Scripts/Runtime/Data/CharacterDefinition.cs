@@ -33,6 +33,9 @@ namespace PKR
         public Sprite bodySprite;
         public Sprite portrait;
 
+        [Header("Animation (generated pixel art)")]
+        public FighterFrames frames = new FighterFrames();
+
         [Header("Movement")]
         public MovementStats movement = new MovementStats();
 

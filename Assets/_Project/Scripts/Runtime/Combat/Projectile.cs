@@ -21,6 +21,7 @@ namespace PKR
         Damageable _owner;
         AttackRunner _source;
         SpriteRenderer _renderer;
+        float _spin;
         readonly List<Damageable> _targets = new List<Damageable>();
         static readonly Collider2D[] GroundBuffer = new Collider2D[1];
 
@@ -57,11 +58,28 @@ namespace PKR
 
             transform.position = origin + new Vector2(move.projectileSpawnOffset.x * _direction, move.projectileSpawnOffset.y);
             _renderer = GetComponent<SpriteRenderer>();
-            _renderer.color = move.projectileColor;
             if (material != null) _renderer.sharedMaterial = material;
-            // UISprites.Circle is 1.28 units across at 100 PPU; scale to the hit radius.
-            float d = _radius * 2f / 1.28f;
-            transform.localScale = new Vector3(d * 1.4f, d, 1f); // slightly stretched: reads as moving
+            if (move.projectileSprite != null)
+            {
+                // Fighter-specific art (faces right): sized so its height covers the hit circle, flipped to travel.
+                _renderer.sprite = move.projectileSprite;
+                _renderer.color = Color.white;
+                float h = Mathf.Max(0.01f, move.projectileSprite.bounds.size.y);
+                float k = Mathf.Clamp(_radius * 2.4f / h, 0.5f, 2.5f);
+                transform.localScale = new Vector3(k * _direction, k, 1f);
+                var sz = move.projectileSprite.bounds.size;
+                _spin = Mathf.Abs(sz.x - sz.y) < 0.05f ? -900f * _direction : 0f; // round art (stars, balls) spins
+            }
+            else
+            {
+                _renderer.sprite = UISprites.Circle;
+                _renderer.color = move.projectileColor;
+                // UISprites.Circle is 1.28 units across at 100 PPU; scale to the hit radius.
+                float d = _radius * 2f / 1.28f;
+                transform.localScale = new Vector3(d * 1.4f, d, 1f); // slightly stretched: reads as moving
+                _spin = 0f;
+            }
+            transform.rotation = Quaternion.identity;
         }
 
         void FixedUpdate()
@@ -70,6 +88,7 @@ namespace PKR
             _lifeLeft -= dt;
             Vector2 pos = (Vector2)transform.position + _velocity * dt;
             transform.position = pos;
+            if (_spin != 0f) transform.Rotate(0f, 0f, _spin * dt);
 
             CombatQuery.OverlapCircle(pos, _radius, _targets);
             foreach (var target in _targets)

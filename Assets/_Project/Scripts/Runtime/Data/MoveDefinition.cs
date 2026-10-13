@@ -64,6 +64,8 @@ namespace PKR
         public float projectileLifetime = 0.6f;
         public float projectileRadius = 0.3f;
         public Color projectileColor = new Color32(255, 200, 80, 255);
+        [Tooltip("Optional art for the projectile (faces right). Empty = a coloured disc.")]
+        public Sprite projectileSprite;
 
         [Header("Trap (optional, e.g. Luma's Spark Coil)")]
         [Tooltip("Places a trap at projectileSpawnOffset on the first active frame instead of hitting directly. Uses `hit` and projectileColor.")]

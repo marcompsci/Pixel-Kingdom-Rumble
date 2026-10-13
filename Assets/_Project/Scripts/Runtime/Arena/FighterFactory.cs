@@ -58,7 +58,7 @@ namespace PKR
             attacks.Team = team;
             attacks.debugDrawHitboxes = false;
 
-            go.AddComponent<FighterVisual>();
+            go.AddComponent<FighterVisual>().SetCharacter(def);
             go.AddComponent<HitFlash>();
             go.AddComponent<StatusPips>();
             go.SetActive(true);

@@ -22,6 +22,7 @@ namespace PKR
             var body = fighter.transform.Find("Body");
             var sr = body != null ? body.GetComponent<SpriteRenderer>() : null;
             if (sr != null && def.bodySprite != null) sr.sprite = def.bodySprite;
+            if (fighter.TryGetComponent(out FighterVisual visual)) visual.SetCharacter(def);
 
             if (fighter.TryGetComponent(out HeroAbilities abilities)) abilities.SetKit(def.kit as HeroKitDefinition);
             if (fighter.TryGetComponent(out AttackRunner attacks))

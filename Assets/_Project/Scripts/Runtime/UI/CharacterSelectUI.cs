@@ -96,7 +96,7 @@ namespace PKR
             Arrow(previewRow, ">", +1);
 
             _name = UIFactory.Label(panel, "", 72, TextAnchor.MiddleCenter, 96f, title: true);
-            _tagline = UIFactory.Label(panel, "", 38, TextAnchor.MiddleCenter, 60f);
+            _tagline = UIFactory.Label(panel, "", 36, TextAnchor.MiddleCenter, 96f);
             _tagline.color = p.subtle;
             _lore = UIFactory.Label(panel, "", 32, TextAnchor.UpperCenter, 190f);
             _status = UIFactory.Label(panel, "", 36, TextAnchor.MiddleCenter, 56f);
@@ -175,7 +175,8 @@ namespace PKR
             _preview.sprite = hero.bodySprite;
             _preview.color = selectable ? roster.TintFor(hero.id) : Silhouette; // shows the equipped palette
             _name.text = hero.displayName.ToUpperInvariant();
-            _tagline.text = hero.tagline;
+            _tagline.text = hero.frames != null && !string.IsNullOrEmpty(hero.frames.weaponName)
+                ? $"{hero.tagline}\nWeapon: {hero.frames.weaponName}" : hero.tagline;
             _lore.text = selectable || hero.playableInThisBuild ? hero.lore : "A new hero is on the way to the Sunspire Isles.";
             _status.text = selectable ? "READY"
                 : !hero.playableInThisBuild ? "COMING IN A FUTURE UPDATE"

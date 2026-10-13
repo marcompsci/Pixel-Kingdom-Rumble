@@ -69,6 +69,9 @@ namespace PKR.EditorTools
             camGo.transform.position = new Vector3(0f, 2f, -10f);
             var follow = camGo.AddComponent<CameraFollow2D>();
             follow.bounds = new Rect(-7f, -6f, 147f, 22f);
+            _theme = PixelArt.ThemeFor(level.biomeName);
+            PixelArt.Backdrop(_theme, level.skyColor, 0f, _mat, new Vector2(0f, 2f));
+            PixelArt.PostFX(cam);
 
             _root = new GameObject("Level").transform;
             var start = new GameObject("StartPoint").transform;
@@ -176,8 +179,18 @@ namespace PKR.EditorTools
 
         // ---- Helpers ---------------------------------------------------------------------------------
 
-        static void Block(string name, Sprite sprite, Vector2 center, Vector2 size) =>
+        static string _theme = "meadow";
+
+        static void Block(string name, Sprite sprite, Vector2 center, Vector2 size)
+        {
+            if (PixelArt.HasTiles(_theme) && (sprite == _ground || sprite == _stone))
+            {
+                PixelArt.Ground(_root, name, _theme, _mat, Mathf.RoundToInt(center.x - size.x * 0.5f), Mathf.RoundToInt(center.y - size.y * 0.5f),
+                                Mathf.RoundToInt(size.x), Mathf.RoundToInt(size.y), null, stone: sprite == _stone);
+                return;
+            }
             SandboxBuilder.Block(_root, name, sprite, _mat, center, size);
+        }
 
         static int _shardCount;
 

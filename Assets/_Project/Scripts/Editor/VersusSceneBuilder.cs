@@ -70,17 +70,29 @@ namespace PKR.EditorTools
             follow.bounds = new Rect(-13f, -2f, 26f, 16f);
 
             var stage = new GameObject("Stage").transform;
+            bool themed = PixelArt.HasTiles("meadow");
+            if (themed)
+            {
+                // Sunset dojo: parallax peaks and temple roofs behind a grassy floor.
+                PixelArt.Backdrop("dojo", DojoSky, 0f, mat, new Vector2(0f, 3f));
+                PixelArt.PostFX(cam);
+                stone = PixelArt.Tile("meadow", "stone") ?? stone;
+                PixelArt.Ground(stage, "Floor", "meadow", mat, -13, -2, 26, 2);
+            }
+            else SandboxBuilder.Block(stage, "Floor", ground, mat, new Vector2(0f, -1f), new Vector2(26f, 2f));
             // Floor x -12..12 with its top at y = 0, and walls you can't leave through.
-            SandboxBuilder.Block(stage, "Floor", ground, mat, new Vector2(0f, -1f), new Vector2(26f, 2f));
             SandboxBuilder.Block(stage, "Wall_Left", stone, mat, new Vector2(-12.75f, 5f), new Vector2(1.5f, 12f));
             SandboxBuilder.Block(stage, "Wall_Right", stone, mat, new Vector2(12.75f, 5f), new Vector2(1.5f, 12f));
             SandboxBuilder.Block(stage, "Ceiling", stone, mat, new Vector2(0f, 11.5f), new Vector2(27f, 1f));
 
-            // Backdrop: a big gear "sun" and brass beams, behind everything (decor only, no colliders).
-            Decor(stage, gear, mat, new Vector2(0f, 6.5f), 5f, new Color(1f, 0.85f, 0.6f, 0.55f));
-            Decor(stage, gear, mat, new Vector2(-8f, 7.5f), 2.2f, new Color(1f, 1f, 1f, 0.35f));
-            Decor(stage, gear, mat, new Vector2(8f, 7.5f), 2.2f, new Color(1f, 1f, 1f, 0.35f));
-            for (int i = -2; i <= 2; i++) Beam(stage, plate, mat, new Vector2(i * 5f, 3.5f));
+            if (!themed)
+            {
+                // Backdrop: a big gear "sun" and brass beams, behind everything (decor only, no colliders).
+                Decor(stage, gear, mat, new Vector2(0f, 6.5f), 5f, new Color(1f, 0.85f, 0.6f, 0.55f));
+                Decor(stage, gear, mat, new Vector2(-8f, 7.5f), 2.2f, new Color(1f, 1f, 1f, 0.35f));
+                Decor(stage, gear, mat, new Vector2(8f, 7.5f), 2.2f, new Color(1f, 1f, 1f, 0.35f));
+                for (int i = -2; i <= 2; i++) Beam(stage, plate, mat, new Vector2(i * 5f, 3.5f));
+            }
 
             var matchGo = new GameObject("VersusMatch");
             var match = matchGo.AddComponent<VersusController>();

@@ -64,12 +64,28 @@ namespace PKR.EditorTools
             var follow = camGo.AddComponent<CameraFollow2D>();
             follow.bounds = new Rect(Left - 1f, Floor - 2f, Right - Left + 2f, Ceiling + 6f);
 
+            string theme = sovereign ? "shattered" : "foundry";
+            PixelArt.Backdrop(theme, level.skyColor, Floor, mat, new Vector2(0f, 4.5f));
+            PixelArt.PostFX(cam);
+
             var root = new GameObject("Arena").transform;
-            var floorGo = SandboxBuilder.Block(root, "Floor", ground, mat, new Vector2(0f, Floor - 1f), new Vector2(Right - Left + 2f, 2f));
-            if (sovereign) floorGo.GetComponent<SpriteRenderer>().color = AsciiLevelBuilder.TintFor("Shattered Crossing");
-            SandboxBuilder.Block(root, "Wall_Left", stone, mat, new Vector2(Left - 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
-            SandboxBuilder.Block(root, "Wall_Right", stone, mat, new Vector2(Right + 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
-            SandboxBuilder.Block(root, "Ceiling", stone, mat, new Vector2(0f, Ceiling + 2.5f), new Vector2(Right - Left + 2f, 1f));
+            if (PixelArt.HasTiles(theme))
+            {
+                int l = Mathf.RoundToInt(Left), r = Mathf.RoundToInt(Right), f = Mathf.RoundToInt(Floor), c = Mathf.RoundToInt(Ceiling);
+                PixelArt.Ground(root, "Floor", theme, mat, l - 1, f - 2, r - l + 2, 2);
+                PixelArt.Ground(root, "Wall_Left", theme, mat, l - 1, f - 2, 1, c + 4, null, stone: true);
+                PixelArt.Ground(root, "Wall_Right", theme, mat, r, f - 2, 1, c + 4, null, stone: true);
+                PixelArt.Ground(root, "Ceiling", theme, mat, l - 1, c + 2, r - l + 2, 1, null, stone: true);
+                oneWay = PixelArt.Tile(theme, "plank") ?? oneWay;
+            }
+            else
+            {
+                var floorGo = SandboxBuilder.Block(root, "Floor", ground, mat, new Vector2(0f, Floor - 1f), new Vector2(Right - Left + 2f, 2f));
+                if (sovereign) floorGo.GetComponent<SpriteRenderer>().color = AsciiLevelBuilder.TintFor("Shattered Crossing");
+                SandboxBuilder.Block(root, "Wall_Left", stone, mat, new Vector2(Left - 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
+                SandboxBuilder.Block(root, "Wall_Right", stone, mat, new Vector2(Right + 0.5f, Ceiling * 0.5f), new Vector2(1f, Ceiling + 4f));
+                SandboxBuilder.Block(root, "Ceiling", stone, mat, new Vector2(0f, Ceiling + 2.5f), new Vector2(Right - Left + 2f, 1f));
+            }
             SandboxBuilder.OneWay(root, "Ledge_Left", oneWay, mat, new Vector2(Left + 2.5f, 2.5f), 3.5f);
             SandboxBuilder.OneWay(root, "Ledge_Right", oneWay, mat, new Vector2(Right - 2.5f, 2.5f), 3.5f);
             foreach (var x in new[] { Left + 2.5f, Right - 2.5f })
@@ -92,7 +108,7 @@ namespace PKR.EditorTools
             EditorUtil.SetFloat(warden, "floorY", Floor);
             EditorUtil.SetFloat(warden, "ceilingY", Ceiling);
             EditorUtil.SetField(warden, "spriteMaterial", mat);
-            EditorUtil.SetField(warden, "bodySprite", gear);
+            EditorUtil.SetField(warden, "bodySprite", PlaceholderArt.WardenBody());
             EditorUtil.SetField(warden, "gearSprite", gear);
             EditorUtil.SetField(warden, "pistonSprite", plate);
             if (sovereign)
