@@ -24,6 +24,7 @@ namespace PKR.EditorTools
                 ProjectConfigurator.ConfigureIOS();
                 Debug.Log("[PKR BatchCheck] Build All Scenes");
                 MenuSceneBuilder.BuildAll();
+                DebugScenes.BuildOrClean();
                 AssetDatabase.SaveAssets();
                 Debug.Log("[PKR BatchCheck] OK");
             }
