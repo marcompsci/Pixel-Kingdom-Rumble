@@ -70,6 +70,28 @@ namespace PKR.Tests
         }
 
         [Test]
+        public void EveryComponentClass_LivesInAFileWithItsName()
+        {
+            // Otherwise the class has no MonoScript of its own: it works in the Editor but scenes that use it
+            // load as "corrupted" on the device (found with SkyGradient, October 2026).
+            var resolved = new System.Collections.Generic.HashSet<System.Type>();
+            foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets/_Project/Scripts/Runtime" }))
+            {
+                var ms = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid));
+                var c = ms != null ? ms.GetClass() : null;
+                if (c != null) resolved.Add(c);
+            }
+            var missing = new System.Collections.Generic.List<string>();
+            foreach (var t in typeof(FighterVisual).Assembly.GetTypes())
+            {
+                if (t.IsAbstract || t.IsGenericType || t.IsNested) continue;
+                if (!typeof(MonoBehaviour).IsAssignableFrom(t) && !typeof(ScriptableObject).IsAssignableFrom(t)) continue;
+                if (!resolved.Contains(t)) missing.Add(t.Name);
+            }
+            Assert.IsEmpty(missing, "classes without a file of the same name: " + string.Join(", ", missing));
+        }
+
+        [Test]
         public void FighterFramesPick_LoopsAndHandlesEmpty()
         {
             var a = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), Vector2.zero);
