@@ -232,8 +232,8 @@ namespace PKR.EditorTools
             var tex = new Texture2D(2, 2);
             if (!tex.LoadImage(bytes)) { Object.DestroyImmediate(tex); return Color.clear; }
             Color sum = Color.black;
-            int n = 0;
-            for (int x = 0; x < tex.width; x++)
+            int n = 0, width = tex.width;
+            for (int x = 0; x < width; x++)
             {
                 var c = tex.GetPixel(x, 0);
                 if (c.a < 0.9f) continue;
@@ -241,7 +241,7 @@ namespace PKR.EditorTools
                 n++;
             }
             Object.DestroyImmediate(tex);
-            if (n < tex.width / 2) return Color.clear;
+            if (n < width / 2) return Color.clear;
             var avg = sum / n;
             avg.a = 1f;
             return avg;
