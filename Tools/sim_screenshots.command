@@ -12,6 +12,8 @@ mkdir -p "$OUT"; rm -f "$OUT"/*
 say() { echo "$@" | tee -a "$OUT/SUMMARY.txt"; }
 BUNDLE="com.marcompsci.pixelkingdomrumble"
 DEVICE_NAME="${PKR_SIM_DEVICE:-iPhone 17 Pro Max}"
+# Logs/shots_scenes (one line, space separated) overrides the scene list for a single run.
+[ -f "$PROJ/Logs/shots_scenes" ] && PKR_SHOT_SCENES="$(cat "$PROJ/Logs/shots_scenes")" && rm -f "$PROJ/Logs/shots_scenes"
 SCENES="${PKR_SHOT_SCENES:-01_MainMenu 03_LevelSelect SQ_SunspireHeights SQ_RooftopRun SQ_FrostgearAscent MS_FirstLight 05_ShadowContracts VS_Dojo}"
 export PKR_RELEASE=1 PKR_SIMULATOR=1
 
@@ -54,8 +56,14 @@ for S in $SCENES; do
   SIMCTL_CHILD_PKR_SCENE="$S" xcrun simctl launch "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
   sleep "${PKR_SHOT_WAIT:-18}"
   xcrun simctl io "$UDID" screenshot "$OUT/$(printf %02d $n)_$S.png" > /dev/null 2>&1 && say "      $S" || say "      $S FAILED"
+  # Is the game still running? Plus its last log lines (Unity's Debug.Log goes to the system log).
+  if xcrun simctl spawn "$UDID" launchctl list 2>/dev/null | grep -q "$BUNDLE"; then say "        (running)"; else say "        (NOT RUNNING - crashed or quit)"; fi
+  xcrun simctl spawn "$UDID" log show --style compact --last "$(( ${PKR_SHOT_WAIT:-18} + 3 ))s" \
+    --predicate 'process == "PixelKingdomRumble"' > "$OUT/log_$(printf %02d $n)_$S.txt" 2>/dev/null
 done
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null
+# Crash reports from this run, if any.
+find "$HOME/Library/Logs/DiagnosticReports" -name 'PixelKingdomRumble*' -newer "$OUT/SUMMARY.txt" -exec cp {} "$OUT/" \; 2>/dev/null
 say ""
 say "DONE."
 pause_end

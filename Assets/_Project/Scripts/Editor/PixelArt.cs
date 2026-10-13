@@ -179,14 +179,14 @@ namespace PKR.EditorTools
 
         // ---- backdrops ---------------------------------------------------------------------------------
 
-        struct LayerSpec { public string key; public float fx, fy, dy; public int order; }
+        struct LayerSpec { public string key; public float fx, fy, dy, shade; public int order; }
 
         static readonly LayerSpec[] Layers =
         {
-            new LayerSpec { key = "far", fx = 0.88f, fy = 0.85f, dy = -1.2f, order = -90 },
-            new LayerSpec { key = "clouds", fx = 0.94f, fy = 0.9f, dy = 1.5f, order = -88 },
-            new LayerSpec { key = "mid", fx = 0.7f, fy = 0.65f, dy = -1.6f, order = -80 },
-            new LayerSpec { key = "near", fx = 0.45f, fy = 0.4f, dy = -2.0f, order = -70 },
+            new LayerSpec { key = "far", fx = 0.88f, fy = 0.85f, dy = -1.2f, shade = 0.85f, order = -90 },
+            new LayerSpec { key = "clouds", fx = 0.94f, fy = 0.9f, dy = 1.5f, shade = 1f, order = -88 },
+            new LayerSpec { key = "mid", fx = 0.7f, fy = 0.65f, dy = -1.6f, shade = 0.7f, order = -80 },
+            new LayerSpec { key = "near", fx = 0.45f, fy = 0.4f, dy = -2.0f, shade = 0.5f, order = -70 },
         };
 
         /// <summary>
@@ -220,7 +220,11 @@ namespace PKR.EditorTools
                 layer.factorX = spec.fx;
                 layer.factorY = spec.fy;
                 layer.sortingOrder = spec.order;
-                layer.baseColor = spec.key == "clouds" ? Color.clear : BottomColor(path);
+                // Below the strip: the art's bottom colour, darker for nearer layers so the void under the
+                // terrain reads as deep shadow rather than a flat band.
+                var bottom = spec.key == "clouds" ? Color.clear : BottomColor(path);
+                if (bottom.a > 0f) bottom = new Color(bottom.r * spec.shade, bottom.g * spec.shade, bottom.b * spec.shade, 1f);
+                layer.baseColor = bottom;
             }
             return root;
         }
