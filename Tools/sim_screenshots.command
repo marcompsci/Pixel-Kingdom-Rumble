@@ -53,7 +53,8 @@ n=0
 for S in $SCENES; do
   n=$((n+1))
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null; sleep 1
-  SIMCTL_CHILD_PKR_SCENE="$S" xcrun simctl launch "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
+  SIMCTL_CHILD_PKR_SCENE="$S" xcrun simctl launch --stdout="$OUT/console_$(printf %02d $((n)))_$S.txt" \
+    --stderr="$OUT/console_$(printf %02d $((n)))_$S.txt" "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
   sleep "${PKR_SHOT_WAIT:-18}"
   xcrun simctl io "$UDID" screenshot "$OUT/$(printf %02d $n)_$S.png" > /dev/null 2>&1 && say "      $S" || say "      $S FAILED"
   # A second shot a bit later (tells "still loading" apart from "renders black").
