@@ -56,6 +56,8 @@ for S in $SCENES; do
   SIMCTL_CHILD_PKR_SCENE="$S" xcrun simctl launch "$UDID" "$BUNDLE" -pkrScene "$S" > /dev/null
   sleep "${PKR_SHOT_WAIT:-18}"
   xcrun simctl io "$UDID" screenshot "$OUT/$(printf %02d $n)_$S.png" > /dev/null 2>&1 && say "      $S" || say "      $S FAILED"
+  # A second shot a bit later (tells "still loading" apart from "renders black").
+  sleep 12; xcrun simctl io "$UDID" screenshot "$OUT/$(printf %02d $n)_${S}_b.png" > /dev/null 2>&1
   # Is the game still running? Plus its last log lines (Unity's Debug.Log goes to the system log).
   if xcrun simctl spawn "$UDID" launchctl list 2>/dev/null | grep -q "$BUNDLE"; then say "        (running)"; else say "        (NOT RUNNING - crashed or quit)"; fi
   xcrun simctl spawn "$UDID" log show --style compact --last "$(( ${PKR_SHOT_WAIT:-18} + 3 ))s" \
