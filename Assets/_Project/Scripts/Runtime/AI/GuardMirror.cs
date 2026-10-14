@@ -30,7 +30,7 @@ namespace PKR
         Sprite _ownSprite;
         float _attackCd, _specialCd, _jumpCd;
         float _attackEvery = 0.9f;
-        static int _hintedScene = -1;
+        static Object _hintedFor; // the level the hint was shown in (once per level load)
 
         void Awake()
         {
@@ -88,10 +88,10 @@ namespace PKR
             PuffEffect.Play(at, new Color(0.55f, 0.35f, 0.9f), mat, 0.3f, 5f, 0.45f);
             PuffEffect.Play(at, new Color(0.15f, 0.1f, 0.25f), mat, 0.22f, 3f, 0.5f);
             Sfx.Play(Sfx.Special, 0.7f, 0.05f);
-            int scene = gameObject.scene.handle;
-            if (_hintedScene != scene)
+            var level = (Object)LevelFlowController.Current;
+            if (level == null || _hintedFor != level)
             {
-                _hintedScene = scene;
+                _hintedFor = level;
                 string weapon = hero != null && hero.frames != null && !string.IsNullOrEmpty(hero.frames.weaponName)
                     ? hero.frames.weaponName.ToUpperInvariant() : "YOUR WEAPON";
                 EventBus<GameHint>.Raise(new GameHint { id = "guard_mirror",
