@@ -6,6 +6,8 @@ Regenerates every piece of Pixel Kingdom Rumble's pixel art (all original) and i
 Writes:
   Art/Placeholder/Sprites/ph_*.png   2x redraws of every legacy sprite (same names, PPU 16 -> 32)
   Art/Pixel/Fighters/<id>/*.png      80x48 animation frames: idle4 run6 jump fall attack3 special2 hurt
+  Art/Pixel/Enemies/<name>/*.png      enemy clips: idle, run (walk), jump/fall (air), hurt
+  Art/Pixel/Bosses/warden_*.png      boss face states
   Art/Pixel/Tiles/<theme>_*.png      top / fill / stone / plank per world
   Art/Pixel/Backgrounds/<theme>_*.png far / mid / near / clouds parallax layers
   Art/Pixel/FX/*.png                 glow, shadow, projectile sprites
@@ -196,6 +198,27 @@ def build_props():
     save(props.warden_body().image(), os.path.join(PH, 'ph_warden_body.png'))
 
 
+ENEMY_CLIP_FILES = {'idle': ['idle'], 'walk': ['run'], 'air': ['jump', 'fall'], 'hurt': ['hurt']}
+
+
+def build_enemies():
+    for name, (fn, clips) in props.ENEMY_CLIPS.items():
+        for kind, n in clips.items():
+            for i in range(n):
+                img = fn((kind, i, n)).image()
+                for clip in ENEMY_CLIP_FILES[kind]:
+                    save(img, os.path.join(PIX, 'Enemies', name, f'{name}_{clip}_{i}.png'), align='bottom')
+    for i, img in enumerate(props.warden_frames()):
+        save(img.image(), os.path.join(PIX, 'Bosses', f'warden_{props.WARDEN_STATES[i]}.png'))
+
+
+def build_controls():
+    import controls
+    ui = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'UI')
+    for name, fn in controls.ALL.items():
+        save(fn(), os.path.join(ui, name + '.png'), ppu=100, filt=1)
+
+
 def build_tiles():
     for i, (theme, th) in enumerate(tiles.THEMES.items()):
         base = os.path.join(PIX, 'Tiles', theme)
@@ -221,7 +244,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'tiles', 'backgrounds', 'fx']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'tiles', 'backgrounds', 'fx']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

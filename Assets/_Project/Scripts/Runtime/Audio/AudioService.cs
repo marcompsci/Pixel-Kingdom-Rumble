@@ -35,8 +35,8 @@ namespace PKR
         public void ApplySettings(SettingsData s)
         {
             if (s == null) return;
-            _musicVolume = s.musicVolume;
-            _sfxVolume = s.sfxVolume;
+            _musicVolume = s.muted ? 0f : s.musicVolume;
+            _sfxVolume = s.muted ? 0f : s.sfxVolume;
             if (_music != null) _music.volume = _musicVolume;
         }
 

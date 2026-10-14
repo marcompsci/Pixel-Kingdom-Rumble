@@ -40,8 +40,19 @@ namespace PKR
             if (bodyRenderer != null && def != null && def.bodySprite != null) bodyRenderer.sprite = def.bodySprite;
         }
 
+        /// <summary>Use these frames directly (enemies, which have no CharacterDefinition).</summary>
+        public void SetFrames(FighterFrames frames)
+        {
+            _frames = frames;
+            _clock = Random.value * 2f; // so a group of the same enemy doesn't animate in lockstep
+            var first = frames != null ? (FighterFrames.Pick(frames.idle, 0) ?? FighterFrames.Pick(frames.run, 0)) : null;
+            if (bodyRenderer != null && first != null) bodyRenderer.sprite = first;
+        }
+
         public CharacterDefinition Character => character;
-        bool HasFrames => character != null && character.frames != null && character.frames.HasAny;
+        FighterFrames _frames;
+        FighterFrames Frames => _frames != null ? _frames : (character != null ? character.frames : null);
+        bool HasFrames => Frames != null && Frames.HasAny;
 
         /// <summary>K.O. pose (Versus): the body tips over onto its back until cleared.</summary>
         public void SetDownPose(bool down) => _down = down;
@@ -106,7 +117,7 @@ namespace PKR
         /// <summary>Chooses the animation frame for this tick (null = keep the current sprite).</summary>
         Sprite PickFrame(bool grounded, bool abilityIdle, float speed01, float vy, bool attacking)
         {
-            var f = character.frames;
+            var f = Frames;
             if (_down || _flinch > 0.3f) return FighterFrames.Pick(f.hurt, 0);
             if (attacking)
             {
@@ -120,7 +131,13 @@ namespace PKR
             }
             if (!abilityIdle && _abilities != null && _abilities.Current == HeroAbilities.State.Roll)
                 return FighterFrames.Pick(f.jump, 0);
-            if (!grounded) return vy > 0.5f ? FighterFrames.Pick(f.jump, 0) : FighterFrames.Pick(f.fall, 0);
+            if (!grounded)
+            {
+                // Multi-frame air clips loop (wing beats, propellers); hero clips are single poses.
+                var air = vy > 0.5f || f.fall == null || f.fall.Length == 0 ? f.jump : f.fall;
+                if (air == null || air.Length == 0) air = f.idle;
+                return FighterFrames.Pick(air, air != null && air.Length > 1 ? Mathf.FloorToInt(_clock * 12f) : 0);
+            }
             if (speed01 > 0.08f && f.run != null && f.run.Length > 0)
             {
                 int i = Mathf.FloorToInt(_runPhase / (Mathf.PI * 2f) * f.run.Length);

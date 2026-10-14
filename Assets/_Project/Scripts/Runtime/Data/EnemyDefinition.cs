@@ -31,6 +31,8 @@ namespace PKR
         [Header("Art")]
         public Sprite sprite;
         public Vector2 bodySize = new Vector2(0.9f, 0.8f);
+        [Tooltip("Generated animation (idle, run = walk, jump/fall = air, hurt). Empty: the single sprite with procedural motion.")]
+        public FighterFrames frames = new FighterFrames();
 
         [Header("Stats")]
         [Min(1)] public int maxHealth = 2;

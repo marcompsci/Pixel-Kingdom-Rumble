@@ -1175,10 +1175,13 @@ namespace PKR.EditorTools
         internal static T GetOrCreate<T>(string path, System.Action<T> init) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
-            if (asset != null) return asset;
-            asset = ScriptableObject.CreateInstance<T>();
-            init(asset);
-            AssetDatabase.CreateAsset(asset, path);
+            if (asset == null)
+            {
+                asset = ScriptableObject.CreateInstance<T>();
+                init(asset);
+                AssetDatabase.CreateAsset(asset, path);
+            }
+            if (asset is EnemyDefinition enemy) PixelArt.ApplyEnemy(enemy); // animation frames (Art/Pixel/Enemies)
             return asset;
         }
     }

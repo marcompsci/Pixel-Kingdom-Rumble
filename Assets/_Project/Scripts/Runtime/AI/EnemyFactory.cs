@@ -86,7 +86,8 @@ namespace PKR
 
             if (def.behavior == EnemyBehavior.Guard) go.AddComponent<GuardVision>();
 
-            go.AddComponent<FighterVisual>();
+            var visual = go.AddComponent<FighterVisual>();
+            if (def.frames != null && def.frames.HasAny) visual.SetFrames(def.frames);
             go.AddComponent<HitFlash>();
             go.AddComponent<EnemyAI>();
             return go;

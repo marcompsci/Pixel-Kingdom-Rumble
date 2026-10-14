@@ -109,6 +109,7 @@ namespace PKR.EditorTools
             EditorUtil.SetFloat(warden, "ceilingY", Ceiling);
             EditorUtil.SetField(warden, "spriteMaterial", mat);
             EditorUtil.SetField(warden, "bodySprite", PlaceholderArt.WardenBody());
+            PixelArt.ApplyBossFrames(warden, "bodyFrames", "warden");
             EditorUtil.SetField(warden, "gearSprite", gear);
             EditorUtil.SetField(warden, "pistonSprite", plate);
             if (sovereign)

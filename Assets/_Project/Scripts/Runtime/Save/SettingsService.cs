@@ -65,6 +65,8 @@ namespace PKR
         public void SetScreenShake(bool on) { Data.screenShakeEnabled = on; Commit(); }
         public void ResetControlLayout() { Data.ResetLayout(); Commit(); }
         public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }
+        public void SetDpadMode(bool on) { Data.dpadMode = on; Commit(); }
+        public void SetMuted(bool on) { Data.muted = on; Commit(); }
 
         /// <summary>Scale every on-screen control (joystick and buttons) at once.</summary>
         public void SetControlScale(float scale)

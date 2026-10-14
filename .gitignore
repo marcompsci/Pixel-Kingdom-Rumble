@@ -34,3 +34,4 @@ DotnetTests/obj/
 
 # Unity 6.6 solution file
 *.slnx
+__pycache__/

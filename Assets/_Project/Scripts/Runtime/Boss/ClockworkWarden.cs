@@ -49,6 +49,8 @@ namespace PKR
         [Header("Placeholder art")]
         [SerializeField] Material spriteMaterial;
         [SerializeField] Sprite bodySprite;
+        [Tooltip("Animated face: idle 0, idle 1, angry (attacks), dazed (core open / defeated), hurt. Empty = bodySprite only.")]
+        [SerializeField] Sprite[] bodyFrames = new Sprite[0];
         [SerializeField] Sprite gearSprite;
         [SerializeField] Sprite pistonSprite;
 
@@ -62,6 +64,9 @@ namespace PKR
 
         Transform _piston, _gear;
         SpriteRenderer _body;
+        Vector3 _bodyPos;
+        float _hurtT, _faceClock, _defeatT;
+        GlowHalo _coreGlow;
         WardenPhase _tintedPhase;
         SpriteRenderer _coreSprite, _marker;
         Collider2D _coreCollider;
@@ -107,6 +112,7 @@ namespace PKR
 
         void OnHit(HitResult r)
         {
+            _hurtT = 0.35f;
             Brain.SetHealthFraction(Health.MaxHealth > 0 ? (float)Health.Health / Health.MaxHealth : 0f);
             Raise();
         }
@@ -153,6 +159,33 @@ namespace PKR
             _pistonHurt.enabled = _gearHurt.enabled = false;
             SetVulnerable(false);
             Raise();
+        }
+
+        void LateUpdate() => AnimateFace(Time.deltaTime);
+
+        /// <summary>Picks the body frame for the current action and adds a small idle hover / attack shudder.</summary>
+        void AnimateFace(float dt)
+        {
+            if (_body == null) return;
+            _faceClock += dt;
+            _hurtT = Mathf.Max(0f, _hurtT - dt);
+            var a = Brain.Current;
+            bool attacking = a == WardenAction.SlamWindup || a == WardenAction.Slam || a == WardenAction.SweepWindup ||
+                             a == WardenAction.Sweep || a == WardenAction.VolleyWindup || a == WardenAction.Volley;
+            int frame;
+            if (Brain.IsDefeated || Brain.IsVulnerable) frame = 3;
+            else if (_hurtT > 0f) frame = 4;
+            else if (attacking) frame = 2;
+            else frame = Mathf.FloorToInt(_faceClock * 2f) % 2;
+            if (bodyFrames != null && frame < bodyFrames.Length && bodyFrames[frame] != null) _body.sprite = bodyFrames[frame];
+
+            Vector3 offset = new Vector3(0f, Mathf.Sin(_faceClock * 1.6f) * 0.12f, 0f);
+            if (attacking && Brain.Progress < 0.5f) offset.x = Mathf.Sin(_faceClock * 45f) * 0.05f;
+            if (_hurtT > 0f) offset.x = Mathf.Sin(_faceClock * 70f) * 0.12f * _hurtT / 0.35f;
+            _defeatT = Brain.IsDefeated ? _defeatT + dt : 0f;
+            if (Brain.IsDefeated) offset = new Vector3(Mathf.Sin(_faceClock * 30f) * 0.06f, -Mathf.Min(1.5f, _defeatT * 0.6f), 0f);
+            _body.transform.position = _bodyPos + offset;
+            if (_coreGlow != null) _coreGlow.gameObject.SetActive(Brain.IsVulnerable);
         }
 
         void FixedUpdate()
@@ -334,6 +367,7 @@ namespace PKR
             if (phaseTints != null && phaseTints.Length > 0) body.color = phaseTints[0];
             body.transform.position = new Vector2((arenaLeft + arenaRight) * 0.5f, ceilingY - 1f);
             body.transform.localScale = Vector3.one * 6f;
+            _bodyPos = body.transform.position;
 
             // Piston: shaft + head (core) + slam hazard.
             _piston = new GameObject("Piston").transform;
@@ -344,6 +378,8 @@ namespace PKR
             _coreSprite = Sprite("Core", _piston, UISprites.Circle, CoreIdle, 6);
             _coreSprite.transform.localPosition = new Vector3(0f, -0.9f, 0f);
             _coreSprite.transform.localScale = Vector3.one * 0.9f;
+            _coreGlow = GlowHalo.Attach(_coreSprite.transform, new Color(1f, 0.85f, 0.35f, 0.8f), 2.6f, _coreSprite.sortingOrder, spriteMaterial);
+            _coreGlow.gameObject.SetActive(false);
             var coreCol = _coreSprite.gameObject.AddComponent<CircleCollider2D>();
             coreCol.radius = 0.6f;
             _coreCollider = coreCol;

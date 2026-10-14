@@ -18,6 +18,7 @@
   <ItemGroup>
     <Compile Include="../Assets/_Project/Scripts/Core/**/*.cs" />
     <Compile Include="../Assets/_Project/Tests/EditMode/*Tests.cs" />
+    <Compile Remove="../Assets/_Project/Tests/EditMode/PixelArtTests.cs" />
     <Compile Include="NUnitShim.cs" />
     <Compile Include="Runner.cs" />
   </ItemGroup>

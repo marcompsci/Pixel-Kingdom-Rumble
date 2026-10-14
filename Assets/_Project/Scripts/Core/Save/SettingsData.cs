@@ -47,6 +47,10 @@ namespace PKR.Core
         public bool screenShakeEnabled = true;
         /// <summary>0 = fixed joystick, 1 = floating joystick that recenters on touch.</summary>
         public bool floatingJoystick = true;
+        /// <summary>D-pad mode: the stick snaps to 8 directions at full strength (crisp platforming).</summary>
+        public bool dpadMode;
+        /// <summary>The speaker button on the HUD: silences music and sound without touching the volume sliders.</summary>
+        public bool muted;
         /// <summary>Assist mode: +2 max health in Story and Contracts, and guards take longer to notice the hero.</summary>
         public bool assistMode;
         public List<ControlPlacement> controlLayout = DefaultLayout();

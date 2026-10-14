@@ -15,6 +15,9 @@ namespace PKR
         public string controlId;
         public Image fill, ring;
         public Text label;
+        [Tooltip("Generated art: icon on a bevelled disc that swaps to a sunken sprite while held.")]
+        public Image icon;
+        public Sprite normalSprite, pressedSprite;
         public bool editMode;
 
         public bool Held { get; private set; }
@@ -44,9 +47,19 @@ namespace PKR
 
         public void ApplyTheme(TouchTheme.Palette p)
         {
-            if (fill) fill.color = Held ? p.pressedFill : p.fill;
-            if (ring) ring.color = p.ring;
-            if (label) label.color = p.label;
+            bool art = normalSprite != null;
+            if (fill)
+            {
+                fill.color = art ? (Held ? p.artPressed : p.artFill) : (Held ? p.pressedFill : p.fill);
+                if (art) fill.sprite = Held && pressedSprite != null ? pressedSprite : normalSprite;
+            }
+            if (ring) ring.color = art ? new Color(p.ring.r, p.ring.g, p.ring.b, Held ? 0.6f : 0f) : p.ring;
+            if (label) label.color = art ? new Color(p.label.r, p.label.g, p.label.b, p.label.a * 0.75f) : p.label;
+            if (icon)
+            {
+                icon.color = Held ? p.artPressed : p.label;
+                icon.rectTransform.anchoredPosition = new Vector2(0f, Held ? -4f : 0f); // sinks with the button
+            }
         }
 
         public void OnPointerDown(PointerEventData e)

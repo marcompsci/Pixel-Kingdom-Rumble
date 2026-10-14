@@ -172,7 +172,7 @@ namespace PKR
                     b.SetHome(pos, scale);
                 }
             }
-            if (Joystick) Joystick.floating = data.floatingJoystick;
+            if (Joystick) { Joystick.floating = data.floatingJoystick; Joystick.eightWay = data.dpadMode; }
         }
 
         public void ApplyTheme()
@@ -232,8 +232,8 @@ namespace PKR
             _rightHalf = right;
             BuildJoystick(left);
             BuildButton(right, ControlIds.Jump, "JUMP");
-            BuildButton(right, ControlIds.Attack, "ATK");
-            BuildButton(right, ControlIds.Special, "SPL");
+            BuildButton(right, ControlIds.Attack, "ATTACK");
+            BuildButton(right, ControlIds.Special, "SPECIAL");
             BuildButton(right, ControlIds.Dodge, "DODGE");
             BuildEditBar(safe);
 
@@ -256,15 +256,23 @@ namespace PKR
             zoneImg.color = new Color(0f, 0f, 0f, 0f);
             zoneImg.raycastTarget = true;
 
+            bool art = ControlArt.Available && ControlArt.PadBase != null;
             var stickBase = NewRect("StickBase", leftHalf);
             stickBase.sizeDelta = new Vector2(StickSize, StickSize);
-            var baseFill = AddImage(stickBase.gameObject, UISprites.Circle, false);
+            var baseFill = AddImage(stickBase.gameObject, art ? ControlArt.PadBase : UISprites.Circle, false);
+            Image direction = null;
+            if (art && ControlArt.PadGlow != null)
+            {
+                var dirRt = NewRect("Direction", stickBase); Stretch(dirRt);
+                direction = AddImage(dirRt.gameObject, ControlArt.PadGlow, false);
+                direction.color = new Color(1f, 1f, 1f, 0f);
+            }
             var ringRt = NewRect("Ring", stickBase); Stretch(ringRt);
             var baseRing = AddImage(ringRt.gameObject, UISprites.Ring, false);
 
             var knob = NewRect("Knob", stickBase);
-            knob.sizeDelta = new Vector2(KnobSize, KnobSize);
-            var knobImg = AddImage(knob.gameObject, UISprites.Circle, false);
+            knob.sizeDelta = art ? new Vector2(KnobSize * 1.15f, KnobSize * 1.15f) : new Vector2(KnobSize, KnobSize);
+            var knobImg = AddImage(knob.gameObject, art && ControlArt.PadKnob != null ? ControlArt.PadKnob : UISprites.Circle, false);
 
             Joystick = leftHalf.gameObject.AddComponent<VirtualJoystick>();
             Joystick.zone = leftHalf;
@@ -273,6 +281,8 @@ namespace PKR
             Joystick.baseFill = baseFill;
             Joystick.baseRing = baseRing;
             Joystick.knobImage = knobImg;
+            Joystick.direction = direction;
+            Joystick.artStyle = art;
             Joystick.HomeMoved += n => SavePlacement(ControlIds.Joystick, n);
         }
 
@@ -280,25 +290,53 @@ namespace PKR
         {
             var rt = NewRect("Btn_" + id, parent);
             rt.sizeDelta = new Vector2(ButtonSize, ButtonSize);
-            var fill = AddImage(rt.gameObject, UISprites.Circle, true);
+            var normal = ControlArt.Button;
+            var iconSprite = ControlArt.Icon(id);
+            bool art = normal != null && iconSprite != null;
+            var fill = AddImage(rt.gameObject, art ? normal : UISprites.Circle, true);
 
             var ringRt = NewRect("Ring", rt); Stretch(ringRt);
+            if (art) { ringRt.offsetMin = new Vector2(-8f, -8f); ringRt.offsetMax = new Vector2(8f, 8f); }
             var ring = AddImage(ringRt.gameObject, UISprites.Ring, false);
 
+            Image icon = null;
+            if (art)
+            {
+                var iconRt = NewRect("Icon", rt);
+                iconRt.sizeDelta = new Vector2(ButtonSize * 0.56f, ButtonSize * 0.56f);
+                icon = AddImage(iconRt.gameObject, iconSprite, false);
+            }
+
+            // Plain circles: the label is the button face. Generated art: a small caption under the icon disc.
             var labelRt = NewRect("Label", rt); Stretch(labelRt);
+            if (art)
+            {
+                labelRt.anchorMin = new Vector2(0f, 0f); labelRt.anchorMax = new Vector2(1f, 0f);
+                labelRt.pivot = new Vector2(0.5f, 1f);
+                labelRt.sizeDelta = new Vector2(60f, 40f);
+                labelRt.anchoredPosition = new Vector2(0f, 2f);
+            }
             var label = labelRt.gameObject.AddComponent<Text>();
             label.font = UISprites.Font;
             label.text = text;
-            label.fontSize = 34;
+            label.fontSize = art ? 26 : 34;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;
             label.raycastTarget = false;
+            if (art)
+            {
+                var sh = labelRt.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0f, 0f, 0.7f);
+                sh.effectDistance = new Vector2(2f, -2f);
+            }
 
             var btn = rt.gameObject.AddComponent<TouchActionButton>();
             btn.controlId = id;
             btn.fill = fill;
             btn.ring = ring;
             btn.label = label;
+            btn.icon = icon;
+            if (art) { btn.normalSprite = normal; btn.pressedSprite = ControlArt.ButtonPressed; }
             btn.HomeMoved += n => SavePlacement(id, n);
             _buttons[id] = btn;
         }

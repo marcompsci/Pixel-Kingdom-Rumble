@@ -60,6 +60,45 @@ namespace PKR.EditorTools
                     }
         }
 
+        // ---- enemies and bosses -----------------------------------------------------------------------
+
+        /// <summary>Art folder name for an enemy: its id without the "enemy_" prefix (enemy_cog_beetle -> cog_beetle).</summary>
+        public static string EnemyArtName(EnemyDefinition def) =>
+            def == null || string.IsNullOrEmpty(def.id) ? "" : (def.id.StartsWith("enemy_") ? def.id.Substring(6) : def.id);
+
+        /// <summary>Assigns walk / idle / air / hurt frames to an enemy (if its art exists).</summary>
+        public static void ApplyEnemy(EnemyDefinition def)
+        {
+            string name = EnemyArtName(def);
+            if (name.Length == 0) return;
+            string folder = $"{Root}/Enemies/{name}";
+            if (!AssetDatabase.IsValidFolder(folder)) return;
+            if (def.frames == null) def.frames = new FighterFrames();
+            var f = def.frames;
+            bool dirty = false;
+            dirty |= Assign(ref f.idle, Load(folder, name, "idle"));
+            dirty |= Assign(ref f.run, Load(folder, name, "run"));
+            dirty |= Assign(ref f.jump, Load(folder, name, "jump"));
+            dirty |= Assign(ref f.fall, Load(folder, name, "fall"));
+            dirty |= Assign(ref f.hurt, Load(folder, name, "hurt"));
+            if (dirty) EditorUtility.SetDirty(def);
+        }
+
+        public static readonly string[] BossStates = { "idle_0", "idle_1", "angry", "dazed", "hurt" };
+
+        /// <summary>Fills a boss's Sprite[] field with Bosses/{prefix}_{state}.png in BossStates order.</summary>
+        public static void ApplyBossFrames(Object boss, string field, string prefix)
+        {
+            var so = new SerializedObject(boss);
+            var p = so.FindProperty(field);
+            if (p == null) { Debug.LogError($"[PKR] Field '{field}' not found on {boss.GetType().Name}"); return; }
+            p.arraySize = BossStates.Length;
+            for (int i = 0; i < BossStates.Length; i++)
+                p.GetArrayElementAtIndex(i).objectReferenceValue =
+                    AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Bosses/{prefix}_{BossStates[i]}.png");
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         static bool Assign(ref Sprite[] slot, Sprite[] value)
         {
             if (value.Length == 0) return false;

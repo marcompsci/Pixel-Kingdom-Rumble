@@ -69,6 +69,7 @@ namespace PKR
             UIFactory.Toggle(colA, "Screen shake", d.screenShakeEnabled, settings.SetScreenShake);
             UIFactory.Toggle(colA, "High contrast", d.highContrastUI, settings.SetHighContrast);
             UIFactory.Toggle(colB, "Floating stick", d.floatingJoystick, settings.SetFloatingJoystick);
+            UIFactory.Toggle(colB, "D-pad (8-way)", d.dpadMode, settings.SetDpadMode);
             UIFactory.Toggle(colB, "Assist mode", d.assistMode, settings.SetAssistMode);
             UIFactory.Slider(colB, "Control size", settings.ControlScale,
                              PKR.Core.SettingsData.MinControlScale, PKR.Core.SettingsData.MaxControlScale,

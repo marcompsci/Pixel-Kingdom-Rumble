@@ -103,5 +103,66 @@ namespace PKR.Tests
             Assert.IsNull(FighterFrames.Pick(new Sprite[0], 2));
             Assert.IsNull(FighterFrames.Pick(null, 0));
         }
+
+        static readonly string[] Enemies =
+        {
+            "cog_beetle", "frost_mite", "cinder_crawler", "rust_crab", "windup_soldier", "bolt_knight", "spring_tick",
+            "puff_glider", "gyro_moth", "gearwatch_sentry", "gearwatch_elite", "gearwatch_captain"
+        };
+
+        [Test]
+        public void EveryEnemy_HasIdleHurtAndMovementFrames_MatchingItsSingleSprite()
+        {
+            foreach (var name in Enemies)
+            {
+                var single = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/_Project/Art/Placeholder/Sprites/ph_{name}.png");
+                Assert.IsNotNull(single, name);
+                foreach (var clip in new[] { "idle", "hurt" })
+                {
+                    var s = AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Enemies/{name}/{name}_{clip}_0.png");
+                    Assert.IsNotNull(s, name + " " + clip);
+                    Assert.AreEqual((Vector2)single.bounds.size, (Vector2)s.bounds.size, name + " frames keep the sprite's size");
+                    Assert.AreEqual(0f, s.bounds.min.y, 0.01f, name + " frames pivot at the feet");
+                }
+                bool moves = AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Enemies/{name}/{name}_run_0.png") != null ||
+                             AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Enemies/{name}/{name}_jump_0.png") != null;
+                Assert.IsTrue(moves, name + " needs walk or air frames");
+            }
+        }
+
+        [Test]
+        public void EnemyDefinitions_GetTheirFrames()
+        {
+            var beetle = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Data/Enemies/CogBeetle.asset");
+            Assert.IsNotNull(beetle, "built by the scene build");
+            Assert.IsTrue(beetle.frames != null && beetle.frames.HasAny, "Cog Beetle frames");
+            Assert.AreEqual(4, beetle.frames.run.Length);
+            var moth = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Data/Enemies/GyroMoth.asset");
+            Assert.AreEqual(4, moth.frames.jump.Length, "Gyro Moth wing beat");
+        }
+
+        [Test]
+        public void BossFaces_AndTouchControlArt_Exist()
+        {
+            foreach (var state in new[] { "idle_0", "idle_1", "angry", "dazed", "hurt" })
+                Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Bosses/warden_{state}.png"), state);
+            Assert.IsTrue(ControlArt.Available);
+            foreach (var n in new[] { "jump", "attack", "special", "dodge", "pause", "sound", "mute" })
+                Assert.IsNotNull(ControlArt.Icon(n), "icon " + n);
+            Assert.IsNotNull(ControlArt.PadBase);
+            Assert.IsNotNull(ControlArt.PadKnob);
+            Assert.IsNotNull(ControlArt.Square);
+        }
+
+        [Test]
+        public void DpadMode_SnapsToEightDirections()
+        {
+            Assert.AreEqual(Vector2.zero, VirtualJoystick.SnapEightWay(Vector2.zero));
+            Assert.AreEqual(new Vector2(1f, 0f), VirtualJoystick.SnapEightWay(new Vector2(0.6f, 0.15f)));
+            Assert.AreEqual(new Vector2(0f, -1f), VirtualJoystick.SnapEightWay(new Vector2(0.1f, -0.3f)));
+            var diag = VirtualJoystick.SnapEightWay(new Vector2(-0.5f, 0.45f));
+            Assert.AreEqual(-0.7071f, diag.x, 0.001f);
+            Assert.AreEqual(0.7071f, diag.y, 0.001f);
+        }
     }
 }

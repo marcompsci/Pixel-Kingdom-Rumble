@@ -83,13 +83,65 @@ namespace PKR
             holder.anchorMin = holder.anchorMax = new Vector2(1f, 1f);
             holder.pivot = new Vector2(1f, 1f);
             holder.anchoredPosition = new Vector2(-30f, -24f);
-            holder.sizeDelta = new Vector2(140f, 110f);
-            var v = holder.gameObject.AddComponent<VerticalLayoutGroup>();
-            v.childControlWidth = true; v.childControlHeight = true;
-            v.childForceExpandWidth = true; v.childForceExpandHeight = true;
-            UIFactory.Button(holder, "II", () => { if (Services.State != null) Services.State.Pause(); }, 110f);
             _pauseButton = holder.gameObject;
             _pauseButton.transform.SetAsFirstSibling(); // keep menus drawn on top of it
+
+            var square = ControlArt.Square;
+            var pauseIcon = ControlArt.Icon("pause");
+            if (square == null || pauseIcon == null)
+            {
+                holder.sizeDelta = new Vector2(140f, 110f);
+                var v = holder.gameObject.AddComponent<VerticalLayoutGroup>();
+                v.childControlWidth = true; v.childControlHeight = true;
+                v.childForceExpandWidth = true; v.childForceExpandHeight = true;
+                UIFactory.Button(holder, "II", () => { if (Services.State != null) Services.State.Pause(); }, 110f);
+                return;
+            }
+
+            // Square icon buttons, top right: sound on/off, then pause.
+            holder.sizeDelta = new Vector2(250f, 116f);
+            var h = holder.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 18f;
+            h.childAlignment = TextAnchor.UpperRight;
+            h.childControlWidth = false; h.childControlHeight = false;
+            h.childForceExpandWidth = false; h.childForceExpandHeight = false;
+            bool muted = Services.Settings != null && Services.Settings.Data.muted;
+            Image soundIcon = null;
+            soundIcon = IconButton(holder, "Sound", square, ControlArt.Icon(muted ? "mute" : "sound"), () =>
+            {
+                var settings = Services.Settings;
+                if (settings == null) return;
+                bool m = !settings.Data.muted;
+                settings.SetMuted(m);
+                var spr = ControlArt.Icon(m ? "mute" : "sound");
+                if (soundIcon != null && spr != null) soundIcon.sprite = spr;
+            });
+            IconButton(holder, "Pause", square, pauseIcon, () => { if (Services.State != null) Services.State.Pause(); });
+        }
+
+        static Image IconButton(RectTransform parent, string name, Sprite bg, Sprite icon, UnityEngine.Events.UnityAction onClick)
+        {
+            var hc = Services.Settings != null && Services.Settings.Data.highContrastUI;
+            var rt = UIFactory.Rect("Btn_" + name, parent);
+            rt.sizeDelta = new Vector2(110f, 110f);
+            var img = rt.gameObject.AddComponent<Image>();
+            img.sprite = bg;
+            img.color = hc ? new Color(0.55f, 0.55f, 0.55f, 1f) : new Color(1f, 1f, 1f, 0.9f);
+            var btn = rt.gameObject.AddComponent<Button>();
+            btn.targetGraphic = img;
+            var colors = btn.colors;
+            colors.pressedColor = new Color(1f, 0.85f, 0.6f, 1f);
+            btn.colors = colors;
+            btn.onClick.AddListener(onClick);
+            btn.onClick.AddListener(() => { if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light); });
+            var iconRt = UIFactory.Rect("Icon", rt);
+            iconRt.sizeDelta = new Vector2(76f, 76f);
+            iconRt.anchoredPosition = new Vector2(0f, 3f);
+            var iconImg = iconRt.gameObject.AddComponent<Image>();
+            iconImg.sprite = icon;
+            iconImg.raycastTarget = false;
+            iconImg.color = hc ? new Color(1f, 0.92f, 0.1f, 1f) : Color.white;
+            return iconImg;
         }
 
         void ShowMenu()
