@@ -60,6 +60,10 @@ namespace PKR.Core
         /// <summary>Story worlds whose completion bonus was paid (StoryWorlds index).</summary>
         public List<int> claimedWorldRewards = new List<int>();
         public string lastSelectedCharacter = DefaultCharacterId;
+        /// <summary>Halloween Zombie Survival bests.</summary>
+        public int zombieBestRound, zombieBestPoints, zombieBestKills;
+        /// <summary>Found the Zombie Survival lantern secret at least once.</summary>
+        public bool zombieLanternsLit;
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -149,6 +153,16 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>Records a Zombie Survival run. Returns true if the round reached is a new best (score ties broken by points).</summary>
+        public bool RecordSurvival(int round, int points, int kills)
+        {
+            round = Math.Max(0, round); points = Math.Max(0, points); kills = Math.Max(0, kills);
+            bool best = round > zombieBestRound || (round == zombieBestRound && points > zombieBestPoints && round > 0);
+            if (best) { zombieBestRound = round; zombieBestPoints = points; }
+            if (kills > zombieBestKills) zombieBestKills = kills;
+            return best;
+        }
+
         /// <summary>Records an achievement id; true only the first time.</summary>
         public bool EarnAchievement(string id)
         {
@@ -186,6 +200,9 @@ namespace PKR.Core
             version = CurrentVersion;
 
             if (starShards < 0) starShards = 0;
+            if (zombieBestRound < 0) zombieBestRound = 0;
+            if (zombieBestPoints < 0) zombieBestPoints = 0;
+            if (zombieBestKills < 0) zombieBestKills = 0;
             if (unlockedCharacters == null) unlockedCharacters = new List<string>();
             if (!unlockedCharacters.Contains(DefaultCharacterId)) unlockedCharacters.Insert(0, DefaultCharacterId);
             if (ownedCosmetics == null) ownedCosmetics = new List<string>();

@@ -228,6 +228,7 @@ namespace PKR.EditorTools
                     case 'W': Enemy(DataAssets.GetOrCreateWindupSoldier(), cx, p.y); break;
                 }
             }
+            ObstacleBuilder.Build(map, _root, _mat); // crushers, lasers, saws, keys/doors, switch blocks
             if (map.HasSecret)
             {
                 var min = new Vector2(map.SecretMinX, map.SecretMinY);

@@ -76,12 +76,16 @@ namespace PKR.Tests
         {
             var s = Save(0);
             var frost = StoryWorlds.All[1].levels;
-            s.RecordLevelResult(frost[0], 100f, 5, 0);
-            Assert.AreEqual(-1, StoryWorlds.ClaimIfComplete(s, frost[0]));
-            s.RecordLevelResult(frost[1], 100f, 5, 0);
-            Assert.AreEqual(1, StoryWorlds.ClaimIfComplete(s, frost[1]));
+            for (int i = 0; i < frost.Length - 1; i++)
+            {
+                s.RecordLevelResult(frost[i], 100f, 5, 0);
+                Assert.AreEqual(-1, StoryWorlds.ClaimIfComplete(s, frost[i]), "not done yet");
+            }
+            string last = frost[frost.Length - 1];
+            s.RecordLevelResult(last, 100f, 5, 0);
+            Assert.AreEqual(1, StoryWorlds.ClaimIfComplete(s, last));
             Assert.AreEqual(StoryWorlds.CompletionBonus, s.starShards);
-            Assert.AreEqual(-1, StoryWorlds.ClaimIfComplete(s, frost[1]), "only once");
+            Assert.AreEqual(-1, StoryWorlds.ClaimIfComplete(s, last), "only once");
             Assert.AreEqual(-1, StoryWorlds.ClaimIfComplete(s, "not_a_level"));
         }
 
@@ -91,7 +95,7 @@ namespace PKR.Tests
             var seen = new System.Collections.Generic.HashSet<string>();
             foreach (var w in StoryWorlds.All)
                 foreach (var id in w.levels) Assert.IsTrue(seen.Add(id), "duplicate " + id);
-            Assert.AreEqual(14, seen.Count);
+            Assert.AreEqual(17, seen.Count); // 14 story levels + one maze per world
             Assert.AreEqual(2, StoryWorlds.WorldOf("sq_fourfold_sovereign"));
         }
 

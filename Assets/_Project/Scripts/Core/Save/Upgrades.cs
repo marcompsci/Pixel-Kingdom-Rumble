@@ -97,9 +97,9 @@ namespace PKR.Core
 
         public static readonly (string name, string[] levels)[] All =
         {
-            ("Sunspire Isles", new[] { "sq_sunspire_test", "sq_sunspire_heights", "sq_gearfall_caverns", "sq_clockwork_warden", "sq_rooftop_run", "sq_night_market" }),
-            ("Frostgear Peaks", new[] { "sq_frostgear_ascent", "sq_clockwork_glacier" }),
-            ("The Shattered Realms", new[] { "sq_ember_wastes", "sq_sky_gardens", "sq_sunken_clockworks", "sq_toy_fortress", "sq_shattered_crossing", "sq_fourfold_sovereign" }),
+            ("Sunspire Isles", new[] { "sq_sunspire_test", "sq_sunspire_heights", "sq_gearfall_caverns", "sq_gearwork_maze", "sq_clockwork_warden", "sq_rooftop_run", "sq_night_market" }),
+            ("Frostgear Peaks", new[] { "sq_frostgear_ascent", "sq_clockwork_glacier", "sq_frozen_vault" }),
+            ("The Shattered Realms", new[] { "sq_ember_wastes", "sq_sky_gardens", "sq_sunken_clockworks", "sq_toy_fortress", "sq_shattered_crossing", "sq_shattered_labyrinth", "sq_fourfold_sovereign" }),
         };
 
         public static int WorldOf(string levelId)

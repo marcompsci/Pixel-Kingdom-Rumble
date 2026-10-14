@@ -46,6 +46,7 @@ namespace PKR
         void Awake()
         {
             Current = this;
+            LevelPuzzleState.Reset(); // keys and switch-block colour start fresh every level
             if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (roster == null)
                 Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +

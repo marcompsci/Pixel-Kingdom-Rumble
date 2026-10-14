@@ -22,6 +22,7 @@ PH = os.path.join(ART, 'Placeholder', 'Sprites')
 PIX = os.path.join(ART, 'Pixel')
 
 import props, tiles, bg, fx
+import events  # registers the holiday / haunted tile and backdrop themes
 from chars import draw_fighter, anim_poses, crop_center
 from roster import ROSTER, ORDER
 
@@ -256,6 +257,25 @@ def build_ui():
         open(font + '.meta', 'w', newline='\n').write(FONT_META.format(guid=guid(os.path.relpath(font, ROOT))))
 
 
+def build_obstacles():
+    import obstacles
+    for name, fn in obstacles.ALL.items():
+        save(fn().image(), os.path.join(PIX, 'Obstacles', name + '.png'))
+
+
+def build_events():
+    for name, (fn, clips) in events.EVENT_ENEMIES.items():
+        for kind, n in clips.items():
+            for i in range(n):
+                img = fn((kind, i, n)).image()
+                for clip in ENEMY_CLIP_FILES[kind]:
+                    save(img, os.path.join(PIX, 'Enemies', name, f'{name}_{clip}_{i}.png'), align='bottom')
+    for name, fn in events.COLLECTIBLES.items():
+        save(fn().image(), os.path.join(PIX, 'Events', f'collect_{name}.png'))
+    for name, fn in events.ZOMBIE_PROPS.items():
+        save(fn().image(), os.path.join(PIX, 'Events', f'{name}.png'), align='bottom')
+
+
 def build_tiles():
     for i, (theme, th) in enumerate(tiles.THEMES.items()):
         base = os.path.join(PIX, 'Tiles', theme)
@@ -281,7 +301,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'tiles', 'backgrounds', 'fx']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'tiles', 'backgrounds', 'fx']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

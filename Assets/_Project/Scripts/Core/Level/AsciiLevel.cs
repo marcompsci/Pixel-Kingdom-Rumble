@@ -23,6 +23,14 @@ namespace PKR.Core
     ///   >  <  wind pushing right / left     )  (  water current pushing right / left (both: no collider)
     ///   }  {  conveyor floor moving right / left (solid)
     ///   f  fire geyser (erupts on a timer)   Y  Cinder Crawler   Q  Puff Glider   D  Rust Crab   W  Wind-up Soldier
+    ///   Obstacles and mazes (all worlds):
+    ///   v  crusher (2 cells wide, this is its top-left cell; slams to the floor below on a timer)
+    ///   l  laser gate (a vertical column of l cells; on/off on a timer)    o  saw blade (rolls along its row)
+    ///   k  key     n  locked door (solid until you bring a key; a column of n is one door)
+    ///   !  floor switch (flips red/blue blocks)     1  red block (solid first)     2  blue block (solid after a flip)
+    ///   Zombie Survival (Halloween mode; a map with z needs no goal G):
+    ///   z  zombie spawn    w  window barricade (solid until broken)    q  paid door (solid until bought)
+    ///   x  wall weapon     b  mystery crate     p  perk shrine     U  upgrade forge     j  secret jack-o'-lantern
     ///   .  or space: empty
     /// </summary>
     public class AsciiLevel
@@ -43,7 +51,7 @@ namespace PKR.Core
         public int SecretMaxY { get; private set; }
 
         public const string RunTiles = "#X=^~LHac<>(){}";
-        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZfYQDW";
+        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZfYQDWvok!zxbpUj";
 
         readonly char[,] _grid;
 
@@ -69,13 +77,22 @@ namespace PKR.Core
         public bool IsSolid(int x, int y)
         {
             char c = At(x, y);
-            return c == '#' || c == 'X' || c == '?' || c == 'c' || c == '{' || c == '}';
+            return c == '#' || c == 'X' || c == '?' || c == 'c' || c == '{' || c == '}' || c == 'n' || c == 'w' || c == 'q';
         }
 
         public int Count(char tile)
         {
             int n = 0;
             foreach (var p in Points) if (p.tile == tile) n++;
+            return n;
+        }
+
+        /// <summary>Number of grid cells holding this character (for tiles that are neither runs nor points).</summary>
+        public int CellCount(char tile)
+        {
+            int n = 0;
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++) if (_grid[x, y] == tile) n++;
             return n;
         }
 
@@ -114,18 +131,27 @@ namespace PKR.Core
             Points.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
         }
 
+        /// <summary>A Zombie Survival arena (has zombie spawns): played in rounds instead of start-to-goal.</summary>
+        public bool IsSurvival => Count('z') > 0;
+
         /// <summary>Basic sanity rules every playable layout must pass (used by tests and the builder).</summary>
         public List<string> Validate()
         {
             var e = new List<string>();
             if (Count('P') != 1) e.Add($"needs exactly one start P (has {Count('P')})");
-            if (Count('G') != 1) e.Add($"needs exactly one goal G (has {Count('G')})");
+            bool survival = IsSurvival;
+            if (survival ? Count('G') != 0 : Count('G') != 1)
+                e.Add(survival ? "a survival arena has no goal G" : $"needs exactly one goal G (has {Count('G')})");
+            if (survival && Count('z') < 2) e.Add("a survival arena needs at least two zombie spawns z");
             var start = First('P');
             if (start.HasValue && !HasFloorBelow(start.Value.x, start.Value.y)) e.Add("start P has no floor under it");
             var goal = First('G');
             if (goal.HasValue && !IsSolid(goal.Value.x, goal.Value.y - 1)) e.Add("goal G must stand directly on ground");
             foreach (var p in Points)
                 if (p.tile == 'C' && !IsSolid(p.x, p.y - 1)) e.Add($"checkpoint at {p.x},{p.y} must stand directly on ground");
+            int doors = MergedRects('n').Count;
+            if (doors > Count('k')) e.Add($"{doors} locked door(s) but only {Count('k')} key(s)");
+            if ((CellCount('1') > 0 || CellCount('2') > 0) && Count('!') == 0) e.Add("switch blocks need at least one switch !");
             return e;
         }
 

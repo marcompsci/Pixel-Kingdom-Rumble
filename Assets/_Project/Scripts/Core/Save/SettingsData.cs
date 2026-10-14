@@ -30,7 +30,10 @@ namespace PKR.Core
         public const string Special = "special";
         public const string Dodge = "dodge";
         public const string Jetpack = "jetpack";
-        public static readonly string[] All = { Joystick, Jump, Attack, Special, Dodge, Jetpack };
+        /// <summary>Zombie Survival only: shoot the gun, and buy / repair / open (USE).</summary>
+        public const string Fire = "fire";
+        public const string Use = "use";
+        public static readonly string[] All = { Joystick, Jump, Attack, Special, Dodge, Jetpack, Fire, Use };
     }
 
     [Serializable]
@@ -68,6 +71,8 @@ namespace PKR.Core
             new ControlPlacement(ControlIds.Special,  0.68f, 0.50f, 1f),
             new ControlPlacement(ControlIds.Dodge,    0.88f, 0.50f, 0.9f),
             new ControlPlacement(ControlIds.Jetpack,  0.60f, 0.74f, 0.85f),
+            new ControlPlacement(ControlIds.Fire,     0.80f, 0.76f, 1.05f),
+            new ControlPlacement(ControlIds.Use,      0.93f, 0.80f, 0.8f),
         };
 
         public ControlPlacement GetPlacement(string id)
