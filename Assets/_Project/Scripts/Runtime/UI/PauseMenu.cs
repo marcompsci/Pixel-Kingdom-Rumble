@@ -155,10 +155,11 @@ namespace PKR
         {
             UIFactory.Clear(_menu);
             UIFactory.Dim(_menu);
-            var panel = UIFactory.Panel(_menu, new Vector2(820f, 820f));
+            var panel = UIFactory.Panel(_menu, new Vector2(820f, 940f));
             UIFactory.Label(panel, "PAUSED", 72, TextAnchor.MiddleCenter, 110f, title: true);
             var resume = UIFactory.Button(panel, "RESUME", () => { if (Services.State != null) Services.State.Resume(); });
             UIFactory.Button(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
+            UIFactory.Button(panel, "PHOTO MODE", () => PhotoMode.Begin(null));
             UIFactory.Button(panel, "SETTINGS", ShowSettings);
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
             UIFactory.Button(panel, hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",

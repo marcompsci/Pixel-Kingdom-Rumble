@@ -60,8 +60,29 @@ Ground is a tiled body plus a one-unit surface cap on every column that is open 
 Backdrops: `SkyGradient` (from the level's sky colour) + `ParallaxLayer` far / clouds / mid / near, each four
 copies that leapfrog so any level width works.
 
+## Enemies and bosses (`Art/Pixel/Enemies/<name>/`, `Art/Pixel/Bosses/`)
+Same canvas and feet line as each enemy's single sprite. Walkers: idle 2, run (walk) 4, hurt. Flyers: a 4-frame wing
+beat / propeller loop (jump = fall = air). The Spring Tick coils while idle and stretches in the air. Guards walk with a
+short patrol stride. `PixelArt.ApplyEnemy` fills `EnemyDefinition.frames` (folder = id without `enemy_`);
+`FighterVisual.SetFrames` plays them. The Warden / Sovereign face has five states (idle 0/1, angry during attacks,
+dazed while the core is open, hurt) plus a hover, an attack shudder and a glowing core.
+
+## Touch controls and menus (`Resources/PKR/UI/`)
+- `Tools/art/controls.py`: original dark bevelled round buttons with white icons (jump, attack, special, dodge),
+  a round D-pad base with a raised cross, a dotted knob, a direction glow and square HUD buttons (pause, sound).
+  Settings has **D-pad (8-way)**: the stick snaps to eight directions at full strength.
+- `Tools/art/ui.py`: 9-slice pixel panels and chunky press-down buttons, and **PKR Pixel**, an original 5x7
+  TrueType display font (titles and buttons).
+- The title screen shows six heroes from the roster idling and showing off moves.
+
+## Sharing
+- Arena results: **SHARE** builds a Wordle-style card (`Core/Share/ShareCard.cs`): Daily number, twist, placement,
+  KO and fall squares, streak, points, tier and the TestFlight link.
+- Pause menu: **PHOTO MODE** freezes the game, hides the HUD, adds an optional name banner and shares a PNG.
+- iOS share sheet: `Plugins/iOS/PKRShare.mm`; Info.plist gets `NSPhotoLibraryAddUsageDescription` for "Save Image".
+
 ## Not done yet (honest list)
-- Enemies and guards are single frames with procedural motion (no frame animation yet).
-- Boss bodies are one sprite tinted per phase.
-- Menus keep their UI art; the backdrops are in gameplay scenes only.
+- Menus keep their UI art in a few older panels (shop cards, codex rows); the world map is unchanged.
+- No video highlight clips yet (photo mode only).
+- Music and sounds are synthesized (`Tools/make_audio.py`) and were checked by waveform, not yet by ear on a phone.
 - Art was judged from generated previews and simulator screenshots, not yet by players on a phone.

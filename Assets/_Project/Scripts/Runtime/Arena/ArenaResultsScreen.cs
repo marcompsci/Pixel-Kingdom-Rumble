@@ -76,10 +76,34 @@ namespace PKR
                 _root.gameObject.SetActive(false);
                 if (setup != null) setup.Show();
             });
+            if (e.mode != MatchMode.Training && e.humans < 2)
+                UIFactory.Button(buttons, "SHARE", () => ShareService.Share(ShareCard.Format(CardFor(e))));
             UIFactory.Button(buttons, "MAIN MENU", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); },
                              interactable: Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu));
             UIFactory.Select(rematch);
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+        }
+
+        /// <summary>The Wordle-style result card for this match (player 1's view).</summary>
+        ShareCardInput CardFor(ArenaMatchEnded e)
+        {
+            var r = e.rumble;
+            bool daily = r != null && r.daily;
+            var mods = match != null ? match.Config.mutators : Mutator.None;
+            int today = RumbleRecorder.Today;
+            string twist = daily ? DailyRumble.For(today).title
+                         : mods != Mutator.None ? DailyRumble.Describe(mods).ToUpperInvariant() : "";
+            return new ShareCardInput
+            {
+                day = today, daily = daily, twist = twist,
+                hero = e.names != null && e.names.Length > 0 ? e.names[0] : "",
+                placement = e.playerPlacement, fighters = e.placements != null ? e.placements.Length : 0,
+                knockouts = e.knockouts != null && e.knockouts.Length > 0 ? e.knockouts[0] : 0,
+                falls = e.falls != null && e.falls.Length > 0 ? e.falls[0] : 0,
+                points = r != null && r.points != null ? r.points.total : 0,
+                streak = r != null ? r.dailyStreak : 0,
+                tier = r != null && r.points != null ? r.change.newTier.ToString().ToUpperInvariant() : ""
+            };
         }
 
         static string Ordinal(int n) => n == 1 ? "1st" : n == 2 ? "2nd" : n == 3 ? "3rd" : n + "th";

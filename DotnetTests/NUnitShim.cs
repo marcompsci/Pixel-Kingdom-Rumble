@@ -12,6 +12,18 @@ namespace NUnit.Framework
 
     public class AssertionException : Exception { public AssertionException(string m) : base(m) { } }
 
+    public static class StringAssert
+    {
+        static void Check(bool ok, string what, string expected, string actual)
+        {
+            if (!ok) throw new AssertionException($"Expected string {what} <{expected}> but was <{actual}>");
+        }
+        public static void StartsWith(string expected, string actual) => Check(actual != null && actual.StartsWith(expected, StringComparison.Ordinal), "starting with", expected, actual);
+        public static void EndsWith(string expected, string actual) => Check(actual != null && actual.EndsWith(expected, StringComparison.Ordinal), "ending with", expected, actual);
+        public static void Contains(string expected, string actual) => Check(actual != null && actual.Contains(expected), "containing", expected, actual);
+        public static void DoesNotContain(string expected, string actual) => Check(actual == null || !actual.Contains(expected), "not containing", expected, actual);
+    }
+
     public static class Assert
     {
         static void Fail(string msg, string user) => throw new AssertionException(user == null ? msg : msg + " | " + user);

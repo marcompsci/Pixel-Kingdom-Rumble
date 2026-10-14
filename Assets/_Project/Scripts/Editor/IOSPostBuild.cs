@@ -46,9 +46,11 @@ namespace PKR.EditorTools
             var plist = new PlistDocument();
             plist.ReadFromFile(plistPath);
             plist.root.SetBoolean("ITSAppUsesNonExemptEncryption", false);
+            // The share sheet's "Save Image" (photo mode, result cards) adds to the photo library.
+            plist.root.SetString("NSPhotoLibraryAddUsageDescription", "Save your Pixel Kingdom Rumble photos and result cards.");
             plist.WriteToFile(plistPath);
 
-            Debug.Log("[PKR iOS] Post-build: Game Center + In-App Purchase capabilities, ITSAppUsesNonExemptEncryption=NO.");
+            Debug.Log("[PKR iOS] Post-build: Game Center + In-App Purchase capabilities, ITSAppUsesNonExemptEncryption=NO, photo library add usage.");
         }
     }
 }
