@@ -65,6 +65,46 @@ def button(size=32, pressed=False):
     return im
 
 
+HEART = [
+    "..##...##..",
+    ".####.####.",
+    "###########",
+    "###########",
+    "###########",
+    ".#########.",
+    "..#######..",
+    "...#####...",
+    "....###....",
+    ".....#.....",
+]
+
+
+def heart(full=True):
+    """HUD health heart (13x12): outlined, red with a glint when full, a dark socket when empty."""
+    w, h = 13, 12
+    im = _img(w, h)
+    p = im.load()
+    fill = (232, 52, 72, 255) if full else (60, 40, 60, 255)
+    shade = (170, 28, 60, 255) if full else (44, 30, 48, 255)
+    for y, row in enumerate(HEART):
+        for x, ch in enumerate(row):
+            if ch != '#':
+                continue
+            px, py = x + 1, y + 1
+            p[px, py] = shade if (y >= 5 or x >= 8) else fill
+    # outline
+    solid = {(x + 1, y + 1) for y, row in enumerate(HEART) for x, ch in enumerate(row) if ch == '#'}
+    for y in range(h):
+        for x in range(w):
+            if (x, y) in solid:
+                continue
+            if any((x + dx, y + dy) in solid for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                p[x, y] = INK
+    if full:
+        p[3, 2] = p[4, 2] = p[3, 3] = (255, 220, 225, 255)
+    return im
+
+
 # ---- 5x7 pixel font ---------------------------------------------------------------------------------------------
 G = {
     'A': ".###.|#...#|#...#|#####|#...#|#...#|#...#",
@@ -182,5 +222,7 @@ ALL = {
     'ui_panel': lambda: panel(),
     'ui_button': lambda: button(),
     'ui_button_pressed': lambda: button(pressed=True),
+    'ui_heart': lambda: heart(True),
+    'ui_heart_empty': lambda: heart(False),
 }
-BORDERS = {'ui_panel': 16, 'ui_button': 10, 'ui_button_pressed': 10}
+BORDERS = {'ui_panel': 16, 'ui_button': 10, 'ui_button_pressed': 10, 'ui_heart': 0, 'ui_heart_empty': 0}

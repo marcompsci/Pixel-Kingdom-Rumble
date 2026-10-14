@@ -90,7 +90,7 @@ namespace PKR
             if (_playerHealth == null) _playerHealth = flow.PlayerHealth;
 
             var run = flow.Run;
-            if (_playerHealth != null) _hp.text = "HP " + Bar(_playerHealth.Health, _playerHealth.MaxHealth);
+            if (_playerHealth != null) UpdateHealth(_playerHealth.Health, _playerHealth.MaxHealth);
             _shards.text = flow.TotalShards > 0 || MissionTracker.Current == null ? $"SHARDS {run.Shards}/{flow.TotalShards}" : "";
             _secrets.text = flow.TotalSecrets > 0 ? $"SECRETS {run.SecretsFound}/{flow.TotalSecrets}" : "";
             _time.text = FormatTime(run.ElapsedSeconds);
@@ -112,6 +112,44 @@ namespace PKR
             if (_hint.enabled && Time.unscaledTime > _hintUntil) _hint.enabled = false;
             if (!_hint.enabled && _hintQueue.Count > 0) ShowHint(_hintQueue.Dequeue());
             if (!BannerBusy && _codexQueue.Count > 0) ShowBanner(_codexQueue.Dequeue(), CodexBannerSeconds);
+        }
+
+        RectTransform _heartRow;
+        readonly System.Collections.Generic.List<Image> _hearts = new System.Collections.Generic.List<Image>();
+        Sprite _heartFull, _heartEmpty;
+        int _shownHp = -1, _shownMax = -1;
+
+        /// <summary>Pixel hearts after "HP" (text blocks if the heart art is missing). A lost heart pops.</summary>
+        void UpdateHealth(int cur, int max)
+        {
+            if (_heartFull == null || _heartEmpty == null) { _hp.text = "HP " + Bar(cur, max); return; }
+            if (cur == _shownHp && max == _shownMax) { Pop(); return; }
+            _hp.text = "HP";
+            while (_hearts.Count < max)
+            {
+                var rt = new GameObject("Heart", typeof(RectTransform)).GetComponent<RectTransform>();
+                rt.SetParent(_heartRow, false);
+                rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
+                rt.sizeDelta = new Vector2(52f, 48f);
+                rt.anchoredPosition = new Vector2(_hearts.Count * 58f, 0f);
+                var img = rt.gameObject.AddComponent<Image>();
+                img.raycastTarget = false;
+                _hearts.Add(img);
+            }
+            for (int i = 0; i < _hearts.Count; i++)
+            {
+                _hearts[i].gameObject.SetActive(i < max);
+                _hearts[i].sprite = i < cur ? _heartFull : _heartEmpty;
+                if (_shownHp > cur && i >= cur && i < _shownHp) _hearts[i].transform.localScale = Vector3.one * 1.6f; // just lost
+            }
+            _shownHp = cur;
+            _shownMax = max;
+        }
+
+        void Pop()
+        {
+            float k = 1f - Mathf.Exp(-10f * Time.unscaledDeltaTime);
+            foreach (var h in _hearts) h.transform.localScale = Vector3.Lerp(h.transform.localScale, Vector3.one, k);
         }
 
         static string Bar(int cur, int max)
@@ -143,6 +181,13 @@ namespace PKR
             safe.gameObject.AddComponent<SafeAreaFitter>();
 
             _hp = Label(safe, "HP", new Vector2(0f, 1f), new Vector2(40f, -30f), TextAnchor.UpperLeft, 44);
+            _heartFull = Resources.Load<Sprite>("PKR/UI/ui_heart");
+            _heartEmpty = Resources.Load<Sprite>("PKR/UI/ui_heart_empty");
+            _heartRow = new GameObject("Hearts", typeof(RectTransform)).GetComponent<RectTransform>();
+            _heartRow.SetParent(safe, false);
+            _heartRow.anchorMin = _heartRow.anchorMax = _heartRow.pivot = new Vector2(0f, 1f);
+            _heartRow.anchoredPosition = new Vector2(120f, -28f);
+            _heartRow.sizeDelta = new Vector2(600f, 50f);
             _shards = Label(safe, "Shards", new Vector2(0f, 1f), new Vector2(40f, -90f), TextAnchor.UpperLeft, 40);
             _secrets = Label(safe, "Secrets", new Vector2(0f, 1f), new Vector2(40f, -145f), TextAnchor.UpperLeft, 34);
             _stealth = Label(safe, "Stealth", new Vector2(0f, 1f), new Vector2(40f, -195f), TextAnchor.UpperLeft, 34);
@@ -151,6 +196,8 @@ namespace PKR
             _banner.rectTransform.sizeDelta = new Vector2(1600f, 400f);
             _banner.enabled = false;
             // First-time tips sit under the timer, away from the touch controls and the centre banner.
+            foreach (var t in new[] { _hp, _shards, _secrets, _time, _banner, _stealth })
+                if (UISprites.HasDisplayFont) { t.font = UISprites.DisplayFont; t.fontStyle = FontStyle.Normal; }
             _hint = Label(safe, "Hint", new Vector2(0.5f, 1f), new Vector2(0f, -100f), TextAnchor.UpperCenter, 40);
             _hint.rectTransform.sizeDelta = new Vector2(1400f, 120f);
             _hint.enabled = false;
