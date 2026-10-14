@@ -85,10 +85,14 @@ namespace PKR
             }
 
             if (def.behavior == EnemyBehavior.Guard) go.AddComponent<GuardVision>();
+            // Shadow guards fight with the hero's own moves once they spot them (GuardMirror). The runner must exist
+            // before FighterVisual so it can show attack frames.
+            if (def.behavior == EnemyBehavior.Guard) go.AddComponent<AttackRunner>();
 
             var visual = go.AddComponent<FighterVisual>();
             if (def.frames != null && def.frames.HasAny) visual.SetFrames(def.frames);
             go.AddComponent<HitFlash>();
+            if (def.behavior == EnemyBehavior.Guard) go.AddComponent<GuardMirror>();
             go.AddComponent<EnemyAI>();
             return go;
         }

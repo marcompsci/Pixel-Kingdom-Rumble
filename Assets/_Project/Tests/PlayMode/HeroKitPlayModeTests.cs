@@ -230,5 +230,38 @@ namespace PKR.Tests
             Assert.IsFalse(pack.IsFlying, "no fuel, no flight");
             motor.Intent.Jetpack.SetHeld(false);
         }
+
+        [UnityTest]
+        public IEnumerator SpottedGuard_CopiesTheHerosMoves_AndHitsForOne()
+        {
+            var hero = MakeFighter("Hero", new Vector2(0f, 0.7f), TeamIds.Player, null, out var heroMotor);
+            hero.AddComponent<PlayerMarker>();
+            var heroRunner = hero.AddComponent<AttackRunner>();
+            heroRunner.Moveset = Set(Move(new FrameData(2, 3, 6), new Vector2(0.8f, 0f), false)); // 2 damage per hit
+            heroRunner.Team = TeamIds.Player;
+            var heroHealth = hero.GetComponent<Damageable>();
+
+            var guard = MakeFighter("Guard", new Vector2(1.0f, 0.7f), TeamIds.Enemy, null, out var guardMotor);
+            var guardRunner = guard.AddComponent<AttackRunner>();
+            guard.AddComponent<HitFlash>();
+            var mirror = guard.AddComponent<GuardMirror>();
+            yield return Steps(20);
+
+            Assert.IsFalse(mirror.IsMirroring);
+            Assert.IsTrue(mirror.TryCopy(), "copies the hero in view");
+            Assert.IsTrue(mirror.IsMirroring);
+            Assert.AreSame(heroRunner.Moveset, mirror.CopiedMoves, "same weapon, same moves");
+            Assert.AreEqual(TeamIds.Enemy, guardRunner.Team);
+
+            int before = heroHealth.Health;
+            guardMotor.SetFacing(-1);
+            guardMotor.Intent.Attack.Press(Time.time);
+            yield return Steps(12);
+            Assert.AreEqual(before - 1, heroHealth.Health, "a copied 2-damage hit lands for 1");
+
+            mirror.ResetCopy(null);
+            Assert.IsFalse(mirror.IsMirroring);
+            Assert.IsNull(mirror.CopiedMoves, "a respawned guard forgets the copy");
+        }
     }
 }

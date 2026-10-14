@@ -47,7 +47,7 @@ namespace PKR
 
         void Init(MoveDefinition move, Vector2 origin, int facing, int team, Damageable owner, AttackRunner source, Material material)
         {
-            _hit = move.hit;
+            _hit = source != null ? source.Capped(move.hit) : move.hit;
             _team = team;
             _direction = facing >= 0 ? 1 : -1;
             _radius = Mathf.Max(0.05f, move.projectileRadius);

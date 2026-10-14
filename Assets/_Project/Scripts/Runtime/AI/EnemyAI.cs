@@ -10,7 +10,8 @@ namespace PKR
     /// toward the player when in range. Flyer: hovers and swoops (Core FlyerLogic) using the motor's velocity
     /// override, so no gravity. ShieldWalker: patrols slowly, and stops to face a nearby hero shield-first.
     /// Guard: patrols and stops now and then to look back; freezes while suspicious; chases once its
-    /// GuardVision is alerted (never off a ledge).
+    /// GuardVision is alerted (never off a ledge). Once alerted, a guard with GuardMirror copies the hero's weapon and
+    /// moveset and fights back with them.
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D), typeof(Damageable))]
     [DefaultExecutionOrder(-30)]
@@ -30,6 +31,7 @@ namespace PKR
         int _dir = -1;
         bool _hopping;
         GuardVision _vision;
+        GuardMirror _mirror;
         float _patrolTimer, _pauseTimer;
         Vector2 _halfSize = new Vector2(0.45f, 0.4f);
 
@@ -72,6 +74,8 @@ namespace PKR
             _hopping = false;
             _turnTimer = 0f;
             _vision = def.behavior == EnemyBehavior.Guard ? GetComponent<GuardVision>() : null;
+            _mirror = def.behavior == EnemyBehavior.Guard ? GetComponent<GuardMirror>() : null;
+            if (_mirror != null) _mirror.ResetCopy(def);
             _patrolTimer = 0f;
             _pauseTimer = 0f;
             _motor.Intent.ClearAll();
@@ -169,6 +173,12 @@ namespace PKR
                 Vector2 foot = _motor.Body.position + new Vector2(_dir * (_halfSize.x + 0.08f), -_halfSize.y + 0.05f);
                 bool groundAhead = Physics2D.Raycast(foot, Vector2.down, 0.45f, PKRLayers.GroundMask);
                 bool wall = Physics2D.Raycast(_motor.Body.position, new Vector2(_dir, 0f), _halfSize.x + 0.12f, PKRLayers.GroundMask);
+                if (_mirror != null)
+                {
+                    // Shadow guard: copies the hero's weapon and moves and fights back.
+                    _mirror.Fight(intent, (Vector2)player.transform.position - _motor.Body.position, Definition.chaseSpeed, groundAhead && !wall);
+                    return;
+                }
                 intent.Move = groundAhead && !wall && Mathf.Abs(dx) > 0.3f ? new Vector2(_dir * Definition.chaseSpeed, 0f) : Vector2.zero;
                 return;
             }

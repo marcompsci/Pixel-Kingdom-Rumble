@@ -72,7 +72,7 @@ namespace PKR
         {
             int dir = facing >= 0 ? 1 : -1;
             _logic = new TrapLogic(move.trapArmDelay, move.trapLifetime);
-            _hit = move.hit;
+            _hit = source != null ? source.Capped(move.hit) : move.hit;
             _team = team;
             _ownerKey = key;
             _radius = Mathf.Max(0.1f, move.trapRadius);

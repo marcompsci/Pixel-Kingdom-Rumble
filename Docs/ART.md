@@ -85,6 +85,14 @@ dazed while the core is open, hurt) plus a hover, an attack shudder and a glowin
   appears under the thumb and slides along if the thumb goes past its rim. Existing players are moved to these
   defaults once (settings version 2).
 
+## Shadow guards (October 2026)
+Any guard that spots the hero (Shadow Contracts and the story stealth levels) turns into a shadow double
+(`GuardMirror`): it copies the hero's weapon and whole moveset (attacks, combos, specials, projectiles), shows the
+hero's own animation frames in a violet shadow tint, and fights back: it closes to striking distance, swings,
+mixes in close specials, fires the hero's projectile from mid range and hops after a hero who jumps up. Copied hits
+do 1 damage each (`AttackRunner.DamageCap`), and the guard no longer hurts by touch once it fights. Silent
+takedowns from behind still work, and a respawned guard goes back to its own look.
+
 ## Sharing
 - Arena results: **SHARE** builds a Wordle-style card (`Core/Share/ShareCard.cs`): Daily number, twist, placement,
   KO and fall squares, streak, points, tier and the TestFlight link.

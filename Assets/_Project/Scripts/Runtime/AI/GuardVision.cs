@@ -24,6 +24,7 @@ namespace PKR
         PlatformerMotor2D _motor;
         Damageable _health;
         ContactDamage _contact;
+        GuardMirror _mirror;
         SpriteRenderer _cone;
         GuardAwareness _awarenessAtHit;
 
@@ -88,7 +89,9 @@ namespace PKR
                 }
             }
             if (_meter.Tick(Time.fixedDeltaTime * (LevelFlowController.AssistMode ? AssistNoticeScale : 1f), sees, closeness) && tracker != null) tracker.ReportSpotted();
-            if (_contact != null) _contact.enabled = Alerted;
+            // Shadow guards (GuardMirror) hurt with their copied attacks instead of by touch.
+            if (_mirror == null) TryGetComponent(out _mirror);
+            if (_contact != null) _contact.enabled = Alerted && (_mirror == null || !_mirror.IsMirroring);
             _awarenessAtHit = _meter.Awareness;
             UpdateVisual();
         }

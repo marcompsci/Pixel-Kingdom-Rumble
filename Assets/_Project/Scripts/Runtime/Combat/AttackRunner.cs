@@ -23,6 +23,14 @@ namespace PKR
 
         public Moveset Moveset { get => moveset; set => moveset = value; }
         public int Team { get => team; set => team = value; }
+        /// <summary>Story damage per hit is capped at this (0 = no cap). Shadow guards that copy a hero's moves use 1,
+        /// so a copied finisher can't wipe out a whole health bar.</summary>
+        public int DamageCap { get; set; }
+        public HitData Capped(HitData h)
+        {
+            if (DamageCap > 0 && h.damage > DamageCap) h.damage = DamageCap;
+            return h;
+        }
         public MoveDefinition Current { get; private set; }
         public int Frame { get; private set; }
         public bool IsAttacking => Current != null;
@@ -122,9 +130,9 @@ namespace PKR
                 _chainSpeed = Mathf.Max(0f, (_motor.Body.linearVelocity.x - carry) * _motor.Facing);
             }
             if (_usingOverride) { _motor.ClearOverride(); _usingOverride = false; }
-            _currentHit = move.speedBonus > 0f
+            _currentHit = Capped(move.speedBonus > 0f
                 ? CombatMath.ScaleBySpeed(move.hit, _chainSpeed, _motor.Stats.runSpeed, move.speedBonus)
-                : move.hit;
+                : move.hit);
             Current = move;
             Frame = 0;
             _log.Reset();
