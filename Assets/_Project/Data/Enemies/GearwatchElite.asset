@@ -17,6 +17,26 @@ MonoBehaviour:
   codexEntry: The Spire's own guard. They see farther, notice faster and look back more often than any sentry, and they chase hard. Their armor still has no eyes in the back.
   sprite: {fileID: 21300000, guid: ed39f593d03464bdebd2b20a48364b41, type: 3}
   bodySize: {x: 0.85, y: 1.35}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: fd0f643577d7936d09cfd42628ad0fd8, type: 3}
+    - {fileID: 21300000, guid: e4c3ae2d4fea41ba742a4415f2874e03, type: 3}
+    - {fileID: 21300000, guid: 2376c75ce524d42207f15a77e42bcc13, type: 3}
+    - {fileID: 21300000, guid: 87e30a77a2e1d226193087deaf7fb6d9, type: 3}
+    run:
+    - {fileID: 21300000, guid: 1af5465ae230bd875b4121c6a10f6c37, type: 3}
+    - {fileID: 21300000, guid: bbddfe14eb2fa8ed4beb2572b604a12e, type: 3}
+    - {fileID: 21300000, guid: 9e947f2fd8c7a1e87d0ab489d15d24de, type: 3}
+    - {fileID: 21300000, guid: 2f8cd45154ebbb2fff4395de6aecdf61, type: 3}
+    - {fileID: 21300000, guid: 9a58d42dd603b43e8b403b76a107d4e7, type: 3}
+    - {fileID: 21300000, guid: 6659030a55090f7e4c3e33bce13c22b4, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 7fa993d513f99f1f0204039f06b3d607, type: 3}
+    weaponName: 
   maxHealth: 5
   weight: 1.4
   moveSpeed: 0.22

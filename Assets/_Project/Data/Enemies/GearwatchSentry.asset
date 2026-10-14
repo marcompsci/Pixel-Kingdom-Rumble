@@ -17,6 +17,26 @@ MonoBehaviour:
   codexEntry: Lantern-carrying night watch of the Brasslight Quarter. They see far down the street they face and nothing behind them; stay out of the light, wait in the hay, and a tap on the back ends their shift.
   sprite: {fileID: 21300000, guid: db20b455b5089406eb3be22d89857326, type: 3}
   bodySize: {x: 0.8, y: 1.3}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 9544e0a6b5c19fa65495fdd312142fed, type: 3}
+    - {fileID: 21300000, guid: ff091b2772cff38ab41c5c68070a2b47, type: 3}
+    - {fileID: 21300000, guid: 69cfea4473bf3ad9f3a967d168863a20, type: 3}
+    - {fileID: 21300000, guid: b7e779826cde6181affada2f7415c62c, type: 3}
+    run:
+    - {fileID: 21300000, guid: 697f26a1d637ccf8b5b1688d0e765591, type: 3}
+    - {fileID: 21300000, guid: a6fd4ea7b8be6c30ddacd76b4358d7fd, type: 3}
+    - {fileID: 21300000, guid: 305cbcbd6ad92cab6ea48523f7c30158, type: 3}
+    - {fileID: 21300000, guid: 29ec0816e93a8913d88d498325a40614, type: 3}
+    - {fileID: 21300000, guid: 233a8e5edacfcfd258faeeaeaa772292, type: 3}
+    - {fileID: 21300000, guid: 027eab23a05a13c588c13ce2ae5b3d08, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: bbad80c259082217ded3b8187224c84c, type: 3}
+    weaponName: 
   maxHealth: 4
   weight: 1.3
   moveSpeed: 0.2
@@ -38,6 +58,8 @@ MonoBehaviour:
   lookBackInterval: 4
   lookBackPause: 1.1
   chaseSpeed: 0.6
+  noticeRate: 1.5
+  isMissionTarget: 0
   contactHit:
     damage: 1
     pipDamage: 1

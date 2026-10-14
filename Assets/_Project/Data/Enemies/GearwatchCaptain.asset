@@ -17,6 +17,26 @@ MonoBehaviour:
   codexEntry: Officers of the night watch, marked for the Order's contracts. Tougher than a sentry and quick to raise the alarm, but just as blind behind.
   sprite: {fileID: 21300000, guid: 92306e8968003456b83d5c9f6ff47628, type: 3}
   bodySize: {x: 0.85, y: 1.35}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 96b5919210a29afb3fcec69e788bfe0f, type: 3}
+    - {fileID: 21300000, guid: 8c0f970f71d272d1f1699b0de596aac7, type: 3}
+    - {fileID: 21300000, guid: 1f2dffc7966cf26a300169720013d099, type: 3}
+    - {fileID: 21300000, guid: 8c1ca231f294fc73239c7c2483a94d24, type: 3}
+    run:
+    - {fileID: 21300000, guid: 6d2c793190959832edc281aa51feda30, type: 3}
+    - {fileID: 21300000, guid: 2745ef8905163330f95d47bdc56b47a7, type: 3}
+    - {fileID: 21300000, guid: 7515f4b94e7a53908efb56883daf2b82, type: 3}
+    - {fileID: 21300000, guid: 9033d02afc884fb2cf6043b96aaadea1, type: 3}
+    - {fileID: 21300000, guid: e89f0142f960c1728c3318c1b7a0fc65, type: 3}
+    - {fileID: 21300000, guid: 4a8884363c9b706e1932b3a90fa27ae0, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: e590666b98658364f29832826b9e87b3, type: 3}
+    weaponName: 
   maxHealth: 6
   weight: 1.5
   moveSpeed: 0.16
@@ -38,6 +58,7 @@ MonoBehaviour:
   lookBackInterval: 3.2
   lookBackPause: 1.3
   chaseSpeed: 0.68
+  noticeRate: 1.5
   isMissionTarget: 1
   contactHit:
     damage: 1

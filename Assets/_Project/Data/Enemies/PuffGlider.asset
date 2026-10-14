@@ -17,6 +17,28 @@ MonoBehaviour:
   codexEntry: Weather drones from the Sky Gardens, still sowing clouds over gardens that drifted away long ago. They hang on the wind and dive at anything that jumps past.
   sprite: {fileID: 21300000, guid: 6e40fee6f0a424484b40f0ac4ab1c899, type: 3}
   bodySize: {x: 0.9, y: 0.6}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 61625c7977795de89bba4249250cde92, type: 3}
+    - {fileID: 21300000, guid: 2f3e40d060aded2c709763f8da156fd6, type: 3}
+    - {fileID: 21300000, guid: 27d2271c9d84ed07e2b21b6cf189a737, type: 3}
+    - {fileID: 21300000, guid: 04973710295a6ef099f700a1c2b01d48, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: f00893b7e1f67407ad1587b1b49a6d92, type: 3}
+    - {fileID: 21300000, guid: c7247e080769369dd06f88b0f82e84bd, type: 3}
+    - {fileID: 21300000, guid: 69f8e53e4638e752e10f6536696bbc22, type: 3}
+    - {fileID: 21300000, guid: fa14541d0ab1a6c737f838f3ab9a051e, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 04c8088a5c70d46813ae208e0b95d4ba, type: 3}
+    - {fileID: 21300000, guid: 0816482732fbadc43eb4879194c20b86, type: 3}
+    - {fileID: 21300000, guid: 32757bcdc59bf777f908546fc8dd081c, type: 3}
+    - {fileID: 21300000, guid: 3920c470494c3b5046bc8af0a3c481f1, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: b0e1c3feb842d11c9c1336a74b138458, type: 3}
+    weaponName: 
   maxHealth: 1
   weight: 0.6
   moveSpeed: 0

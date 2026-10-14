@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: Basalt slugs that grew in the Ember Wastes' heat. Slow and stubborn, with a back too hot to stand on; a solid hit cracks the crust.
   sprite: {fileID: 21300000, guid: 3485a84322161483ea051536dfc3dab6, type: 3}
   bodySize: {x: 1, y: 0.6}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: e5a840aa61f3fee0adf6392246ec6c3c, type: 3}
+    - {fileID: 21300000, guid: 2d43ba4b484486e7c0ee8b0e0f10abe4, type: 3}
+    run:
+    - {fileID: 21300000, guid: 0c7ebd2e0e120b038fbd24827ec08f3c, type: 3}
+    - {fileID: 21300000, guid: cbd0872012b92cd20e4b1548463ed562, type: 3}
+    - {fileID: 21300000, guid: d0085499073068b66f14acc9b3255363, type: 3}
+    - {fileID: 21300000, guid: 323b89e4c37f996e43d6f4fe010eb069, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: a45ac03c68f55219fac41af40b673cba, type: 3}
+    weaponName: 
   maxHealth: 3
   weight: 1
   moveSpeed: 0.22

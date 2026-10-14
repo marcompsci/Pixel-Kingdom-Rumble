@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: Maintenance drones of the Tickworks. Their shells still turn with the great gears, and they patrol the same path they were wound for centuries ago.
   sprite: {fileID: 21300000, guid: 81490876a850d431a80d4fe29fe3206a, type: 3}
   bodySize: {x: 0.9, y: 0.7}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 0cc43651571c3eef2a3c5c62f2dbded9, type: 3}
+    - {fileID: 21300000, guid: af83047493a3e6e9fe7ca59ed3c6b4f5, type: 3}
+    run:
+    - {fileID: 21300000, guid: a89de1078a2b76299a8ca9e8a99073e4, type: 3}
+    - {fileID: 21300000, guid: b10d2006613dc15bd0bbfe46cd9afcbb, type: 3}
+    - {fileID: 21300000, guid: 2a7c073d6e9df347f367da243537a208, type: 3}
+    - {fileID: 21300000, guid: aa4833aeec28a389c7db007de86c6e6e, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: fcbab84f945f0f02214a73d393c48e2a, type: 3}
+    weaponName: 
   maxHealth: 2
   weight: 1
   moveSpeed: 0.28
@@ -33,6 +49,13 @@ MonoBehaviour:
   shieldBreakDuration: 1.6
   guardRange: 4
   shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
   contactHit:
     damage: 1
     pipDamage: 1

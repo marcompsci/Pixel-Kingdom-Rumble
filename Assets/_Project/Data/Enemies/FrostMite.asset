@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: Ice-shelled mites that gnaw the frozen gears of the Frostgear Peaks. Quicker than a Cog Beetle and a little tougher; they skitter back and forth across their patch of ice.
   sprite: {fileID: 21300000, guid: 1d2ab2bd485d3434fae4f5df29d20356, type: 3}
   bodySize: {x: 0.85, y: 0.65}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 820a2f8fa5212eda1bbf9cc5171df9a3, type: 3}
+    - {fileID: 21300000, guid: 0d3daec732a89b9b4af8ac46a35b4640, type: 3}
+    run:
+    - {fileID: 21300000, guid: b60d3eb0ae3d40cb950c252f046bd014, type: 3}
+    - {fileID: 21300000, guid: 1f6641f4fd983e4a70ff17bf9141c673, type: 3}
+    - {fileID: 21300000, guid: 28081f4eca9079e2d8167e4cc6dffe84, type: 3}
+    - {fileID: 21300000, guid: 07464bbf2e6a398824fd23da01f311fa, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 0a21d6f3cda700b935c8f65c4fd804c6, type: 3}
+    weaponName: 
   maxHealth: 3
   weight: 1
   moveSpeed: 0.4
@@ -38,6 +54,7 @@ MonoBehaviour:
   lookBackInterval: 4
   lookBackPause: 1.1
   chaseSpeed: 0.62
+  noticeRate: 1.5
   isMissionTarget: 0
   contactHit:
     damage: 1

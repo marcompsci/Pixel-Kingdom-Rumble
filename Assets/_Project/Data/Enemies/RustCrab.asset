@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: 'Repair crabs of the sunken machine city. The coolant rusted their shells but not their routines: they scuttle their ledge end to end, quicker than they look.'
   sprite: {fileID: 21300000, guid: c4a284c51fa0440f1965c1b74817b725, type: 3}
   bodySize: {x: 0.95, y: 0.7}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: b9402758fa46c2868b84a195ece8bcba, type: 3}
+    - {fileID: 21300000, guid: 418d69103187ccd09a145500b30714a9, type: 3}
+    run:
+    - {fileID: 21300000, guid: 7f157a3a898d58626a7ab43eec3c239a, type: 3}
+    - {fileID: 21300000, guid: e42429059f24402fd5a2a8d337f39ad3, type: 3}
+    - {fileID: 21300000, guid: 0ceb00bb84222dccc827e3c8302b9642, type: 3}
+    - {fileID: 21300000, guid: e2cd397a89f06a9261000194c1be8206, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: f36c3742d0cef586b01dff97f0373e13, type: 3}
+    weaponName: 
   maxHealth: 3
   weight: 1
   moveSpeed: 0.45

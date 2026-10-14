@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: Gate guards riveted together from spare boiler plate. Their tower shields shrug off light blows; a heavy hit knocks the shield aside, and their backs were never armored at all.
   sprite: {fileID: 21300000, guid: 1299a76180aae42499c4656f9afd9adf, type: 3}
   bodySize: {x: 0.9, y: 1.25}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 6369169cf8be94de2fde187e94fe96fd, type: 3}
+    - {fileID: 21300000, guid: 350d782bc47a9ca0d7d3a1df4213504e, type: 3}
+    run:
+    - {fileID: 21300000, guid: 5518c2b8cf99764ba38372d0c9726980, type: 3}
+    - {fileID: 21300000, guid: 2604eba37c33c45c1e00f50c5a4d6848, type: 3}
+    - {fileID: 21300000, guid: 82d59ef7a9081206c83c596264b58058, type: 3}
+    - {fileID: 21300000, guid: e39dda9fe333127343b3408984b2a82e, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 80ebc3e9c54c09841182e4a4b5f5580f, type: 3}
+    weaponName: 
   maxHealth: 4
   weight: 1.6
   moveSpeed: 0.18
@@ -33,6 +49,13 @@ MonoBehaviour:
   shieldBreakDuration: 1.6
   guardRange: 4
   shieldSprite: {fileID: 21300000, guid: fb46f0ce2d3ae459a83a8dc52c0dc512, type: 3}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
   contactHit:
     damage: 1
     pipDamage: 1

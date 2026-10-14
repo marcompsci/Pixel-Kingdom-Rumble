@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: Toy guards from the Gearwright's workshop, wound so tight they never stopped marching. Tougher than they look; two good hits knock the key loose.
   sprite: {fileID: 21300000, guid: 4ee9070425d7048d5b58ce666d636097, type: 3}
   bodySize: {x: 0.7, y: 1.1}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 06fc51e34f32b3a5c4de1094aae480a1, type: 3}
+    - {fileID: 21300000, guid: 213403e334f7acd2a6845f4f9c66fcba, type: 3}
+    run:
+    - {fileID: 21300000, guid: e32afc0ed5ea9b80b66bf09922a668b7, type: 3}
+    - {fileID: 21300000, guid: 646308a7d432bf7c2804a03cfb7fc82f, type: 3}
+    - {fileID: 21300000, guid: c8edef433a8925830c9d8fe633d73942, type: 3}
+    - {fileID: 21300000, guid: 8fcbfd3921a4fe92f792ddab331c44d7, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 33fee5ed805910635bb796dd429ef372, type: 3}
+    weaponName: 
   maxHealth: 4
   weight: 1
   moveSpeed: 0.35

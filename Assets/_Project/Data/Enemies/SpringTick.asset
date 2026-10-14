@@ -17,6 +17,22 @@ MonoBehaviour:
   codexEntry: A wind-up sentry that coils tight and launches itself at intruders. Wait for it to land, then strike before it rewinds.
   sprite: {fileID: 21300000, guid: fba1bbef3e623448ab40d7a6d8e29c38, type: 3}
   bodySize: {x: 0.7, y: 0.75}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: c3775c853ec54d8fd8fb99f390519b32, type: 3}
+    - {fileID: 21300000, guid: ed81b92b2cc4d4bbf5f85a6161fb1977, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: 040d123618bc4a543fcf494cb9f6f2af, type: 3}
+    - {fileID: 21300000, guid: 333a3058e713675e8525d0ebae5db16a, type: 3}
+    fall:
+    - {fileID: 21300000, guid: cf783f442b9cfd9da1149474317ca372, type: 3}
+    - {fileID: 21300000, guid: 123c0721a2380ebad848bdf66954f037, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: d8798849f184ebc5b41e27884defa36c, type: 3}
+    weaponName: 
   maxHealth: 2
   weight: 0.9
   moveSpeed: 0
@@ -33,6 +49,13 @@ MonoBehaviour:
   shieldBreakDuration: 1.6
   guardRange: 4
   shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
   contactHit:
     damage: 1
     pipDamage: 1

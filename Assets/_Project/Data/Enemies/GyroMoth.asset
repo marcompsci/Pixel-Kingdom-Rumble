@@ -17,6 +17,28 @@ MonoBehaviour:
   codexEntry: Tickworks pollinators that once carried oil between the great gears. Now they guard the gaps between islands, hovering in place until something warm comes close, then diving straight at it.
   sprite: {fileID: 21300000, guid: b13fffb9caeaf44b5b85684efdf353d9, type: 3}
   bodySize: {x: 0.8, y: 0.6}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 0fb788cd069b371bb5be021b850bf7a2, type: 3}
+    - {fileID: 21300000, guid: ce83b1680eaf4d32b4b4012174cbd04f, type: 3}
+    - {fileID: 21300000, guid: a70e0dd259c3565fe0d358a4ceece9db, type: 3}
+    - {fileID: 21300000, guid: 2223c7e5db5f2d0f4cecdc3fc4a1a786, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: dedad06698a6817f3d9de27cfe3c4919, type: 3}
+    - {fileID: 21300000, guid: 25221330188bdfcacee87be1fbf4ea8d, type: 3}
+    - {fileID: 21300000, guid: 33f189b6ad7fe5b3140bd092c9148b1a, type: 3}
+    - {fileID: 21300000, guid: bd4ec46b557ea4959b334ec34fd4e8f8, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 1afad34a5a489c32794c37145777ed5e, type: 3}
+    - {fileID: 21300000, guid: c3476ec3ec7d89a68824a79e4e8fc093, type: 3}
+    - {fileID: 21300000, guid: cdc3e0b58390b00285649ecb9b1da62d, type: 3}
+    - {fileID: 21300000, guid: 71dcc01635add294fd9c6934b5064755, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 9fe8c4577d003c785cdb09143e6350df, type: 3}
+    weaponName: 
   maxHealth: 1
   weight: 0.7
   moveSpeed: 0
@@ -33,6 +55,13 @@ MonoBehaviour:
   shieldBreakDuration: 1.6
   guardRange: 4
   shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
   contactHit:
     damage: 1
     pipDamage: 1
