@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.9019608, g: 0.23529412, b: 0.23529412, a: 1}
   bodySprite: {fileID: 21300000, guid: 0c901cc7509c1488b95477cd77523c5b, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: a67ef789e90243343a8ba367a908fa56, type: 3}
+    - {fileID: 21300000, guid: e9edce384f536d40acb4a71fa1741e8e, type: 3}
+    - {fileID: 21300000, guid: bf3f5fdbe7f36b3ecff8aa7d254bbde2, type: 3}
+    - {fileID: 21300000, guid: 47b27d3fb47fc0d81a04111e3a07975f, type: 3}
+    run:
+    - {fileID: 21300000, guid: 829ab231b05f00b00793585fa0545ed5, type: 3}
+    - {fileID: 21300000, guid: 22b1bea9af7a7e8f5ad37c5b9086624a, type: 3}
+    - {fileID: 21300000, guid: 54df5dd770ace8d35d99ab4e02b76ada, type: 3}
+    - {fileID: 21300000, guid: 9db6d953f6bfdb26fb56df346713df2e, type: 3}
+    - {fileID: 21300000, guid: e763cf8c6b9fc52cc332c94518a5b705, type: 3}
+    - {fileID: 21300000, guid: a6c6998c17de3fff26dd94a4f31bd546, type: 3}
+    jump:
+    - {fileID: 21300000, guid: a243233b10630b4e14b470130354d894, type: 3}
+    fall:
+    - {fileID: 21300000, guid: f8003b0e2f442d333b21d4148e37e965, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 3b822d10c259e95d75326e3ccec8be59, type: 3}
+    - {fileID: 21300000, guid: 189d5dcc8ddfa4e59a179a1d37581dbb, type: 3}
+    - {fileID: 21300000, guid: 427da87f5aacdad967634bfb331c5c21, type: 3}
+    special:
+    - {fileID: 21300000, guid: 33f4609d1a788bcd89982049a1e56492, type: 3}
+    - {fileID: 21300000, guid: a18569f7ee30355a579da366cbbf6c0b, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 1ef72734fd9843e691336af0ac7e0a74, type: 3}
+    weaponName: Thunder Gloves
   movement:
     runSpeed: 7.6
     groundAcceleration: 70

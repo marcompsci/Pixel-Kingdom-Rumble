@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.39215687, g: 0.78431374, b: 0.8627451, a: 1}
   bodySprite: {fileID: 21300000, guid: 880bb8bdd417d49cb874320780110279, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: edb00973be68b04781b57dfde7826b82, type: 3}
+    - {fileID: 21300000, guid: 02c4b2131edc58ab1ac974845fc46f6d, type: 3}
+    - {fileID: 21300000, guid: 3960a2dfc4a78ddd540667dc20d5184c, type: 3}
+    - {fileID: 21300000, guid: 9cb1f2acc312558329f1c142a4c1ed36, type: 3}
+    run:
+    - {fileID: 21300000, guid: a64c971ad38d6c43a97a27e6706bcbd3, type: 3}
+    - {fileID: 21300000, guid: 01573837a92fdc28699dbebe2b3cb571, type: 3}
+    - {fileID: 21300000, guid: ecb38ca6622ac3780cb08582017d5a83, type: 3}
+    - {fileID: 21300000, guid: 166349129045a81b66314fe08b3d7bd2, type: 3}
+    - {fileID: 21300000, guid: c373c428fb9113dd02a65cf70caa25c5, type: 3}
+    - {fileID: 21300000, guid: b7aa8866818c2f7f575a5ca7510a7348, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 623b19a97e93a5b9fb135b009d1606f8, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 966ce295450bb0d7171a7b35414a61e9, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 1160cf63886cfb115dae5f39f6c913b7, type: 3}
+    - {fileID: 21300000, guid: 325c1ef52685d2fb49b30e599d22bd21, type: 3}
+    - {fileID: 21300000, guid: 96c5084bf81bdff38de6b8f6e5c56ef4, type: 3}
+    special:
+    - {fileID: 21300000, guid: c76cd4fb5c7ac6e2621429e35bfe6a03, type: 3}
+    - {fileID: 21300000, guid: f5f7861dc5b28d853a339892d3a6fb8e, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: e027f27605827e42dde4ee186387ef92, type: 3}
+    weaponName: Gadget Blaster
   movement:
     runSpeed: 8
     groundAcceleration: 70

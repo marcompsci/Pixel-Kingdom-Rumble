@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.43137255, g: 0.27450982, b: 0.15686275, a: 1}
   bodySprite: {fileID: 21300000, guid: c3003f16e45cd4658a3291b3ecdf4321, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 039f266b2f7da6b674257851a1bdb4a2, type: 3}
+    - {fileID: 21300000, guid: 54905f33bdeb943bde6daed3bfe7c93c, type: 3}
+    - {fileID: 21300000, guid: cfb0873cde6125c9f562790e91379bea, type: 3}
+    - {fileID: 21300000, guid: 7ff6afce549e8119d7c6f5b5bda28bdb, type: 3}
+    run:
+    - {fileID: 21300000, guid: 0209a0a4e78d64811d3ae3c558723065, type: 3}
+    - {fileID: 21300000, guid: faf0c3b609f04b6c97c72954296ee7bb, type: 3}
+    - {fileID: 21300000, guid: bb9fd81468e90d1dea739807b71fdd2e, type: 3}
+    - {fileID: 21300000, guid: 8404ae9b113f6351e29f07262e9fec93, type: 3}
+    - {fileID: 21300000, guid: 28e3a66360355f3b7e69607d54e9a926, type: 3}
+    - {fileID: 21300000, guid: cd889f3c6f9e2593823f6486f73b042f, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 6f693f0d8430dc0a95b2d331bfd09cf3, type: 3}
+    fall:
+    - {fileID: 21300000, guid: a1db6140dd76ff204012fe9688c344c6, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 3312397ede1bfc458a2d860f28cf17e3, type: 3}
+    - {fileID: 21300000, guid: f52300e7e4f35f401bae7efd0b183e3c, type: 3}
+    - {fileID: 21300000, guid: f8d0745df7121e7c0df0736012e670d6, type: 3}
+    special:
+    - {fileID: 21300000, guid: 96777a7ab2d7c9e3f39a1623787e3c74, type: 3}
+    - {fileID: 21300000, guid: 284398dbd8b57d3d28dd729ad3ff267a, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: d349a77e6ce9ea1579c450d9ce638764, type: 3}
+    weaponName: Timber Mallet
   movement:
     runSpeed: 6.2
     groundAcceleration: 70

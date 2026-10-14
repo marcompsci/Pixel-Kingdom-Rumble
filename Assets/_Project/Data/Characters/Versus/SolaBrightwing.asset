@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.98039216, g: 0.98039216, b: 0.9411765, a: 1}
   bodySprite: {fileID: 21300000, guid: 5b77aad63c709462097473ad87f81f51, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: a0b59677d6242f76fb09d5e9736b544d, type: 3}
+    - {fileID: 21300000, guid: 1e207e7977eb2f2f57e514bbedd764b3, type: 3}
+    - {fileID: 21300000, guid: fe5d63382e9c62df281002c74f326b8d, type: 3}
+    - {fileID: 21300000, guid: 64519f9daccb49a9c5b8250552fd4fc1, type: 3}
+    run:
+    - {fileID: 21300000, guid: 42eff70c7b39111f7b589bc32139fac5, type: 3}
+    - {fileID: 21300000, guid: 16999628367071f08a1dabf59c4f7c8d, type: 3}
+    - {fileID: 21300000, guid: 2a414a67b27a32e3ebfd2129c33f70f9, type: 3}
+    - {fileID: 21300000, guid: 162883ee564ddcc4ad79f44cbdcc2495, type: 3}
+    - {fileID: 21300000, guid: 0f99de9f1e37fdebb9487321f21752f7, type: 3}
+    - {fileID: 21300000, guid: c12ccb6bb0ccaa015304ea83379421b9, type: 3}
+    jump:
+    - {fileID: 21300000, guid: d295baa509f3f84e2c238a1f77f85c47, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 33c9c09e7270edb8a28c5c07d0b40b75, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 0782faa73497a392dad4428cb50b8d94, type: 3}
+    - {fileID: 21300000, guid: 29d7e3705609493fe81e50d37c731bbc, type: 3}
+    - {fileID: 21300000, guid: 3f7d171aeeed4a79ac205412b20949cc, type: 3}
+    special:
+    - {fileID: 21300000, guid: 0cae6ff79aee197a20e1a49e0379056c, type: 3}
+    - {fileID: 21300000, guid: 117734924c4a6c83c7faacc4af2796c7, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 09ed7e0b58581b0fd4a38ae0afa02c26, type: 3}
+    weaponName: Dawn Spear
   movement:
     runSpeed: 7.4
     groundAcceleration: 70

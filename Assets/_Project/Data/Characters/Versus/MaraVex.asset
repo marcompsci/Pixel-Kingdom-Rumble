@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.19607843, g: 0.18039216, b: 0.3137255, a: 1}
   bodySprite: {fileID: 21300000, guid: bdec4f7e138e94d7a8d0dfa7bd573971, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: f80bf67b365ed936cff84b422ef3ed91, type: 3}
+    - {fileID: 21300000, guid: 094368c15053ab944866d916523d9734, type: 3}
+    - {fileID: 21300000, guid: 1f479be27fd638870bd24f716c6ddfc2, type: 3}
+    - {fileID: 21300000, guid: 7c46c7ec1112894aac4373dcb4e646df, type: 3}
+    run:
+    - {fileID: 21300000, guid: dbcfac2336f2eafd4ee514d5b375eaac, type: 3}
+    - {fileID: 21300000, guid: 3c2fe7b8c3d3420b42f5314586fedb41, type: 3}
+    - {fileID: 21300000, guid: e39ba9138c5c442b3f58f9c1a50415b0, type: 3}
+    - {fileID: 21300000, guid: af9bdbff367f9e24f2d028be6d590c89, type: 3}
+    - {fileID: 21300000, guid: 01431edb5b2a370dabe4c5cf7660000e, type: 3}
+    - {fileID: 21300000, guid: 6ea6e7d74c7c4c83962306822ff5c9bc, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 3ddcb9ac3d6415c1c76d39d1060ddb2e, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 2f6c0ab6f501305d6d7c7906a43be566, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 787b542e700f01da448e6af4e4044435, type: 3}
+    - {fileID: 21300000, guid: 636d2de9471804d119726b03cd146ffb, type: 3}
+    - {fileID: 21300000, guid: 775503787c4e2cd753f1152024669ed5, type: 3}
+    special:
+    - {fileID: 21300000, guid: d18227ef06046ddf280547a04b5689be, type: 3}
+    - {fileID: 21300000, guid: cf551e3e2e4608356dbb62c5e05d81ad, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 2374e180f44aaea442554fbc49be6caf, type: 3}
+    weaponName: Twin Kunai
   movement:
     runSpeed: 8.6
     groundAcceleration: 70

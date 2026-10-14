@@ -41,12 +41,14 @@ MonoBehaviour:
   armorStartFrame: 0
   armorEndFrame: -1
   followUp: {fileID: 0}
+  specialFollowUp: {fileID: 0}
   spawnsProjectile: 1
   projectileSpawnOffset: {x: 0.7, y: 0.1}
   projectileSpeed: 15
   projectileLifetime: 0.45
   projectileRadius: 0.3
   projectileColor: {r: 0.47058824, g: 0.78431374, b: 1, a: 1}
+  projectileSprite: {fileID: 21300000, guid: 5f997322218b22a99e67e7d0ecad7aa8, type: 3}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.15686275, g: 0.5882353, b: 0.3529412, a: 1}
   bodySprite: {fileID: 21300000, guid: bc30ec73ea48c4febaa021f20e36ea90, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 7eaa9ee7f5f21f1a5b9f3303a5c2298c, type: 3}
+    - {fileID: 21300000, guid: d8c930f76a7900936bb3c28d9bd2f760, type: 3}
+    - {fileID: 21300000, guid: 06c12c2ba1e9ee42e9158b2c69af3718, type: 3}
+    - {fileID: 21300000, guid: 6e636b0bd85476045db87c4a52e039d2, type: 3}
+    run:
+    - {fileID: 21300000, guid: a54ef5928f95405e4aeb5ac15e219377, type: 3}
+    - {fileID: 21300000, guid: e6b2aea9f2664d8d3fb1db1bc40818c1, type: 3}
+    - {fileID: 21300000, guid: b305b70295ccb109ee4f800e4eb849b4, type: 3}
+    - {fileID: 21300000, guid: 41ada242fa9eb6d7f319277e752d4b3a, type: 3}
+    - {fileID: 21300000, guid: d0db4895cb0b3a646009037ba1aad766, type: 3}
+    - {fileID: 21300000, guid: e6534db897be6e6e2b9a5b0a47412275, type: 3}
+    jump:
+    - {fileID: 21300000, guid: d0a29e1420edd829d7842f2bf4d89aea, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 2e577acb9f60666494b748c6eaa1511b, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 28a9935d34a5e84245006f1b2e80972b, type: 3}
+    - {fileID: 21300000, guid: 6b5cecd7c6d7fa73099a7e8db3e86a87, type: 3}
+    - {fileID: 21300000, guid: ff7421ab58cb43073205594a74bc472f, type: 3}
+    special:
+    - {fileID: 21300000, guid: 3aeae05cb316aeac4c2cb602603d7726, type: 3}
+    - {fileID: 21300000, guid: 251dd44280f48579d2c97b524e8880e8, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 27d56f881ad097b8579428125d415f18, type: 3}
+    weaponName: Strike Ball
   movement:
     runSpeed: 8.4
     groundAcceleration: 70

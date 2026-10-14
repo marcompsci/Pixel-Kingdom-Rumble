@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.36078432, g: 0.76862746, b: 0.3764706, a: 1}
   bodySprite: {fileID: 21300000, guid: ebd49c904e1074d71ac361cd23e29d85, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 92f2164860748857486affb7e9f2064f, type: 3}
+    - {fileID: 21300000, guid: 0052754744d9815e87104e31ef6ad816, type: 3}
+    - {fileID: 21300000, guid: ff46981a673f8892188ca25f0f377bb5, type: 3}
+    - {fileID: 21300000, guid: f12da61594adf9f5e65f217288fa980b, type: 3}
+    run:
+    - {fileID: 21300000, guid: 72dd0be9ae82eb884776b06459dd60e1, type: 3}
+    - {fileID: 21300000, guid: 76f2e5dda7f1f37075013f7981c6ab2f, type: 3}
+    - {fileID: 21300000, guid: 5a36b6fe50361134ba7956344d6fb97d, type: 3}
+    - {fileID: 21300000, guid: f7c1db51f6ac4968c6c0a4a3ac407d13, type: 3}
+    - {fileID: 21300000, guid: 9d4fad9d42b120b870b9de1c45080b49, type: 3}
+    - {fileID: 21300000, guid: f238d28ab46c8556cc3f0414778984e1, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 3cff8c51250ddf55628de01c953051b7, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 5d9975f3ed70be1728b5f39268a97fc2, type: 3}
+    attack:
+    - {fileID: 21300000, guid: d292f4e3c3e4ec8b33b449af6a9a6cc5, type: 3}
+    - {fileID: 21300000, guid: d8d5bf5892d74ff32008d2d89d0966e2, type: 3}
+    - {fileID: 21300000, guid: 07adcd8e9d5ff217f78a482cb9584702, type: 3}
+    special:
+    - {fileID: 21300000, guid: 13693096e96ed639e181be056ac38862, type: 3}
+    - {fileID: 21300000, guid: c142aebdf7953569479d8eabc0919c23, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 3b8e9e473f967d424fd56725607f38bc, type: 3}
+    weaponName: Rink Stick
   movement:
     runSpeed: 9.5
     groundAcceleration: 28

@@ -24,6 +24,33 @@ MonoBehaviour:
   placeholderColor: {r: 0.54901963, g: 0.53333336, b: 0.5882353, a: 1}
   bodySprite: {fileID: 21300000, guid: f99068aae19cd438c8f97fd00e9d9ad6, type: 3}
   portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 643ab87e75f9c8f276ed4afb7d51178a, type: 3}
+    - {fileID: 21300000, guid: bb84fe27a623b7952af2263d8a56d785, type: 3}
+    - {fileID: 21300000, guid: c046f93fd4fd0926b8e79a65df56fbc6, type: 3}
+    - {fileID: 21300000, guid: 30cb335c7eabbeaa3f1e7978d4aadf4b, type: 3}
+    run:
+    - {fileID: 21300000, guid: 228aa4ce2c2ec89f4aa1a6b857db5f4a, type: 3}
+    - {fileID: 21300000, guid: 7720e8f5cc28630b73826f4c486a67b2, type: 3}
+    - {fileID: 21300000, guid: e076a242445a95ef19f9ad55a05f097e, type: 3}
+    - {fileID: 21300000, guid: 72ba1d7ef8e49d87bd3a0877ad2dcea6, type: 3}
+    - {fileID: 21300000, guid: 0daf972b638f141ef5cd9d1fae2fc8d4, type: 3}
+    - {fileID: 21300000, guid: 4d055f573f7d1909f1ba1b5550aacb98, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 66d90d0c5fbe52d633b37ee915566c9a, type: 3}
+    fall:
+    - {fileID: 21300000, guid: c43376a64a74d081abadb742e17622ee, type: 3}
+    attack:
+    - {fileID: 21300000, guid: d9a4ab56cf81736d79e991f80f78c594, type: 3}
+    - {fileID: 21300000, guid: 8dc2aed482b5d3ea8e27489339cbb9c9, type: 3}
+    - {fileID: 21300000, guid: bf82327268b6cbc5ff77df9b286c3ab3, type: 3}
+    special:
+    - {fileID: 21300000, guid: d21f159d4eb901254320aedb961ec688, type: 3}
+    - {fileID: 21300000, guid: 64e427ff071e6142d1bcba67a24a38a3, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 6dc1ab82cde3b27bf1bacee215823f2f, type: 3}
+    weaponName: Quarry Fists
   movement:
     runSpeed: 5.8
     groundAcceleration: 50

@@ -48,6 +48,7 @@ MonoBehaviour:
   projectileLifetime: 0.45
   projectileRadius: 0.25
   projectileColor: {r: 0.8627451, g: 0.8627451, b: 0.92156863, a: 1}
+  projectileSprite: {fileID: 21300000, guid: d0a8564d96e4478efe921da8280b712f, type: 3}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6
