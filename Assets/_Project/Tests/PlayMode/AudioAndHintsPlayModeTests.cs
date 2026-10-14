@@ -11,7 +11,8 @@ namespace PKR.Tests
         {
             Sfx.Jump, Sfx.Land, Sfx.Hit, Sfx.HitHeavy, Sfx.Hurt, Sfx.Swing, Sfx.Shard, Sfx.Relic, Sfx.Heal, Sfx.Checkpoint,
             Sfx.Spotted, Sfx.Takedown, Sfx.Spring, Sfx.Crate, Sfx.Click, Sfx.Secret, Sfx.KO, Sfx.Victory, Sfx.Purchase,
-            Sfx.MusicStory, Sfx.MusicStealth, Sfx.MusicVersus
+            Sfx.MusicStory, Sfx.MusicStealth, Sfx.MusicVersus, Sfx.MusicTitle, Sfx.MusicFrost, Sfx.MusicRealms, Sfx.MusicBoss,
+            Sfx.Special, "bark_0", "bark_1", "bark_2", "bark_3"
         };
 
         [Test]
@@ -28,7 +29,11 @@ namespace PKR.Tests
         [Test]
         public void MusicFor_PicksTheRightLoop()
         {
-            Assert.AreEqual(Sfx.MusicStory, AudioDirector.MusicFor(SceneIds.MainMenu));
+            Assert.AreEqual(Sfx.MusicTitle, AudioDirector.MusicFor(SceneIds.MainMenu));
+            Assert.AreEqual(Sfx.MusicFrost, AudioDirector.MusicFor(SceneIds.ClockworkGlacier));
+            Assert.AreEqual(Sfx.MusicRealms, AudioDirector.MusicFor(SceneIds.SkyGardens));
+            Assert.AreEqual(Sfx.MusicBoss, AudioDirector.MusicFor(SceneIds.FourfoldSovereign));
+            Assert.AreEqual(Sfx.MusicBoss, AudioDirector.MusicFor(SceneIds.BossTest));
             Assert.AreEqual(Sfx.MusicStory, AudioDirector.MusicFor(SceneIds.StoryTest));
             Assert.AreEqual(Sfx.MusicStealth, AudioDirector.MusicFor("MS_FirstLight"));
             Assert.AreEqual(Sfx.MusicStealth, AudioDirector.MusicFor(SceneIds.RooftopRun));

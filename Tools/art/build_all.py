@@ -83,7 +83,7 @@ TextureImporter:
   alignment: {align}
   spritePivot: {{x: 0.5, y: 0.5}}
   spritePixelsToUnits: {ppu}
-  spriteBorder: {{x: 0, y: 0, z: 0, w: 0}}
+  spriteBorder: {{x: {b}, y: {b}, z: {b}, w: {b}}}
   spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -160,7 +160,7 @@ def ensure_dir(path):
         p = os.path.dirname(p)
 
 
-def save(img, path, ppu=32, align='center', filt=0, wrap=1):
+def save(img, path, ppu=32, align='center', filt=0, wrap=1, border=0):
     ensure_dir(os.path.dirname(path))
     img.save(path)
     written.append(path)
@@ -174,7 +174,7 @@ def save(img, path, ppu=32, align='center', filt=0, wrap=1):
     rel = os.path.relpath(path, ROOT)
     g = guid(rel)
     with open(meta, 'w', newline='\n') as f:
-        f.write(META.format(guid=g, filter=filt, wrap=wrap, align=ALIGN[align], ppu=ppu, sid=hashlib.md5(g.encode()).hexdigest()))
+        f.write(META.format(guid=g, filter=filt, wrap=wrap, align=ALIGN[align], ppu=ppu, b=border, sid=hashlib.md5(g.encode()).hexdigest()))
 
 
 ANIMS = ['idle', 'run', 'jump', 'fall', 'attack', 'special', 'hurt']
@@ -219,6 +219,43 @@ def build_controls():
         save(fn(), os.path.join(ui, name + '.png'), ppu=100, filt=1)
 
 
+FONT_META = """fileFormatVersion: 2
+guid: {guid}
+TrueTypeFontImporter:
+  externalObjects: {{}}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - PKR Pixel
+  fallbackFontReferences: []
+  customCharacters:
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData:
+  assetBundleName:
+  assetBundleVariant:
+"""
+
+
+def build_ui():
+    import ui
+    res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'UI')
+    for name, fn in ui.ALL.items():
+        save(fn(), os.path.join(res, name + '.png'), ppu=100, border=ui.BORDERS[name])
+    font = os.path.join(res, 'PKRPixel.ttf')
+    ensure_dir(res)
+    ui.build_font(font)
+    written.append(font)
+    if not os.path.exists(font + '.meta'):
+        open(font + '.meta', 'w', newline='\n').write(FONT_META.format(guid=guid(os.path.relpath(font, ROOT))))
+
+
 def build_tiles():
     for i, (theme, th) in enumerate(tiles.THEMES.items()):
         base = os.path.join(PIX, 'Tiles', theme)
@@ -244,7 +281,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'tiles', 'backgrounds', 'fx']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'tiles', 'backgrounds', 'fx']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

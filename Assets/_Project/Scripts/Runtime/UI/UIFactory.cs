@@ -55,6 +55,8 @@ namespace PKR
     public static class UIFactory
     {
         public const float RowHeight = 104f;
+        /// <summary>How much bigger the gold frame is than the panel inside it (both sides together).</summary>
+        static float EdgePad => UISprites.PixelPanel != null ? 28f : 12f;
 
         /// <summary>Screen-space overlay canvas sized for landscape (1920x1080) or portrait (1080x1920) reference.</summary>
         public static RectTransform CreateCanvas(Transform parent, string name, int sortingOrder, bool landscape, out Canvas canvas)
@@ -110,17 +112,15 @@ namespace PKR
         {
             var p = UITheme.Current;
             var edge = Rect("PanelEdge", parent);
-            edge.sizeDelta = size + new Vector2(12f, 12f);
+            edge.sizeDelta = size + new Vector2(EdgePad, EdgePad);
             var edgeImg = edge.gameObject.AddComponent<Image>();
-            edgeImg.sprite = UISprites.RoundedRect;
-            edgeImg.type = Image.Type.Sliced;
+            UISprites.ApplyPanelSprite(edgeImg);
             edgeImg.color = p.panelEdge;
 
             var rt = Rect("Panel", edge);
             rt.sizeDelta = size;
             var img = rt.gameObject.AddComponent<Image>();
-            img.sprite = UISprites.RoundedRect;
-            img.type = Image.Type.Sliced;
+            UISprites.ApplyPanelSprite(img);
             img.color = p.panel;
 
             var layout = rt.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -138,7 +138,7 @@ namespace PKR
         public static void ResizePanel(RectTransform panel, float height)
         {
             panel.sizeDelta = new Vector2(panel.sizeDelta.x, height);
-            if (panel.parent is RectTransform edge) edge.sizeDelta = new Vector2(edge.sizeDelta.x, height + 12f);
+            if (panel.parent is RectTransform edge) edge.sizeDelta = new Vector2(edge.sizeDelta.x, height + EdgePad);
         }
 
         /// <summary>Recolor a Button made by Button(): face color and label color.</summary>
@@ -165,12 +165,19 @@ namespace PKR
         {
             var rt = Rect("Label", parent);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = UISprites.Font;
+            t.font = title ? UISprites.DisplayFont : UISprites.Font;
             t.text = text;
             t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
+            t.fontStyle = title && UISprites.HasDisplayFont ? FontStyle.Normal : FontStyle.Bold;
             t.alignment = align;
             t.color = title ? UITheme.Current.title : UITheme.Current.text;
+            if (title && UISprites.HasDisplayFont)
+            {
+                // Chunky drop shadow under pixel titles.
+                var sh = rt.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0f, 0f, 0.85f);
+                sh.effectDistance = new Vector2(5f, -5f);
+            }
             t.raycastTarget = false;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
@@ -186,8 +193,7 @@ namespace PKR
             var p = UITheme.Current;
             var rt = Rect("Button_" + text, parent);
             var img = rt.gameObject.AddComponent<Image>();
-            img.sprite = UISprites.RoundedRect;
-            img.type = Image.Type.Sliced;
+            UISprites.ApplyButtonSprite(img);
             img.color = Color.white;
             var btn = rt.gameObject.AddComponent<Button>();
             btn.targetGraphic = img;
@@ -210,10 +216,19 @@ namespace PKR
             var labelRt = Rect("Text", rt);
             Stretch(labelRt);
             var t = labelRt.gameObject.AddComponent<Text>();
-            t.font = UISprites.Font;
+            t.font = UISprites.DisplayFont;
             t.text = text;
-            t.fontSize = 44;
-            t.fontStyle = FontStyle.Bold;
+            t.fontSize = UISprites.HasDisplayFont ? 40 : 44;
+            t.fontStyle = UISprites.HasDisplayFont ? FontStyle.Normal : FontStyle.Bold;
+            t.resizeTextForBestFit = UISprites.HasDisplayFont;
+            t.resizeTextMinSize = 20;
+            t.resizeTextMaxSize = t.fontSize;
+            if (UISprites.PixelButton != null)
+            {
+                labelRt.offsetMin = new Vector2(16f, 14f); // sit on the key face, above its thick base
+                labelRt.offsetMax = new Vector2(-16f, -4f);
+                rt.gameObject.AddComponent<PixelButtonPress>().Init(img, labelRt);
+            }
             t.alignment = TextAnchor.MiddleCenter;
             t.color = interactable ? p.buttonText : new Color(1f, 1f, 1f, 0.6f);
             t.raycastTarget = false;

@@ -23,6 +23,44 @@ namespace PKR
         public static Sprite Check => _check != null ? _check : (_check = MakeCheck());
         public static Sprite Ring => _ring != null ? _ring : (_ring = Make(true));
 
+        // ---- generated pixel UI (Tools/art/ui.py -> Resources/PKR/UI); every getter may be null ---------------------
+        static Sprite _pxPanel, _pxButton, _pxButtonPressed;
+        static Font _display;
+        static bool _loaded;
+
+        static void LoadPixel()
+        {
+            if (_loaded) return;
+            _loaded = true;
+            _pxPanel = Resources.Load<Sprite>("PKR/UI/ui_panel");
+            _pxButton = Resources.Load<Sprite>("PKR/UI/ui_button");
+            _pxButtonPressed = Resources.Load<Sprite>("PKR/UI/ui_button_pressed");
+            _display = Resources.Load<Font>("PKR/UI/PKRPixel");
+        }
+
+        public static Sprite PixelPanel { get { LoadPixel(); return _pxPanel; } }
+        public static Sprite PixelButton { get { LoadPixel(); return _pxButton; } }
+        public static Sprite PixelButtonPressed { get { LoadPixel(); return _pxButtonPressed; } }
+        public static bool HasDisplayFont { get { LoadPixel(); return _display != null; } }
+
+        /// <summary>"PKR Pixel" (blocky all-caps display face) for titles and buttons; the built-in font without it.</summary>
+        public static Font DisplayFont { get { LoadPixel(); return _display != null ? _display : Font; } }
+
+        /// <summary>Chunky pixel frame (each art pixel = 3 canvas units) or the smooth rounded rect.</summary>
+        public static void ApplyPanelSprite(UnityEngine.UI.Image img)
+        {
+            img.sprite = PixelPanel != null ? PixelPanel : RoundedRect;
+            img.type = UnityEngine.UI.Image.Type.Sliced;
+            if (PixelPanel != null) img.pixelsPerUnitMultiplier = 1f / 3f;
+        }
+
+        public static void ApplyButtonSprite(UnityEngine.UI.Image img)
+        {
+            img.sprite = PixelButton != null ? PixelButton : RoundedRect;
+            img.type = UnityEngine.UI.Image.Type.Sliced;
+            if (PixelButton != null) img.pixelsPerUnitMultiplier = 1f / 3f;
+        }
+
         /// <summary>Unity 2022.2+ ships "LegacyRuntime.ttf" as the built-in runtime font.</summary>
         public static Font Font => _font != null ? _font : (_font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"));
 

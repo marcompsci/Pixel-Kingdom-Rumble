@@ -131,9 +131,28 @@ namespace PKR
             _startedInAir = !_motor.IsGrounded;
             _motor.FacingLocked = true;
             AttackStarted?.Invoke(move);
+            PlayStartSound(move);
             // Process frame 0 now, before the motor runs this step, so a rooted move can't be
             // overridden by a jump buffered on the same frame.
             Step();
+        }
+
+        float _lastBark = -10f;
+
+        /// <summary>A whoosh on normal attacks; specials get a charge-and-zap plus the hero's own battle shout.</summary>
+        void PlayStartSound(MoveDefinition move)
+        {
+            bool special = move.spawnsProjectile || move.spawnsTrap || (moveset != null &&
+                (move == moveset.groundSpecial || move == moveset.airSpecial || move == moveset.sideSpecial || move == moveset.downSpecial));
+            if (!special) { Sfx.Play(Sfx.Swing, 0.6f, 0.1f); return; }
+            Sfx.Play(Sfx.Special, 0.75f);
+            if (Time.time - _lastBark < 1.2f) return; // a shout per special, not per frame of spam
+            var visual = GetComponent<FighterVisual>();
+            var hero = visual != null ? visual.Character : null;
+            if (hero == null) return;
+            _lastBark = Time.time;
+            var (clip, pitch) = Sfx.BarkFor(hero.id);
+            Sfx.PlayAt(clip, 0.8f, pitch);
         }
 
         void Step()

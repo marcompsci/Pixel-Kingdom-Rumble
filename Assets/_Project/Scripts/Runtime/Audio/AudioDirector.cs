@@ -39,6 +39,11 @@ namespace PKR
             if (scene.StartsWith(SceneIds.ContractPrefix) || scene == SceneIds.MissionBoard ||
                 scene == SceneIds.RooftopRun || scene == SceneIds.NightMarketHeist) return Sfx.MusicStealth;
             if (scene.StartsWith("VS_") || scene.StartsWith("AC_") || scene == SceneIds.VersusSelect) return Sfx.MusicVersus;
+            if (scene == SceneIds.MainMenu || scene == SceneIds.CharacterSelect || scene == SceneIds.LevelSelect) return Sfx.MusicTitle;
+            if (scene == SceneIds.BossTest || scene == SceneIds.FourfoldSovereign) return Sfx.MusicBoss;
+            if (scene == SceneIds.FrostgearAscent || scene == SceneIds.ClockworkGlacier) return Sfx.MusicFrost;
+            if (scene == SceneIds.EmberWastes || scene == SceneIds.SkyGardens || scene == SceneIds.SunkenClockworks ||
+                scene == SceneIds.ToyFortress || scene == SceneIds.ShatteredCrossing) return Sfx.MusicRealms;
             return Sfx.MusicStory;
         }
 

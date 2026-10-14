@@ -68,7 +68,14 @@ namespace PKR
             UIFactory.Clear(_menuRoot);
             var panel = UIFactory.Panel(_menuRoot, new Vector2(960f, 1680f));
 
-            UIFactory.Label(panel, "PIXEL KINGDOM\nRUMBLE", 96, TextAnchor.MiddleCenter, 260f, title: true);
+            UIFactory.Label(panel, "PIXEL KINGDOM\nRUMBLE", 92, TextAnchor.MiddleCenter, 210f, title: true);
+            if (roster != null)
+            {
+                var castRow = UIFactory.Rect("Cast", panel);
+                var le = castRow.gameObject.AddComponent<LayoutElement>();
+                le.preferredHeight = le.minHeight = 190f;
+                TitleCast.Build(castRow, roster, 6);
+            }
             UIFactory.Label(panel, "Adventures of the Sunspire Isles", 40, TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
 
             var save = Services.Save != null ? Services.Save.Data : null;
@@ -119,7 +126,7 @@ namespace PKR
                 var gc = UIFactory.Button(panel, "GAME CENTER  ·  ACHIEVEMENTS & RANKS", GameCenterService.ShowDashboard, 80f);
                 gc.GetComponentInChildren<Text>().fontSize = 30;
             }
-            else UIFactory.Label(panel, "Prototype · placeholder art", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
+            else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Select(story);
         }
 
