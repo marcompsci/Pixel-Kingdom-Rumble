@@ -9,8 +9,8 @@ namespace PKR
     /// Actions are defined in code (no .inputactions asset) so bindings can't break from missing references.
     ///
     /// Editor / desktop testing:
-    ///   Move: WASD or arrows   Jump: Space / K      Attack: J      Special: L / I      Dodge: Left Shift / U
-    ///   Pause: Escape / P      Gamepad: left stick, South=Jump, West=Attack, North=Special, East/RB=Dodge, Start=Pause
+    ///   Move: WASD or arrows   Jump: Space / K      Attack: J      Special: L / I      Dodge: Left Shift / U   Jetpack: F / O
+    ///   Pause: Escape / P      Gamepad: left stick, South=Jump, West=Attack, North=Special, East/RB=Dodge, LB=Jetpack, Start=Pause
     /// </summary>
     [DefaultExecutionOrder(-50)]
     public class PlayerInputRouter : MonoBehaviour
@@ -20,7 +20,7 @@ namespace PKR
         [SerializeField] TouchControlsUI touchControls;
 
         InputActionMap _map;
-        InputAction _move, _jump, _attack, _special, _dodge, _pause;
+        InputAction _move, _jump, _attack, _special, _dodge, _jetpack, _pause;
         bool _devicesOff;
 
         public FighterIntent Intent => motor != null ? motor.Intent : null;
@@ -51,6 +51,7 @@ namespace PKR
             _attack = Button("Attack", "<Keyboard>/j", "<Gamepad>/buttonWest");
             _special = Button("Special", "<Keyboard>/l", "<Keyboard>/i", "<Gamepad>/buttonNorth");
             _dodge = Button("Dodge", "<Keyboard>/leftShift", "<Keyboard>/u", "<Gamepad>/buttonEast", "<Gamepad>/rightShoulder");
+            _jetpack = Button("Jetpack", "<Keyboard>/f", "<Keyboard>/o", "<Gamepad>/leftShoulder");
             _pause = Button("Pause", "<Keyboard>/escape", "<Keyboard>/p", "<Gamepad>/start");
         }
 
@@ -113,6 +114,7 @@ namespace PKR
             Route(intent.Attack, _attack, ControlIds.Attack, touch, now);
             Route(intent.Special, _special, ControlIds.Special, touch, now);
             Route(intent.Dodge, _dodge, ControlIds.Dodge, touch, now);
+            Route(intent.Jetpack, _jetpack, ControlIds.Jetpack, touch, now);
         }
 
         void Route(ActionBuffer buffer, InputAction action, string touchId, bool touch, float now)

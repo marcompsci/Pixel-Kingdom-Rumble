@@ -150,6 +150,7 @@ namespace PKR
         {
             if (_motor == null) return;
             _motor.Jumped += OnJumped;
+            _motor.AirJumped += OnAirJumped;
             _motor.Landed += OnLanded;
             if (_health != null) _health.Hit += OnHit;
         }
@@ -158,6 +159,7 @@ namespace PKR
         {
             if (_motor == null) return;
             _motor.Jumped -= OnJumped;
+            _motor.AirJumped -= OnAirJumped;
             _motor.Landed -= OnLanded;
             if (_health != null) _health.Hit -= OnHit;
         }
@@ -169,6 +171,19 @@ namespace PKR
         }
 
         void OnJumped() => _squash = new Vector2(0.75f, 1.3f);
+
+        /// <summary>Double jump: a front flip, a ring of sparkles under the feet and a brighter jump sound.</summary>
+        void OnAirJumped()
+        {
+            _flip = 1f;
+            Sfx.Play(Sfx.AirJump, 0.8f, 0.04f);
+            var mat = bodyRenderer != null ? bodyRenderer.sharedMaterial : null;
+            Vector2 feet = (Vector2)transform.position + (Vector2)_basePos;
+            PuffEffect.Play(feet, new Color(1f, 1f, 1f, 0.9f), mat, 0.14f, 4f, 0.3f);
+            PuffEffect.Play(feet, new Color(0.6f, 0.9f, 1f, 0.9f), mat, 0.1f, 2.5f, 0.3f);
+        }
+
+        float _flip; // 1 -> 0 over a double jump's front flip
 
         void OnLanded(float impactSpeed)
         {
@@ -232,8 +247,21 @@ namespace PKR
             }
             else
             {
-                body.localRotation = Quaternion.Euler(0f, 0f, _tilt * _motor.Facing);
+                float flipDeg = 0f;
+                if (_flip > 0f)
+                {
+                    _flip = Mathf.Max(0f, _flip - dt / 0.32f);
+                    flipDeg = -360f * (1f - _flip) * (1f - _flip * 0.15f);   // eased front flip
+                    if (_flip <= 0f) flipDeg = 0f;
+                }
+                body.localRotation = Quaternion.Euler(0f, 0f, (_tilt + flipDeg) * _motor.Facing);
                 body.localPosition = _basePos + new Vector3(0f, bob, 0f);
+                if (flipDeg != 0f)
+                {
+                    // Spin around the body's middle, not the feet pivot.
+                    var mid = new Vector3(0f, 0.75f * Mathf.Abs(_baseScale.y), 0f);
+                    body.localPosition += mid - Quaternion.Euler(0f, 0f, flipDeg * _motor.Facing) * mid;
+                }
                 body.localScale = new Vector3(
                     _baseScale.x * _squash.x * _motor.Facing,
                     _baseScale.y * _squash.y * scaleY,

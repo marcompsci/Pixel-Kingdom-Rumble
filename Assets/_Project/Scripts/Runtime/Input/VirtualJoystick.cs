@@ -7,7 +7,8 @@ namespace PKR
 {
     /// <summary>
     /// Left-side analog stick. Sits on a touch zone covering the left half of the safe area.
-    /// Floating mode: the stick appears wherever the thumb lands, and returns home on release.
+    /// Floating mode: the stick appears wherever the thumb lands, follows it if it slides past the rim, and returns
+    /// home on release.
     /// Fixed mode: only touches that start on the stick count.
     /// Edit mode: dragging moves the stick's home position (saved to settings by TouchControlsUI).
     /// Multi-touch safe: tracks a single pointerId, so buttons on the right work at the same time.
@@ -130,6 +131,12 @@ namespace PKR
         {
             float radius = Mathf.Max(1f, RadiusPixels);
             Vector2 delta = screenPos - (Vector2)stickBase.position;
+            if (floating && delta.magnitude > radius)
+            {
+                // Floating stick follows the thumb: drag past the rim and the whole stick slides along under it.
+                stickBase.position = (Vector2)stickBase.position + (delta - delta.normalized * radius);
+                delta = screenPos - (Vector2)stickBase.position;
+            }
             Vector2 clamped = Vector2.ClampMagnitude(delta, radius);
             knob.position = (Vector2)stickBase.position + clamped;
 

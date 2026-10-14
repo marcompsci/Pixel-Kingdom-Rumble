@@ -67,6 +67,7 @@ namespace PKR
         public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }
         public void SetDpadMode(bool on) { Data.dpadMode = on; Commit(); }
         public void SetMuted(bool on) { Data.muted = on; Commit(); }
+        public void SetControlOpacity(float v) { Data.controlOpacity = v; Commit(); }
 
         /// <summary>Scale every on-screen control (joystick and buttons) at once.</summary>
         public void SetControlScale(float scale)

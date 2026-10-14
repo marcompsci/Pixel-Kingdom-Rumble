@@ -75,6 +75,16 @@ dazed while the core is open, hurt) plus a hover, an attack shudder and a glowin
   TrueType display font (titles and buttons).
 - The title screen shows six heroes from the roster idling and showing off moves.
 
+## Movement extras (October 2026)
+- **Double jump** for every hero (`PlatformerMotor2D.AirJumpAllowance`: at least one mid-air jump; heroes with
+  more keep them). A front flip, sparkles and its own sound.
+- **Rescue jetpack** (Story and Contracts, `JetpackRescue`): hold **JET** (keyboard F / O, gamepad LB) to fly on a
+  1.4 s tank that refills on the ground; the ring around the button shows fuel. If the hero is stuck inside
+  geometry or hung motionless by a glitch, JET warps them back to the last safe ground (the button pulses).
+- On-screen controls are **65% opaque** by default (Settings > Control opacity) and the left stick floats: it
+  appears under the thumb and slides along if the thumb goes past its rim. Existing players are moved to these
+  defaults once (settings version 2).
+
 ## Sharing
 - Arena results: **SHARE** builds a Wordle-style card (`Core/Share/ShareCard.cs`): Daily number, twist, placement,
   KO and fall squares, streak, points, tier and the TestFlight link.

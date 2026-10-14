@@ -68,14 +68,24 @@ namespace PKR
             UIFactory.Toggle(colA, "Haptics", d.hapticsEnabled, settings.SetHaptics);
             UIFactory.Toggle(colA, "Screen shake", d.screenShakeEnabled, settings.SetScreenShake);
             UIFactory.Toggle(colA, "High contrast", d.highContrastUI, settings.SetHighContrast);
+            UIFactory.Toggle(colA, "D-pad (8-way)", d.dpadMode, settings.SetDpadMode);
             UIFactory.Toggle(colB, "Floating stick", d.floatingJoystick, settings.SetFloatingJoystick);
-            UIFactory.Toggle(colB, "D-pad (8-way)", d.dpadMode, settings.SetDpadMode);
             UIFactory.Toggle(colB, "Assist mode", d.assistMode, settings.SetAssistMode);
+            UIFactory.Slider(colB, "Control opacity", d.controlOpacity, 0.2f, 1f, settings.SetControlOpacity,
+                             v => Mathf.RoundToInt(v * 100f) + "%");
             UIFactory.Slider(colB, "Control size", settings.ControlScale,
                              PKR.Core.SettingsData.MinControlScale, PKR.Core.SettingsData.MaxControlScale,
                              settings.SetControlScale, v => v.ToString("0.0") + "x");
-            if (_onEditLayout != null) UIFactory.Button(colB, "EDIT CONTROL LAYOUT", () => _onEditLayout());
-            UIFactory.Button(colB, "RESET CONTROL LAYOUT", () => { settings.ResetControlLayout(); Rebuild(); });
+            // Layout buttons share one row so both columns stay six rows tall.
+            var layoutRow = UIFactory.Rect("LayoutButtons", colB);
+            var le = layoutRow.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+            le.preferredHeight = le.minHeight = UIFactory.RowHeight;
+            var hl = layoutRow.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+            hl.spacing = 18f;
+            hl.childControlWidth = true; hl.childControlHeight = true;
+            hl.childForceExpandWidth = true; hl.childForceExpandHeight = true;
+            if (_onEditLayout != null) UIFactory.Button(layoutRow, "EDIT LAYOUT", () => _onEditLayout());
+            UIFactory.Button(layoutRow, "RESET LAYOUT", () => { settings.ResetControlLayout(); Rebuild(); });
             UIFactory.Button(colB, "BACK", () => _onBack?.Invoke());
         }
 

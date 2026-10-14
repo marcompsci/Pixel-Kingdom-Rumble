@@ -184,5 +184,51 @@ namespace PKR.Tests
             Assert.Greater(motor.Velocity.y, 0f, "the mid-air jump goes up again");
             Assert.AreEqual(0, motor.AirJumpsLeft);
         }
+
+        [UnityTest]
+        public IEnumerator EveryHero_CanDoubleJump()
+        {
+            var def = Track(ScriptableObject.CreateInstance<CharacterDefinition>());
+            def.id = "plain";
+            def.movement.airJumps = 0;
+            MakeFighter("Plain", new Vector2(0f, 0.7f), TeamIds.Player, def, out var motor);
+            int airJumps = 0;
+            motor.AirJumped += () => airJumps++;
+            yield return Steps(20);
+            Assert.IsTrue(motor.IsGrounded);
+            Assert.AreEqual(1, motor.AirJumpAllowance, "heroes get a double jump even with airJumps = 0");
+
+            motor.Intent.Jump.Press(Time.time);
+            motor.Intent.Jump.SetHeld(true);
+            for (int i = 0; i < 120 && !(motor.Velocity.y < -0.5f); i++) yield return new WaitForFixedUpdate();
+            motor.Intent.Jump.Press(Time.time);
+            yield return Steps(3);
+            Assert.Greater(motor.Velocity.y, 0f, "the double jump goes up again");
+            Assert.AreEqual(1, airJumps);
+            Assert.AreEqual(0, motor.AirJumpsLeft);
+        }
+
+        [UnityTest]
+        public IEnumerator Jetpack_LiftsTheHero_AndRunsOutOfFuel()
+        {
+            var go = MakeFighter("Flyer", new Vector2(0f, 0.7f), TeamIds.Player, null, out var motor);
+            var pack = go.AddComponent<JetpackRescue>();
+            yield return Steps(20);
+            Assert.AreEqual(1f, pack.Fuel01, 0.01f);
+            float startY = go.transform.position.y;
+
+            motor.Intent.Jetpack.Press(Time.time);
+            motor.Intent.Jetpack.SetHeld(true);
+            yield return Steps(30);
+            Assert.IsTrue(pack.IsFlying);
+            Assert.Greater(go.transform.position.y, startY + 1f, "thrust carries the hero up");
+            Assert.Less(pack.Fuel01, 1f);
+
+            for (int i = 0; i < 200 && pack.Fuel01 > 0f; i++) yield return new WaitForFixedUpdate();
+            Assert.AreEqual(0f, pack.Fuel01, 0.001f, "the tank empties");
+            yield return Steps(3);
+            Assert.IsFalse(pack.IsFlying, "no fuel, no flight");
+            motor.Intent.Jetpack.SetHeld(false);
+        }
     }
 }

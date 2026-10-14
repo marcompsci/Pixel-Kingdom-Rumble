@@ -31,6 +31,8 @@ namespace PKR
 
         readonly Dictionary<string, TouchActionButton> _buttons = new Dictionary<string, TouchActionButton>();
         Canvas _canvas;
+        CanvasGroup _group;
+        Image _fuel;
         RectTransform _leftHalf, _rightHalf;
         Text _tag;
         float _layoutScale = 1f;
@@ -102,6 +104,55 @@ namespace PKR
         {
             // Touchscreen can appear later (Device Simulator toggled on).
             if (Time.frameCount % 30 == 0) RefreshVisibility();
+            UpdateJetpackButton();
+        }
+
+        /// <summary>JET shows only where the rescue jetpack exists (Story, Contracts); its ring shows the fuel left
+        /// and the button pulses when the hero is stuck.</summary>
+        void UpdateJetpackButton()
+        {
+            if (!_buttons.TryGetValue(ControlIds.Jetpack, out var jet)) return;
+            var pack = JetpackRescue.Player;
+            bool show = pack != null || EditMode;
+            if (jet.gameObject.activeSelf != show) jet.gameObject.SetActive(show);
+            if (!show || pack == null) return;
+            if (_fuel != null)
+            {
+                _fuel.fillAmount = pack.Fuel01;
+                _fuel.color = pack.Fuel01 < 0.25f ? new Color(1f, 0.35f, 0.3f, 0.95f) : new Color(1f, 0.78f, 0.3f, 0.95f);
+            }
+            var rt = (RectTransform)jet.transform;
+            if (pack.IsStuck && !jet.Held)
+            {
+                float k = 1f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 6f)) * 0.15f;
+                rt.localScale = Vector3.one * (JetScale * k);
+            }
+            else if (!jet.Held) rt.localScale = Vector3.one * JetScale;
+        }
+
+        float JetScale
+        {
+            get
+            {
+                var p = Services.Settings != null ? Services.Settings.Data.GetPlacement(ControlIds.Jetpack) : null;
+                return (p != null ? p.scale : 0.85f) * _layoutScale;
+            }
+        }
+
+        void BuildFuelGauge()
+        {
+            if (!_buttons.TryGetValue(ControlIds.Jetpack, out var jet)) return;
+            var ringSprite = Resources.Load<Sprite>("PKR/UI/ctl_fuel_ring");
+            if (ringSprite == null) return;
+            var rt = NewRect("Fuel", jet.transform);
+            Stretch(rt);
+            rt.offsetMin = new Vector2(-14f, -14f);
+            rt.offsetMax = new Vector2(14f, 14f);
+            _fuel = AddImage(rt.gameObject, ringSprite, false);
+            _fuel.type = Image.Type.Filled;
+            _fuel.fillMethod = Image.FillMethod.Radial360;
+            _fuel.fillOrigin = (int)Image.Origin360.Top;
+            _fuel.fillClockwise = false;
         }
 
         void RefreshVisibility()
@@ -142,6 +193,8 @@ namespace PKR
             EditMode = on;
             if (Joystick) Joystick.editMode = on;
             foreach (var b in _buttons.Values) b.editMode = on;
+            if (_group != null)
+                _group.alpha = on ? 1f : Mathf.Clamp(Services.Settings != null ? Services.Settings.Data.controlOpacity : SettingsData.DefaultControlOpacity, 0.2f, 1f);
             RefreshVisibility();
         }
 
@@ -173,6 +226,7 @@ namespace PKR
                 }
             }
             if (Joystick) { Joystick.floating = data.floatingJoystick; Joystick.eightWay = data.dpadMode; }
+            if (_group != null) _group.alpha = EditMode ? 1f : Mathf.Clamp(data.controlOpacity, 0.2f, 1f);
         }
 
         public void ApplyTheme()
@@ -208,6 +262,7 @@ namespace PKR
         {
             var canvasGo = new GameObject("TouchCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasGo.transform.SetParent(transform, false);
+            _group = canvasGo.AddComponent<CanvasGroup>(); // control opacity (settings, default 65%)
             _canvas = canvasGo.GetComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             _canvas.sortingOrder = sortingOrder;
@@ -235,6 +290,8 @@ namespace PKR
             BuildButton(right, ControlIds.Attack, "ATTACK");
             BuildButton(right, ControlIds.Special, "SPECIAL");
             BuildButton(right, ControlIds.Dodge, "DODGE");
+            BuildButton(right, ControlIds.Jetpack, "JET");
+            BuildFuelGauge();
             BuildEditBar(safe);
 
             var tagRt = NewRect("PlayerTag", safe);

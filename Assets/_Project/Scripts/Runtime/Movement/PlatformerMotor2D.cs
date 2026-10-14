@@ -45,6 +45,42 @@ namespace PKR
                                   JumpPhysics.IsSkidding(Body.linearVelocity.x, Intent.Move.x, true);
         /// <summary>Mid-air jumps left this airtime (MovementStats.airJumps; Brick's Stone Step).</summary>
         public int AirJumpsLeft => _airJumpsLeft;
+
+        /// <summary>
+        /// Mid-air jumps per airtime: every hero can double jump (at least one), heroes with more keep them.
+        /// Enemies keep exactly what their stats say.
+        /// </summary>
+        public int AirJumpAllowance => IsEnemy ? Stats.airJumps : Mathf.Max(DoubleJumps, Stats.airJumps);
+        public const int DoubleJumps = 1;
+
+        int _isEnemy = -1;
+        bool IsEnemy
+        {
+            get
+            {
+                if (_isEnemy < 0) _isEnemy = GetComponent<EnemyAI>() != null ? 1 : 0;
+                return _isEnemy == 1;
+            }
+        }
+
+        /// <summary>Fired when a mid-air (double) jump starts, after Jumped.</summary>
+        public event Action AirJumped;
+
+        /// <summary>True on the steps a jetpack (or similar) is pushing the fighter up.</summary>
+        public bool IsThrusting { get; private set; }
+        float _thrustTargetVy, _thrustAccel;
+        bool _thrustNext;
+
+        /// <summary>
+        /// Jetpack: for the next physics step, drive vertical speed toward targetVy at accel (units/s²), on top of
+        /// gravity. Call every step while thrusting. Horizontal control stays normal.
+        /// </summary>
+        public void Thrust(float targetVy, float accel)
+        {
+            _thrustNext = true;
+            _thrustTargetVy = targetVy;
+            _thrustAccel = accel;
+        }
         /// <summary>The moving platform we're standing on, if any.</summary>
         public MovingPlatform Platform => _platform;
 
@@ -162,7 +198,7 @@ namespace PKR
             _platform = IsGrounded ? platform : null;
             if (IsGrounded && !wasGrounded)
             {
-                _airJumpsLeft = s.airJumps;
+                _airJumpsLeft = AirJumpAllowance;
                 _rising = false;
                 _jumpArc = false;
                 // Velocity so far is in world space; treat the platform's share as carry so we switch to its frame.
@@ -275,6 +311,7 @@ namespace PKR
                 _jump.TryConsumeBufferedPress();
                 _airJumpsLeft--;
                 StartJump(ref v);
+                AirJumped?.Invoke();
             }
 
             // Variable jump height: releasing early cuts the rise once.
@@ -297,6 +334,14 @@ namespace PKR
                 v.y -= _gravity * mult * ArenaMods.GravityScale * dt;
                 v.y += _pushAccel.y * dt; // updrafts and rising currents
                 v.y = Mathf.Max(v.y, -s.maxFallSpeed);
+            }
+            IsThrusting = _thrustNext;
+            if (_thrustNext)
+            {
+                _thrustNext = false;
+                v.y = Mathf.MoveTowards(v.y, _thrustTargetVy, _thrustAccel * dt);
+                _rising = false;   // no jump-cut or apex hang while flying
+                _jumpArc = false;
             }
 
             Body.linearVelocity = v;
@@ -410,7 +455,7 @@ namespace PKR
             _lastAirVy = 0f;
             _carryX = 0f;
             _platform = null;
-            _airJumpsLeft = Stats.airJumps;
+            _airJumpsLeft = AirJumpAllowance;
             _wallRide.Land();
             _prevVx = 0f;
             _jump.Reset();

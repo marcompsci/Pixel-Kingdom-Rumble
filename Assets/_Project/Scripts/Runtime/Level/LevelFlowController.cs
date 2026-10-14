@@ -54,6 +54,8 @@ namespace PKR
             {
                 PlayerHealth = player.GetComponent<Damageable>();
                 _playerMotor = player.GetComponent<PlatformerMotor2D>();
+                // The rescue jetpack: fly out of a missed jump, or warp out if a glitch traps the hero.
+                if (_playerMotor != null && player.GetComponent<JetpackRescue>() == null) player.AddComponent<JetpackRescue>();
             }
         }
 

@@ -163,6 +163,14 @@ def sfx():
                                     for f, d in seq]), 0.32)
     save("purchase", np.concatenate([tri(f, 0.08) * env(int(SR * 0.08), 0.001, 0.07, 0, 0.005)
                                      for f in (784.0, 987.8, 1174.7, 1568.0)]), 0.5)
+    # jetpack: a short roaring burst (filtered noise with a low rumble), played in quick repeats while flying
+    d = 0.22
+    roar = bp(noise(d), 300, 2500) * 1.3 + lp(noise(d), 200) * 1.5
+    save("jetpack", roar * env(int(SR * d), 0.02, 0.1, 0.6, 0.06), 0.4)
+    # double jump: a bright upward flip with a sparkle
+    d = 0.16
+    save("air_jump", mixdown(square(sweep(520, 1250, d, 0.5), d, 0.125) * env(int(SR * d), 0.002, 0.14, 0, 0.02),
+                             tri(2637, d) * env(int(SR * d), 0.001, 0.08, 0, 0.01) * 0.3), 0.34)
     barks()
 
 

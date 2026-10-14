@@ -29,13 +29,14 @@ namespace PKR.Core
         public const string Attack = "attack";
         public const string Special = "special";
         public const string Dodge = "dodge";
-        public static readonly string[] All = { Joystick, Jump, Attack, Special, Dodge };
+        public const string Jetpack = "jetpack";
+        public static readonly string[] All = { Joystick, Jump, Attack, Special, Dodge, Jetpack };
     }
 
     [Serializable]
     public class SettingsData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
         public const float MinControlScale = 0.6f;
         public const float MaxControlScale = 1.6f;
 
@@ -51,6 +52,9 @@ namespace PKR.Core
         public bool dpadMode;
         /// <summary>The speaker button on the HUD: silences music and sound without touching the volume sliders.</summary>
         public bool muted;
+        /// <summary>How solid the on-screen controls look (0.2 = faint, 1 = opaque). Default 65%.</summary>
+        public float controlOpacity = DefaultControlOpacity;
+        public const float DefaultControlOpacity = 0.65f;
         /// <summary>Assist mode: +2 max health in Story and Contracts, and guards take longer to notice the hero.</summary>
         public bool assistMode;
         public List<ControlPlacement> controlLayout = DefaultLayout();
@@ -63,6 +67,7 @@ namespace PKR.Core
             new ControlPlacement(ControlIds.Attack,   0.58f, 0.24f, 1f),
             new ControlPlacement(ControlIds.Special,  0.68f, 0.50f, 1f),
             new ControlPlacement(ControlIds.Dodge,    0.88f, 0.50f, 0.9f),
+            new ControlPlacement(ControlIds.Jetpack,  0.60f, 0.74f, 0.85f),
         };
 
         public ControlPlacement GetPlacement(string id)
@@ -77,7 +82,14 @@ namespace PKR.Core
 
         public void Sanitize()
         {
+            if (version < 2)
+            {
+                // October 2026 controls update: the stick follows the thumb and controls are 65% opaque for everyone.
+                floatingJoystick = true;
+                controlOpacity = DefaultControlOpacity;
+            }
             version = CurrentVersion;
+            controlOpacity = float.IsNaN(controlOpacity) ? DefaultControlOpacity : Math.Max(0.2f, Math.Min(1f, controlOpacity));
             musicVolume = Clamp01(musicVolume);
             sfxVolume = Clamp01(sfxVolume);
             if (controlLayout == null) controlLayout = DefaultLayout();

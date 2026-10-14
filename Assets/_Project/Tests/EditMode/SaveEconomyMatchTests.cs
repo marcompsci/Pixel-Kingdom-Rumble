@@ -220,5 +220,22 @@ namespace PKR.Tests
             Assert.Throws<System.ArgumentOutOfRangeException>(() => new MatchState(MatchMode.Stock, 5));
             Assert.Throws<System.ArgumentOutOfRangeException>(() => new MatchState(MatchMode.Stock, 0));
         }
+
+        [Test]
+        public void Settings_FromVersion1_TurnOnTheFloatingStickAndSixtyFivePercentControls()
+        {
+            var s = new SettingsData { version = 1, floatingJoystick = false, controlOpacity = 1f };
+            s.Sanitize();
+            Assert.IsTrue(s.floatingJoystick);
+            Assert.AreEqual(0.65f, s.controlOpacity, 0.0001f);
+            Assert.AreEqual(SettingsData.CurrentVersion, s.version);
+            Assert.IsNotNull(s.GetPlacement(ControlIds.Jetpack), "existing layouts gain the JET button");
+
+            s.floatingJoystick = false;      // a later choice sticks
+            s.controlOpacity = 5f;
+            s.Sanitize();
+            Assert.IsFalse(s.floatingJoystick);
+            Assert.AreEqual(1f, s.controlOpacity, 0.0001f, "clamped");
+        }
     }
 }

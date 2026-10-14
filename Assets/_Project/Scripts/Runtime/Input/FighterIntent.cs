@@ -14,11 +14,13 @@ namespace PKR
         public readonly ActionBuffer Attack = new ActionBuffer(0.12f);
         public readonly ActionBuffer Special = new ActionBuffer(0.12f);
         public readonly ActionBuffer Dodge = new ActionBuffer(0.1f);
+        /// <summary>Story / Contracts: hold to fly with the rescue jetpack (or warp out when stuck).</summary>
+        public readonly ActionBuffer Jetpack = new ActionBuffer(0.1f);
 
         public void ClearAll()
         {
             Move = Vector2.zero;
-            Jump.Clear(); Attack.Clear(); Special.Clear(); Dodge.Clear();
+            Jump.Clear(); Attack.Clear(); Special.Clear(); Dodge.Clear(); Jetpack.Clear();
         }
     }
 }

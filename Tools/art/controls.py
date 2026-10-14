@@ -215,7 +215,35 @@ def icon_menu():
     return _fin(img)
 
 
+def icon_jetpack():
+    """Twin-tank jetpack with nozzles and big flames (rescue jetpack)."""
+    img = _icon()
+    d = ImageDraw.Draw(img)
+    s = 128 * SS
+    for x in (0.27, 0.57):
+        d.rounded_rectangle((s * x, s * 0.12, s * (x + 0.17), s * 0.54), s * 0.085, fill=W)
+        d.polygon([(s * (x + 0.02), s * 0.54), (s * (x + 0.15), s * 0.54), (s * (x + 0.13), s * 0.60), (s * (x + 0.04), s * 0.60)], fill=W)
+        cx = x + 0.085
+        d.polygon([(s * (cx - 0.08), s * 0.64), (s * (cx - 0.03), s * 0.70), (s * cx, s * 0.93),
+                   (s * (cx + 0.03), s * 0.70), (s * (cx + 0.08), s * 0.64)], fill=W)
+    d.rectangle((s * 0.44, s * 0.24, s * 0.57, s * 0.30), fill=W)
+    return _fin(img)
+
+
+def fuel_ring(size=192):
+    """A thick white ring drawn as a radial-fill gauge around a button (tinted at runtime)."""
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s / 2
+    _circle(d, c, c, s * 0.5, W)
+    _circle(d, c, c, s * 0.445, (0, 0, 0, 0))
+    return _done(img, size)
+
+
 ALL = {
+    'icon_jetpack': icon_jetpack,
+    'ctl_fuel_ring': lambda: fuel_ring(192),
     'ctl_button': lambda: round_button(192),
     'ctl_button_pressed': lambda: round_button(192, pressed=True),
     'ctl_square': lambda: square_button(128),

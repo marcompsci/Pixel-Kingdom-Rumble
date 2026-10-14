@@ -12,7 +12,7 @@ namespace PKR
         public const string Jump = "jump", Land = "land", Hit = "hit", HitHeavy = "hit_heavy", Hurt = "hurt", Swing = "swing",
             Shard = "shard", Relic = "relic", Heal = "heal", Checkpoint = "checkpoint", Spotted = "spotted",
             Takedown = "takedown", Spring = "spring", Crate = "crate", Click = "ui_click", Secret = "secret", KO = "ko",
-            Victory = "victory", Purchase = "purchase", Special = "special";
+            Victory = "victory", Purchase = "purchase", Special = "special", Jetpack = "jetpack", AirJump = "air_jump";
         public const string MusicStory = "music_story", MusicStealth = "music_stealth", MusicVersus = "music_versus",
             MusicTitle = "music_title", MusicFrost = "music_frost", MusicRealms = "music_realms", MusicBoss = "music_boss";
         public const int BarkCount = 4;
