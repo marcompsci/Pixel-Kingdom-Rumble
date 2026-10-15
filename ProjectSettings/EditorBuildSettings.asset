@@ -152,4 +152,19 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Events/EV_ZombieSurvival.unity
     guid: cf92c5d10251c4795afe517578d84f4d
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_OrrerySentinel.unity
+    guid: cda26bff9bec94f19b381c646941cbd7
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_StarfallSteps.unity
+    guid: c1ce5456d3f73498682694aeec53d58e
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_OrreryGardens.unity
+    guid: b0968b3277851400bb07690d4d8c14fa
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_CelestialMaze.unity
+    guid: 55a656bc5f28a42bb884b1007695f2a4
+  - enabled: 1
+    path: Assets/_Project/Scenes/Story/SQ_CometRun.unity
+    guid: 2e973af1fea1b43c7a0ee35ce8f65216
   m_configObjects: {}

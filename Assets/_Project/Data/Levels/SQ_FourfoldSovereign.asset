@@ -17,7 +17,7 @@ MonoBehaviour:
   biomeName: Sovereign's Core
   modeTag: Boss
   sceneName: SQ_FourfoldSovereign
-  nextSceneName: 
+  nextSceneName: SQ_StarfallSteps
   codexEntry: The Tickworks' core mind, split four ways. It fights like the Warden it once commanded, only faster, and it changes realms as it weakens. Strike its core while it's stuck after a slam.
   parTimeSeconds: 150
   totalShards: 0

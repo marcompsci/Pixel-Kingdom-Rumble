@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: LensGolem
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_lens_golem
+  displayName: Lens Golem
+  codexEntry: An old observatory telescope that grew legs. Slow and sturdy; three good hits crack the lens.
+  sprite: {fileID: 21300000, guid: c0d820bb3fe26f4c03d52a2a98196414, type: 3}
+  bodySize: {x: 0.8, y: 0.85}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: c0d820bb3fe26f4c03d52a2a98196414, type: 3}
+    - {fileID: 21300000, guid: 8db234526a03a4ed24e5706a963a486b, type: 3}
+    run:
+    - {fileID: 21300000, guid: 9522d8276e3cfdc8d70bb157affd7292, type: 3}
+    - {fileID: 21300000, guid: b4fde2a383969a364707f24483ba09f6, type: 3}
+    - {fileID: 21300000, guid: 084d251cad65928c54d23d129af6c5b0, type: 3}
+    - {fileID: 21300000, guid: cf32c1a4cdb002a75b2aeee0b8e0b579, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 46042769d68b5b67f0f29b5c954785db, type: 3}
+    weaponName: 
+  maxHealth: 4
+  weight: 1.6
+  moveSpeed: 0.26
+  behavior: 0
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 8
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 3

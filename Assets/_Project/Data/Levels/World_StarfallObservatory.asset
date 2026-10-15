@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d005f7af1742d24824e4a736037e1b6, type: 3}
+  m_Name: World_StarfallObservatory
+  m_EditorClassIdentifier: PKR.Runtime::PKR.WorldDefinition
+  displayName: Starfall Observatory
+  description: Above the clouds the stars are falling. Climb the observatory and set the great orrery right.
+  levels:
+  - {fileID: 11400000, guid: 5cb822b1fb9c547fa854f38909b8eb2a, type: 2}
+  - {fileID: 11400000, guid: 0da5522f50aa4489da552742129e7a04, type: 2}
+  - {fileID: 11400000, guid: 64616fccc378c4d6291afafb1db4d923, type: 2}
+  - {fileID: 11400000, guid: 34617e3d6d1d14c4fba44eb142afb48d, type: 2}
+  - {fileID: 11400000, guid: e5cf42d508e94455ab8eb51bc379546e, type: 2}
+  sectioned: 0
+  sectionColors: []
+  sectionNotes: []

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_OrreryGardens
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_orrery_gardens
+  displayName: Orrery Gardens
+  biomeName: Starfall Observatory
+  modeTag: Platform
+  sceneName: SQ_OrreryGardens
+  nextSceneName: SQ_CelestialMaze
+  codexEntry: Brass rings and drifting plates circle the observatory like moons. Lens golems keep the paths; the laser telescopes still fire on the hour.
+  parTimeSeconds: 210
+  totalShards: 35
+  totalSecrets: 1
+  skyColor: {r: 0.11764706, g: 0.09411765, b: 0.27450982, a: 1}
+  collectibleName: 
+  timeLimitSeconds: 0
+  isEvent: 0

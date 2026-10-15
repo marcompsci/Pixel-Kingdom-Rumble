@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: CometWisp
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_comet_wisp
+  displayName: Comet Wisp
+  codexEntry: A tiny comet with a temper. Hovers in the dark and dives at anything that glows, which includes you.
+  sprite: {fileID: 21300000, guid: a77a410dae77daffe7d482e2d1c4fc4c, type: 3}
+  bodySize: {x: 0.7, y: 0.6}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: a77a410dae77daffe7d482e2d1c4fc4c, type: 3}
+    - {fileID: 21300000, guid: f26fbef77cba2b5aad34cbd22caa2478, type: 3}
+    - {fileID: 21300000, guid: c28a812a9ed5bdafd1e2b1fdf5cd2a46, type: 3}
+    - {fileID: 21300000, guid: 43b9226f8693ba340cbad7ac78ee733f, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: 15841d1d8d67ff8764ab04fab067bc52, type: 3}
+    - {fileID: 21300000, guid: 9e410b3f56a57d8a08ae587ad731a607, type: 3}
+    - {fileID: 21300000, guid: b0142301431c7c3b00e3a18222d11d92, type: 3}
+    - {fileID: 21300000, guid: 6380c7c5390e655a5948a53a78261b0a, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 54538c26955ee3c838a47f30621be5c5, type: 3}
+    - {fileID: 21300000, guid: afc68a275f90b9304c927b3d3d8d11c8, type: 3}
+    - {fileID: 21300000, guid: d5831ffef8b449a0e79cbf3e1d0a555a, type: 3}
+    - {fileID: 21300000, guid: 236af75e742189407f9ab6717b80f0b4, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: b2d7147ad727b1a6231ceb009f430c08, type: 3}
+    weaponName: 
+  maxHealth: 1
+  weight: 0.6
+  moveSpeed: 0
+  behavior: 2
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 7
+  swoopSpeed: 10
+  swoopTime: 0.8
+  swoopWindup: 0.45
+  flyerReturnSpeed: 4.5
+  swoopCooldown: 1.3
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 2

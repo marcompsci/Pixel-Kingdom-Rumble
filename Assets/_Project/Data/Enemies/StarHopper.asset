@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: StarHopper
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_star_hopper
+  displayName: Star Hopper
+  codexEntry: A fallen star that refuses to stay down. Bounces at you from surprising distances.
+  sprite: {fileID: 21300000, guid: c93f9c88645c2e6a003c9035d2878efb, type: 3}
+  bodySize: {x: 0.7, y: 0.7}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: c93f9c88645c2e6a003c9035d2878efb, type: 3}
+    - {fileID: 21300000, guid: 3809894c26d508ff36ba910cc1b8f11a, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: 4e05877733d91775ef9c8e4993b062e3, type: 3}
+    - {fileID: 21300000, guid: 3ef109c8bbabe305d773863fabb25227, type: 3}
+    fall:
+    - {fileID: 21300000, guid: c344084ec5ca174f0060bea103aeeaf7, type: 3}
+    - {fileID: 21300000, guid: a29b222f53cb744391a8e1d37313de8c, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: abf367d25a883347a7a2b33b18f98f0a, type: 3}
+    weaponName: 
+  maxHealth: 2
+  weight: 1
+  moveSpeed: 0
+  behavior: 1
+  hopCooldown: 1.1
+  hopRange: 8
+  hopDrift: 0.7
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 3
