@@ -55,10 +55,10 @@ namespace PKR
             switch (c)
             {
                 case 'r': key = "r" + (v % 7 == 0 ? 1 : v % 11 == 0 ? 2 : 0); break;
-                case 'h': key = "h0"; break;
-                case 'v': key = "v0"; break;
-                case 'c': key = "c0"; break;
-                case 'C': key = "C0"; break;
+                case 'h': key = "lane_h"; break;
+                case 'v': key = "lane_v"; break;
+                case 'c': key = "cross_h"; break;
+                case 'C': key = "cross_v"; break;
                 case 's': key = "s" + (v % 2); break;
                 case 'g': key = "g" + (v % 3); break;
                 case 'y': key = "y" + (v % 2); break;
@@ -67,11 +67,11 @@ namespace PKR
                 case 'i': key = "i" + (v % 5 == 0 ? 1 : 0); break;
                 case 'd': key = "d0"; break;
                 case 'w': key = "w" + (v % 2); break;
-                case 'b': key = "b0"; break;
+                case 'b': key = "bridge"; break;
                 case 'f': key = "f0"; break;
                 case 'l': key = "l" + (x % 4 == 0 ? 1 : 0); break;
                 case 'x': key = "x0"; break;
-                default: key = "B0"; break;
+                default: key = "bldg"; break;
             }
             if (_tiles.TryGetValue(key, out var t)) return t;
             t = ScriptableObject.CreateInstance<Tile>();

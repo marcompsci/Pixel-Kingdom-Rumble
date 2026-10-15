@@ -186,19 +186,19 @@ def rubble():
 
 TILES = {
     'r0': lambda: asphalt(0), 'r1': lambda: asphalt(1), 'r2': lambda: asphalt(2),
-    'h0': lambda: lane(False), 'v0': lambda: lane(True),
-    'c0': lambda: crosswalk(False), 'C0': lambda: crosswalk(True),
+    'lane_h': lambda: lane(False), 'lane_v': lambda: lane(True),
+    'cross_h': lambda: crosswalk(False), 'cross_v': lambda: crosswalk(True),
     's0': lambda: sidewalk(0), 's1': lambda: sidewalk(1),
     'g0': lambda: grass(GRASS, 0), 'g1': lambda: grass(GRASS, 1), 'g2': lambda: grass(GRASS, 2),
     'y0': lambda: grass(YARD, 0), 'y1': lambda: grass(YARD, 1),
     'p0': lambda: grass(PATH, 0),
     'o0': lambda: cobble(0), 'o1': lambda: cobble(1),
     'i0': lambda: concrete(0), 'i1': lambda: concrete(1),
-    'd0': planks, 'w0': lambda: water(0), 'w1': lambda: water(1), 'b0': bridge, 'f0': fence,
+    'd0': planks, 'w0': lambda: water(0), 'w1': lambda: water(1), 'bridge': bridge, 'f0': fence,
     'l0': lambda: lot(0), 'l1': lambda: lot(1), 'x0': rubble,
+    # the footprint under a roof (never seen; buildings draw on top). Names are case-safe (macOS ignores case).
+    'bldg': lambda: concrete(0),
 }
-# The building footprint tile under the roof (never seen; buildings draw on top).
-TILES['B0'] = lambda: concrete(0)
 
 
 # ---- roofs ----------------------------------------------------------------------------------------
