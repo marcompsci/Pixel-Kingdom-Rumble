@@ -78,6 +78,44 @@ namespace PKR
             UIFactory.Select(survival);
         }
 
+        /// <summary>Today's three daily challenges and the player level.</summary>
+        public void OpenDaily(RectTransform root, Action onBack)
+        {
+            _root = root; _onBack = onBack;
+            UIFactory.Clear(root);
+            var panel = UIFactory.Panel(root, new Vector2(960f, 1300f));
+            UIFactory.Label(panel, "DAILY CHALLENGES", 76, TextAnchor.MiddleCenter, 120f, title: true);
+            var save = Services.Save != null ? Services.Save.Data : null;
+            int xp = save != null ? save.playerXp : 0;
+            int lv = PlayerLevel.LevelFor(xp);
+            int into = xp - PlayerLevel.XpAtLevel(lv);
+            UIFactory.Label(panel, $"PLAYER LEVEL {lv}   ·   {into}/{PlayerLevel.XpToNext(lv)} XP", 38, TextAnchor.MiddleCenter, 60f)
+                .color = UITheme.Current.title;
+            UIFactory.Label(panel, "New challenges every day. Finish them for Star Shards and XP.", 30, TextAnchor.MiddleCenter, 50f)
+                .color = UITheme.Current.subtle;
+            foreach (var rec in ProgressTracker.Today())
+            {
+                var spec = DailyChallenges.Find(rec.id);
+                if (!spec.HasValue) continue;
+                var c = spec.Value;
+                string state = rec.done ? "DONE!" : $"{rec.progress}/{c.target}";
+                var row = UIFactory.Button(panel, c.text, null, 150f);
+                UIFactory.Tint(row, rec.done ? new Color32(60, 150, 90, 255) : new Color32(60, 70, 110, 255), Color.white);
+                var t = row.GetComponentInChildren<Text>();
+                if (t != null)
+                {
+                    t.supportRichText = true;
+                    t.resizeTextForBestFit = false;
+                    t.fontSize = 38;
+                    t.text = $"{c.text}\n<size=26>{state}   ·   +{c.shards} shards  +{c.xp} XP</size>";
+                }
+            }
+            UIFactory.Label(panel, $"Every level pays Star Shards; every 5th level pays +{PlayerLevel.MilestoneBonus} more.", 28,
+                            TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
+            var back = UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
+            UIFactory.Select(back);
+        }
+
         Button Card(RectTransform panel, EventLevel ev, SessionMode mode)
         {
             var save = Services.Save != null ? Services.Save.Data : null;

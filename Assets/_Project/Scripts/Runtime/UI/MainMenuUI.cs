@@ -95,7 +95,10 @@ namespace PKR
 
             var save = Services.Save != null ? Services.Save.Data : null;
             int shards = save != null ? save.starShards : 0;
-            UIFactory.Label(panel, $"STAR SHARDS  {shards}", 48, TextAnchor.MiddleCenter, 80f).color = UITheme.Current.title;
+            int xp = save != null ? save.playerXp : 0;
+            int lv = PlayerLevel.LevelFor(xp);
+            int pct = Mathf.RoundToInt(PlayerLevel.Progress01(xp) * 100f);
+            UIFactory.Label(panel, $"LEVEL {lv}  ({pct}%)   ·   STAR SHARDS  {shards}", 44, TextAnchor.MiddleCenter, 80f).color = UITheme.Current.title;
 
             string best = "Not cleared yet";
             if (featuredLevel != null && save != null)
@@ -149,6 +152,10 @@ namespace PKR
             miscRow.childForceExpandWidth = true; miscRow.childForceExpandHeight = true;
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
                 UIFactory.Button(misc, "SHOP", ShowShop);
+            int dailyDone = 0;
+            foreach (var c in ProgressTracker.Today()) if (c != null && c.done) dailyDone++;
+            var daily = UIFactory.Button(misc, $"DAILY {dailyDone}/{DailyChallenges.PerDay}", ShowDaily);
+            UIFactory.Tint(daily, new Color32(70, 150, 200, 255), Color.white);
             UIFactory.Button(misc, "SETTINGS", ShowSettings);
             if (codex != null)
             {
@@ -169,6 +176,13 @@ namespace PKR
         {
             GameSession.Mode = mode;
             if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect);
+        }
+
+        void ShowDaily()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(true);
+            _events.OpenDaily(_eventRoot, ShowMenu);
         }
 
         void ShowHoliday()

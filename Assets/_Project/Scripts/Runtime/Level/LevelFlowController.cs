@@ -182,6 +182,7 @@ namespace PKR
                 save.MarkDirty();
             }
             RemoveEnemy(e, drop: true);
+            ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
         }
 
         void DiscoverCodex(CodexCategory category, string id, string displayName)
@@ -342,6 +343,14 @@ namespace PKR
                                                      Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f);
                 if (data != null) newBestScore = data.RecordMission(mission.contractId, contractScore, mission.Relics);
             }
+            // Player level + daily challenges.
+            bool isEvent = level != null && level.isEvent;
+            ProgressTracker.AddXp((isEvent ? PlayerLevel.EventClearXp : PlayerLevel.LevelClearXp) +
+                                  (previousBest <= 0f ? PlayerLevel.FirstClearBonusXp : 0));
+            if (isEvent) ProgressTracker.Report(ChallengeKind.ClearEvent, 1);
+            else ProgressTracker.Report(ChallengeKind.ClearLevels, 1);
+            if (level != null && level.modeTag == "Maze") ProgressTracker.Report(ChallengeKind.ClearMaze, 1);
+            ProgressTracker.Report(ChallengeKind.CollectShards, Run.Shards);
             if (save != null) save.SaveNow();
 
             // Freeze the hero in a victory pose; LevelCompleteScreen takes over.

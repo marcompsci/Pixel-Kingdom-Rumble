@@ -97,6 +97,31 @@ namespace PKR.EditorTools
             Add("pal_rex_lava", "Lava Skate", "rex_rollo", 60, new Color32(255, 160, 120, 255));
             Add("pal_rex_arctic", "Arctic Roller", "rex_rollo", 120, new Color32(220, 240, 255, 255));
             Add("pal_rex_neon", "Neon Rink", "rex_rollo", 200, new Color32(255, 150, 240, 255));
+            // October 2026 cast
+            Add("pal_juni_autumn", "Autumn Leaves", "juni_bloom", 60, new Color32(255, 190, 130, 255));
+            Add("pal_juni_lilac", "Lilac Bloom", "juni_bloom", 120, new Color32(220, 180, 255, 255));
+            Add("pal_juni_frost", "Frost Fern", "juni_bloom", 200, new Color32(180, 230, 255, 255));
+            Add("pal_marco_sepia", "Sepia Sketch", "marco_brio", 60, new Color32(240, 210, 170, 255));
+            Add("pal_marco_neon", "Neon Graffiti", "marco_brio", 120, new Color32(170, 255, 200, 255));
+            Add("pal_marco_noir", "Charcoal", "marco_brio", 200, new Color32(170, 170, 190, 255));
+            Add("pal_tamsin_mint", "Mint Margins", "tamsin_reed", 60, new Color32(190, 255, 220, 255));
+            Add("pal_tamsin_midnight", "Midnight Library", "tamsin_reed", 120, new Color32(160, 160, 240, 255));
+            Add("pal_tamsin_gilded", "Gilded Edition", "tamsin_reed", 200, new Color32(255, 230, 150, 255));
+            Add("pal_dex_ice", "Ice Tour", "dex_ortega", 60, new Color32(180, 230, 255, 255));
+            Add("pal_dex_lava", "Lava Amp", "dex_ortega", 120, new Color32(255, 170, 130, 255));
+            Add("pal_dex_gold", "Gold Record", "dex_ortega", 200, new Color32(255, 225, 140, 255));
+            Add("pal_pepper_basil", "Basil", "pepper_quinn", 60, new Color32(190, 240, 170, 255));
+            Add("pal_pepper_berry", "Berry Jam", "pepper_quinn", 120, new Color32(240, 170, 220, 255));
+            Add("pal_pepper_smoke", "Smokehouse", "pepper_quinn", 200, new Color32(200, 190, 180, 255));
+            Add("pal_bo_storm", "Storm Watch", "bo_tidewell", 60, new Color32(180, 200, 230, 255));
+            Add("pal_bo_coral", "Coral Reef", "bo_tidewell", 120, new Color32(255, 190, 170, 255));
+            Add("pal_bo_kelp", "Kelp Forest", "bo_tidewell", 200, new Color32(180, 240, 190, 255));
+            Add("pal_zuri_sunrise", "Sunrise", "zuri_starling", 60, new Color32(255, 210, 170, 255));
+            Add("pal_zuri_nebula", "Nebula", "zuri_starling", 120, new Color32(230, 170, 255, 255));
+            Add("pal_zuri_aurora", "Aurora", "zuri_starling", 200, new Color32(170, 255, 230, 255));
+            Add("pal_otto_copper", "Copper Works", "otto_brass", 60, new Color32(255, 190, 150, 255));
+            Add("pal_otto_silver", "Silver Hands", "otto_brass", 120, new Color32(210, 220, 240, 255));
+            Add("pal_otto_emerald", "Emerald Escapement", "otto_brass", 200, new Color32(170, 240, 190, 255));
             return catalog;
         }
 

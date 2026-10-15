@@ -228,6 +228,7 @@ namespace PKR
             if (!_alive.TryGetValue(ai, out var kind)) return;
             bool melee = !Projectile.Resolving && !_nuking;
             if (!_nuking) Run.Kill(kind, melee);
+            ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
             Vector2 pos = ai.transform.position;
             RemoveZombie(ai);
             PuffEffect.Play(pos, new Color32(120, 200, 90, 255), spriteMaterial, 0.24f, 4f, 0.45f);
@@ -566,6 +567,9 @@ namespace PKR
                 Economy.Grant(save.Data, ShardReward);
                 save.SaveNow();
             }
+            ProgressTracker.Report(ChallengeKind.SurvivalRound, Run.Round);
+            ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
+            if (Services.Save != null) Services.Save.SaveNow();
             if (Services.State != null) Services.State.SetState(GameState.Results);
             Sfx.Play(Sfx.KO, 0.9f, 0f);
             RunEnded?.Invoke();

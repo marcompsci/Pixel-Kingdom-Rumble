@@ -60,6 +60,11 @@ namespace PKR.Core
         /// <summary>Story worlds whose completion bonus was paid (StoryWorlds index).</summary>
         public List<int> claimedWorldRewards = new List<int>();
         public string lastSelectedCharacter = DefaultCharacterId;
+        /// <summary>Player level XP (PlayerLevel turns it into a level).</summary>
+        public int playerXp;
+        /// <summary>Today's daily challenges (DailyChallenges) and the day they belong to (yyyymmdd).</summary>
+        public int dailyDayKey;
+        public List<ChallengeRecord> dailyChallenges = new List<ChallengeRecord>();
         /// <summary>Halloween Zombie Survival bests.</summary>
         public int zombieBestRound, zombieBestPoints, zombieBestKills;
         /// <summary>Found the Zombie Survival lantern secret at least once.</summary>
@@ -201,6 +206,9 @@ namespace PKR.Core
 
             if (starShards < 0) starShards = 0;
             if (zombieBestRound < 0) zombieBestRound = 0;
+            if (playerXp < 0) playerXp = 0;
+            if (dailyChallenges == null) dailyChallenges = new List<ChallengeRecord>();
+            dailyChallenges.RemoveAll(c => c == null || !DailyChallenges.Find(c.id).HasValue);
             if (zombieBestPoints < 0) zombieBestPoints = 0;
             if (zombieBestKills < 0) zombieBestKills = 0;
             if (unlockedCharacters == null) unlockedCharacters = new List<string>();

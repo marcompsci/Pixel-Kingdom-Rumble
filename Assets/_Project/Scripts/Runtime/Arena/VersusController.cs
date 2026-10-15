@@ -49,6 +49,8 @@ namespace PKR
         public bool grantRewards = true;
         [Tooltip("Off in tests: start the match yourself with StartMatch.")]
         public bool autoStart = true;
+        [Tooltip("Balance lab: the CPU plays both sides.")]
+        public bool botVsBot;
 
         public static readonly Color PlayerColor = new Color32(46, 220, 190, 255);
         public static readonly Color OpponentColor = new Color32(255, 100, 100, 255);
@@ -120,7 +122,11 @@ namespace PKR
             dmg.Died += () => OnFighterDied(slot);
             var motor = go.GetComponent<PlatformerMotor2D>();
             motor.SetFacing(at.x <= 0f ? 1 : -1);
-            if (human)
+            if (human && botVsBot)
+            {
+                go.AddComponent<BotController>().Init(this, RumbleRecorder.BotTuning(false, level), 104729 + RuntimeIds.Next(), isPassive: false);
+            }
+            else if (human)
             {
                 go.AddComponent<PlayerInputRouter>();
                 go.AddComponent<PlayerMarker>();
@@ -247,6 +253,7 @@ namespace PKR
             }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             if (Services.Haptics != null) Services.Haptics.Play(won ? HapticStrength.Heavy : HapticStrength.Medium);
+            if (grantRewards && !botVsBot) ProgressTracker.MatchPlayed(won, versus: true);
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
             {
                 winner = Match.Winner, playerName = Player.name, opponentName = Opponent.name,

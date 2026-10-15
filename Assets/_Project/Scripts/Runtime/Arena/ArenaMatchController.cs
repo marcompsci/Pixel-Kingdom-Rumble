@@ -284,6 +284,7 @@ namespace PKR
                 result.rumble = RumbleRecorder.Record(report, Config.daily);
             }
 
+            if (Config.mode != MatchMode.Training && grantRewards) ProgressTracker.MatchPlayed(result.playerPlacement == 1, versus: false);
             if (Services.State != null) Services.State.SetState(GameState.Results);
             EventBus<ArenaMatchEnded>.Raise(result);
         }
