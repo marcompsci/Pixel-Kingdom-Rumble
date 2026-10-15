@@ -111,7 +111,7 @@ namespace PKR.EditorTools
         /// (the target is still in hitstun when the next hit lands) and uses the moveset's dive impact radius for
         /// the kit's landing shockwave.
         /// </summary>
-        static void Tune(CharacterDefinition def)
+        internal static void Tune(CharacterDefinition def)
         {
             var ms = def.moveset;
             if (ms == null) return;
