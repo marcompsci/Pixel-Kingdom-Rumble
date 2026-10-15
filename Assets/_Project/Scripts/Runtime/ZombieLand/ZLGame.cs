@@ -1,0 +1,929 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using PKR.Core;
+using UnityEngine;
+
+namespace PKR
+{
+    /// <summary>
+    /// ZOMBIE LAND: the open-city campaign (top-down). Builds New Hollow, the hero and the vehicles, runs the dead's
+    /// ecosystem (roaming population per district, rot nests, screamers calling hordes, noise drawing the dead, blood
+    /// hounds after five minutes out in the open), the fourteen missions, safehouse checkpoints, loot, the relic cases,
+    /// the six lairs and the First Turned. Progress lives in SaveData.zombieLand and survives death.
+    /// </summary>
+    [DefaultExecutionOrder(-30)]
+    public class ZLGame : MonoBehaviour
+    {
+        public static ZLGame Current { get; private set; }
+
+        [Header("Set by the scene builder")]
+        public Material material;
+        public CharacterRoster roster;
+        public EnemyDefinition shambler, runner, bloater, spitter, brute;
+        public Sprite[] survivorFrames = new Sprite[0];
+
+        public ZLWorld World { get; private set; }
+        public ZLCityData City => World != null ? World.City : null;
+        public ZLFlowField Flow { get; private set; }
+        public ZLPlayer Player { get; private set; }
+        public ZombieLandProgress Progress { get; private set; }
+        public ZLPuzzle Puzzle { get; private set; }
+        public ZLMissionRun Active { get; private set; }
+        public ZLBoss Boss { get; private set; }
+        public float Roamed { get; private set; }
+        public bool InSafehouse { get; private set; }
+        public bool RespawnPending { get; private set; }
+        public string Toast { get; private set; }
+        public float ToastLeft { get; private set; }
+        public bool Ready { get; private set; }
+
+        public bool Paused
+        {
+            get
+            {
+                if (CutscenePlayer.IsPlaying || RespawnPending || ZLMapPanel.IsOpen) return true;
+                var s = Services.State;
+                return s != null && s.State == GameState.Paused;
+            }
+        }
+
+        public Vector2 TargetPos => Player == null ? Vector2.zero
+            : Player.Driving != null ? (Vector2)Player.Driving.transform.position : (Vector2)Player.transform.position;
+        public bool PlayerDriving => Player != null && Player.Driving != null;
+        public bool PlayerHidden => InSafehouse;
+
+        readonly List<ZLZombie> _zombies = new List<ZLZombie>();
+        readonly List<ZLNest> _nests = new List<ZLNest>();
+        readonly Dictionary<ZLNest, int> _nestSpawns = new Dictionary<ZLNest, int>();
+        readonly Dictionary<ZLZombie, ZLNest> _fromNest = new Dictionary<ZLZombie, ZLNest>();
+        readonly List<ZLVehicle> _vehicles = new List<ZLVehicle>();
+        readonly List<IZLUse> _uses = new List<IZLUse>();
+        readonly List<ZLLoot> _loot = new List<ZLLoot>();
+        readonly List<ZLSafehouse> _safehouses = new List<ZLSafehouse>();
+        readonly List<ZLMissionMarker> _markers = new List<ZLMissionMarker>();
+        readonly Dictionary<string, Sprite> _shots = new Dictionary<string, Sprite>();
+        public IReadOnlyList<ZLZombie> Zombies => _zombies;
+        public IReadOnlyList<ZLSafehouse> Safehouses => _safehouses;
+        public IReadOnlyList<ZLMissionMarker> Markers => _markers;
+        public IReadOnlyList<ZLVehicle> Vehicles => _vehicles;
+
+        float _flowT, _spawnT, _houndT, _saveT, _discoverT;
+        int _houndPacks;
+        bool _warned;
+
+        // ---- setup -------------------------------------------------------------------------------------
+
+        void Awake()
+        {
+            Current = this;
+            ZLBullet.ClearPool();
+        }
+
+        void OnDestroy()
+        {
+            if (Current == this) Current = null;
+            if (Progress != null) Save(true);
+        }
+
+        void Start()
+        {
+            var save = Services.Save != null ? Services.Save.Data : null;
+            Progress = save != null ? save.zombieLand : new ZombieLandProgress();
+            if (Progress.seed == 0) ZLRules.NewGame(Progress, Mathf.Abs(Environment.TickCount) % 100000 + 1);
+            Puzzle = ZLPuzzle.FromSeed(Progress.seed);
+
+            World = gameObject.AddComponent<ZLWorld>();
+            World.material = material;
+            if (!World.Build()) return;
+            Flow = new ZLFlowField(City);
+
+            SpawnHero();
+            SpawnVehicles();
+            SpawnSafehouses();
+            SpawnLoot();
+            SpawnRelics();
+            SpawnLairs();
+            SpawnNests();
+            SpawnMarkers();
+            if (Services.State != null) Services.State.SetState(GameState.Playing);
+            Ready = true;
+            Flow.Build(TargetPos);
+            if (!Progress.introSeen)
+            {
+                Progress.introSeen = true;
+                Story("", ZLCatalog.Intro, "zl_city", null);
+            }
+            else ShowToast(Progress.bossDefeated ? "ZOMBIE LAND IS CLEAR. ROAM FREE." : $"SHARDS {Progress.Shards}/{ZLCatalog.ShardsNeeded}. KEEP GOING.");
+        }
+
+        public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
+
+        public Sprite ShotSprite(string kind)
+        {
+            if (string.IsNullOrEmpty(kind)) kind = "ball";
+            if (_shots.TryGetValue(kind, out var s)) return s;
+            s = Resources.Load<Sprite>("PKR/Shots/shot_" + kind);
+            _shots[kind] = s;
+            return s;
+        }
+
+        void SpawnHero()
+        {
+            var def = roster != null ? roster.Find(GameSession.SelectedCharacterId) : null;
+            if (def == null && roster != null && roster.heroes.Count > 0) def = roster.heroes[0];
+            var go = new GameObject("Hero");
+            Vector2 at = RespawnPoint();
+            go.transform.position = at;
+            Player = go.AddComponent<ZLPlayer>();
+            Player.Init(this, def, material, roster != null && def != null ? roster.TintFor(def.id) : Color.white);
+            var cam = Camera.main != null ? Camera.main.GetComponent<CameraFollowTopDown>() : null;
+            if (cam != null) { cam.target = go.transform; cam.Snap(); }
+        }
+
+        Vector2 RespawnPoint()
+        {
+            foreach (var s in City.safehouses)
+                if (s.id == Progress.checkpoint) return new Vector2(s.x + 1f, s.y);
+            return new Vector2(City.start.x, City.start.y);
+        }
+
+        static readonly string[] CarSprites = { "car_red", "car_blue", "car_white", "car_yellow" };
+
+        void SpawnVehicles()
+        {
+            int i = 0;
+            foreach (var v in City.vehicles)
+            {
+                i++;
+                var kind = (ZLVehicleKind)Enum.Parse(typeof(ZLVehicleKind), v.k);
+                SpawnVehicle(kind, new Vector2(v.x, v.y), v.a, i);
+            }
+            if (Progress.rewards.Contains("motorcycles"))
+                foreach (var s in City.safehouses)
+                    if (Progress.safehouses.Contains(s.id)) SpawnVehicle(ZLVehicleKind.Motorcycle, new Vector2(s.x - 1.5f, s.y), 90f, 3);
+        }
+
+        public ZLVehicle SpawnVehicle(ZLVehicleKind kind, Vector2 pos, float angle, int variant, Color? tint = null)
+        {
+            string sprite;
+            switch (kind)
+            {
+                case ZLVehicleKind.Truck: sprite = variant % 2 == 0 ? "truck_green" : "truck_gray"; break;
+                case ZLVehicleKind.Bike: sprite = "bike"; break;
+                case ZLVehicleKind.Motorcycle: sprite = variant % 2 == 0 ? "moto_black" : "moto_orange"; break;
+                default: sprite = CarSprites[variant % CarSprites.Length]; break;
+            }
+            var go = new GameObject("Vehicle_" + kind);
+            go.transform.position = pos;
+            var veh = go.AddComponent<ZLVehicle>();
+            veh.Init(this, kind, Sprite("Props/" + sprite), Sprite("Props/wreck_burnt"), angle);
+            if (tint.HasValue) go.GetComponent<SpriteRenderer>().color = tint.Value;
+            _vehicles.Add(veh);
+            _uses.Add(veh);
+            return veh;
+        }
+
+        void SpawnSafehouses()
+        {
+            foreach (var s in City.safehouses)
+            {
+                var go = new GameObject("Safehouse_" + s.id);
+                go.transform.position = new Vector2(s.x, s.y);
+                var sh = go.AddComponent<ZLSafehouse>();
+                sh.Init(this, s);
+                _safehouses.Add(sh);
+                _uses.Add(sh);
+            }
+        }
+
+        void SpawnLoot()
+        {
+            foreach (var p in City.pickups)
+            {
+                bool weapon = ZLCatalog.Gun(p.k) != null;
+                if (weapon && Progress.taken.Contains(p.id)) continue;
+                var go = new GameObject("Loot_" + p.k);
+                go.transform.position = new Vector2(p.x, p.y);
+                var l = go.AddComponent<ZLLoot>();
+                l.Init(this, p.id, p.k, Sprite("Props/pk_" + (weapon ? "weapon" : p.k)));
+                _loot.Add(l);
+            }
+        }
+
+        void SpawnRelics()
+        {
+            foreach (var r in City.relics)
+            {
+                var relic = (ZLRelic)Enum.Parse(typeof(ZLRelic), r.relic);
+                var go = new GameObject("Relic_" + r.relic);
+                go.transform.position = new Vector2(r.x, r.y);
+                var c = go.AddComponent<ZLRelicCase>();
+                c.Init(this, relic);
+                _uses.Add(c);
+            }
+        }
+
+        void SpawnLairs()
+        {
+            foreach (var l in City.lairs)
+            {
+                var go = new GameObject("Lair_" + l.id);
+                go.transform.position = new Vector2(l.x, l.y);
+                var d = go.AddComponent<ZLLairDoor>();
+                d.Init(this, l.id);
+                _uses.Add(d);
+            }
+        }
+
+        void SpawnNests()
+        {
+            if (Progress.bossDefeated) return;
+            var frames = new[] { Sprite("Props/nest_0"), Sprite("Props/nest_1") };
+            foreach (var n in City.nests)
+            {
+                if (Progress.nestsCleared.Contains(n.id)) continue;
+                var go = new GameObject("Nest_" + n.id);
+                go.transform.position = new Vector2(n.x, n.y);
+                var nest = go.AddComponent<ZLNest>();
+                int threat = ZLCatalog.District(n.district).threat;
+                nest.Init(this, n.id, n.district, 160 + threat * 40, frames);
+                _nests.Add(nest);
+            }
+        }
+
+        public ZLNest SpawnMissionNest(Vector2 pos, string missionId, int threat)
+        {
+            var go = new GameObject("MissionNest");
+            go.transform.position = pos;
+            go.transform.localScale = Vector3.one * 1.5f;
+            var nest = go.AddComponent<ZLNest>();
+            nest.Init(this, missionId, City.DistrictAt(pos), 320 + threat * 60, new[] { Sprite("Props/nest_0"), Sprite("Props/nest_1") }, missionId);
+            _nests.Add(nest);
+            return nest;
+        }
+
+        void SpawnMarkers()
+        {
+            foreach (var m in City.missions)
+            {
+                var spec = ZLCatalog.Mission(m.id);
+                if (spec == null) continue;
+                var go = new GameObject("Mission_" + m.id);
+                go.transform.position = new Vector2(m.x, m.y);
+                var mk = go.AddComponent<ZLMissionMarker>();
+                mk.Init(this, spec, m);
+                _markers.Add(mk);
+                _uses.Add(mk);
+            }
+        }
+
+        // ---- main loop -----------------------------------------------------------------------------------
+
+        void Update()
+        {
+            if (!Ready || Player == null) return;
+            float dt = Time.deltaTime;
+            if (ToastLeft > 0f) ToastLeft -= Time.unscaledDeltaTime;
+            if (Paused) return;
+            Progress.playSeconds += dt;
+
+            _flowT -= dt;
+            if (_flowT <= 0f) { _flowT = 0.35f; Flow.Build(TargetPos); }
+
+            InSafehouse = false;
+            foreach (var s in _safehouses)
+                if (Vector2.Distance(s.transform.position, TargetPos) < ZLSafehouse.SafeRadius) { InSafehouse = true; s.Touch(); }
+
+            _discoverT -= dt;
+            if (_discoverT <= 0f) { _discoverT = 0.5f; Discover(); }
+
+            if (!Progress.bossDefeated)
+            {
+                Ecosystem(dt);
+                Hounds(dt);
+            }
+            if (Active != null) Active.Update(dt);
+            CollectLoot();
+
+            _saveT -= dt;
+            if (_saveT <= 0f) { _saveT = 20f; Save(false); }
+        }
+
+        void Discover()
+        {
+            foreach (var m in _markers)
+            {
+                if (m.Done || Progress.leads.Contains(m.Spec.id)) continue;
+                if (Vector2.Distance(m.transform.position, TargetPos) < 14f)
+                {
+                    Progress.leads.Add(m.Spec.id);
+                    ShowToast("NEW LEAD: " + m.Spec.name);
+                    Sfx.Play(Sfx.Secret, 0.7f);
+                }
+            }
+        }
+
+        // ---- the ecosystem -------------------------------------------------------------------------------
+
+        public int ThreatAt(Vector2 p) => ZLCatalog.District(City.DistrictAt(p)).threat;
+
+        void Ecosystem(float dt)
+        {
+            _spawnT -= dt;
+            if (_spawnT > 0f) return;
+            _spawnT = 0.7f;
+            Vector2 at = TargetPos;
+            string district = City.DistrictAt(at);
+            int threat = ZLCatalog.District(district).threat;
+            int cleared = 0;
+            foreach (var n in City.nests) if (n.district == district && Progress.nestsCleared.Contains(n.id)) cleared++;
+            bool lights = district == "industrial" && Progress.Done("m_power");
+            int want = Boss != null ? 0 : ZLRules.Population(threat, cleared, lights);
+
+            int near = 0;
+            for (int i = _zombies.Count - 1; i >= 0; i--)
+            {
+                var z = _zombies[i];
+                if (z == null) { _zombies.RemoveAt(i); continue; }
+                float d = Vector2.Distance(z.transform.position, at);
+                if (!z.pinned && !z.hunting && d > 34f) { _zombies.RemoveAt(i); z.Vanish(false); continue; }
+                if (!z.pinned && z.kind != ZLFoe.Hound && d < 30f) near++;
+            }
+            if (near < want && SpawnSpot(at, 15f, 22f, out var spot))
+                SpawnZombie(ZLRules.Pick(threat, UnityEngine.Random.value), spot, threat, false);
+        }
+
+        /// <summary>A walkable spot out of sight of the camera, between rMin and rMax tiles away, not by a safehouse.</summary>
+        public bool SpawnSpot(Vector2 around, float rMin, float rMax, out Vector2 spot)
+        {
+            var cam = Camera.main;
+            float hh = cam != null ? cam.orthographicSize + 1.5f : 8f;
+            float hw = cam != null ? hh * cam.aspect : 14f;
+            Vector2 cp = cam != null ? (Vector2)cam.transform.position : around;
+            for (int tries = 0; tries < 16; tries++)
+            {
+                float a = UnityEngine.Random.value * Mathf.PI * 2f;
+                float r = UnityEngine.Random.Range(rMin, rMax);
+                var p = around + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+                p = new Vector2(Mathf.Floor(p.x) + 0.5f, Mathf.Floor(p.y) + 0.5f);
+                if (!City.Walkable(p) || City.Tile(Mathf.FloorToInt(p.x), Mathf.FloorToInt(p.y)) == 'b') continue;
+                if (Mathf.Abs(p.x - cp.x) < hw && Mathf.Abs(p.y - cp.y) < hh) continue;
+                bool safe = false;
+                foreach (var s in _safehouses) if (Vector2.Distance(s.transform.position, p) < 9f) { safe = true; break; }
+                if (safe) continue;
+                spot = p;
+                return true;
+            }
+            spot = around;
+            return false;
+        }
+
+        public ZLZombie SpawnZombie(ZLFoe kind, Vector2 pos, int threat, bool hunting)
+        {
+            var go = new GameObject("Z_" + kind);
+            go.transform.position = pos;
+            var z = go.AddComponent<ZLZombie>();
+            Sprite[] idle, move, hurt;
+            Color tint = Color.white;
+            float scale = 0.75f;
+            EnemyDefinition def;
+            switch (kind)
+            {
+                case ZLFoe.Runner: def = runner; break;
+                case ZLFoe.Screamer: def = runner; tint = new Color(0.85f, 0.7f, 1f); break;
+                case ZLFoe.Bloater: def = bloater; scale = 0.85f; break;
+                case ZLFoe.Spitter: def = spitter; break;
+                case ZLFoe.Brute: def = brute; scale = 1f; break;
+                case ZLFoe.Herald: def = brute; scale = 1.35f; tint = new Color(0.75f, 0.7f, 0.95f); break;
+                default: def = shambler; break;
+            }
+            if (kind == ZLFoe.Hound)
+            {
+                var run = new[] { Sprite("Props/hound_0"), Sprite("Props/hound_1"), Sprite("Props/hound_2"), Sprite("Props/hound_3") };
+                idle = new[] { run[0] }; move = run; hurt = new[] { run[1] };
+                scale = 1f;
+            }
+            else
+            {
+                var f = def != null ? def.frames : null;
+                idle = f != null && f.idle.Length > 0 ? f.idle : new[] { def != null ? def.sprite : null };
+                move = f != null && f.run.Length > 0 ? f.run : idle;
+                hurt = f != null ? f.hurt : new Sprite[0];
+            }
+            z.Init(this, kind, threat, idle, move, hurt, tint, scale);
+            if (kind == ZLFoe.Herald)
+            {
+                var crown = new GameObject("Crown").AddComponent<SpriteRenderer>();
+                crown.transform.SetParent(z.transform, false);
+                crown.transform.localPosition = new Vector3(0f, 1.55f, 0f);
+                crown.sprite = Sprite("Props/crown");
+                crown.sortingOrder = ZLSort.Canopy;
+                if (material != null) crown.sharedMaterial = material;
+            }
+            if (hunting) z.StartHunt();
+            _zombies.Add(z);
+            return z;
+        }
+
+        public int NestSpawnCount(ZLNest n) => _nestSpawns.TryGetValue(n, out var c) ? c : 0;
+
+        public void SpawnFromNest(ZLNest n)
+        {
+            var p = (Vector2)n.transform.position + UnityEngine.Random.insideUnitCircle.normalized * 1.6f;
+            if (!City.Walkable(p)) return;
+            int threat = ZLCatalog.District(n.district).threat;
+            var z = SpawnZombie(ZLRules.Pick(threat, UnityEngine.Random.value), p, threat, Vector2.Distance(p, TargetPos) < 12f);
+            _nestSpawns[n] = NestSpawnCount(n) + 1;
+            _fromNest[z] = n;
+        }
+
+        public void NestDestroyed(ZLNest n)
+        {
+            _nests.Remove(n);
+            if (n.missionId == null && !Progress.nestsCleared.Contains(n.id))
+            {
+                Progress.nestsCleared.Add(n.id);
+                ShowToast("ROT NEST DESTROYED. " + ZLCatalog.District(n.district).name.ToUpperInvariant() + " GETS QUIETER.");
+                ProgressTracker.AddXp(40);
+            }
+            Active?.NestDestroyed(n);
+            Save(false);
+        }
+
+        public void ZombieDied(ZLZombie z)
+        {
+            _zombies.Remove(z);
+            if (_fromNest.TryGetValue(z, out var n)) { _fromNest.Remove(z); if (n != null) _nestSpawns[n] = Mathf.Max(0, NestSpawnCount(n) - 1); }
+            Progress.kills++;
+            ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
+            Active?.ZombieDied(z);
+            float roll = UnityEngine.Random.value;
+            if (roll < 0.07f) DropLoot("ammo", z.transform.position);
+            else if (roll < 0.09f) DropLoot("medkit", z.transform.position);
+        }
+
+        void DropLoot(string kind, Vector2 at)
+        {
+            var go = new GameObject("Drop_" + kind);
+            go.transform.position = at;
+            var l = go.AddComponent<ZLLoot>();
+            l.Init(this, "", kind, Sprite("Props/pk_" + kind));
+            l.temporary = true;
+            _loot.Add(l);
+        }
+
+        public void MakeNoise(Vector2 at, float noise)
+        {
+            if (noise <= 0f) return;
+            float range = ZLRules.HearingRange(noise);
+            foreach (var z in _zombies)
+            {
+                if (z == null || z.hunting) continue;
+                float d = Vector2.Distance(z.transform.position, at);
+                if (d < range * 0.45f) z.StartHunt();
+                else if (d < range) z.Investigate(at);
+            }
+        }
+
+        public void CallHorde(Vector2 at)
+        {
+            int threat = ThreatAt(at);
+            int n = ZLRules.HordeSize(threat);
+            ShowToast("A SCREAMER CALLED THE HORDE!");
+            for (int i = 0; i < n; i++)
+                if (SpawnSpot(TargetPos, 13f, 19f, out var p)) SpawnZombie(ZLRules.Pick(threat, UnityEngine.Random.value), p, threat, true);
+        }
+
+        public void SummonAround(Vector2 at, int n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                var p = at + UnityEngine.Random.insideUnitCircle.normalized * UnityEngine.Random.Range(3f, 6f);
+                if (City.Walkable(p)) SpawnZombie(ZLFoe.Shambler, p, 4, true);
+            }
+        }
+
+        // ---- the blood hounds ------------------------------------------------------------------------
+
+        void Hounds(float dt)
+        {
+            if (InSafehouse || Boss != null) return;
+            Roamed += dt;
+            if (!_warned && Roamed > ZLRules.HoundsAfter - 30f)
+            {
+                _warned = true;
+                ShowToast("YOU FEEL WATCHED. FIND A SAFEHOUSE, OR THE HOUNDS WILL COME.");
+            }
+            if (!ZLRules.HoundsActive(Roamed)) return;
+            _houndT -= dt;
+            if (_houndT > 0f) return;
+            _houndT = ZLRules.HoundInterval(Roamed);
+            if (_houndPacks == 0) ShowToast("THE BLOOD HOUNDS ARE LOOSE!");
+            SpawnHoundPack(ZLRules.HoundPack(_houndPacks++), TargetPos);
+        }
+
+        public void SpawnHoundPack(int n, Vector2 around)
+        {
+            Sfx.Play(Sfx.Groan, 1f, 0f);
+            if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+            for (int i = 0; i < n; i++)
+                if (SpawnSpot(around, 14f, 20f, out var p)) SpawnZombie(ZLFoe.Hound, p, 3, true);
+        }
+
+        /// <summary>Seconds until the hounds come (negative once they're out).</summary>
+        public float HoundsIn => ZLRules.HoundsAfter - Roamed;
+
+        // ---- combat helpers -------------------------------------------------------------------------------
+
+        public void Bite(ZLZombie z, int dmg)
+        {
+            if (Player == null || Player.Dead) return;
+            if (Player.Driving != null)
+            {
+                Player.Driving.Damage(Mathf.Max(1, dmg / 2));
+                return;
+            }
+            Player.Hurt(dmg, z != null ? (Vector2)z.transform.position : (Vector2)(Boss != null ? Boss.transform.position : Player.transform.position));
+        }
+
+        public void Explode(Vector2 at, float radius, int dmg, bool fromPlayer)
+        {
+            ZLFx.Spawn(GlowHalo.Sprite, at, fromPlayer ? new Color(1f, 0.6f, 0.2f, 0.9f) : new Color(0.5f, 0.85f, 0.3f, 0.8f), 0.5f, radius * 0.6f, radius * 2f, material);
+            if (fromPlayer)
+            {
+                foreach (var h in Hostiles())
+                {
+                    var c = h as Component;
+                    if (c == null) continue;
+                    if (Vector2.Distance(c.transform.position, at) < radius) h.Hit(dmg, ((Vector2)c.transform.position - at).normalized, null);
+                }
+            }
+            else if (Player != null && Player.Driving == null && Vector2.Distance(Player.transform.position, at) < radius)
+                Player.Hurt(dmg, at);
+            if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.2f, 0.2f);
+        }
+
+        IEnumerable<IZLHittable> Hostiles()
+        {
+            foreach (var z in _zombies.ToArray()) if (z != null && z.Alive) yield return z;
+            foreach (var n in _nests.ToArray()) if (n != null && n.Alive) yield return n;
+            if (Boss != null && Boss.Alive) yield return Boss;
+        }
+
+        public void Melee(Vector2 at, Vector2 aim)
+        {
+            Sfx.Play(Sfx.Swing, 0.7f);
+            ZLFx.Spawn(GlowHalo.Sprite, at + aim * 0.8f, new Color(1f, 1f, 1f, 0.5f), 0.15f, 0.6f, 2f, material);
+            foreach (var h in Hostiles())
+            {
+                var c = (Component)h;
+                Vector2 to = (Vector2)c.transform.position - at;
+                if (to.magnitude < ZLRules.MeleeRange + (h is ZLNest ? 1f : 0f) && Vector2.Angle(aim, to) < 70f)
+                    h.Hit(ZLRules.MeleeDamage, to.normalized, null);
+            }
+        }
+
+        public Vector2? AutoAim(Vector2 from, Vector2 facing, float range)
+        {
+            Vector2? best = null;
+            float bestScore = float.MaxValue;
+            foreach (var h in Hostiles())
+            {
+                var c = (Component)h;
+                Vector2 p = c.transform.position;
+                if (h is ZLBoss) p += Vector2.up * 0.8f;
+                Vector2 to = p - from;
+                float d = to.magnitude;
+                if (d > range) continue;
+                float ang = Vector2.Angle(facing, to);
+                if (ang > 75f && d > 3.5f) continue;
+                if (!City.Sees(from, p)) continue;
+                float score = d + ang * 0.03f;
+                if (score < bestScore) { bestScore = score; best = p; }
+            }
+            return best;
+        }
+
+        // ---- interactables, loot -----------------------------------------------------------------------
+
+        public IZLUse NearestUse(Vector2 at)
+        {
+            IZLUse best = null;
+            float bd = float.MaxValue;
+            foreach (var u in _uses)
+            {
+                if (u == null || (u as UnityEngine.Object) == null || !u.CanUse) continue;
+                float d = Vector2.Distance(u.UsePos, at);
+                if (d < u.UseRange && d < bd) { bd = d; best = u; }
+            }
+            if (Active != null)
+            {
+                var m = Active.NearestUse(at);
+                if (m != null) best = m;
+            }
+            return best;
+        }
+
+        void CollectLoot()
+        {
+            if (Player == null || Player.Driving != null) return;
+            Vector2 at = Player.transform.position;
+            for (int i = _loot.Count - 1; i >= 0; i--)
+            {
+                var l = _loot[i];
+                if (l == null) { _loot.RemoveAt(i); continue; }
+                l.Tick(Time.deltaTime);
+                if (!l.Available || Vector2.Distance(l.transform.position, at) > 0.9f) continue;
+                if (Collect(l)) { if (l.temporary) { _loot.RemoveAt(i); Destroy(l.gameObject); } else l.Take(); }
+            }
+        }
+
+        bool Collect(ZLLoot l)
+        {
+            var p = Progress;
+            switch (l.kind)
+            {
+                case "ammo":
+                    ZLRules.AmmoBox(p);
+                    ZLFloater.Show("+AMMO", l.transform.position, new Color(1f, 0.9f, 0.5f));
+                    Sfx.Play(Sfx.Reload, 0.8f);
+                    return true;
+                case "medkit":
+                    if (p.medkits >= ZLRules.MaxMedkits) { if (Player.Health < ZLRules.HeroHealth) { Player.Heal(ZLRules.MedkitHeal); return true; } return false; }
+                    p.medkits++;
+                    ZLFloater.Show("+MEDKIT", l.transform.position, new Color(1f, 0.6f, 0.6f));
+                    Sfx.Play(Sfx.Heal, 0.7f);
+                    return true;
+                case "armor":
+                    if (p.armor >= ZLRules.MaxArmor) return false;
+                    p.armor = ZLRules.MaxArmor;
+                    ZLFloater.Show("+ARMOR", l.transform.position, new Color(0.6f, 0.8f, 1f));
+                    Sfx.Play(Sfx.PowerUp, 0.6f);
+                    return true;
+                default:
+                    var gun = ZLCatalog.Gun(l.kind);
+                    if (gun == null) return false;
+                    ZLRules.GiveGun(p, gun, gun.magazine * 2);
+                    p.equipped = gun.id;
+                    Player.CancelReload();
+                    if (!string.IsNullOrEmpty(l.id)) p.taken.Add(l.id);
+                    ShowToast("NEW GUN: " + gun.name);
+                    Sfx.Play(Sfx.Purchase, 0.8f);
+                    Save(false);
+                    return true;
+            }
+        }
+
+        public void UseMedkit()
+        {
+            if (Player == null || Player.Dead || Progress.medkits <= 0 || Player.Health >= ZLRules.HeroHealth) return;
+            Progress.medkits--;
+            Player.Heal(ZLRules.MedkitHeal);
+        }
+
+        public void SwapGun()
+        {
+            var guns = Progress.guns;
+            if (guns.Count < 2) return;
+            int i = guns.FindIndex(g => g.id == Progress.equipped);
+            Progress.equipped = guns[(i + 1) % guns.Count].id;
+            Player.CancelReload();
+            var g2 = ZLCatalog.Gun(Progress.equipped);
+            ZLFloater.Show(g2 != null ? g2.name : "", Player.transform.position, Color.white, 0.8f);
+            Sfx.Play(Sfx.Reload, 0.5f, 0f);
+        }
+
+        // ---- vehicles ------------------------------------------------------------------------------------
+
+        public void VehicleEntered(ZLVehicle v) => Active?.VehicleEntered(v);
+        public void VehicleExited(ZLVehicle v) => Active?.VehicleExited(v);
+        public void VehicleWrecked(ZLVehicle v)
+        {
+            _uses.Remove(v);
+            Active?.VehicleWrecked(v);
+        }
+
+        public void RemoveVehicle(ZLVehicle v)
+        {
+            if (v == null) return;
+            _vehicles.Remove(v);
+            _uses.Remove(v);
+            if (v.Occupied) v.Eject(true);
+            Destroy(v.gameObject);
+        }
+
+        // ---- missions ------------------------------------------------------------------------------------
+
+        public void StartMission(ZLMissionMarker marker)
+        {
+            if (Active != null)
+            {
+                ShowToast("FINISH " + Active.Spec.name + " FIRST (OR ABANDON IT ON THE MAP).");
+                return;
+            }
+            if (!Progress.leads.Contains(marker.Spec.id)) Progress.leads.Add(marker.Spec.id);
+            var run = new ZLMissionRun(this, marker.Spec, marker.Site);
+            Story(marker.Spec.giver, new[] { marker.Spec.briefing }, "zl_city", () =>
+            {
+                Active = run;
+                run.Begin();
+                ShowToast(marker.Spec.name + ": " + run.Objective);
+            });
+        }
+
+        public void MissionComplete(ZLMissionRun run)
+        {
+            if (Active != run) return;
+            Active = null;
+            var spec = run.Spec;
+            ZLRules.Complete(Progress, spec.id);
+            run.Cleanup();
+            foreach (var m in _markers) if (m.Spec.id == spec.id) m.Refresh();
+            ProgressTracker.AddXp(spec.required ? 120 : 80);
+            var lines = new List<string> { spec.done };
+            if (spec.required)
+            {
+                if (Puzzle.Clues.TryGetValue(spec.id, out var clue)) lines.Add("CLUE: " + clue.text);
+                lines.Add($"GRAYSTONE SHARDS: {Progress.Shards}/{ZLCatalog.ShardsNeeded}" +
+                          (Progress.Shards >= ZLCatalog.ShardsNeeded ? ". The seal on his lair will break now. Bring the right weapon." : ""));
+            }
+            Sfx.Play(Sfx.Victory, 0.8f);
+            Save(true);
+            Story(spec.giver, lines.ToArray(), "zl_city", null);
+        }
+
+        public void MissionFailed(ZLMissionRun run, string why)
+        {
+            if (Active != run) return;
+            Active = null;
+            run.Cleanup();
+            ShowToast("MISSION FAILED: " + why + " Try again at the marker.");
+            Sfx.Play(Sfx.Hurt, 0.8f);
+        }
+
+        public void AbandonMission()
+        {
+            if (Active == null) return;
+            var run = Active;
+            Active = null;
+            run.Cleanup();
+            ShowToast("MISSION ABANDONED.");
+        }
+
+        // ---- lairs and the First Turned ----------------------------------------------------------------
+
+        public void TryLair(string lairId, Vector2 door)
+        {
+            var lair = ZLCatalog.Lair(lairId);
+            if (Boss != null || Progress.bossDefeated) return;
+            if (Progress.Shards < ZLCatalog.ShardsNeeded)
+            {
+                ShowToast($"{lair.name.ToUpperInvariant()}: SEALED. YOUR SHARDS: {Progress.Shards}/{ZLCatalog.ShardsNeeded}.");
+                Sfx.Play(Sfx.Click, 0.7f, 0f);
+                return;
+            }
+            if (lairId != Puzzle.TrueLair)
+            {
+                if (!Progress.lairsSearched.Contains(lairId)) Progress.lairsSearched.Add(lairId);
+                ShowToast("EMPTY. HE ISN'T HERE... BUT HIS HOUNDS ARE.");
+                SpawnHoundPack(5, door);
+                CallHorde(door);
+                return;
+            }
+            Story(ZLCatalog.BossRealName.ToUpperInvariant(), ZLCatalog.BossIntro, "zl_boss", () =>
+            {
+                foreach (var z in _zombies.ToArray()) if (z != null && Vector2.Distance(z.transform.position, door) < 14f) z.Vanish(true);
+                _zombies.RemoveAll(z => z == null);
+                var go = new GameObject("TheFirstTurned");
+                Vector2 at = door + Vector2.up * 4f;
+                if (!City.Walkable(at)) at = door + Vector2.down * 4f;
+                if (!City.Walkable(at)) at = door;
+                go.transform.position = at;
+                Boss = go.AddComponent<ZLBoss>();
+                Boss.Init(this, Frames("boss_idle", 2), Frames("boss_walk", 4), Frames("boss_attack", 2));
+                ShowToast(ZLCatalog.BossName + "!");
+            });
+        }
+
+        Sprite[] Frames(string name, int n)
+        {
+            var a = new Sprite[n];
+            for (int i = 0; i < n; i++) a[i] = Sprite($"Props/{name}_{i}");
+            return a;
+        }
+
+        public void BossDefeated(ZLBoss boss)
+        {
+            Progress.bossDefeated = true;
+            foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
+            _zombies.Clear();
+            foreach (var n in _nests.ToArray()) if (n != null) Destroy(n.gameObject);
+            _nests.Clear();
+            Destroy(boss.gameObject, 0.1f);
+            Boss = null;
+            if (Services.Save != null) Services.Save.Data.starShards += ZLRules.ClearReward;
+            ProgressTracker.AddXp(600);
+            Sfx.Play(Sfx.Victory, 1f);
+            Save(true);
+            Story("", ZLCatalog.Ending, "dawn", () => ShowToast($"+{ZLRules.ClearReward} STAR SHARDS. ZOMBIE LAND IS CLEAR."));
+        }
+
+        // ---- death and checkpoints ---------------------------------------------------------------------
+
+        public void LightSafehouse(ZLSafehouse s)
+        {
+            if (Progress.safehouses.Contains(s.Data.id)) { Progress.checkpoint = s.Data.id; return; }
+            Progress.safehouses.Add(s.Data.id);
+            Progress.checkpoint = s.Data.id;
+            ShowToast("CHECKPOINT: " + s.Data.name);
+            Sfx.Play(Sfx.Checkpoint, 0.9f);
+            if (Progress.rewards.Contains("motorcycles")) SpawnVehicle(ZLVehicleKind.Motorcycle, (Vector2)s.transform.position + new Vector2(-1.5f, 0f), 90f, 3);
+            Save(true);
+        }
+
+        public void PlayerDied()
+        {
+            if (RespawnPending) return;
+            RespawnPending = true;
+            if (Active != null) { var run = Active; Active = null; run.Cleanup(); }
+            StartCoroutine(Respawn());
+        }
+
+        IEnumerator Respawn()
+        {
+            Sfx.Play(Sfx.KO, 0.9f, 0f);
+            yield return new WaitForSecondsRealtime(2.6f);
+            ZLRules.Respawn(Progress);
+            Roamed = 0f;
+            _houndPacks = 0;
+            _houndT = 0f;
+            _warned = false;
+            if (Boss != null) { Destroy(Boss.gameObject); Boss = null; }
+            Vector2 at = RespawnPoint();
+            foreach (var z in _zombies.ToArray()) if (z != null && (Vector2.Distance(z.transform.position, at) < 26f || z.kind == ZLFoe.Hound)) z.Vanish(false);
+            _zombies.RemoveAll(z => z == null || !z.Alive);
+            Player.Revive(at);
+            if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Snap();
+            RespawnPending = false;
+            Save(true);
+            ShowToast("YOU WOKE UP AT THE SAFEHOUSE. MISSIONS AND SHARDS ARE STILL YOURS.");
+        }
+
+        // ---- UI helpers --------------------------------------------------------------------------------
+
+        public void ShowToast(string text, float seconds = 4f)
+        {
+            Toast = text;
+            ToastLeft = seconds;
+        }
+
+        public void Story(string speaker, string[] lines, string art, Action done)
+        {
+            var panels = new BeatPanel[lines.Length];
+            for (int i = 0; i < lines.Length; i++) panels[i] = new BeatPanel(speaker, lines[i], art);
+            CutscenePlayer.Play(new StoryBeat { id = "zombieland", panels = panels }, done);
+        }
+
+        public void Save(bool now)
+        {
+            if (Services.Save == null) return;
+            Services.Save.MarkDirty();
+            if (now) Services.Save.SaveNow();
+        }
+
+        // ---- test hooks (PlayMode tests) ---------------------------------------------------------------
+
+        /// <summary>Starts a mission without the briefing popup.</summary>
+        public ZLMissionRun DebugStartMission(string id)
+        {
+            foreach (var m in _markers)
+                if (m.Spec.id == id)
+                {
+                    Active = new ZLMissionRun(this, m.Spec, m.Site);
+                    Active.Begin();
+                    return Active;
+                }
+            return null;
+        }
+
+        public ZLBoss DebugSpawnBoss(Vector2 at)
+        {
+            var go = new GameObject("TheFirstTurned");
+            go.transform.position = at;
+            Boss = go.AddComponent<ZLBoss>();
+            Boss.Init(this, Frames("boss_idle", 2), Frames("boss_walk", 4), Frames("boss_attack", 2));
+            return Boss;
+        }
+
+        public void DebugSetRoamed(float seconds) => Roamed = seconds;
+
+        /// <summary>Starts Zombie Land over (new mystery, new seed). Called from the map panel.</summary>
+        public void NewGame()
+        {
+            ZLRules.NewGame(Progress, Mathf.Abs(Environment.TickCount) % 100000 + 1);
+            Save(true);
+            if (Services.Scenes != null) Services.Scenes.ReloadCurrent();
+        }
+    }
+}

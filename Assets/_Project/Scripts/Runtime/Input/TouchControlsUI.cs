@@ -111,9 +111,12 @@ namespace PKR
         /// <summary>FIRE and USE only exist in Zombie Survival (where the hero carries a gun).</summary>
         void UpdateZombieButtons()
         {
-            bool show = ZombieGunner.Player != null || EditMode;
+            bool show = ZombieGunner.Player != null || ZLPlayer.Current != null || EditMode;
             foreach (var id in new[] { ControlIds.Fire, ControlIds.Use })
                 if (_buttons.TryGetValue(id, out var b) && b.gameObject.activeSelf != show) b.gameObject.SetActive(show);
+            // Zombie Land is top-down: no jumping.
+            bool jump = ZLPlayer.Current == null || EditMode;
+            if (_buttons.TryGetValue(ControlIds.Jump, out var j) && j.gameObject.activeSelf != jump) j.gameObject.SetActive(jump);
         }
 
         /// <summary>JET shows only where the rescue jetpack exists (Story, Contracts); its ring shows the fuel left

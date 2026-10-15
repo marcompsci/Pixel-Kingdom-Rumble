@@ -61,7 +61,7 @@ namespace PKR
         {
             _root = root; _onBack = onBack;
             UIFactory.Clear(root);
-            var panel = UIFactory.Panel(root, new Vector2(960f, 1420f));
+            var panel = UIFactory.Panel(root, new Vector2(960f, 1700f));
             var title = UIFactory.Label(panel, "HALLOWEEN", 96, TextAnchor.MiddleCenter, 140f, title: true);
             title.color = new Color32(255, 150, 50, 255);
             UIFactory.Label(panel, "Zombies are loose in the Sunspire Isles", 36, TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
@@ -73,6 +73,10 @@ namespace PKR
             var survival = Big(panel, "ZOMBIE SURVIVAL", best, new Color32(200, 70, 50, 255), () => Go(SessionMode.Halloween, SceneIds.ZombieSurvival));
             UIFactory.Label(panel, "Guns on the walls · mystery crate · perk shrines · the upgrade forge · power-ups · a boss every 5 rounds · a secret",
                             28, TextAnchor.MiddleCenter, 80f).color = UITheme.Current.subtle;
+            var zl = save != null ? save.zombieLand : null;
+            string zlSub = zl == null || zl.seed == 0 ? "A whole city of the dead · 14 missions · drive anything · hunt the First Turned"
+                         : zl.bossDefeated ? "Cleared! The city is yours." : $"Graystone shards {zl.Shards}/{ZLCatalog.ShardsNeeded} · missions {zl.completed.Count}/{ZLCatalog.Missions.Length}";
+            Big(panel, "ZOMBIE LAND", zlSub, new Color32(110, 60, 150, 255), () => Go(SessionMode.Halloween, SceneIds.ZombieLand));
             Card(panel, HauntedEscape, SessionMode.Halloween);
             UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(survival);

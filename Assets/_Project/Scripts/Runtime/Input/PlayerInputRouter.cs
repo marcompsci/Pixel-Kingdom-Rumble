@@ -23,7 +23,9 @@ namespace PKR
         InputAction _move, _jump, _attack, _special, _dodge, _jetpack, _pause;
         bool _devicesOff;
 
-        public FighterIntent Intent => motor != null ? motor.Intent : null;
+        /// <summary>Heroes without a platformer motor (Zombie Land's top-down hero) read this one.</summary>
+        readonly FighterIntent _ownIntent = new FighterIntent();
+        public FighterIntent Intent => motor != null ? motor.Intent : _ownIntent;
         /// <summary>The touch overlay this fighter reads (the scene's one unless Bind gave another).</summary>
         public TouchControlsUI Touch => touchControls;
         /// <summary>Ignore move/jump/attack input (round intros in Versus) while pause still works.</summary>
@@ -86,7 +88,7 @@ namespace PKR
         void OnDisable()
         {
             _map.Disable();
-            if (motor != null) motor.Intent.ClearAll();
+            Intent.ClearAll();
         }
 
         void OnDestroy() => _map?.Dispose();
@@ -95,9 +97,7 @@ namespace PKR
         {
             var state = Services.State;
             if (!_devicesOff && _pause.WasPressedThisFrame() && state != null) state.TogglePause();
-            if (motor == null) return;
-
-            var intent = motor.Intent;
+            var intent = Intent;
             if ((state != null && state.IsPaused) || GameplayLocked)
             {
                 intent.ClearAll();

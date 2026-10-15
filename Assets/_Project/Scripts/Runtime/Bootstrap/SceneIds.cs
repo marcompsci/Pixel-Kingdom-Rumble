@@ -51,6 +51,8 @@ namespace PKR
         public const string CountdownClimb = "EV_CountdownClimb";
         public const string HauntedEscape = "EV_HauntedEscape";
         public const string ZombieSurvival = "EV_ZombieSurvival";
+        /// <summary>Zombie Land: the top-down open-city campaign against the First Turned.</summary>
+        public const string ZombieLand = "EV_ZombieLand";
 
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";

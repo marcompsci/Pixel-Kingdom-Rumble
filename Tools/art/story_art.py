@@ -140,5 +140,28 @@ def orrery():
     return img
 
 
+def zl_city():
+    img = scene('city', (40, 18, 30), (150, 50, 40), mul=(0.75, 0.62, 0.62))
+    _stars(img, 30, 41)
+    d = ImageDraw.Draw(img)
+    d.ellipse([520, 18, 556, 54], fill=(230, 210, 170, 255))             # a sick moon
+    for x in range(0, W, 9):                                            # the quarantine fence
+        d.line([(x, H - 10), (x, H - 34)], fill=(70, 70, 76, 255), width=2)
+    d.line([(0, H - 30), (W, H - 30)], fill=(150, 40, 40, 255), width=2)
+    return img
+
+
+def zl_boss():
+    img = scene('haunted', (20, 10, 26), (70, 30, 60), mul=(0.7, 0.6, 0.75))
+    d = ImageDraw.Draw(img)
+    d.ellipse([290, 40, 350, 100], fill=(150, 150, 170, 255), outline=(30, 26, 40, 255))   # the Graystone
+    d.ellipse([310, 60, 330, 80], fill=(230, 220, 255, 255))
+    for k in range(10):
+        a = k * math.pi / 5
+        d.line([(320 + math.cos(a) * 34, 70 + math.sin(a) * 34), (320 + math.cos(a) * 60, 70 + math.sin(a) * 60)], fill=(170, 160, 210, 255), width=2)
+    return img
+
+
 ALL = {'isles': isles, 'dawn': dawn, 'hero': hero, 'peaks': peaks, 'realms': realms, 'warden': warden,
-       'mainspring': mainspring, 'sovereign': sovereign, 'ledger': ledger, 'starfall': starfall, 'orrery': orrery}
+       'mainspring': mainspring, 'sovereign': sovereign, 'ledger': ledger, 'starfall': starfall, 'orrery': orrery,
+       'zl_city': zl_city, 'zl_boss': zl_boss}

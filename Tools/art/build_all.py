@@ -339,6 +339,61 @@ def build_story():
         save(fn(), os.path.join(res, 'story_' + key + '.png'))
 
 
+def build_zombieland():
+    import json
+    import zombieland as zl
+    sys.path.insert(0, os.path.join(ROOT, 'Tools', 'maps'))
+    import zombieland_city
+    res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'ZombieLand')
+    city = zombieland_city.build().to_json()
+    ensure_dir(res)
+    with open(os.path.join(res, 'city.json'), 'w', newline='\n') as f:
+        json.dump(city, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'city.json'))
+    for key, fn in zl.TILES.items():
+        save(fn(), os.path.join(res, 'Tiles', 'zl_' + key + '.png'), ppu=16)
+    for style in zl.ROOF_STYLES:
+        save(zl.roof(style), os.path.join(res, 'Roofs', 'roof_' + style + '.png'), ppu=16, border=12)
+        save(zl.wall_face(style), os.path.join(res, 'Roofs', 'face_' + style + '.png'), ppu=16, wrap=0)
+    for k in ('ac', 'vent', 'tank', 'skylight'):
+        save(zl.roof_props(k), os.path.join(res, 'Roofs', 'rp_' + k + '.png'), ppu=16)
+    sizes = {}
+    for b in city['buildings']:
+        if b['style'] in zl.LANDMARKS:
+            sizes[b['style']] = (b['w'], b['h'])
+    for style, (w, h) in sizes.items():
+        save(zl.landmark(style, w, h), os.path.join(res, 'Landmarks', 'lm_' + style + '.png'), ppu=16)
+    props = os.path.join(res, 'Props')
+    cars = {'car_red': (190, 50, 44), 'car_blue': (50, 90, 170), 'car_white': (220, 220, 214), 'car_yellow': (220, 180, 50)}
+    for name, col in cars.items():
+        save(zl.car_body(32, 16, col), os.path.join(props, name + '.png'), ppu=16)
+    for name, col in {'truck_green': (70, 110, 70), 'truck_gray': (120, 124, 130)}.items():
+        save(zl.car_body(40, 18, col, kind='truck'), os.path.join(props, name + '.png'), ppu=16)
+    save(zl.two_wheeler(False, (200, 50, 50)), os.path.join(props, 'bike.png'), ppu=16)
+    save(zl.two_wheeler(True, (40, 40, 46)), os.path.join(props, 'moto_black.png'), ppu=16)
+    save(zl.two_wheeler(True, (220, 110, 40)), os.path.join(props, 'moto_orange.png'), ppu=16)
+    for name, col in {'wreck_red': (150, 50, 44), 'wreck_blue': (50, 80, 140), 'wreck_white': (190, 190, 184)}.items():
+        save(zl.car_body(32, 16, col), os.path.join(props, name + '.png'), ppu=16)
+    save(zl.car_body(32, 16, (60, 50, 46), burnt=True), os.path.join(props, 'wreck_burnt.png'), ppu=16)
+    for k in ('tree', 'pine', 'bush'):
+        save(zl.tree(k), os.path.join(props, k + '.png'), ppu=16)
+    for k in ('blood', 'rot', 'trash', 'paper', 'tire', 'cone', 'lamp', 'barricade'):
+        save(zl.small_prop(k), os.path.join(props, k + '.png'), ppu=16)
+    save(zl.crane(), os.path.join(props, 'crane.png'), ppu=16)
+    for k in ('ammo', 'medkit', 'armor', 'weapon', 'cooler', 'folder', 'generator', 'generator_on', 'switch', 'safehouse',
+              'safehouse_lit', 'relic', 'shard', 'marker', 'lair', 'arrow', 'dot'):
+        save(zl.pickup(k), os.path.join(props, 'pk_' + k + '.png'), ppu=16)
+    for i in range(2):
+        save(zl.nest(i), os.path.join(props, f'nest_{i}.png'), ppu=16)
+    for i in range(4):
+        save(zl.hound(i), os.path.join(props, f'hound_{i}.png'), ppu=16)
+    for kind, n in (('idle', 2), ('walk', 4), ('attack', 2)):
+        for i in range(n):
+            save(zl.first_turned(i, kind), os.path.join(props, f'boss_{kind}_{i}.png'), ppu=16)
+    save(zl.herald_crown(), os.path.join(props, 'crown.png'), ppu=16)
+    save(zl.minimap(city, zl.building_color), os.path.join(res, 'minimap.png'), ppu=16)
+
+
 def build_fx():
     res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR')
     save(fx.glow(), os.path.join(res, 'fx_glow.png'), ppu=32, filt=1)
@@ -348,7 +403,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps', 'menu', 'story']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps', 'menu', 'story', 'zombieland']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

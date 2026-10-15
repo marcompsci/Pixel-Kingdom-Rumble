@@ -67,6 +67,8 @@ namespace PKR.Core
         public List<ChallengeRecord> dailyChallenges = new List<ChallengeRecord>();
         /// <summary>Halloween Zombie Survival bests.</summary>
         public int zombieBestRound, zombieBestPoints, zombieBestKills;
+        /// <summary>Zombie Land: the open city campaign against the First Turned.</summary>
+        public ZombieLandProgress zombieLand = new ZombieLandProgress();
         /// <summary>Found the Zombie Survival lantern secret at least once.</summary>
         public bool zombieLanternsLit;
 
@@ -205,6 +207,7 @@ namespace PKR.Core
             version = CurrentVersion;
 
             if (starShards < 0) starShards = 0;
+            if (zombieLand == null) zombieLand = new ZombieLandProgress();
             if (zombieBestRound < 0) zombieBestRound = 0;
             if (playerXp < 0) playerXp = 0;
             if (dailyChallenges == null) dailyChallenges = new List<ChallengeRecord>();
