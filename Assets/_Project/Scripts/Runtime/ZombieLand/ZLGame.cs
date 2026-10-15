@@ -109,6 +109,14 @@ namespace PKR
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             Ready = true;
             Flow.Build(TargetPos);
+            // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
+            string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
+                          ?? BootLoader.TakeShotPanel("boss");
+            if (shot != null)
+            {
+                Progress.introSeen = true;
+                StartCoroutine(ShotSetup(shot));
+            }
             if (!Progress.introSeen)
             {
                 Progress.introSeen = true;
@@ -917,6 +925,27 @@ namespace PKR
         }
 
         public void DebugSetRoamed(float seconds) => Roamed = seconds;
+
+        IEnumerator ShotSetup(string shot)
+        {
+            yield return new WaitForSeconds(1f);
+            if (shot == "drive")
+            {
+                ZLVehicle best = null;
+                foreach (var v in _vehicles)
+                    if (v.spec.kind == ZLVehicleKind.Car && (best == null || Vector2.Distance(v.transform.position, TargetPos) < Vector2.Distance(best.transform.position, TargetPos))) best = v;
+                if (best != null) best.Use(Player);
+                for (int i = 0; i < 90 && best != null; i++) { best.Drive(best.transform.right); yield return null; }
+            }
+            else if (shot == "map") { var hud = FindAnyObjectByType<ZLMapPanel>(); if (hud != null) hud.Open(); }
+            else if (shot == "boss") DebugSpawnBoss(TargetPos + Vector2.up * 5f);
+            else
+            {
+                // walk up the street a little so some of the dead are about
+                Player.transform.position = TargetPos + Vector2.up * 6f;
+                if (!City.Walkable(Player.transform.position)) Player.transform.position = TargetPos + Vector2.right * 6f;
+            }
+        }
 
         /// <summary>Starts Zombie Land over (new mystery, new seed). Called from the map panel.</summary>
         public void NewGame()
