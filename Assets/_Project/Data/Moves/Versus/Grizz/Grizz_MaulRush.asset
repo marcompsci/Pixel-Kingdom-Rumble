@@ -38,7 +38,7 @@ MonoBehaviour:
   endsOnLanding: 1
   speedBonus: 0
   superArmor: 1
-  armorStartFrame: 0
+  armorStartFrame: 4
   armorEndFrame: -1
   followUp: {fileID: 0}
   specialFollowUp: {fileID: 0}
@@ -48,6 +48,7 @@ MonoBehaviour:
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

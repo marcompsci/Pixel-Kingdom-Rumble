@@ -25,7 +25,7 @@ MonoBehaviour:
   hitboxSize: {x: 1.1, y: 0.9}
   hitboxRadius: 0.8
   hit:
-    damage: 2
+    damage: 1
     pipDamage: 1
     baseKnockback: 4.5
     exposedMultiplier: 1.6
@@ -48,6 +48,7 @@ MonoBehaviour:
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

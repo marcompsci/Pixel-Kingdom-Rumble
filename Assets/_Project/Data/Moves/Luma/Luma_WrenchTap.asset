@@ -30,7 +30,7 @@ MonoBehaviour:
     baseKnockback: 4
     exposedMultiplier: 1.5
     angleDegrees: 15
-    baseHitstunFrames: 10
+    baseHitstunFrames: 13
     hitstopFrames: 3
     isHeavy: 0
   rootedOnGround: 1
@@ -41,12 +41,14 @@ MonoBehaviour:
   armorStartFrame: 0
   armorEndFrame: -1
   followUp: {fileID: 11400000, guid: fbc3fe126bc6a4db99dff3c4f4ff0430, type: 2}
+  specialFollowUp: {fileID: 0}
   spawnsProjectile: 0
   projectileSpawnOffset: {x: 0.7, y: 0.1}
   projectileSpeed: 12
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

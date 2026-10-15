@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Jab
   description: A boxer's jab. Keep pressing Attack.
   frames:
-    startup: 2
+    startup: 4
     active: 3
     recovery: 9
     cancelWindow: 8
@@ -48,6 +48,7 @@ MonoBehaviour:
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

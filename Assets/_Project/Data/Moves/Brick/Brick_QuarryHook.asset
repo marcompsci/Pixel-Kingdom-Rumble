@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Quarry Hook
   description: A slow, heavy follow-up hook. Launches Exposed foes a long way.
   frames:
-    startup: 7
+    startup: 5
     active: 4
     recovery: 18
     cancelWindow: 6
@@ -30,7 +30,7 @@ MonoBehaviour:
     baseKnockback: 8.5
     exposedMultiplier: 3.2
     angleDegrees: 40
-    baseHitstunFrames: 15
+    baseHitstunFrames: 26
     hitstopFrames: 7
     isHeavy: 1
   rootedOnGround: 1
@@ -40,13 +40,15 @@ MonoBehaviour:
   superArmor: 0
   armorStartFrame: 0
   armorEndFrame: -1
-  followUp: {fileID: 0}
+  followUp: {fileID: 11400000, guid: 6f7dbea52e0c447e9a69e20595c0254b, type: 2}
+  specialFollowUp: {fileID: 0}
   spawnsProjectile: 0
   projectileSpawnOffset: {x: 0.7, y: 0.1}
   projectileSpeed: 12
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

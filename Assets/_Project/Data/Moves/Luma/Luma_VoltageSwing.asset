@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Voltage Swing
   description: A charged backhand with the glove. Launches Exposed foes.
   frames:
-    startup: 6
+    startup: 4
     active: 4
     recovery: 16
     cancelWindow: 6
@@ -30,7 +30,7 @@ MonoBehaviour:
     baseKnockback: 7.5
     exposedMultiplier: 3
     angleDegrees: 35
-    baseHitstunFrames: 14
+    baseHitstunFrames: 21
     hitstopFrames: 6
     isHeavy: 1
   rootedOnGround: 1
@@ -40,13 +40,15 @@ MonoBehaviour:
   superArmor: 0
   armorStartFrame: 0
   armorEndFrame: -1
-  followUp: {fileID: 0}
+  followUp: {fileID: 11400000, guid: ddb87776cf5224366ae8dd79172acf72, type: 2}
+  specialFollowUp: {fileID: 0}
   spawnsProjectile: 0
   projectileSpawnOffset: {x: 0.7, y: 0.1}
   projectileSpeed: 12
   projectileLifetime: 0.6
   projectileRadius: 0.3
   projectileColor: {r: 1, g: 0.78431374, b: 0.3137255, a: 1}
+  projectileSprite: {fileID: 0}
   spawnsTrap: 0
   trapArmDelay: 0.35
   trapLifetime: 6

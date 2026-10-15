@@ -25,7 +25,7 @@ MonoBehaviour:
   hitboxSize: {x: 1, y: 0.9}
   hitboxRadius: 0.8
   hit:
-    damage: 2
+    damage: 1
     pipDamage: 1
     baseKnockback: 4
     exposedMultiplier: 1.6
