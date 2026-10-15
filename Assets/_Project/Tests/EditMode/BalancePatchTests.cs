@@ -26,6 +26,14 @@ namespace PKR.Tests
         }
 
         [Test]
+        public void OriginalFour_HaveAThreeHitCombo()
+        {
+            var jab = Load("Assets/_Project/Data/Moves/Nova/Nova_CourierJab.asset");
+            if (jab == null || jab.followUp == null) Assert.Ignore("move assets not built");
+            Assert.IsNotNull(jab.followUp.followUp, "Comet Sweep chains into a third hit");
+        }
+
+        [Test]
         public void NovaCombo_IsATrueCombo()
         {
             var jab = Load("Assets/_Project/Data/Moves/Nova/Nova_CourierJab.asset");

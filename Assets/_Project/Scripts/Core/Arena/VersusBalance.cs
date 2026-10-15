@@ -14,6 +14,8 @@ namespace PKR.Core
         public static readonly IReadOnlyDictionary<string, int> HealthAdjust = new Dictionary<string, int>
         {
             { "grizz", -3 },
+            { "pepper_quinn", -2 },
+            { "pixel_pip", -1 },
             { "bo_tidewell", -2 },
             { "brick", 1 },
             { "juni_bloom", 2 },

@@ -41,6 +41,21 @@ namespace PKR.EditorTools
             { "Nova_CometSweep", P(startup: 4, damage: 3) },
             { "Nova_RisingArc", P(damage: 3) },
             { "Nova_CometBolt", P(damage: 2) },
+            { "Luma_VoltageSwing", P(startup: 4) },
+            { "Rex_TailWhip", P(startup: 4) },
+            { "Brick_QuarryHook", P(startup: 5) },
+        };
+
+        /// <summary>
+        /// Run 4: the original four (Nova, Brick, Luma, Rex) still sat at 12-25%: their combos stop after two hits
+        /// while every newer hero has three. Their second hit now chains into their up-attack as a third hit.
+        /// </summary>
+        static readonly Dictionary<string, string> ThirdHits = new Dictionary<string, string>
+        {
+            { "Nova_CometSweep", "Nova_RisingArc" },
+            { "Luma_VoltageSwing", "Luma_ArcFlick" },
+            { "Rex_TailWhip", "Rex_FlipKick" },
+            { "Brick_QuarryHook", "Brick_PillarUppercut" },
         };
 
         /// <summary>Patched move asset names (tests).</summary>
@@ -53,9 +68,19 @@ namespace PKR.EditorTools
                 var ms = h != null ? h.moveset : null;
                 if (ms == null) continue;
                 var seen = new HashSet<MoveDefinition>();
-                foreach (var m in new[] { ms.groundAttack, ms.groundUpAttack, ms.airAttack, ms.groundSpecial, ms.sideSpecial,
-                                          ms.downSpecial, ms.airSpecial, ms.abilityImpact })
-                    Walk(m, seen);
+                var roots = new[] { ms.groundAttack, ms.groundUpAttack, ms.airAttack, ms.groundSpecial, ms.sideSpecial,
+                                    ms.downSpecial, ms.airSpecial, ms.abilityImpact };
+                foreach (var m in roots) Walk(m, seen);
+                var byName = new Dictionary<string, MoveDefinition>();
+                foreach (var m in seen) byName[m.name] = m;
+                foreach (var kv in ThirdHits)
+                    if (byName.TryGetValue(kv.Key, out var second) && byName.TryGetValue(kv.Value, out var third) &&
+                        second.followUp != third && third.followUp != second)
+                    {
+                        second.followUp = third;
+                        if (second.frames.cancelWindow < 6) { var f = second.frames; f.cancelWindow = 6; second.frames = f; }
+                        EditorUtility.SetDirty(second);
+                    }
                 // Chain hitstun: every combo hit must hold the foe until the next one lands. The ten Versus fighters got
                 // this when built; the original four (Nova, Brick, Luma, Rex) never did, so their combos could be
                 // escaped between hits.
