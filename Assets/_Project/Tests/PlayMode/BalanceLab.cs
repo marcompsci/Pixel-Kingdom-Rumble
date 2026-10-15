@@ -43,6 +43,7 @@ namespace PKR.Tests
 
             var outDir = Path.Combine(Root, "Logs", "balance");
             Directory.CreateDirectory(outDir);
+            int decided = 0, slot0 = 0;
             var csv = new StringBuilder("hero,partner,side,winner,heroRounds,partnerRounds,seconds\n");
             var wins = new Dictionary<string, float>();
             var games = new Dictionary<string, int>();
@@ -51,11 +52,11 @@ namespace PKR.Tests
             {
                 for (int h = 0; h < Heroes.Length; h++)
                 {
-                    for (int s = 0; s < Sparring.Length; s++)
+                    for (int s = 0; s < Sparring.Length * 2; s++)
                     {
-                        string hero = Heroes[h], partner = Sparring[s];
+                        string hero = Heroes[h], partner = Sparring[s / 2];
                         if (hero == partner) continue;
-                        int side = (h + s) % 2; // alternate sides
+                        int side = s % 2; // both sides against every partner, so any slot advantage cancels out
                         vc.StartMatch(side == 0 ? hero : partner, side == 0 ? partner : hero, BotLevel.Hard);
                         float started = Time.realtimeSinceStartup;
                         while (vc.Match != null && vc.Match.Phase != VersusPhase.MatchOver && Time.realtimeSinceStartup - started < 40f)
@@ -63,6 +64,7 @@ namespace PKR.Tests
                         var m = vc.Match;
                         int heroSlot = side == 0 ? 0 : 1;
                         int winner = m.Phase == VersusPhase.MatchOver ? m.Winner : -1;
+                        if (winner >= 0) { decided++; if (winner == 0) slot0++; }
                         float score = winner < 0 ? 0.5f : winner == heroSlot ? 1f : 0f;
                         wins[hero] = (wins.TryGetValue(hero, out var w) ? w : 0f) + score;
                         games[hero] = (games.TryGetValue(hero, out var g) ? g : 0) + 1;
@@ -80,6 +82,7 @@ namespace PKR.Tests
                 if (games.TryGetValue(hero, out var n) && n > 0)
                     summary.Append($"{hero},{wins[hero] / n:0.00},{n}\n");
             File.WriteAllText(Path.Combine(outDir, "summary.csv"), summary.ToString());
+            File.WriteAllText(Path.Combine(outDir, "sides.txt"), $"left-slot wins {slot0}/{decided}\n");
             Debug.Log("[PKR BalanceLab] done\n" + summary);
         }
     }
