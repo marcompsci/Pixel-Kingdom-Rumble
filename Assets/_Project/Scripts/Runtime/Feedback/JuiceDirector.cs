@@ -165,8 +165,8 @@ namespace PKR
             _card.pivot = new Vector2(0.5f, 1f);
             _card.sizeDelta = new Vector2(1100f, 210f);
             var bg = _card.gameObject.AddComponent<Image>();
-            bg.sprite = UISprites.RoundedRect; bg.type = Image.Type.Sliced;
-            bg.color = new Color(0.08f, 0.06f, 0.12f, 0.88f);
+            UISprites.ApplyPanelSprite(bg);
+            bg.color = new Color(0.08f, 0.06f, 0.12f, 0.9f);
             bg.raycastTarget = false;
             var v = _card.gameObject.AddComponent<VerticalLayoutGroup>();
             v.padding = new RectOffset(30, 30, 18, 18);

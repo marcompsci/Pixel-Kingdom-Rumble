@@ -67,18 +67,23 @@ namespace PKR
             root.sizeDelta = new Vector2(900f, 120f);
 
             _name = Label(root, boss != null ? boss.DisplayName : "BOSS", 38, new Vector2(0f, 0f));
+            _name.font = UISprites.DisplayFont;
+            if (UISprites.HasDisplayFont) _name.fontStyle = FontStyle.Normal;
+            var sh = _name.gameObject.AddComponent<Shadow>();
+            sh.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            sh.effectDistance = new Vector2(4f, -4f);
             var bar = UIFactory.Rect("Bar", root);
             bar.anchorMin = new Vector2(0f, 0.5f); bar.anchorMax = new Vector2(1f, 0.5f);
-            bar.sizeDelta = new Vector2(0f, 30f);
+            bar.sizeDelta = new Vector2(0f, 40f);
             bar.anchoredPosition = new Vector2(0f, -8f);
             _back = bar.gameObject.AddComponent<Image>();
-            _back.sprite = UISprites.RoundedRect; _back.type = Image.Type.Sliced; _back.raycastTarget = false;
+            UISprites.ApplyBarSprite(_back); _back.raycastTarget = false;
 
             _fillRect = UIFactory.Rect("Fill", bar);
             _fillRect.anchorMin = Vector2.zero; _fillRect.anchorMax = Vector2.one;
-            _fillRect.offsetMin = new Vector2(4f, 4f); _fillRect.offsetMax = new Vector2(-4f, -4f);
+            _fillRect.offsetMin = new Vector2(6f, 6f); _fillRect.offsetMax = new Vector2(-6f, -6f);
             _fill = _fillRect.gameObject.AddComponent<Image>();
-            _fill.sprite = UISprites.RoundedRect; _fill.type = Image.Type.Sliced; _fill.raycastTarget = false;
+            UISprites.ApplyBarSprite(_fill); _fill.raycastTarget = false;
 
             _cue = Label(root, "", 34, new Vector2(0f, -92f));
             ApplyTheme();

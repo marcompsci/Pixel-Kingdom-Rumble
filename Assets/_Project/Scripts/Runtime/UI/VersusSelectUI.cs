@@ -232,9 +232,8 @@ namespace PKR
         {
             var rt = UIFactory.Rect("Portrait", parent);
             var bg = rt.gameObject.AddComponent<Image>();
-            bg.sprite = UISprites.RoundedRect;
-            bg.type = Image.Type.Sliced;
-            bg.color = new Color(frame.r, frame.g, frame.b, 0.35f);
+            UISprites.ApplyPanelSprite(bg);
+            bg.color = new Color(frame.r, frame.g, frame.b, 0.45f);
             bg.raycastTarget = false;
             var art = UIFactory.Rect("Art", rt);
             UIFactory.Stretch(art);

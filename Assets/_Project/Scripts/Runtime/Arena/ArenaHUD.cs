@@ -75,9 +75,8 @@ namespace PKR
             {
                 var card = UIFactory.Rect("Card_" + f.slot, _cardsRow);
                 var bg = card.gameObject.AddComponent<Image>();
-                bg.sprite = UISprites.RoundedRect;
-                bg.type = Image.Type.Sliced;
-                bg.color = new Color(p.panel.r, p.panel.g, p.panel.b, 0.85f);
+                UISprites.ApplyPanelSprite(bg);
+                bg.color = new Color(p.panel.r, p.panel.g, p.panel.b, 0.9f);
                 bg.raycastTarget = false;
                 var strip = UIFactory.Rect("Strip", card);
                 strip.anchorMin = new Vector2(0f, 0f); strip.anchorMax = new Vector2(0f, 1f);

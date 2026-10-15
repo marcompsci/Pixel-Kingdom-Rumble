@@ -418,8 +418,7 @@ namespace PKR
             _editBar.anchoredPosition = new Vector2(0f, -130f); // below the HUD timer
             _editBar.sizeDelta = new Vector2(1100f, 250f);
             var bg = _editBar.gameObject.AddComponent<Image>();
-            bg.sprite = UISprites.RoundedRect;
-            bg.type = Image.Type.Sliced;
+            UISprites.ApplyPanelSprite(bg);
             bg.color = UITheme.Current.panel;
             var v = _editBar.gameObject.AddComponent<VerticalLayoutGroup>();
             v.padding = new RectOffset(24, 24, 14, 14);

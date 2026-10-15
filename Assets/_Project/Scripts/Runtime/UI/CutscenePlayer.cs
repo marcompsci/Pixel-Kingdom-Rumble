@@ -56,31 +56,40 @@ namespace PKR
             var dim = UIFactory.Dim(_root);
             dim.color = new Color(0f, 0f, 0f, 0.85f);
 
-            // The comic frame: picture on top, caption underneath.
+            // The comic frame (pixel panel, like every menu): picture on top, caption underneath.
+            var theme = UITheme.Current;
             var frame = UIFactory.Rect("Frame", _root);
             frame.anchorMin = frame.anchorMax = new Vector2(0.5f, 0.55f);
             frame.sizeDelta = new Vector2(1500f, 760f);
             var border = frame.gameObject.AddComponent<Image>();
-            border.sprite = UISprites.RoundedRect; border.type = Image.Type.Sliced;
-            border.color = new Color(0.98f, 0.94f, 0.82f);
+            UISprites.ApplyPanelSprite(border);
+            border.color = theme.panelEdge;
+            var inner = UIFactory.Rect("Inner", frame);
+            UIFactory.Stretch(inner);
+            inner.offsetMin = new Vector2(14f, 14f); inner.offsetMax = new Vector2(-14f, -14f);
+            var innerImg = inner.gameObject.AddComponent<Image>();
+            UISprites.ApplyPanelSprite(innerImg);
+            innerImg.color = theme.panel;
 
-            var pic = UIFactory.Rect("Picture", frame);
+            var pic = UIFactory.Rect("Picture", inner);
             pic.anchorMin = new Vector2(0f, 0.36f); pic.anchorMax = Vector2.one;
-            pic.offsetMin = new Vector2(18f, 0f); pic.offsetMax = new Vector2(-18f, -18f);
+            pic.offsetMin = new Vector2(24f, 0f); pic.offsetMax = new Vector2(-24f, -24f);
             _bg = pic.gameObject.AddComponent<Image>();
-            _bg.sprite = UISprites.RoundedRect; _bg.type = Image.Type.Sliced;
             pic.gameObject.AddComponent<RectMask2D>();
+            var picEdge = pic.gameObject.AddComponent<Outline>();
+            picEdge.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            picEdge.effectDistance = new Vector2(4f, -4f);
             _art = UIFactory.Rect("Art", pic);
             UIFactory.Stretch(_art);
 
-            var cap = UIFactory.Rect("Caption", frame);
+            var cap = UIFactory.Rect("Caption", inner);
             cap.anchorMin = Vector2.zero; cap.anchorMax = new Vector2(1f, 0.36f);
-            cap.offsetMin = new Vector2(36f, 18f); cap.offsetMax = new Vector2(-36f, -10f);
-            _speaker = MakeText(cap, "Speaker", 40, TextAnchor.UpperLeft, new Color(0.75f, 0.25f, 0.2f));
+            cap.offsetMin = new Vector2(40f, 18f); cap.offsetMax = new Vector2(-40f, -12f);
+            _speaker = MakeText(cap, "Speaker", 40, TextAnchor.UpperLeft, theme.title, display: true);
             _speaker.rectTransform.anchorMin = new Vector2(0f, 0.7f);
-            _caption = MakeText(cap, "Text", 40, TextAnchor.MiddleLeft, new Color(0.12f, 0.1f, 0.14f));
+            _caption = MakeText(cap, "Text", 40, TextAnchor.MiddleLeft, theme.text);
             _caption.rectTransform.anchorMax = new Vector2(1f, 0.78f);
-            _counter = MakeText(cap, "Counter", 30, TextAnchor.UpperRight, new Color(0.4f, 0.36f, 0.4f));
+            _counter = MakeText(cap, "Counter", 30, TextAnchor.UpperRight, theme.subtle, display: true);
             _counter.rectTransform.anchorMin = new Vector2(0.75f, 0.7f);
 
             var row = UIFactory.Rect("Buttons", _root);
@@ -100,14 +109,20 @@ namespace PKR
             tap.onClick.AddListener(Next);
         }
 
-        static Text MakeText(RectTransform parent, string name, int size, TextAnchor align, Color color)
+        static Text MakeText(RectTransform parent, string name, int size, TextAnchor align, Color color, bool display = false)
         {
             var rt = UIFactory.Rect(name, parent);
             UIFactory.Stretch(rt);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = UISprites.Font;
+            t.font = display ? UISprites.DisplayFont : UISprites.Font;
             t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
+            t.fontStyle = display && UISprites.HasDisplayFont ? FontStyle.Normal : FontStyle.Bold;
+            if (display)
+            {
+                var sh = rt.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0f, 0f, 0.85f);
+                sh.effectDistance = new Vector2(4f, -4f);
+            }
             t.alignment = align;
             t.color = color;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -128,7 +143,10 @@ namespace PKR
             var panel = _beat.panels[_index];
             _speaker.text = string.IsNullOrEmpty(panel.speaker) ? "" : panel.speaker;
             _caption.text = panel.text;
-            _caption.fontStyle = string.IsNullOrEmpty(panel.speaker) ? FontStyle.Italic : FontStyle.Bold;
+            // Narration reads a little softer than dialogue.
+            bool narration = string.IsNullOrEmpty(panel.speaker);
+            _caption.fontStyle = FontStyle.Bold;
+            _caption.color = narration ? UITheme.Current.subtle : UITheme.Current.text;
             _counter.text = $"{_index + 1} / {_beat.panels.Length}";
             DrawArt(panel.art);
             StopAllCoroutines();
@@ -170,6 +188,24 @@ namespace PKR
         void DrawArt(string key)
         {
             UIFactory.Clear(_art);
+            // Pixel-art picture for the beat (Resources/PKR/Story); the hero stands in front on the outdoor ones.
+            var picture = Resources.Load<Sprite>("PKR/Story/story_" + (string.IsNullOrEmpty(key) ? "hero" : key));
+            if (picture != null)
+            {
+                _bg.sprite = picture;
+                _bg.type = Image.Type.Simple;
+                _bg.preserveAspect = false;
+                _bg.color = Color.white;
+                switch (key)
+                {
+                    case "hero": case "isles": case "dawn": case "peaks": case "starfall": case null: case "":
+                        Hero(new Vector2(0.5f, 0.42f), 360f);
+                        break;
+                }
+                return;
+            }
+            _bg.sprite = UISprites.RoundedRect;
+            _bg.type = Image.Type.Sliced;
             switch (key)
             {
                 case "isles":

@@ -65,6 +65,26 @@ def button(size=32, pressed=False):
     return im
 
 
+def bar(w=16, h=10):
+    """Pixel bar track / fill: dark outline, a light top rim and a shaded bottom row (tinted at runtime)."""
+    im = _img(w, h)
+    p = im.load()
+    for y in range(h):
+        for x in range(w):
+            if _corner_cut(x, y, w, h, 2):
+                continue
+            edge = min(x, y, w - 1 - x, h - 1 - y)
+            if edge < 1 or _corner_cut(x, y, w, h, 3):
+                p[x, y] = INK
+            elif y == 1:
+                p[x, y] = (255, 255, 255, 255)
+            elif y >= h - 3:
+                p[x, y] = (178, 178, 188, 255)
+            else:
+                p[x, y] = (236, 236, 240, 255)
+    return im
+
+
 HEART = [
     "..##...##..",
     ".####.####.",
@@ -224,5 +244,6 @@ ALL = {
     'ui_button_pressed': lambda: button(pressed=True),
     'ui_heart': lambda: heart(True),
     'ui_heart_empty': lambda: heart(False),
+    'ui_bar': lambda: bar(),
 }
-BORDERS = {'ui_panel': 16, 'ui_button': 10, 'ui_button_pressed': 10, 'ui_heart': 0, 'ui_heart_empty': 0}
+BORDERS = {'ui_panel': 16, 'ui_button': 10, 'ui_button_pressed': 10, 'ui_heart': 0, 'ui_heart_empty': 0, 'ui_bar': 4}

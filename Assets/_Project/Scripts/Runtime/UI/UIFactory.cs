@@ -281,7 +281,7 @@ namespace PKR
             bg.anchorMin = new Vector2(0f, 0.38f); bg.anchorMax = new Vector2(1f, 0.62f);
             bg.offsetMin = bg.offsetMax = Vector2.zero;
             var bgImg = bg.gameObject.AddComponent<Image>();
-            bgImg.sprite = UISprites.RoundedRect; bgImg.type = Image.Type.Sliced; bgImg.color = p.track;
+            UISprites.ApplyBarSprite(bgImg); bgImg.color = p.track;
 
             var fillArea = Rect("Fill Area", sliderRt);
             fillArea.anchorMin = new Vector2(0f, 0.38f); fillArea.anchorMax = new Vector2(1f, 0.62f);
@@ -290,7 +290,7 @@ namespace PKR
             fill.anchorMin = Vector2.zero; fill.anchorMax = new Vector2(0f, 1f);
             fill.offsetMin = fill.offsetMax = Vector2.zero;
             var fillImg = fill.gameObject.AddComponent<Image>();
-            fillImg.sprite = UISprites.RoundedRect; fillImg.type = Image.Type.Sliced; fillImg.color = p.accent;
+            UISprites.ApplyBarSprite(fillImg); fillImg.color = p.accent;
 
             var handleArea = Rect("Handle Slide Area", sliderRt);
             Stretch(handleArea);

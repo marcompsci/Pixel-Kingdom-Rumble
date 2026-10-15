@@ -24,7 +24,7 @@ namespace PKR
         public static Sprite Ring => _ring != null ? _ring : (_ring = Make(true));
 
         // ---- generated pixel UI (Tools/art/ui.py -> Resources/PKR/UI); every getter may be null ---------------------
-        static Sprite _pxPanel, _pxButton, _pxButtonPressed;
+        static Sprite _pxPanel, _pxButton, _pxButtonPressed, _pxBar;
         static Font _display;
         static bool _loaded;
 
@@ -35,6 +35,7 @@ namespace PKR
             _pxPanel = Resources.Load<Sprite>("PKR/UI/ui_panel");
             _pxButton = Resources.Load<Sprite>("PKR/UI/ui_button");
             _pxButtonPressed = Resources.Load<Sprite>("PKR/UI/ui_button_pressed");
+            _pxBar = Resources.Load<Sprite>("PKR/UI/ui_bar");
             _display = Resources.Load<Font>("PKR/UI/PKRPixel");
         }
 
@@ -52,6 +53,16 @@ namespace PKR
             img.sprite = PixelPanel != null ? PixelPanel : RoundedRect;
             img.type = UnityEngine.UI.Image.Type.Sliced;
             if (PixelPanel != null) img.pixelsPerUnitMultiplier = 1f / 3f;
+        }
+
+        public static Sprite PixelBar { get { LoadPixel(); return _pxBar; } }
+
+        /// <summary>Pixel bar (health bars, slider tracks and fills), or the smooth rounded rect without the art.</summary>
+        public static void ApplyBarSprite(UnityEngine.UI.Image img)
+        {
+            img.sprite = PixelBar != null ? PixelBar : RoundedRect;
+            img.type = UnityEngine.UI.Image.Type.Sliced;
+            if (PixelBar != null) img.pixelsPerUnitMultiplier = 1f / 3f;
         }
 
         public static void ApplyButtonSprite(UnityEngine.UI.Image img)

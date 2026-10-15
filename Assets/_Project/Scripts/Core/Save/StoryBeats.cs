@@ -77,14 +77,14 @@ namespace PKR.Core
             }},
             new StoryBeat { id = "beat_starfall", levelId = "sq_starfall_steps", timing = BeatTiming.BeforeLevel, panels = new[]
             {
-                new BeatPanel("", "High above the clouds stands the Starfall Observatory, where the Gearwright once charted the sky.", "realms"),
+                new BeatPanel("", "High above the clouds stands the Starfall Observatory, where the Gearwright once charted the sky.", "starfall"),
                 new BeatPanel("ZURI", "The great orrery up there keeps the stars in place. It's spinning backwards!", "hero"),
                 new BeatPanel("NOVA", "Then we climb. Ride the star drafts, mind the comets.", "hero"),
             }},
             new StoryBeat { id = "beat_orrery_intro", levelId = "sq_orrery_sentinel", timing = BeatTiming.BeforeLevel, panels = new[]
             {
-                new BeatPanel("", "At the top, the orrery's keeper wakes: a sentinel of brass and starlight.", "sovereign"),
-                new BeatPanel("ORRERY SENTINEL", "THE SKY IS OUT OF ORDER. I WILL RESET EVERYTHING. INCLUDING YOU.", "sovereign"),
+                new BeatPanel("", "At the top, the orrery's keeper wakes: a sentinel of brass and starlight.", "orrery"),
+                new BeatPanel("ORRERY SENTINEL", "THE SKY IS OUT OF ORDER. I WILL RESET EVERYTHING. INCLUDING YOU.", "orrery"),
                 new BeatPanel("NOVA", "Faster than the Sovereign. Same weak spot. Wait for the slam.", "hero"),
             }},
             new StoryBeat { id = "beat_orrery_down", levelId = "sq_orrery_sentinel", timing = BeatTiming.AfterClear, panels = new[]

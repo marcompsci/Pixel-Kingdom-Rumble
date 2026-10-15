@@ -332,6 +332,13 @@ def build_menu():
     save(clouds, os.path.join(res, 'menu_clouds.png'), wrap=0)
 
 
+def build_story():
+    import story_art
+    res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'Story')
+    for key, fn in story_art.ALL.items():
+        save(fn(), os.path.join(res, 'story_' + key + '.png'))
+
+
 def build_fx():
     res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR')
     save(fx.glow(), os.path.join(res, 'fx_glow.png'), ppu=32, filt=1)
@@ -341,7 +348,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps', 'menu']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps', 'menu', 'story']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')
