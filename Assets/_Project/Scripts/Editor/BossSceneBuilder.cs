@@ -26,17 +26,20 @@ namespace PKR.EditorTools
 
         public const string SovereignScenePath = "Assets/_Project/Scenes/Story/" + SceneIds.FourfoldSovereign + ".unity";
 
+        public const string OrreryScenePath = "Assets/_Project/Scenes/Story/" + SceneIds.OrrerySentinel + ".unity";
+
         public static void BuildNoPrompt()
         {
             BuildArena(ScenePath, false);
             BuildArena(SovereignScenePath, true);
+            BuildArena(OrreryScenePath, true, orrery: true);
         }
 
         /// <summary>
         /// One boss arena. sovereign = the Shattered Realms finale: the same fight engine as the Warden but faster
         /// (tempo 1.25), tougher (36 HP), two extra cogs per volley, and its body changes realm color each phase.
         /// </summary>
-        static void BuildArena(string scenePath, bool sovereign)
+        static void BuildArena(string scenePath, bool sovereign, bool orrery = false)
         {
             EditorUtil.EnsureLayers();
             // New scene FIRST: opening a scene unloads assets loaded before it, and Unity 6.6 then throws
@@ -44,7 +47,8 @@ namespace PKR.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var roster = DataAssets.GetOrCreateRoster();
             var nova = DataAssets.GetOrCreateNova();
-            var level = sovereign ? DataAssets.GetOrCreateSovereignLevel() : DataAssets.GetOrCreateWardenLevel();
+            var level = orrery ? DataAssets.GetOrCreateOrreryLevel()
+                      : sovereign ? DataAssets.GetOrCreateSovereignLevel() : DataAssets.GetOrCreateWardenLevel();
             if (!sovereign) DataAssets.GetOrCreateSunspireTestLevel(); // makes sure Sunspire's NEXT points here
             var mat = EditorUtil.UnlitSpriteMaterial();
             var stone = PlaceholderArt.StoneBlock();
@@ -64,7 +68,7 @@ namespace PKR.EditorTools
             var follow = camGo.AddComponent<CameraFollow2D>();
             follow.bounds = new Rect(Left - 1f, Floor - 2f, Right - Left + 2f, Ceiling + 6f);
 
-            string theme = sovereign ? "shattered" : "foundry";
+            string theme = orrery ? "astral" : sovereign ? "shattered" : "foundry";
             PixelArt.Backdrop(theme, level.skyColor, Floor, mat, new Vector2(0f, 4.5f));
             PixelArt.PostFX(cam);
 
@@ -100,7 +104,7 @@ namespace PKR.EditorTools
             var start = new GameObject("StartPoint").transform;
             start.position = new Vector2(Left + 2f, 1.2f);
 
-            var bossGo = new GameObject(sovereign ? "FourfoldSovereign" : "ClockworkWarden");
+            var bossGo = new GameObject(orrery ? "OrrerySentinel" : sovereign ? "FourfoldSovereign" : "ClockworkWarden");
             bossGo.AddComponent<Damageable>();
             var warden = bossGo.AddComponent<ClockworkWarden>();
             EditorUtil.SetFloat(warden, "arenaLeft", Left);
@@ -112,7 +116,22 @@ namespace PKR.EditorTools
             PixelArt.ApplyBossFrames(warden, "bodyFrames", "warden");
             EditorUtil.SetField(warden, "gearSprite", gear);
             EditorUtil.SetField(warden, "pistonSprite", plate);
-            if (sovereign)
+            if (orrery)
+            {
+                // World 4 finale: the same engine again, faster and tougher still, in starlight colours.
+                var so = new SerializedObject(warden);
+                so.FindProperty("bossName").stringValue = "THE ORRERY SENTINEL";
+                so.FindProperty("tempo").floatValue = 1.4f;
+                so.FindProperty("extraCogs").intValue = 3;
+                so.FindProperty("maxHealth").intValue = 44;
+                var tints = so.FindProperty("phaseTints");
+                tints.arraySize = 3;
+                tints.GetArrayElementAtIndex(0).colorValue = new Color32(150, 180, 255, 255);
+                tints.GetArrayElementAtIndex(1).colorValue = new Color32(200, 150, 255, 255);
+                tints.GetArrayElementAtIndex(2).colorValue = new Color32(255, 220, 130, 255);
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+            else if (sovereign)
             {
                 var so = new SerializedObject(warden);
                 so.FindProperty("bossName").stringValue = "THE FOURFOLD SOVEREIGN";

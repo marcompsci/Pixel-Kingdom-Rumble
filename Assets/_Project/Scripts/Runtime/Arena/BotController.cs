@@ -31,7 +31,9 @@ namespace PKR
             difficulty = d;
             passive = isPassive;
             _rng = new System.Random(seed);
-            _nextDecision = 0f;
+            // A random first reaction, so two CPUs never act on the same physics step (the first-created one would
+            // always land the first hit in a mirrored exchange).
+            _nextDecision = Time.time + d.reactionTime * (float)_rng.NextDouble();
         }
 
         void Awake()

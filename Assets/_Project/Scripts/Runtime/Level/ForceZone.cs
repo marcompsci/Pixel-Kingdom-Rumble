@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum ForceKind { Wind, Current, Conveyor }
+    public enum ForceKind { Wind, Current, Conveyor, Updraft }
 
     /// <summary>
     /// Shattered Realms push zones. Wind (Sky Gardens) and water currents (Sunken Clockworks) accelerate the hero
@@ -45,12 +45,32 @@ namespace PKR
             {
                 if (motor.IsGrounded) motor.AddPush(Vector2.zero, direction * strength);
             }
+            else if (kind == ForceKind.Updraft)
+            {
+                // Star updraft: strong lift until the hero is rising fast, then just enough to hover.
+                motor.AddPush(Vector2.zero + new Vector2(0f, motor.Velocity.y > 9f ? lift * 0.5f : lift));
+            }
             else motor.AddPush(new Vector2(direction * strength, lift));
         }
 
         void Update()
         {
             if (streaks == null || streaks.Length == 0) return;
+            if (kind == ForceKind.Updraft)
+            {
+                // Sparkles rise up the column.
+                _scroll += Time.deltaTime * streakSpeed;
+                float halfH = size.y * 0.5f;
+                for (int i = 0; i < streaks.Length; i++)
+                {
+                    var s = streaks[i];
+                    if (s == null) continue;
+                    float baseY = -halfH + (i + 0.5f) * size.y / streaks.Length;
+                    var p = s.transform.localPosition;
+                    s.transform.localPosition = new Vector3(p.x, Mathf.Repeat(baseY + _scroll + halfH, size.y) - halfH, p.z);
+                }
+                return;
+            }
             _scroll += Time.deltaTime * streakSpeed * direction;
             float half = size.x * 0.5f;
             for (int i = 0; i < streaks.Length; i++)

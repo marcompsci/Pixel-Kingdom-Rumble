@@ -242,7 +242,7 @@ namespace PKR
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             int round = run.Round, kills = run.Kills;
-            UIFactory.Button(buttons, "SHARE", () => ShareService.Share(
+            UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(
                 $"I survived {round} round{(round == 1 ? "" : "s")} of zombies ({kills} down) in Pixel Kingdom Rumble's Halloween mode! " +
                 ShareCard.Link));
             UIFactory.Button(buttons, "HALLOWEEN", () =>

@@ -68,5 +68,27 @@ namespace PKR.Tests
             Assert.IsTrue(ui.Slots[1].unlocked);
             StringAssert.DoesNotContain("LOCKED", ui.Cards[1].GetComponentInChildren<UnityEngine.UI.Text>().text);
         }
+
+        [UnityTest]
+        public IEnumerator WorldMap_ChoosingANode_MovesTheMarker()
+        {
+            _world = ScriptableObject.CreateInstance<WorldDefinition>();
+            for (int k = 0; k < 6; k++) _world.levels.Add(Level("pkr_test_level_m" + k, "Test Map " + k));
+            _host = new GameObject("LevelSelect");
+            _host.SetActive(false);
+            var ui = _host.AddComponent<LevelSelectUI>();
+            ui.SetWorld(_world);
+            _host.SetActive(true);
+            yield return null;
+            Assert.AreEqual(6, ui.Cards.Count, "one map node per level");
+            var map = _host.GetComponentInChildren<WorldMapView>();
+            Assert.IsNotNull(map, "the route is drawn as a world map");
+            ui.Choose(4);
+            Assert.AreEqual(4, ui.Selected);
+            Assert.AreEqual(4, map.Target);
+            Assert.IsTrue(map.Hopping, "the marker hops to the new node");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Assert.IsFalse(map.Hopping);
+        }
     }
 }

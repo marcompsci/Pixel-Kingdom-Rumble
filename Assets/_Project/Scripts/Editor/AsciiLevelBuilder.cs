@@ -86,6 +86,12 @@ namespace PKR.EditorTools
             BuildLevel(SceneIds.GearworkMaze, MazeLayouts.GearworkMaze, () => DataAssets.GetOrCreateGearworkMaze());
             BuildLevel(SceneIds.FrozenVault, MazeLayouts.FrozenVault, () => DataAssets.GetOrCreateFrozenVault());
             BuildLevel(SceneIds.ShatteredLabyrinth, MazeLayouts.ShatteredLabyrinth, () => DataAssets.GetOrCreateShatteredLabyrinth());
+            // Story world 4: the Starfall Observatory (the boss arena is built by BossSceneBuilder).
+            BuildLevel(SceneIds.StarfallSteps, StoryLayouts.StarfallSteps, () => DataAssets.GetOrCreateStarfallSteps());
+            BuildLevel(SceneIds.OrreryGardens, StoryLayouts.OrreryGardens, () => DataAssets.GetOrCreateOrreryGardens());
+            BuildLevel(SceneIds.CelestialMaze, MazeLayouts.CelestialMaze, () => DataAssets.GetOrCreateCelestialMaze());
+            BuildLevel(SceneIds.CometRun, StoryLayouts.CometRun, () => DataAssets.GetOrCreateCometRun());
+            DataAssets.GetOrCreateStarfallObservatory();
             DataAssets.GetOrCreateStoryWorld(); // keep the level select route in order
             DataAssets.GetOrCreateShatteredRealms();
             BuildEvents();
@@ -255,6 +261,7 @@ namespace PKR.EditorTools
             foreach (var r in map.MergedRects('<')) Push(r, ForceKind.Wind, -1);
             foreach (var r in map.MergedRects(')')) Push(r, ForceKind.Current, 1);
             foreach (var r in map.MergedRects('(')) Push(r, ForceKind.Current, -1);
+            foreach (var r in map.MergedRects('%')) Updraft(r);
 
             // --- Things ----------------------------------------------------------------------------------
             Vector2 start = Vector2.zero;
@@ -295,6 +302,9 @@ namespace PKR.EditorTools
                     case 'D': Enemy(Foe('D', DataAssets.GetOrCreateRustCrab), cx, p.y); break;
                     case 'W': Enemy(Foe('W', DataAssets.GetOrCreateWindupSoldier), cx, p.y); break;
                     case 'h': Enemy(Foe('h', DataAssets.GetOrCreateGearGoon), cx, p.y); break;
+                    case 'i': Enemy(Foe('i', DataAssets.GetOrCreateCometWisp), cx, p.y + 0.5f); break;
+                    case 't': Enemy(Foe('t', DataAssets.GetOrCreateLensGolem), cx, p.y); break;
+                    case 'y': Enemy(Foe('y', DataAssets.GetOrCreateStarHopper), cx, p.y); break;
                     case 'r': Enemy(Foe('r', DataAssets.GetOrCreatePrankBandit), cx, p.y); break;
                     case 'e': Enemy(Foe('e', DataAssets.GetOrCreateHexHatter), cx, p.y); break;
                     // Zombie Survival
@@ -812,6 +822,39 @@ namespace PKR.EditorTools
                 Art("CurrentWater", _water, center, new Vector2(r.w, r.h), -3).color = new Color(0.3f, 0.75f, 0.8f, 0.35f);
             int count = Mathf.Max(2, r.w * r.h / 3);
             zone.streaks = Streaks(go.transform, r.w, r.h * 0.5f, 0.08f, color, count, r.h);
+        }
+
+        /// <summary>%: a star updraft column. Lifts the hero (stronger than gravity) with sparkles drifting up.</summary>
+        static void Updraft(AsciiLevel.Rect r)
+        {
+            var center = new Vector2(r.x + r.w * 0.5f, r.y + r.h * 0.5f);
+            var go = new GameObject("Updraft");
+            go.transform.SetParent(_root, false);
+            go.transform.position = center;
+            var zone = go.AddComponent<ForceZone>();
+            zone.kind = ForceKind.Updraft;
+            zone.direction = 0;
+            zone.size = new Vector2(r.w, r.h);
+            zone.strength = 0f;
+            zone.lift = 95f;
+            zone.streakSpeed = 3.5f;
+            Art("UpdraftGlow", _water, center, new Vector2(r.w, r.h), -3).color = new Color(0.55f, 0.6f, 1f, 0.18f);
+            var sparkles = new SpriteRenderer[Mathf.Max(3, r.w * r.h / 4)];
+            var rng = new System.Random(r.x * 131 + r.y);
+            var glow = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Resources/PKR/fx_glow.png");
+            for (int i = 0; i < sparkles.Length; i++)
+            {
+                var s = new GameObject("Sparkle").AddComponent<SpriteRenderer>();
+                s.transform.SetParent(go.transform, false);
+                s.transform.localPosition = new Vector3((float)(rng.NextDouble() - 0.5) * (r.w - 0.4f), 0f, 0f);
+                s.transform.localScale = Vector3.one * (0.25f + (float)rng.NextDouble() * 0.2f);
+                s.sprite = glow;
+                s.color = new Color(0.85f, 0.9f, 1f, 0.7f);
+                if (_mat != null) s.sharedMaterial = _mat;
+                s.sortingOrder = -2;
+                sparkles[i] = s;
+            }
+            zone.streaks = sparkles;
         }
 
         static SpriteRenderer[] Streaks(Transform parent, float width, float yOrHalfHeight, float thickness, Color color, int count, float height = 0f)

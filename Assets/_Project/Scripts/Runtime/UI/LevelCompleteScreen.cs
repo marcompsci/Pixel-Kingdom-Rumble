@@ -104,6 +104,12 @@ namespace PKR
                              interactable: hasLevels || hasMenu);
             string next = flowLevel != null ? flowLevel.nextSceneName : "";
             bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);
+            if (Highlights.Available)
+            {
+                string levelName = flowLevel != null ? flowLevel.displayName : "a level";
+                UIFactory.Button(buttons, "CLIP", () => Highlights.Share(
+                    $"Cleared {levelName} in {ResultsMath.FormatTime(e.timeSeconds)} in Pixel Kingdom Rumble! " + ShareCard.Link));
+            }
             if (isEvent) { } // event levels stand alone: no NEXT
             else if (!e.isContract)
                 UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",

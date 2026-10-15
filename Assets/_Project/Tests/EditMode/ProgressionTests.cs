@@ -95,7 +95,7 @@ namespace PKR.Tests
             var seen = new System.Collections.Generic.HashSet<string>();
             foreach (var w in StoryWorlds.All)
                 foreach (var id in w.levels) Assert.IsTrue(seen.Add(id), "duplicate " + id);
-            Assert.AreEqual(17, seen.Count); // 14 story levels + one maze per world
+            Assert.AreEqual(22, seen.Count); // 14 story levels + one maze per world + World 4
             Assert.AreEqual(2, StoryWorlds.WorldOf("sq_fourfold_sovereign"));
         }
 
@@ -103,7 +103,7 @@ namespace PKR.Tests
         public void StoryBeats_PlayOnce_AndBossesHaveIntroAndDefeat()
         {
             var s = Save(0);
-            foreach (var boss in new[] { "sq_clockwork_warden", "sq_fourfold_sovereign" })
+            foreach (var boss in new[] { "sq_clockwork_warden", "sq_fourfold_sovereign", "sq_orrery_sentinel" })
             {
                 Assert.IsTrue(StoryBeats.For(boss, BeatTiming.BeforeLevel).HasValue, boss + " intro");
                 Assert.IsTrue(StoryBeats.For(boss, BeatTiming.AfterClear).HasValue, boss + " defeat");

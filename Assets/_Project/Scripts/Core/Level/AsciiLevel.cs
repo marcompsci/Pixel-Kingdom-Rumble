@@ -28,6 +28,8 @@ namespace PKR.Core
     ///   l  laser gate (a vertical column of l cells; on/off on a timer)    o  saw blade (rolls along its row)
     ///   k  key     n  locked door (solid until you bring a key; a column of n is one door)
     ///   !  floor switch (flips red/blue blocks)     1  red block (solid first)     2  blue block (solid after a flip)
+    ///   Starfall Observatory (Story world 4):  %  star updraft (lifts you up; no collider)
+    ///   i  Comet Wisp (flyer)   t  Lens Golem (walker)   y  Star Hopper (hopper)
     ///   h  Gear Goon (wrench walker)   r  Prank Bandit (spring-shoe hopper)   e  Hex Hatter (throws cards)
     ///   Zombie Survival (Halloween mode; a map with z needs no goal G):
     ///   z  zombie spawn    w  window barricade (solid until broken)    q  paid door (solid until bought)
@@ -52,7 +54,7 @@ namespace PKR.Core
         public int SecretMaxY { get; private set; }
 
         public const string RunTiles = "#X=^~LHac<>(){}";
-        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZfYQDWvok!zxbpUjhre";
+        public const string PointTiles = "PGC*+?JOmuBTMKFgEVRZfYQDWvok!zxbpUjhreity";
 
         readonly char[,] _grid;
 

@@ -73,6 +73,24 @@ namespace PKR.Core
             {
                 new BeatPanel("", "The four realms fold back into one heart. Every gear on the isles stops, then turns forward again.", "dawn"),
                 new BeatPanel("NOVA", "Morning. The right way round, this time.", "hero"),
+                new BeatPanel("", "That night, something new: the stars over the isles start to fall, one by one.", "dawn"),
+            }},
+            new StoryBeat { id = "beat_starfall", levelId = "sq_starfall_steps", timing = BeatTiming.BeforeLevel, panels = new[]
+            {
+                new BeatPanel("", "High above the clouds stands the Starfall Observatory, where the Gearwright once charted the sky.", "realms"),
+                new BeatPanel("ZURI", "The great orrery up there keeps the stars in place. It's spinning backwards!", "hero"),
+                new BeatPanel("NOVA", "Then we climb. Ride the star drafts, mind the comets.", "hero"),
+            }},
+            new StoryBeat { id = "beat_orrery_intro", levelId = "sq_orrery_sentinel", timing = BeatTiming.BeforeLevel, panels = new[]
+            {
+                new BeatPanel("", "At the top, the orrery's keeper wakes: a sentinel of brass and starlight.", "sovereign"),
+                new BeatPanel("ORRERY SENTINEL", "THE SKY IS OUT OF ORDER. I WILL RESET EVERYTHING. INCLUDING YOU.", "sovereign"),
+                new BeatPanel("NOVA", "Faster than the Sovereign. Same weak spot. Wait for the slam.", "hero"),
+            }},
+            new StoryBeat { id = "beat_orrery_down", levelId = "sq_orrery_sentinel", timing = BeatTiming.AfterClear, panels = new[]
+            {
+                new BeatPanel("", "The orrery clicks back the right way. One by one, the stars climb home.", "dawn"),
+                new BeatPanel("NOVA", "Sky's fixed. Isles are fixed. Breakfast?", "hero"),
                 new BeatPanel("", "THE END ... of this chapter. Thanks for playing Pixel Kingdom Rumble.", "dawn"),
             }},
         };

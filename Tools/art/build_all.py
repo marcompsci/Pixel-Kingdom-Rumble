@@ -23,6 +23,7 @@ PIX = os.path.join(ART, 'Pixel')
 
 import props, tiles, bg, fx
 import events  # registers the holiday / haunted tile and backdrop themes
+import world4  # registers the astral (Starfall Observatory) theme
 from chars import draw_fighter, anim_poses, crop_center
 from roster import ROSTER, ORDER
 
@@ -288,6 +289,12 @@ def build_cast():
                 img = fn((kind, i, n)).image()
                 for clip in ENEMY_CLIP_FILES[kind]:
                     save(img, os.path.join(PIX, 'Enemies', name, f'{name}_{clip}_{i}.png'), align='bottom')
+    for name, (fn, clips) in world4.WORLD4_ENEMIES.items():
+        for kind, n in clips.items():
+            for i in range(n):
+                img = fn((kind, i, n)).image()
+                for clip in ENEMY_CLIP_FILES[kind]:
+                    save(img, os.path.join(PIX, 'Enemies', name, f'{name}_{clip}_{i}.png'), align='bottom')
     for nid in cast.NPCS:
         for i, c in enumerate(cast.npc_frames(nid)):
             save(c.image(), os.path.join(PIX, 'NPCs', nid, f'{nid}_idle_{i}.png'), align='bottom')
@@ -309,6 +316,13 @@ def build_backgrounds():
             save(c.image(), os.path.join(PIX, 'Backgrounds', f'{theme}_{k}.png'), align='bottom', wrap=0)
 
 
+def build_maps():
+    import maps
+    res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'Maps')
+    for name, fn in maps.ALL.items():
+        save(fn().image(), os.path.join(res, name + '.png'), ppu=32, wrap=1)
+
+
 def build_fx():
     res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR')
     save(fx.glow(), os.path.join(res, 'fx_glow.png'), ppu=32, filt=1)
@@ -318,7 +332,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

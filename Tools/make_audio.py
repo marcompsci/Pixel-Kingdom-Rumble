@@ -435,10 +435,23 @@ def music_events():
                                 section(150, 4, sv, sv_bass, sv_ch, beat(B_FILL), P("G4 - - - - - - - F4 - - - D#4 - - - "), 0.125)), 0.45)
 
 
+def music_world4():
+    def beat(b): return [None if x == '.' else x for x in b]
+    # Starfall Observatory: twinkly A major arpeggios over a floating half-time beat, a music-box lead
+    st = P("E5 - A5 - C#6 - B5 - A5 - E5 - F#5 - - - E5 - C#5 - D5 - E5 - - - - - - - . . "
+           "E5 - A5 - C#6 - E6 - D6 - C#6 - B5 - - - A5 - G#5 - A5 - B5 - - - - - - - . . . . ")
+    st_bass = P("A2 . . . E3 . . . F#2 . . . C#3 . . . D2 . . . A2 . . . E2 . . . E3 . . .")
+    st_ch = [("A4", "C#5", "E5", "A5"), ("F#4", "A4", "C#5", "F#5"), ("D4", "F#4", "A4", "D5"), ("E4", "G#4", "B4", "E5")]
+    save("music_astral", song(section(112, 8, st, st_bass, st_ch, beat(B_HALF), None, 0.5, 'tri', echo=0.5, arp_vol=0.08),
+                              section(112, 8, st, st_bass, st_ch, beat(B_POP), P("C#4 - - - - - - - B3 - - - A3 - - - "), 0.25,
+                                      echo=0.4, arp_vol=0.07)), 0.45)
+
+
 if __name__ == "__main__":
     import sys
     only = sys.argv[1:] or ['sfx', 'music']
     if 'sfx' in only: sfx()
     if 'music' in only: music()
     if 'events' in only: sfx_events(); music_events()
+    if 'world4' in only: music_world4()
     print("audio written to", os.path.abspath(OUT))

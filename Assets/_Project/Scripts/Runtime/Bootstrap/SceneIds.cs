@@ -31,6 +31,13 @@ namespace PKR
         public const string ShatteredCrossing = "SQ_ShatteredCrossing";
         public const string FourfoldSovereign = "SQ_FourfoldSovereign";
         // Shadow Contracts (mission mode): the board and the contract scenes (MS_ prefix).
+        // Story world 4: the Starfall Observatory
+        public const string StarfallSteps = "SQ_StarfallSteps";
+        public const string OrreryGardens = "SQ_OrreryGardens";
+        public const string CelestialMaze = "SQ_CelestialMaze";
+        public const string CometRun = "SQ_CometRun";
+        public const string OrrerySentinel = "SQ_OrrerySentinel";
+
         // Mazes (one per Story world)
         public const string GearworkMaze = "SQ_GearworkMaze";
         public const string FrozenVault = "SQ_FrozenVault";

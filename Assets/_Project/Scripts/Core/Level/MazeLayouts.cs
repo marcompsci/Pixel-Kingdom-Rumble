@@ -76,11 +76,35 @@ namespace PKR.Core
             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         };
 
+        /// <summary>World 4 maze: ride the updraft shaft to the first key, sun/moon bridges over spikes, a laser-and-crusher hall.</summary>
+        public static readonly string[] CelestialMaze =
+        {
+            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "X........X.............X............................................X......................X",
+            "X........X.............X............................................X......................X",
+            "X........X........*.k..X............................................X......................X",
+            "X........X%%%%%.======.X......................................i..k..X......................X",
+            "X........X%%%%%X.......X..................................========..X......................X",
+            "X........X%%%%%X.......X....................................%%%%....X......................X",
+            "X........X%%%%%X.......X....................................%%%%....X......................X",
+            "X........X%%%%%X.......X...*.*.*.*.*.*......................%%%%....X......................X",
+            "X........X%%%%%X.......X....................................%%%%....X......................X",
+            "X........X%%%%%X.......X............1111......X......X......%%%%....X......................X",
+            "X........X%%%%%X.......X.........!............l..v...l......%%%%....X......................X",
+            "X........X%%%%%X.......n.......2222...........l......l......%%%%....n.=====................X",
+            "X.........%%%%%X.......n......................l......l......%%%%....n......................X",
+            "X.........%%%%%X.......n..1111................l......l......%%%%....n......................X",
+            "X..P..*.*.%%%%%X...!...n...................C..l*.....*..t...%%%%....n..o.....C..*.*.+...G..X",
+            "X#########^^^^^###########^^^^^^^^^^^^^^^^#################^^^^^^##########################X",
+            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        };
+
         public static IEnumerable<KeyValuePair<string, string[]>> All()
         {
             yield return new KeyValuePair<string, string[]>("GearworkMaze", GearworkMaze);
             yield return new KeyValuePair<string, string[]>("FrozenVault", FrozenVault);
             yield return new KeyValuePair<string, string[]>("ShatteredLabyrinth", ShatteredLabyrinth);
+            yield return new KeyValuePair<string, string[]>("CelestialMaze", CelestialMaze);
         }
     }
 }

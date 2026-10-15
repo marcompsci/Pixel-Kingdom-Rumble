@@ -86,7 +86,8 @@ namespace PKR
             Clear();
             Match = new VersusMatch();
             PerfectRoundWon = false;
-            _auto = autoStart ? GameSession.VersusAutoLevel : false;
+            // Bot-vs-bot (the balance lab) must give both CPUs the same fixed tuning, never the adaptive blend.
+            _auto = autoStart && !botVsBot ? GameSession.VersusAutoLevel : false;
             _level = level;
             _trailed = _decider = false;
             var playerDef = Pick(playerId, null);

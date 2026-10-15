@@ -1,5 +1,5 @@
 // Pixel Kingdom Rumble - iOS share sheet bridge.
-// Called from ShareService.cs via [DllImport("__Internal")]: shares text and/or a PNG file with the system sheet
+// Called from ShareService.cs via [DllImport("__Internal")]: shares text and/or a PNG (or animated GIF highlight clip) file with the system sheet
 // (Messages, social apps, Save Image, Copy...). The app's Info.plist declares NSPhotoLibraryAddUsageDescription
 // (IOSPostBuild) because "Save Image" writes to the photo library.
 #import <UIKit/UIKit.h>
@@ -11,8 +11,17 @@ extern "C" void PKR_Share(const char* text, const char* imagePath)
     NSMutableArray* items = [NSMutableArray array];
     if (imagePath != NULL && strlen(imagePath) > 0)
     {
-        UIImage* image = [UIImage imageWithContentsOfFile:[NSString stringWithUTF8String:imagePath]];
-        if (image != nil) [items addObject:image];
+        NSString* path = [NSString stringWithUTF8String:imagePath];
+        if ([[path.pathExtension lowercaseString] isEqualToString:@"gif"])
+        {
+            // Animated highlight clip: share the file itself so it stays animated (a UIImage would keep one frame).
+            if ([[NSFileManager defaultManager] fileExistsAtPath:path]) [items addObject:[NSURL fileURLWithPath:path]];
+        }
+        else
+        {
+            UIImage* image = [UIImage imageWithContentsOfFile:path];
+            if (image != nil) [items addObject:image];
+        }
     }
     if (text != NULL && strlen(text) > 0) [items addObject:[NSString stringWithUTF8String:text]];
     if (items.count == 0) return;

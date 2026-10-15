@@ -43,7 +43,9 @@ namespace PKR
                 scene == SceneIds.RooftopRun || scene == SceneIds.NightMarketHeist) return Sfx.MusicStealth;
             if (scene.StartsWith("VS_") || scene.StartsWith("AC_") || scene == SceneIds.VersusSelect) return Sfx.MusicVersus;
             if (scene == SceneIds.MainMenu || scene == SceneIds.CharacterSelect || scene == SceneIds.LevelSelect) return Sfx.MusicTitle;
-            if (scene == SceneIds.BossTest || scene == SceneIds.FourfoldSovereign) return Sfx.MusicBoss;
+            if (scene == SceneIds.BossTest || scene == SceneIds.FourfoldSovereign || scene == SceneIds.OrrerySentinel) return Sfx.MusicBoss;
+            if (scene == SceneIds.StarfallSteps || scene == SceneIds.OrreryGardens || scene == SceneIds.CelestialMaze ||
+                scene == SceneIds.CometRun) return Sfx.MusicAstral;
             if (scene == SceneIds.FrostgearAscent || scene == SceneIds.ClockworkGlacier) return Sfx.MusicFrost;
             if (scene == SceneIds.EmberWastes || scene == SceneIds.SkyGardens || scene == SceneIds.SunkenClockworks ||
                 scene == SceneIds.ToyFortress || scene == SceneIds.ShatteredCrossing) return Sfx.MusicRealms;

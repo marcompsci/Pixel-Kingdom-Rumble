@@ -82,7 +82,7 @@ namespace PKR.EditorTools
             var levels = NewUiScene();
             var levelsUi = new GameObject("LevelSelect").AddComponent<LevelSelectUI>();
             EditorUtil.SetField(levelsUi, "world", DataAssets.GetOrCreateStoryWorld());
-            levelsUi.SetMoreWorlds(DataAssets.GetOrCreateShatteredRealms());
+            levelsUi.SetMoreWorlds(DataAssets.GetOrCreateShatteredRealms(), DataAssets.GetOrCreateStarfallObservatory());
             EditorUtility.SetDirty(levelsUi);
             EditorSceneManager.SaveScene(levels, levelsPath);
             EditorUtil.AddSceneToBuild(levelsPath);

@@ -77,7 +77,7 @@ BIOME_THEME = {
     'Shattered Crossing': 'shattered', 'Sky Foundry': 'foundry', 'Tickworks Engine Hall': 'foundry',
     'Sunken Clockworks': 'sunken', 'Toy Fortress': 'toy', 'Under the Isles': 'cave',
     'Winter Village': 'winter', 'Sweetheart Gardens': 'valentine', 'Harvest Hollow': 'harvest', 'Midnight City': 'newyear',
-    'Haunted Hollow': 'haunted', 'Moonlit Manor': 'haunted',
+    'Haunted Hollow': 'haunted', 'Moonlit Manor': 'haunted', 'Starfall Observatory': 'astral',
 }
 
 

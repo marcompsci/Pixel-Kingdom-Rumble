@@ -595,7 +595,7 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateSovereignLevel() => GetOrCreateMapLevel(
             "SQ_FourfoldSovereign", "sq_fourfold_sovereign", "The Fourfold Sovereign", "Sovereign's Core", SceneIds.FourfoldSovereign,
-            "", "Boss", 150f, new Color32(26, 16, 36, 255),
+            SceneIds.StarfallSteps, "Boss", 150f, new Color32(26, 16, 36, 255),
             "The Tickworks' core mind, split four ways. It fights like the Warden it once commanded, only faster, and it " +
             "changes realms as it weakens. Strike its core while it's stuck after a slam.");
 
@@ -691,6 +691,7 @@ namespace PKR.EditorTools
             if (codex.roster == null) codex.roster = GetOrCreateRoster();
             if (codex.world == null) codex.world = GetOrCreateStoryWorld();
             if (!codex.moreWorlds.Contains(GetOrCreateShatteredRealms())) codex.moreWorlds.Add(GetOrCreateShatteredRealms());
+            if (!codex.moreWorlds.Contains(GetOrCreateStarfallObservatory())) codex.moreWorlds.Add(GetOrCreateStarfallObservatory());
             foreach (var e in new[] { GetOrCreateCogBeetle(), GetOrCreateSpringTick(), GetOrCreateGyroMoth(), GetOrCreateBoltKnight(), GetOrCreateGearwatchSentry(), GetOrCreateGearwatchCaptain(),
                                       GetOrCreateCinderCrawler(), GetOrCreatePuffGlider(), GetOrCreateRustCrab(), GetOrCreateWindupSoldier() })
                 if (!codex.enemies.Contains(e)) codex.enemies.Add(e);

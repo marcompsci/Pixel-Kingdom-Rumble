@@ -168,6 +168,9 @@ namespace PKR
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(row, "REMATCH", Rematch);
             UIFactory.Button(row, "NEW FIGHTERS", () => Load(SceneIds.VersusSelect));
+            string shareText = $"{(e.winner == 0 ? "Won" : e.winner == 1 ? "Lost" : "Drew")} {e.playerRounds}-{e.opponentRounds} as " +
+                               $"{e.playerName} vs {e.opponentName} in Pixel Kingdom Rumble! " + PKR.Core.ShareCard.Link;
+            UIFactory.Button(row, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(shareText));
             UIFactory.Button(row, "MAIN MENU", () => Load(SceneIds.MainMenu));
             UIFactory.Select(again);
         }

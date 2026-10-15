@@ -77,7 +77,7 @@ namespace PKR
                 if (setup != null) setup.Show();
             });
             if (e.mode != MatchMode.Training && e.humans < 2)
-                UIFactory.Button(buttons, "SHARE", () => ShareService.Share(ShareCard.Format(CardFor(e))));
+                UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(ShareCard.Format(CardFor(e))));
             UIFactory.Button(buttons, "MAIN MENU", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); },
                              interactable: Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu));
             UIFactory.Select(rematch);

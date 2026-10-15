@@ -155,7 +155,7 @@ namespace PKR.EditorTools
             { "Toy Fortress", "toy" }, { "Under the Isles", "cave" },
             // Holiday Mode and Halloween Mode
             { "Winter Village", "winter" }, { "Sweetheart Gardens", "valentine" }, { "Harvest Hollow", "harvest" },
-            { "Midnight City", "newyear" }, { "Haunted Hollow", "haunted" }, { "Moonlit Manor", "haunted" },
+            { "Midnight City", "newyear" }, { "Starfall Observatory", "astral" }, { "Haunted Hollow", "haunted" }, { "Moonlit Manor", "haunted" },
         };
 
         /// <summary>Art theme for a level's biome ("meadow" when unknown).</summary>

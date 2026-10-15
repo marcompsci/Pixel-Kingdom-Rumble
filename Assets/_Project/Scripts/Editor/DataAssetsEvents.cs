@@ -27,6 +27,69 @@ namespace PKR.EditorTools
             "The last maze before the Sovereign: lava bridges that exist in one colour at a time, a key you can only reach " +
             "by riding a crusher, and a gauntlet of saws and lasers at the end.");
 
+        // ---- Story world 4: the Starfall Observatory ------------------------------------------------------------
+
+        public static LevelDefinition GetOrCreateStarfallSteps() => GetOrCreateMapLevel(
+            "SQ_StarfallSteps", "sq_starfall_steps", "Starfall Steps", "Starfall Observatory", SceneIds.StarfallSteps,
+            SceneIds.OrreryGardens, "Platform", 190f, new Color32(26, 22, 64, 255),
+            "The stairway to the observatory, built over nothing at all. Star updrafts carry you over the spike pits, " +
+            "if you trust them. Comet wisps don't like visitors.");
+
+        public static LevelDefinition GetOrCreateOrreryGardens() => GetOrCreateMapLevel(
+            "SQ_OrreryGardens", "sq_orrery_gardens", "Orrery Gardens", "Starfall Observatory", SceneIds.OrreryGardens,
+            SceneIds.CelestialMaze, "Platform", 210f, new Color32(30, 24, 70, 255),
+            "Brass rings and drifting plates circle the observatory like moons. Lens golems keep the paths; the laser " +
+            "telescopes still fire on the hour.");
+
+        public static LevelDefinition GetOrCreateCelestialMaze() => GetOrCreateMapLevel(
+            "SQ_CelestialMaze", "sq_celestial_maze", "The Celestial Maze", "Starfall Observatory", SceneIds.CelestialMaze,
+            SceneIds.CometRun, "Maze", 170f, new Color32(24, 20, 60, 255),
+            "The orrery's service maze: ride an updraft shaft to the first key, cross the sun and moon bridges, then the " +
+            "laser hall under the old press.");
+
+        public static LevelDefinition GetOrCreateCometRun() => GetOrCreateMapLevel(
+            "SQ_CometRun", "sq_comet_run", "Comet Run", "Starfall Observatory", SceneIds.CometRun,
+            SceneIds.OrrerySentinel, "Platform", 230f, new Color32(20, 16, 52, 255),
+            "The last climb to the great orrery, with comets falling all around. Everything you've learned, all at once.");
+
+        public static LevelDefinition GetOrCreateOrreryLevel() => GetOrCreateMapLevel(
+            "SQ_OrrerySentinel", "sq_orrery_sentinel", "The Orrery Sentinel", "Starfall Observatory", SceneIds.OrrerySentinel,
+            "", "Boss", 160f, new Color32(16, 12, 44, 255),
+            "The keeper of the great orrery, the fastest machine in the isles. It fights like the Warden and the Sovereign, " +
+            "only more so. Wait for the slam, then hit the core.");
+
+        public static WorldDefinition GetOrCreateStarfallObservatory()
+        {
+            EditorUtil.EnsureFolder(LevelsFolder);
+            var route = new[]
+            {
+                GetOrCreateStarfallSteps(), GetOrCreateOrreryGardens(), GetOrCreateCelestialMaze(), GetOrCreateCometRun(),
+                GetOrCreateOrreryLevel()
+            };
+            var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_StarfallObservatory.asset", w =>
+            {
+                w.displayName = "Starfall Observatory";
+                w.description = "Above the clouds the stars are falling. Climb the observatory and set the great orrery right.";
+            });
+            world.levels.Clear();
+            world.levels.AddRange(route);
+            EditorUtility.SetDirty(world);
+            return world;
+        }
+
+        public static EnemyDefinition GetOrCreateCometWisp() => EventFoe("CometWisp", "enemy_comet_wisp", "Comet Wisp",
+            "A tiny comet with a temper. Hovers in the dark and dives at anything that glows, which includes you.",
+            EnemyBehavior.Flyer, new Vector2(0.7f, 0.6f), 1, 0f, 2,
+            d => { d.aggroRange = 7f; d.swoopSpeed = 10f; d.swoopTime = 0.8f; d.swoopWindup = 0.45f; d.flyerReturnSpeed = 4.5f; d.swoopCooldown = 1.3f; d.weight = 0.6f; });
+
+        public static EnemyDefinition GetOrCreateLensGolem() => EventFoe("LensGolem", "enemy_lens_golem", "Lens Golem",
+            "An old observatory telescope that grew legs. Slow and sturdy; three good hits crack the lens.",
+            EnemyBehavior.Walker, new Vector2(0.8f, 0.85f), 4, 0.26f, 3, d => { d.weight = 1.6f; d.contactHit = Bite(1, 8f); });
+
+        public static EnemyDefinition GetOrCreateStarHopper() => EventFoe("StarHopper", "enemy_star_hopper", "Star Hopper",
+            "A fallen star that refuses to stay down. Bounces at you from surprising distances.",
+            EnemyBehavior.Hopper, new Vector2(0.7f, 0.7f), 2, 0f, 3, d => { d.hopCooldown = 1.1f; d.hopRange = 8f; d.hopDrift = 0.7f; });
+
         // ---- Holiday Mode -----------------------------------------------------------------------------------------
 
         static LevelDefinition EventLevel(string file, string id, string name, string biome, string scene, float par, Color32 sky,

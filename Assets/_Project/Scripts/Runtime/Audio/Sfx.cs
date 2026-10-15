@@ -17,7 +17,8 @@ namespace PKR
             Burst = "burst";
         public const string MusicStory = "music_story", MusicStealth = "music_stealth", MusicVersus = "music_versus",
             MusicTitle = "music_title", MusicFrost = "music_frost", MusicRealms = "music_realms", MusicBoss = "music_boss",
-            MusicHoliday = "music_holiday", MusicHaunted = "music_haunted", MusicSurvival = "music_survival";
+            MusicHoliday = "music_holiday", MusicHaunted = "music_haunted", MusicSurvival = "music_survival",
+            MusicAstral = "music_astral";
         public const int BarkCount = 4;
 
         /// <summary>Each hero's battle shout: one of the four bark clips and a pitch, fixed per hero id.</summary>
