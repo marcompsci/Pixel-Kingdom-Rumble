@@ -90,5 +90,16 @@ namespace PKR.Tests
             Assert.Greater(VersusRules.Reward(true, true), VersusRules.Reward(true, false));
             Assert.Greater(VersusRules.Reward(true, false), VersusRules.Reward(false, false));
         }
+
+        [Test]
+        public void Balance_NudgesOutliers_AndLeavesOthersAlone()
+        {
+            Assert.Less(VersusRules.HealthFor("grizz", 1f), VersusRules.HealthFor(1f));
+            Assert.Greater(VersusRules.HealthFor("nova", 1f), VersusRules.HealthFor(1f));
+            Assert.AreEqual(VersusRules.HealthFor(1f), VersusRules.HealthFor("kai_tempest", 1f));
+            Assert.AreEqual(VersusRules.HealthFor(1f), VersusRules.HealthFor(null, 1f));
+            foreach (var kv in VersusBalance.HealthAdjust)
+                Assert.LessOrEqual(System.Math.Abs(kv.Value), 4, "balance nudges stay small");
+        }
     }
 }

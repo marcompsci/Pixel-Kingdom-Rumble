@@ -117,6 +117,10 @@ namespace PKR.Core
             return Math.Max(16, Math.Min(34, BaseHealth + bonus));
         }
 
+        /// <summary>Weight-based health plus the hero's balance adjustment (VersusBalance).</summary>
+        public static int HealthFor(string heroId, float weight) =>
+            Math.Max(12, HealthFor(weight) + VersusBalance.Adjust(heroId));
+
         /// <summary>Star Shards for finishing a Versus match.</summary>
         public static int Reward(bool won, bool perfectRound) => won ? (perfectRound ? 45 : 35) : 10;
     }

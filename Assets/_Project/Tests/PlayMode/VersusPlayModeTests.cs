@@ -54,7 +54,7 @@ namespace PKR.Tests
             yield return WaitUntil(() => vs.IsLive, 6f);
             Assert.IsTrue(vs.IsLive, "round 1 starts after the intro");
             Assert.AreNotEqual(vs.Player.go, vs.Opponent.go);
-            Assert.AreEqual(VersusRules.HealthFor(vs.Opponent.def.weight), vs.Opponent.health.MaxHealth);
+            Assert.AreEqual(VersusRules.HealthFor(vs.Opponent.def.id, vs.Opponent.def.weight), vs.Opponent.health.MaxHealth);
 
             vs.Opponent.health.TakeDirectDamage(vs.Opponent.health.MaxHealth);
             yield return WaitUntil(() => vs.Match.Phase != VersusPhase.Fighting, 2f);

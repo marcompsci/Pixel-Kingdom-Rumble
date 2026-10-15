@@ -295,7 +295,7 @@ namespace PKR
         {
             var sb = new StringBuilder();
             string weight = h.weight >= 1.3f ? "HEAVY" : h.weight <= 0.9f ? "LIGHT" : "MEDIUM";
-            int health = versus ? PKR.Core.VersusRules.HealthFor(h.weight) : h.maxHealth;
+            int health = versus ? PKR.Core.VersusRules.HealthFor(h.id, h.weight) : h.maxHealth;
             sb.Append(versus ? $"HEALTH {health}   ·   {weight}   ·   SPEED {h.movement.runSpeed:0.0}\n"
                              : $"HEALTH {health}   ·   {weight}   ·   GUARD {h.guardPips}\n");
             var m = h.moveset;

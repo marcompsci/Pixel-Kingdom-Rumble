@@ -119,7 +119,7 @@ namespace PKR
             var go = FighterFactory.CreateHero(def, spriteMaterial, at, slot, DamageModel.StoryHealth, tint,
                                               human ? "P1 " + name : "CPU " + name);
             var dmg = go.GetComponent<Damageable>();
-            dmg.Configure(DamageModel.StoryHealth, slot, VersusRules.HealthFor(def.weight), def.weight, def.armorPercent, 0f);
+            dmg.Configure(DamageModel.StoryHealth, slot, VersusRules.HealthFor(def.id, def.weight), def.weight, def.armorPercent, 0f);
             dmg.Died += () => OnFighterDied(slot);
             var motor = go.GetComponent<PlatformerMotor2D>();
             motor.SetFacing(at.x <= 0f ? 1 : -1);
