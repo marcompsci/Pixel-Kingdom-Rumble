@@ -56,6 +56,13 @@ namespace PKR
                 if (GameSession.Mode == SessionMode.Halloween) ShowHalloween();
                 else if (GameSession.Mode == SessionMode.Holiday) ShowHoliday();
             }
+            // Screenshot runs: open one panel straight away.
+            if (BootLoader.TakeShotPanel("shop") != null) ShowShop();
+            else if (BootLoader.TakeShotPanel("daily") != null) ShowDaily();
+            else if (BootLoader.TakeShotPanel("settings") != null) ShowSettings();
+            else if (BootLoader.TakeShotPanel("codex") != null && codex != null) ShowCodex();
+            else if (BootLoader.TakeShotPanel("holiday") != null) ShowHoliday();
+            else if (BootLoader.TakeShotPanel("halloween") != null) ShowHalloween();
         }
 
         bool _lastHighContrast;

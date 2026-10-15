@@ -21,6 +21,12 @@ namespace PKR
         const float GroundStickSpeed = -0.5f;
         const float WallProbeDistance = 0.08f;
         const float WallJumpControlLock = 0.12f;
+        // Feel pass (Oct 2026): touch controls add a little latency, so every hero gets at least this much grace.
+        public const float MinCoyoteTime = 0.12f, MinJumpBuffer = 0.15f;
+        /// <summary>Head clips a ceiling corner by up to this much while rising: slide around it instead of bonking.</summary>
+        public const float CornerNudge = 0.3f;
+        /// <summary>Falling this close to the floor, a jump press waits for the ground jump instead of spending the double jump.</summary>
+        const float LandingLookAhead = 0.1f;
 
         [SerializeField] CharacterDefinition definition;
         [Tooltip("Layers that count as standing surfaces.")]
@@ -166,8 +172,8 @@ namespace PKR
             _gravity = JumpPhysics.Gravity(s.jumpHeight, s.timeToApex);
             _jumpVelocity = JumpPhysics.JumpVelocity(s.jumpHeight, s.timeToApex);
             if (_jump == null) _jump = new JumpAssist(s.coyoteTime, s.jumpBufferTime);
-            _jump.CoyoteTime = s.coyoteTime;
-            _jump.BufferTime = s.jumpBufferTime;
+            _jump.CoyoteTime = Mathf.Max(s.coyoteTime, MinCoyoteTime);
+            _jump.BufferTime = Mathf.Max(s.jumpBufferTime, MinJumpBuffer);
             _groundFilter = new ContactFilter2D { useLayerMask = true, layerMask = groundMask, useTriggers = false };
         }
 
@@ -311,7 +317,8 @@ namespace PKR
             {
                 StartJump(ref v);
             }
-            else if (!wallJumped && !riding && canAct && !IsGrounded && _airJumpsLeft > 0 && _jump.HasBufferedJump && !_jump.CanUseGroundJump)
+            else if (!wallJumped && !riding && canAct && !IsGrounded && _airJumpsLeft > 0 && _jump.HasBufferedJump && !_jump.CanUseGroundJump
+                     && !LandingSoon(v.y))
             {
                 _jump.TryConsumeBufferedPress();
                 _airJumpsLeft--;
@@ -349,6 +356,7 @@ namespace PKR
                 _jumpArc = false;
             }
 
+            if (v.y > 0f && !IsGrounded && !riding) CornerCorrect(v.y * dt);
             Body.linearVelocity = v;
             _prevVx = v.x;
 
@@ -377,6 +385,66 @@ namespace PKR
                 if (_heroSound < 0) _heroSound = GetComponent<PlayerMarker>() != null || GetComponent<FighterVisual>() != null ? 1 : 0;
                 return _heroSound == 1;
             }
+        }
+
+        /// <summary>Falling and about to touch a floor (within LandingLookAhead seconds at this speed).</summary>
+        bool LandingSoon(float vy)
+        {
+            if (vy >= 0f || bodyCollider == null) return false;
+            float dist = Mathf.Min(1.5f, -vy * LandingLookAhead) + GroundProbeDistance;
+            int n = bodyCollider.Cast(Vector2.down, _groundFilter, _hits, dist);
+            for (int i = 0; i < n; i++)
+            {
+                var c = _hits[i].collider;
+                if (c == null || (_hits[i].distance <= 0f && c.usedByEffector)) continue;
+                if (_hits[i].normal.y >= GroundNormalMinY) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Corner correction: rising into the edge of a ceiling, shift sideways (up to CornerNudge) when that clears the
+        /// head, so a jump that barely clips a corner keeps going instead of stopping dead. One-way planks never block.
+        /// </summary>
+        void CornerCorrect(float rise)
+        {
+            if (bodyCollider == null) return;
+            var b = bodyCollider.bounds;
+            Vector2 size = new Vector2(b.size.x * 0.96f, b.size.y * 0.96f);
+            float dist = rise + 0.02f;
+            if (!CeilingAt(b.center, size, dist)) return;
+            for (float d = 0.05f; d <= CornerNudge + 0.001f; d += 0.05f)
+            {
+                for (int k = 0; k < 2; k++)
+                {
+                    int sgn = k == 0 ? 1 : -1;
+                    Vector2 c = (Vector2)b.center + new Vector2(sgn * d, 0f);
+                    if (CeilingAt(c, size, dist) || Blocked(c, size)) continue;
+                    Body.position += new Vector2(sgn * d, 0f);
+                    return;
+                }
+            }
+        }
+
+        bool CeilingAt(Vector2 center, Vector2 size, float dist)
+        {
+            int n = Physics2D.BoxCast(center, size, 0f, Vector2.up, _groundFilter, _hits, dist);
+            for (int i = 0; i < n; i++)
+            {
+                var c = _hits[i].collider;
+                if (c == null || c.usedByEffector || c.isTrigger || c == bodyCollider) continue;
+                if (_hits[i].normal.y <= -0.7f) return true;
+            }
+            return false;
+        }
+
+        readonly Collider2D[] _overlap = new Collider2D[8];
+        bool Blocked(Vector2 center, Vector2 size)
+        {
+            int n = Physics2D.OverlapBox(center, size, 0f, _groundFilter, _overlap);
+            for (int i = 0; i < n; i++)
+                if (_overlap[i] != null && !_overlap[i].usedByEffector && !_overlap[i].isTrigger && _overlap[i] != bodyCollider) return true;
+            return false;
         }
 
         /// <summary>A solid wall within WallProbeDistance on side dir (+1 right, -1 left). One-way planks don't count.</summary>

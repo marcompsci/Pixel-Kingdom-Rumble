@@ -39,18 +39,38 @@ namespace PKR
         /// MS_FirstLight) to open straight into one scene. Only scenes in the build are accepted.
         /// </summary>
         /// <summary>Same as -pkrScene, from the PKR_SCENE environment variable (simctl launch passes SIMCTL_CHILD_PKR_SCENE).</summary>
-        public static string StartSceneFromEnv()
+        public static string StartSceneFromEnv() => Accept(System.Environment.GetEnvironmentVariable("PKR_SCENE"));
+
+        /// <summary>
+        /// Screenshot runs can also open a panel: "SCENE@panel" (e.g. 01_MainMenu@shop, SQ_SunspireHeights@pause).
+        /// The menu (or pause menu) reads it once with TakeShotPanel.
+        /// </summary>
+        public static string ShotPanel { get; private set; }
+
+        public static string TakeShotPanel(string panel)
         {
-            string s = System.Environment.GetEnvironmentVariable("PKR_SCENE");
-            return !string.IsNullOrEmpty(s) && Application.CanStreamedLevelBeLoaded(s) ? s : null;
+            if (string.IsNullOrEmpty(ShotPanel) || ShotPanel != panel) return null;
+            ShotPanel = null;
+            return panel;
+        }
+
+        static string Accept(string spec)
+        {
+            if (string.IsNullOrEmpty(spec)) return null;
+            string scene = spec, panel = null;
+            int at = spec.IndexOf('@');
+            if (at > 0) { scene = spec.Substring(0, at); panel = spec.Substring(at + 1).ToLowerInvariant(); }
+            if (!Application.CanStreamedLevelBeLoaded(scene)) return null;
+            ShotPanel = panel;
+            return scene;
         }
 
         public static string StartSceneFromArgs(string[] args)
         {
             if (args == null) return null;
             for (int i = 0; i + 1 < args.Length; i++)
-                if (args[i] == "-pkrScene" && !string.IsNullOrEmpty(args[i + 1]) && Application.CanStreamedLevelBeLoaded(args[i + 1]))
-                    return args[i + 1];
+                if (args[i] == "-pkrScene" && Accept(args[i + 1]) is string scene)
+                    return scene;
             return null;
         }
     }

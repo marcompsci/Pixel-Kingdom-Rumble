@@ -117,5 +117,59 @@ namespace PKR.Tests
             for (int i = 0; i < 20; i++) yield return new WaitForFixedUpdate();
             Assert.IsFalse(_motor.IsControlLocked);
         }
+
+        // ---- Feel pass (Oct 2026) ------------------------------------------------------------
+
+        [UnityTest]
+        public IEnumerator Jump_ClippingACeilingCorner_SlidesAroundIt()
+        {
+            yield return WaitUntilGrounded();
+            // A ceiling whose left edge overlaps the hero's right side by 0.15 units.
+            var ceiling = new GameObject("TestCeiling") { layer = GroundLayer };
+            ceiling.transform.position = new Vector3(2.6f, 2.7f, 0f);
+            ceiling.AddComponent<BoxCollider2D>().size = new Vector2(4.8f, 1f); // x 0.2..5, bottom at y 2.2
+            yield return new WaitForFixedUpdate();
+            _motor.Intent.Jump.Press(Time.time);
+            _motor.Intent.Jump.SetHeld(true);
+            float peak = _motor.Body.position.y;
+            for (int i = 0; i < 60; i++)
+            {
+                yield return new WaitForFixedUpdate();
+                peak = Mathf.Max(peak, _motor.Body.position.y);
+            }
+            Object.Destroy(ceiling);
+            // Without the nudge the head (0.7 above centre) stops at 2.2, so the centre peaks near 1.5.
+            Assert.Greater(peak, 2.4f, "the jump should slide past the corner instead of bonking");
+            Assert.Less(_motor.Body.position.x, 0f, "nudged away from the ceiling");
+        }
+
+        [UnityTest]
+        public IEnumerator JumpPressedJustBeforeLanding_IsAGroundJump_KeepsTheDoubleJump()
+        {
+            // Falls from the start height; press jump just above the floor.
+            float t = 0f;
+            while (!(_motor.Body.position.y < 1.0f && _motor.Velocity.y < -1f) && t < 2f)
+            {
+                yield return new WaitForFixedUpdate();
+                t += Time.fixedDeltaTime;
+            }
+            Assert.IsFalse(_motor.IsGrounded);
+            _motor.Intent.Jump.Press(Time.time);
+            _motor.Intent.Jump.SetHeld(true);
+            for (int i = 0; i < 15; i++) yield return new WaitForFixedUpdate();
+            Assert.IsFalse(_motor.IsGrounded, "the press still jumps");
+            Assert.Greater(_motor.Velocity.y, 0f);
+            Assert.AreEqual(1, _motor.AirJumpsLeft, "the double jump is still there");
+        }
+
+        [Test]
+        public void Joystick_ReachesFullStrength_BeforeTheRim()
+        {
+            Assert.AreEqual(Vector2.zero, VirtualJoystick.Response(new Vector2(0.1f, 0f), 0.15f, 0.75f));
+            Assert.AreEqual(1f, VirtualJoystick.Response(new Vector2(0.8f, 0f), 0.15f, 0.75f).x, 1e-4f);
+            float half = VirtualJoystick.Response(new Vector2(0.45f, 0f), 0.15f, 0.75f).x;
+            Assert.Greater(half, 0.4f);
+            Assert.Less(half, 0.6f);
+        }
     }
 }

@@ -323,6 +323,15 @@ def build_maps():
         save(fn().image(), os.path.join(res, name + '.png'), ppu=32, wrap=1)
 
 
+def build_menu():
+    import menubg
+    from px import Canvas
+    res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'Menu')
+    sky, clouds = menubg.build()
+    save(sky, os.path.join(res, 'menu_bg.png'), wrap=0)
+    save(clouds, os.path.join(res, 'menu_clouds.png'), wrap=0)
+
+
 def build_fx():
     res = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR')
     save(fx.glow(), os.path.join(res, 'fx_glow.png'), ppu=32, filt=1)
@@ -332,7 +341,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx', 'maps', 'menu']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

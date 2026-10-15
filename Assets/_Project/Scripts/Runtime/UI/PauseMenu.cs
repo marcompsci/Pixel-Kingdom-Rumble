@@ -44,7 +44,18 @@ namespace PKR
             EventBus<SettingsChanged>.Unsubscribe(OnSettingsChanged);
         }
 
-        void Start() => Refresh();
+        void Start()
+        {
+            Refresh();
+            if (BootLoader.TakeShotPanel("pause") != null) StartCoroutine(PauseForShot());
+        }
+
+        /// <summary>Screenshot runs ("SCENE@pause"): pause once the level is up.</summary>
+        System.Collections.IEnumerator PauseForShot()
+        {
+            yield return new WaitForSecondsRealtime(4f);
+            if (Services.State != null) Services.State.SetState(GameState.Paused);
+        }
 
         void OnState(GameStateChanged e) => Refresh();
 

@@ -27,6 +27,8 @@ namespace PKR
         public bool eightWay;
 
         [Range(0f, 0.5f)] public float deadzone = 0.15f;
+        [Tooltip("Feel pass: the stick reaches full strength at this much tilt, so a thumb doesn't have to reach the rim to run.")]
+        [Range(0.5f, 1f)] public float fullAt = 0.75f;
         public bool floating = true;
         public bool editMode;
 
@@ -142,9 +144,18 @@ namespace PKR
 
             Vector2 raw = clamped / radius;
             float mag = raw.magnitude;
-            Value = mag < deadzone ? Vector2.zero : raw.normalized * ((mag - deadzone) / (1f - deadzone));
+            Value = Response(raw, deadzone, fullAt);
             if (eightWay) Value = SnapEightWay(Value);
             UpdateDirection();
+        }
+
+        /// <summary>Radial deadzone, then a linear ramp that reaches 1 at fullAt tilt.</summary>
+        public static Vector2 Response(Vector2 raw, float deadzone, float fullAt)
+        {
+            float mag = raw.magnitude;
+            if (mag < deadzone) return Vector2.zero;
+            float top = Mathf.Max(deadzone + 0.05f, fullAt);
+            return raw.normalized * Mathf.Clamp01((mag - deadzone) / (top - deadzone));
         }
 
         void MoveHome(Vector2 screenPos)
