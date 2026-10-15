@@ -27,7 +27,7 @@ namespace PKR.Tests
 
         static string Root => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
 
-        [UnityTest, Timeout(7200000)]
+        [UnityTest, Timeout(10800000)]
         public IEnumerator RunLab()
         {
             if (!File.Exists(Path.Combine(Root, "Logs", "balance_request")))
@@ -43,10 +43,30 @@ namespace PKR.Tests
 
             var outDir = Path.Combine(Root, "Logs", "balance");
             Directory.CreateDirectory(outDir);
+            if (Object.FindAnyObjectByType<AudioListener>() == null) new GameObject("LabListener").AddComponent<AudioListener>();
             int decided = 0, slot0 = 0;
             var csv = new StringBuilder("hero,partner,side,winner,heroRounds,partnerRounds,seconds\n");
             var wins = new Dictionary<string, float>();
             var games = new Dictionary<string, int>();
+            // Resume: matches already in results.csv (from a run that was cut short) are kept and not played again.
+            // Move results.csv away first for a fresh run.
+            var done = new HashSet<string>();
+            string resultsPath = Path.Combine(outDir, "results.csv");
+            if (File.Exists(resultsPath))
+            {
+                var lines = File.ReadAllLines(resultsPath);
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    var f = lines[i].Split(',');
+                    if (f.Length < 7) continue;
+                    done.Add(f[0] + "," + f[1] + "," + f[2]);
+                    csv.Append(lines[i]).Append('\n');
+                    float sc = f[3] == "hero" ? 1f : f[3] == "draw" ? 0.5f : 0f;
+                    wins[f[0]] = (wins.TryGetValue(f[0], out var w0) ? w0 : 0f) + sc;
+                    games[f[0]] = (games.TryGetValue(f[0], out var g0) ? g0 : 0) + 1;
+                    if (f[3] != "draw") { decided++; if ((f[2] == "0") == (f[3] == "hero")) slot0++; }
+                }
+            }
             Time.timeScale = 10f;
             try
             {
@@ -57,6 +77,7 @@ namespace PKR.Tests
                         string hero = Heroes[h], partner = Sparring[s / 2];
                         if (hero == partner) continue;
                         int side = s % 2; // both sides against every partner, so any slot advantage cancels out
+                        if (done.Contains(hero + "," + partner + "," + side)) continue;
                         vc.StartMatch(side == 0 ? hero : partner, side == 0 ? partner : hero, BotLevel.Hard);
                         float started = Time.realtimeSinceStartup;
                         while (vc.Match != null && vc.Match.Phase != VersusPhase.MatchOver && Time.realtimeSinceStartup - started < 40f)
@@ -70,7 +91,7 @@ namespace PKR.Tests
                         games[hero] = (games.TryGetValue(hero, out var g) ? g : 0) + 1;
                         csv.Append($"{hero},{partner},{side},{(winner < 0 ? "draw" : winner == heroSlot ? "hero" : "partner")}," +
                                    $"{m.Wins(heroSlot)},{m.Wins(1 - heroSlot)},{Time.realtimeSinceStartup - started:0.0}\n");
-                        File.WriteAllText(Path.Combine(outDir, "results.csv"), csv.ToString());
+                        File.WriteAllText(resultsPath, csv.ToString());
                         yield return null;
                     }
                 }
