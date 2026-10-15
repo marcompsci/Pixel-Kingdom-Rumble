@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: ZombieSpitter
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_zombie_spitter
+  displayName: Spitter
+  codexEntry: Hangs back and lobs glowing goo. Close the gap or keep moving.
+  sprite: {fileID: 21300000, guid: 3292c42117b1ecdc8662ea9835d7db7e, type: 3}
+  bodySize: {x: 0.6, y: 1.2}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 3292c42117b1ecdc8662ea9835d7db7e, type: 3}
+    - {fileID: 21300000, guid: 16b30d1a2d170718b2aad255d8947f2f, type: 3}
+    run:
+    - {fileID: 21300000, guid: 8c489348ebed095eb3def7e233fdd069, type: 3}
+    - {fileID: 21300000, guid: 35bb0d6d61463b6f4551169870ba261a, type: 3}
+    - {fileID: 21300000, guid: d5347c8ad85381fd343d3430afab58d3, type: 3}
+    - {fileID: 21300000, guid: e393e37fb3db963bbb3f6050e62d877c, type: 3}
+    - {fileID: 21300000, guid: a2ce3d513d8fdc575c19153e6aa34d7d, type: 3}
+    - {fileID: 21300000, guid: e3e0c0e84e7fefeb3118ad178488af51, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 32df7932b0ec74f4b96e5cb5f7f984b0, type: 3}
+    weaponName: 
+  maxHealth: 3
+  weight: 1
+  moveSpeed: 0.32
+  behavior: 5
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 6
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 2.6
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 1

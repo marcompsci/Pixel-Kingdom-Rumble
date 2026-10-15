@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: Firecracker
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_firecracker
+  displayName: Fizzer
+  codexEntry: A firecracker that lit itself early and went for a walk. It goes off when it's knocked down, so hit and step back.
+  sprite: {fileID: 21300000, guid: 0080697a0c640ab24fedc47337fc541a, type: 3}
+  bodySize: {x: 0.55, y: 0.95}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 0080697a0c640ab24fedc47337fc541a, type: 3}
+    - {fileID: 21300000, guid: f356716961ee5f76cc853b8e2c236d8a, type: 3}
+    run:
+    - {fileID: 21300000, guid: 89c80fbff504f9ac63b249d3adbad963, type: 3}
+    - {fileID: 21300000, guid: 2cc2967e936c2f1d39685e2be9a73562, type: 3}
+    - {fileID: 21300000, guid: adf657a88ca066151c3d44be68016296, type: 3}
+    - {fileID: 21300000, guid: 89276dac9007052ed1271df1ce841adf, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: c220b34320d1fb62bc234f0cb4f54455, type: 3}
+    weaponName: 
+  maxHealth: 2
+  weight: 1
+  moveSpeed: 0.45
+  behavior: 0
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 1
+  chaseRange: 9
+  shardDrop: 3

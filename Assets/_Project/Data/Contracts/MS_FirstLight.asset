@@ -23,3 +23,6 @@ MonoBehaviour:
   totalShards: 0
   totalSecrets: 0
   skyColor: {r: 0.18039216, g: 0.15686275, b: 0.36078432, a: 1}
+  collectibleName: 
+  timeLimitSeconds: 0
+  isEvent: 0

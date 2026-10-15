@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: ZombieBat
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_zombie_bat
+  displayName: Grave Bat
+  codexEntry: Roosts on the manor roof and dives at anyone in the yard. Aim up!
+  sprite: {fileID: 21300000, guid: 324a450784ceff181862eace69c16c7c, type: 3}
+  bodySize: {x: 0.75, y: 0.5}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 324a450784ceff181862eace69c16c7c, type: 3}
+    - {fileID: 21300000, guid: 195743329d0799718ee1452160490c4b, type: 3}
+    - {fileID: 21300000, guid: b7310c85fa11b0c8deb519751877d71c, type: 3}
+    - {fileID: 21300000, guid: a23e067fa2ae728d8bd6ebfe8169a247, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: 71e8fa638a85391536d7c99401b9f90e, type: 3}
+    - {fileID: 21300000, guid: 0596adb8614389b9b56b9dac86eb5299, type: 3}
+    - {fileID: 21300000, guid: a88402f8377cac49748dd06b4293ab98, type: 3}
+    - {fileID: 21300000, guid: 41dfbe13e84697e43527abdc95b7a651, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 0a81074a5e91b86d35add0e5aabfbd01, type: 3}
+    - {fileID: 21300000, guid: 44ae533282f0b0a7c90033b21a9262c0, type: 3}
+    - {fileID: 21300000, guid: 9d6ebf9f6215d5bcc12c76d71dae7117, type: 3}
+    - {fileID: 21300000, guid: cdd78d31d26092d155b164efbfccfa8d, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: f92e1bcf8f382db546d6c03f0c5983a3, type: 3}
+    weaponName: 
+  maxHealth: 1
+  weight: 0.5
+  moveSpeed: 0
+  behavior: 2
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 15
+  swoopSpeed: 9
+  swoopTime: 1.1
+  swoopWindup: 0.45
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 1

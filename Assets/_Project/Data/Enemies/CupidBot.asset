@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: CupidBot
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_cupid_bot
+  displayName: Cupid-Bot
+  codexEntry: A heart-shaped courier drone from the rose gardens. It still dives at anyone it thinks needs a hug.
+  sprite: {fileID: 21300000, guid: 5b260a9ef689ba63deb3c03e38394a57, type: 3}
+  bodySize: {x: 0.8, y: 0.6}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 5b260a9ef689ba63deb3c03e38394a57, type: 3}
+    - {fileID: 21300000, guid: 5a56dbf81fbcec3a30c526ae44ce0128, type: 3}
+    - {fileID: 21300000, guid: dcf64d656dae1810b3e06fcc43d1d219, type: 3}
+    - {fileID: 21300000, guid: 6d3c9f98f0975dfb99c2db8da7caf5af, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: cda7df48e4be64cec5a7ada075ed1bb1, type: 3}
+    - {fileID: 21300000, guid: 7fecdc6f073f97c76b5bbed97e415056, type: 3}
+    - {fileID: 21300000, guid: bb9e8ff38579affce1117ca1b31ff045, type: 3}
+    - {fileID: 21300000, guid: aa5b3ebecd62dd1756804679011e65dd, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 47bc808a56b5da2a9ce33fe29c25eebd, type: 3}
+    - {fileID: 21300000, guid: a44d72e4f0f4dccc54bbc0f7004a6076, type: 3}
+    - {fileID: 21300000, guid: dc7c116e04e40d9eee2a0a0da6f65bb1, type: 3}
+    - {fileID: 21300000, guid: 248ab789e23afd2c83f050f0d648089e, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 74256c72720bcf8b9b3ae85f3b42c860, type: 3}
+    weaponName: 
+  maxHealth: 1
+  weight: 0.6
+  moveSpeed: 0
+  behavior: 2
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6.5
+  swoopSpeed: 8.5
+  swoopTime: 0.8
+  swoopWindup: 0.5
+  flyerReturnSpeed: 3.8
+  swoopCooldown: 1.6
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 2

@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: ZombieBrute
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_zombie_brute
+  displayName: Brute
+  codexEntry: A wall of muscle in a bandana. Hits for two hearts and shrugs off the small guns.
+  sprite: {fileID: 21300000, guid: d710c40e9a95c0ac3d6a52c5a19236d2, type: 3}
+  bodySize: {x: 0.85, y: 1.35}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: d710c40e9a95c0ac3d6a52c5a19236d2, type: 3}
+    - {fileID: 21300000, guid: 2bc7c4671aedf7a52c1205b901a5366a, type: 3}
+    run:
+    - {fileID: 21300000, guid: 2c289bac249bb54871fe21a5cfe065b8, type: 3}
+    - {fileID: 21300000, guid: bd5469d221b010f255499a860f7121d6, type: 3}
+    - {fileID: 21300000, guid: a0e36bdd37c860e065d582980e0ebc96, type: 3}
+    - {fileID: 21300000, guid: 1d0ccb75ef2db2bad074385646ada47c, type: 3}
+    - {fileID: 21300000, guid: 67075d0b255c6906487d521b895525f3, type: 3}
+    - {fileID: 21300000, guid: b90b7fae85aa46bebe2154c15befb765, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 62e54b5bac7a048e7b14e634ff4097d9, type: 3}
+    weaponName: 
+  maxHealth: 9
+  weight: 2
+  moveSpeed: 0.34
+  behavior: 5
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 2
+    pipDamage: 1
+    baseKnockback: 11
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 1
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 2

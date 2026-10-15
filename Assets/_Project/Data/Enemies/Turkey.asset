@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: Turkey
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_turkey
+  displayName: Runaway Turkey
+  codexEntry: Escaped the harvest pen and refuses to go back. Hops at anyone who gets close.
+  sprite: {fileID: 21300000, guid: ce393d159b5b1770d657a29a845fb5e4, type: 3}
+  bodySize: {x: 0.75, y: 0.75}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: ce393d159b5b1770d657a29a845fb5e4, type: 3}
+    - {fileID: 21300000, guid: 69591a67c3ed9bebb54b453bdbb21c84, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: 018064816098e13942910ff2b83d2d58, type: 3}
+    - {fileID: 21300000, guid: 2538e6e4c6c37d5c289593d9ecee027f, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 4e7ea7422496462f2717a92c5375de42, type: 3}
+    - {fileID: 21300000, guid: 231fee62166483ea85750c36f47a97eb, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: bde08ec2c2f19ec5422e54736d373964, type: 3}
+    weaponName: 
+  maxHealth: 2
+  weight: 1
+  moveSpeed: 0
+  behavior: 1
+  hopCooldown: 1.3
+  hopRange: 7
+  hopDrift: 0.6
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 3

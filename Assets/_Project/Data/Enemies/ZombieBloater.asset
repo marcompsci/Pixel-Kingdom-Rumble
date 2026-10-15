@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: ZombieBloater
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_zombie_bloater
+  displayName: Bloater
+  codexEntry: Swollen with swamp gas. It bursts when it goes down, so finish it from range.
+  sprite: {fileID: 21300000, guid: 493c3e2c434d1141b845ccabddea46ab, type: 3}
+  bodySize: {x: 0.78, y: 1.2}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 493c3e2c434d1141b845ccabddea46ab, type: 3}
+    - {fileID: 21300000, guid: 8ffd4659711f9060e4102fa542844814, type: 3}
+    run:
+    - {fileID: 21300000, guid: 5a94e2661a17511c8d6409b03f9243dc, type: 3}
+    - {fileID: 21300000, guid: 750731c31bbecd0119746af3391d083f, type: 3}
+    - {fileID: 21300000, guid: e58e9728d0cb0929fa043de6a180cf00, type: 3}
+    - {fileID: 21300000, guid: 38e6ffe5ecbb13e197e7337cdb2949ac, type: 3}
+    - {fileID: 21300000, guid: 35a11c0eb183596d723476e8ad918626, type: 3}
+    - {fileID: 21300000, guid: 381f81460e5b127f1264662d3e0fc442, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: bf7eeb6d1b44f32f7039288c9113187d, type: 3}
+    weaponName: 
+  maxHealth: 4
+  weight: 1.4
+  moveSpeed: 0.26
+  behavior: 5
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 1
+  chaseRange: 9
+  shardDrop: 1

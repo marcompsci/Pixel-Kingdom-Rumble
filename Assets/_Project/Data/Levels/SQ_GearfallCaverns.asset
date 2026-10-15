@@ -17,9 +17,12 @@ MonoBehaviour:
   biomeName: Under the Isles
   modeTag: Platform
   sceneName: SQ_GearfallCaverns
-  nextSceneName: SQ_ClockworkWarden_Test
+  nextSceneName: SQ_GearworkMaze
   codexEntry: Hollow roots of the floating isles where broken gears rain down for centuries. The floor is all spikes; the way through is up, on lifts and drifting plates.
   parTimeSeconds: 170
   totalShards: 25
   totalSecrets: 1
   skyColor: {r: 0.1882353, g: 0.17254902, b: 0.27450982, a: 1}
+  collectibleName: 
+  timeLimitSeconds: 0
+  isEvent: 0

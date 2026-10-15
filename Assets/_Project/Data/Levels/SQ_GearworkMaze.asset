@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d532790a1572f233dbcd20d5b8ea79, type: 3}
+  m_Name: SQ_GearworkMaze
+  m_EditorClassIdentifier: PKR.Runtime::PKR.LevelDefinition
+  id: sq_gearwork_maze
+  displayName: Gearwork Maze
+  biomeName: Tickworks Engine Hall
+  modeTag: Maze
+  sceneName: SQ_GearworkMaze
+  nextSceneName: SQ_ClockworkWarden_Test
+  codexEntry: The engine hall's service maze. Keys open the locked doors, floor switches swap the sun blocks for the moon blocks, and the old presses still slam on schedule. Think fast, then move faster.
+  parTimeSeconds: 140
+  totalShards: 10
+  totalSecrets: 0
+  skyColor: {r: 0.23529412, g: 0.19607843, b: 0.27450982, a: 1}
+  collectibleName: 
+  timeLimitSeconds: 0
+  isEvent: 0

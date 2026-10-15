@@ -17,9 +17,12 @@ MonoBehaviour:
   biomeName: Shattered Crossing
   modeTag: Platform
   sceneName: SQ_ShatteredCrossing
-  nextSceneName: SQ_FourfoldSovereign
+  nextSceneName: SQ_ShatteredLabyrinth
   codexEntry: 'Where the four realms grind against each other: lava gives way to wind, wind to water, water to the toy belts. One long run through every rule at once, to the door of the engine''s heart.'
   parTimeSeconds: 260
   totalShards: 34
   totalSecrets: 1
   skyColor: {r: 0.15686275, g: 0.11764706, b: 0.2509804, a: 1}
+  collectibleName: 
+  timeLimitSeconds: 0
+  isEvent: 0
