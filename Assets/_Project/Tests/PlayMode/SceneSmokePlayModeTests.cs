@@ -129,6 +129,9 @@ namespace PKR.Tests
             Assert.AreEqual(1, game.Run.Round, "round 1 started after the countdown");
             Assert.Greater(Object.FindObjectsByType<EnemyAI>().Length, 0, "zombies are coming");
             Assert.IsFalse(game.GameOver);
+            // Leave a calm level running: the next fixtures build their own objects in whatever scene is open, and a
+            // horde that eventually ends the run would switch the game to the results state under them.
+            yield return Load(SceneIds.StoryTest);
         }
     }
 }
