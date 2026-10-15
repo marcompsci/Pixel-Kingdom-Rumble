@@ -8,7 +8,7 @@ namespace PKR.EditorTools
     /// Creates default data assets if missing. Never overwrites tuning you've changed in the Inspector;
     /// only fills empty art references.
     /// </summary>
-    public static class DataAssets
+    public static partial class DataAssets
     {
         public const string CharactersFolder = "Assets/_Project/Data/Characters";
 
@@ -483,7 +483,7 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateGearfallCaverns() => GetOrCreateMapLevel(
             "SQ_GearfallCaverns", "sq_gearfall_caverns", "Gearfall Caverns", "Under the Isles", SceneIds.GearfallCaverns,
-            SceneIds.BossTest, "Platform", 170f, new Color32(48, 44, 70, 255),
+            SceneIds.GearworkMaze, "Platform", 170f, new Color32(48, 44, 70, 255),
             "Hollow roots of the floating isles where broken gears rain down for centuries. The floor is all spikes; the way " +
             "through is up, on lifts and drifting plates.");
 
@@ -508,7 +508,7 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateClockworkGlacier() => GetOrCreateMapLevel(
             "SQ_ClockworkGlacier", "sq_clockwork_glacier", "Clockwork Glacier", "Frostgear Peaks", SceneIds.ClockworkGlacier,
-            SceneIds.EmberWastes, "Platform", 200f, new Color32(120, 170, 220, 255),
+            SceneIds.FrozenVault, "Platform", 200f, new Color32(120, 170, 220, 255),
             "A whole engine floor frozen solid, its spikes rimed with ice. Lifts still rise and plates still drift on " +
             "their old schedules; ride them tower to tower to reach the heart of the cold.");
 
@@ -564,7 +564,7 @@ namespace PKR.EditorTools
 
         public static LevelDefinition GetOrCreateShatteredCrossing() => GetOrCreateMapLevel(
             "SQ_ShatteredCrossing", "sq_shattered_crossing", "The Shattered Crossing", "Shattered Crossing", SceneIds.ShatteredCrossing,
-            SceneIds.FourfoldSovereign, "Platform", 260f, new Color32(40, 30, 64, 255),
+            SceneIds.ShatteredLabyrinth, "Platform", 260f, new Color32(40, 30, 64, 255),
             "Where the four realms grind against each other: lava gives way to wind, wind to water, water to the toy " +
             "belts. One long run through every rule at once, to the door of the engine's heart.");
 
@@ -617,7 +617,7 @@ namespace PKR.EditorTools
             var route = new[]
             {
                 GetOrCreateEmberWastes(), GetOrCreateSkyGardens(), GetOrCreateSunkenClockworks(), GetOrCreateToyFortress(),
-                GetOrCreateShatteredCrossing(), GetOrCreateSovereignLevel()
+                GetOrCreateShatteredCrossing(), GetOrCreateShatteredLabyrinth(), GetOrCreateSovereignLevel()
             };
             var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_ShatteredRealms.asset", w =>
             {
@@ -640,9 +640,9 @@ namespace PKR.EditorTools
             EditorUtil.EnsureFolder(LevelsFolder);
             var route = new[]
             {
-                GetOrCreateSunspireTestLevel(), GetOrCreateSunspireHeights(), GetOrCreateGearfallCaverns(),
+                GetOrCreateSunspireTestLevel(), GetOrCreateSunspireHeights(), GetOrCreateGearfallCaverns(), GetOrCreateGearworkMaze(),
                 GetOrCreateWardenLevel(), GetOrCreateRooftopRun(), GetOrCreateNightMarketHeist(),
-                GetOrCreateFrostgearAscent(), GetOrCreateClockworkGlacier()
+                GetOrCreateFrostgearAscent(), GetOrCreateClockworkGlacier(), GetOrCreateFrozenVault()
             };
             var world = GetOrCreate<WorldDefinition>($"{LevelsFolder}/World_SunspireIsles.asset", w =>
             {

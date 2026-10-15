@@ -378,9 +378,67 @@ def music():
                               section(156, 2, vs, vs_bass, vs_ch, beat(B_FILL), None, 0.125)), 0.42)
 
 
+# ---- Holiday + Halloween modes ------------------------------------------------------------------------------------
+def sfx_events():
+    # shoot: a tight pop with a bright snap (the zombie-mode guns)
+    d = 0.11
+    save("shoot", mixdown(click(0.004) * 1.4, square(sweep(900, 220, d, 0.4), d, 0.5) * env(int(SR * d), 0.001, 0.09, 0, 0.01) * 0.5,
+                          bp(noise(d), 1500, 6000) * env(int(SR * d), 0.001, 0.05, 0, 0.005) * 0.9), 0.42)
+    # reload: two mechanical clacks
+    one = mixdown(click(0.006), bp(noise(0.05), 800, 3000) * env(int(SR * 0.05), 0.001, 0.04, 0, 0.005))
+    save("reload", np.concatenate([one, np.zeros(int(SR * 0.12)), one * 1.2]), 0.4)
+    # groan: a low wobbling voice-like drone (zombies), formant-ish band-pass on a buzz
+    d = 0.9
+    buzz = saw(sweep(95, 70, d) * (1 + 0.04 * sine(6, d)), d)
+    save("groan", bp(buzz, 250, 1100) * env(int(SR * d), 0.08, 0.5, 0.4, 0.25) * 1.6, 0.45)
+    # round start: a deep bell toll
+    d = 2.2
+    bell = mixdown(sine(196, d), sine(196 * 2.76, d) * 0.4, sine(196 * 5.4, d) * 0.2, sine(98, d) * 0.6)
+    save("round_start", bell * env(int(SR * d), 0.002, 2.0, 0, 0.15), 0.5)
+    # power-up: rising sparkle arpeggio
+    save("powerup", np.concatenate([tri(f, 0.06) * env(int(SR * 0.06), 0.001, 0.05, 0, 0.005)
+                                    for f in (523.3, 659.3, 784.0, 1046.5, 1318.5, 1568.0)]), 0.5)
+    # board: hammering a board back up
+    d = 0.12
+    save("board", mixdown(click(0.008) * 1.5, lp(noise(d), 1200) * env(int(SR * d), 0.001, 0.1, 0, 0.01),
+                          tri(sweep(220, 140, d), d) * env(int(SR * d), 0.001, 0.1, 0, 0.01) * 0.5), 0.5)
+    # burst: a wet pop (bloater)
+    d = 0.4
+    save("burst", mixdown(lp(noise(d), 700) * env(int(SR * d), 0.001, 0.35, 0, 0.03) * 1.6,
+                          sine(sweep(160, 40, d), d) * env(int(SR * d), 0.001, 0.3, 0, 0.03)), 0.55)
+
+
+def music_events():
+    def beat(b): return [None if x == '.' else x for x in b]
+    # Holiday: bright, jingly F major with sleigh-bell hats
+    hl = P("C5 - A4 - C5 - F5 - - - E5 - D5 - C5 - - - A4 - G4 - A4 - C5 - D5 - - - . . "
+           "C5 - A4 - C5 - F5 - - - G5 - A5 - A#5 - - - A5 - G5 - F5 - - - - - - - . . . . ")
+    hl_bass = P("F2 . C3 . F2 . C3 . A#1 . F2 . A#1 . F2 . C2 . G2 . C2 . G2 . F2 . C3 . F2 . C3 .")
+    hl_ch = [("F4", "A4", "C5"), ("A#4", "D5", "F5"), ("C5", "E5", "G5"), ("F4", "A4", "C5")]
+    jingle = "k h h h s h h h k h h h s h hh h".split()
+    save("music_holiday", song(section(138, 8, hl, hl_bass, hl_ch, beat(jingle), P("F4 - - - - - - - A4 - - - G4 - - - "), 0.25,
+                                       'tri', echo=0.3, arp_vol=0.06),
+                               section(138, 8, hl, hl_bass, hl_ch, beat(B_POP), None, 0.25)), 0.45)
+    # Haunted: E minor, spooky organ-like triangle lead with a tritone sting, slow and creeping
+    hn = P("E4 - - - G4 - - - A#4 - - - B4 - - - C5 - B4 - A#4 - G4 - E4 - - - - - - - "
+           "E5 - - - D5 - C5 - B4 - - - A#4 - - - A4 - G4 - F#4 - G4 - E4 - - - - - - - ")
+    hn_bass = P("E2 . . . E2 . . . C2 . . . B1 . . .")
+    hn_ch = [("E4", "G4", "B4"), ("E4", "G4", "A#4"), ("C4", "E4", "G4"), ("B3", "D#4", "F#4")]
+    save("music_haunted", song(section(96, 8, hn, hn_bass, hn_ch, beat(B_TICK), None, 0.5, 'tri', echo=0.55, arp_vol=0.05, vib=0.03),
+                               section(96, 8, hn, hn_bass, hn_ch, beat(B_HALF), P("B3 - - - - - - - A#3 - - - - - - - "), 0.5,
+                                       'square', echo=0.45, arp_vol=0.05, vib=0.03)), 0.45)
+    # Survival: pounding C minor with a saw lead, gets the heart going
+    sv = P("C5 . C5 D#5 . C5 G5 - F5 . D#5 . D5 - A#4 - C5 . C5 D#5 . G5 A#5 - G#5 - G5 - F5 - D#5 - ")
+    sv_bass = P("C2 C3 C2 C3 C2 C3 C2 C3 G#1 G#2 G#1 G#2 A#1 A#2 A#1 A#2")
+    sv_ch = [("C5", "D#5", "G5"), ("G#4", "C5", "D#5"), ("A#4", "D5", "F5"), ("G4", "B4", "D5")]
+    save("music_survival", song(section(150, 8, sv, sv_bass, sv_ch, beat(B_DRIVE), None, 0.25, 'saw', echo=0.25),
+                                section(150, 4, sv, sv_bass, sv_ch, beat(B_FILL), P("G4 - - - - - - - F4 - - - D#4 - - - "), 0.125)), 0.45)
+
+
 if __name__ == "__main__":
     import sys
     only = sys.argv[1:] or ['sfx', 'music']
     if 'sfx' in only: sfx()
     if 'music' in only: music()
+    if 'events' in only: sfx_events(); music_events()
     print("audio written to", os.path.abspath(OUT))

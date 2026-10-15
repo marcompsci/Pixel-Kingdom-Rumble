@@ -102,6 +102,8 @@ namespace PKR
         public const float MaxPushSpeed = 6f;
         /// <summary>Set by abilities to freeze facing (e.g. during a dash).</summary>
         public bool FacingLocked { get; set; }
+        /// <summary>Run speed multiplier (1 = normal). Zombie Survival's Fleet Feet perk sets it above 1.</summary>
+        public float SpeedScale { get; set; } = 1f;
 
         /// <summary>Fired the step a jump starts.</summary>
         public event Action Jumped;
@@ -240,7 +242,10 @@ namespace PKR
             if (IsGrounded) v.x -= _carryX;
             float carry = (_platform != null ? _platform.Velocity.x : 0f) + (IsGrounded ? _conveyor : 0f);
             if (canAct)
-                v.x = JumpPhysics.NextHorizontalVelocity(v.x, Intent.Move.x, s, IsGrounded, dt);
+            {
+                float k = SpeedScale > 0.01f ? SpeedScale : 1f; // Fleet Feet: the whole run curve scaled up
+                v.x = JumpPhysics.NextHorizontalVelocity(v.x / k, Intent.Move.x, s, IsGrounded, dt) * k;
+            }
             else
                 v.x = JumpPhysics.MoveTowards(v.x, 0f, s.airDeceleration * 0.5f * dt); // knockback drift
             v.x += carry;

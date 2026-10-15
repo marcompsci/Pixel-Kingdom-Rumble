@@ -325,7 +325,7 @@ def zombie(name, a=None):
         pose = P(by=-(i % 2), lean=1, hands=reach, wang=0, eyes='angry', flutter=i)
     c = rig_crop(spec, pose, 32, h)
     # torn clothes and stitches
-    r = random.Random(hash(name) & 0xffff)
+    r = random.Random(sum(map(ord, name)))  # stable across runs (str hash is randomized)
     for _ in range(5):
         x, y = r.randrange(8, 24), r.randrange(10, 26)
         if c.px[y][x] is not None:

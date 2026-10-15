@@ -31,6 +31,20 @@ namespace PKR
         public const string ShatteredCrossing = "SQ_ShatteredCrossing";
         public const string FourfoldSovereign = "SQ_FourfoldSovereign";
         // Shadow Contracts (mission mode): the board and the contract scenes (MS_ prefix).
+        // Mazes (one per Story world)
+        public const string GearworkMaze = "SQ_GearworkMaze";
+        public const string FrozenVault = "SQ_FrozenVault";
+        public const string ShatteredLabyrinth = "SQ_ShatteredLabyrinth";
+
+        // Holiday Mode and Halloween Mode (EV_ = event levels, landscape gameplay)
+        public const string EventPrefix = "EV_";
+        public const string WinterGiftRun = "EV_WinterGiftRun";
+        public const string SweetheartSprint = "EV_SweetheartSprint";
+        public const string HarvestHustle = "EV_HarvestHustle";
+        public const string CountdownClimb = "EV_CountdownClimb";
+        public const string HauntedEscape = "EV_HauntedEscape";
+        public const string ZombieSurvival = "EV_ZombieSurvival";
+
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";
 
@@ -38,6 +52,6 @@ namespace PKR
         public static bool IsGameplay(string sceneName) =>
             sceneName == StoryTest || sceneName == ArenaTest ||
             sceneName.StartsWith("SQ_") || sceneName.StartsWith("AC_") || sceneName.StartsWith("VS_") ||
-            sceneName.StartsWith(ContractPrefix);
+            sceneName.StartsWith(ContractPrefix) || sceneName.StartsWith(EventPrefix);
     }
 }

@@ -230,6 +230,33 @@ def icon_jetpack():
     return _fin(img)
 
 
+def icon_fire():
+    """A crosshair with a bullet burst (Zombie Survival FIRE)."""
+    img = _icon()
+    d = ImageDraw.Draw(img)
+    s = 128 * SS
+    c = s / 2
+    w = int(s * 0.07)
+    d.ellipse((c - s * 0.3, c - s * 0.3, c + s * 0.3, c + s * 0.3), outline=W, width=w)
+    for (x0, y0, x1, y1) in ((c, s * 0.08, c, s * 0.3), (c, s * 0.7, c, s * 0.92), (s * 0.08, c, s * 0.3, c), (s * 0.7, c, s * 0.92, c)):
+        d.line((x0, y0, x1, y1), fill=W, width=w)
+    _circle(d, c, c, s * 0.08, W)
+    return _fin(img)
+
+
+def icon_use():
+    """An open hand (Zombie Survival USE: buy, repair, open)."""
+    img = _icon()
+    d = ImageDraw.Draw(img)
+    s = 128 * SS
+    d.rounded_rectangle((s * 0.30, s * 0.42, s * 0.72, s * 0.86), s * 0.1, fill=W)            # palm
+    for i, x in enumerate((0.31, 0.42, 0.53, 0.64)):
+        top = (0.16, 0.10, 0.12, 0.2)[i]
+        d.rounded_rectangle((s * x, s * top, s * (x + 0.08), s * 0.55), s * 0.04, fill=W)  # fingers
+    d.rounded_rectangle((s * 0.14, s * 0.46, s * 0.36, s * 0.56), s * 0.04, fill=W)          # thumb
+    return _fin(img)
+
+
 def fuel_ring(size=192):
     """A thick white ring drawn as a radial-fill gauge around a button (tinted at runtime)."""
     img = _canvas(size)
@@ -242,7 +269,7 @@ def fuel_ring(size=192):
 
 
 ALL = {
-    'icon_jetpack': icon_jetpack,
+    'icon_jetpack': icon_jetpack, 'icon_fire': icon_fire, 'icon_use': icon_use,
     'ctl_fuel_ring': lambda: fuel_ring(192),
     'ctl_button': lambda: round_button(192),
     'ctl_button_pressed': lambda: round_button(192, pressed=True),

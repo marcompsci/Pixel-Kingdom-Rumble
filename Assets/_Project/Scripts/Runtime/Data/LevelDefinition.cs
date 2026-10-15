@@ -21,5 +21,13 @@ namespace PKR
         public int totalShards;
         public int totalSecrets;
         public Color skyColor = new Color32(255, 196, 140, 255);
+
+        [Header("Holiday / Halloween events")]
+        [Tooltip("What the HUD calls this level's collectibles (empty = SHARDS): GIFTS, HEARTS, PIES, STARS, CANDY.")]
+        public string collectibleName = "";
+        [Tooltip("Seconds to reach the goal (0 = no limit). When it runs out the hero loses a heart and gets a little more time.")]
+        public float timeLimitSeconds;
+        [Tooltip("Event levels (Holiday / Halloween) return to the main menu instead of the level select.")]
+        public bool isEvent;
     }
 }

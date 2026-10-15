@@ -11,7 +11,8 @@ namespace PKR
     /// override, so no gravity. ShieldWalker: patrols slowly, and stops to face a nearby hero shield-first.
     /// Guard: patrols and stops now and then to look back; freezes while suspicious; chases once its
     /// GuardVision is alerted (never off a ledge). Once alerted, a guard with GuardMirror copies the hero's weapon and
-    /// moveset and fights back with them.
+    /// moveset and fights back with them. Chaser (zombies): always heads for the hero, hops walls and climbs after them;
+    /// spitters lob goo from range and bloaters burst when they go down.
     /// </summary>
     [RequireComponent(typeof(PlatformerMotor2D), typeof(Damageable))]
     [DefaultExecutionOrder(-30)]
@@ -19,6 +20,11 @@ namespace PKR
     {
         public EnemyDefinition Definition { get; private set; }
         public event Action<EnemyAI> Defeated;
+        /// <summary>Overrides the definition's walk speed for this spawn (zombie rounds speed up); negative = use the definition.</summary>
+        public float SpeedOverride { get; set; } = -1f;
+        float Speed => SpeedOverride >= 0f ? SpeedOverride : Definition.moveSpeed;
+        /// <summary>Overrides how far a Chaser notices the hero (Zombie Survival: the whole arena); negative = the definition's.</summary>
+        public float ChaseRangeOverride { get; set; } = -1f;
 
         PlatformerMotor2D _motor;
         Damageable _health;
@@ -33,6 +39,9 @@ namespace PKR
         GuardVision _vision;
         GuardMirror _mirror;
         float _patrolTimer, _pauseTimer;
+        float _jumpCd, _jumpHold, _spitCd;
+        SpriteRenderer _bodyArt;
+        static MoveDefinition _spit;
         Vector2 _halfSize = new Vector2(0.45f, 0.4f);
 
         void Awake()
@@ -78,6 +87,10 @@ namespace PKR
             if (_mirror != null) _mirror.ResetCopy(def);
             _patrolTimer = 0f;
             _pauseTimer = 0f;
+            _jumpCd = _jumpHold = 0f;
+            _spitCd = def.spitEvery > 0f ? def.spitEvery * UnityEngine.Random.Range(0.5f, 1f) : 0f;
+            SpeedOverride = -1f;
+            ChaseRangeOverride = -1f;
             _motor.Intent.ClearAll();
             _motor.SetFacing(_dir);
         }
@@ -94,7 +107,8 @@ namespace PKR
 
             switch (Definition.behavior)
             {
-                case EnemyBehavior.Walker: Walk(intent, Definition.moveSpeed); break;
+                case EnemyBehavior.Walker: Walk(intent, Speed); break;
+                case EnemyBehavior.Chaser: Chase(intent); break;
                 case EnemyBehavior.Hopper: Hop(intent); break;
                 case EnemyBehavior.Flyer: Fly(); break;
                 case EnemyBehavior.ShieldWalker: ShieldWalk(intent); break;
@@ -112,6 +126,89 @@ namespace PKR
             bool groundAhead = Physics2D.Raycast(foot, Vector2.down, 0.45f, ground);
             _dir = PatrolLogic.NextDirection(_dir, wall, groundAhead, _motor.IsGrounded);
             intent.Move = new Vector2(_dir * speed, 0f);
+        }
+
+        void Chase(FighterIntent intent)
+        {
+            float dt = Time.fixedDeltaTime;
+            _jumpCd -= dt;
+            if (_jumpHold > 0f && (_jumpHold -= dt) <= 0f) intent.Jump.SetHeld(false);
+            if (_motor.IsControlLocked) { intent.Move = Vector2.zero; return; }
+            var player = PlayerMarker.Current;
+            Vector2 pos = _motor.Body.position;
+            if (player == null || !player.isActiveAndEnabled)
+            {
+                Walk(intent, Speed * 0.6f);
+                return;
+            }
+            Vector2 d = (Vector2)player.transform.position - pos;
+            float range = ChaseRangeOverride >= 0f ? ChaseRangeOverride : Definition.chaseRange;
+            if (d.sqrMagnitude > range * range) { Walk(intent, Speed * 0.6f); return; }
+            if (Mathf.Abs(d.x) > 0.25f) _dir = d.x > 0f ? 1 : -1;
+
+            bool wall = Physics2D.Raycast(pos, new Vector2(_dir, 0f), _halfSize.x + 0.25f, PKRLayers.GroundMask);
+            // Hop a wall in the way, or climb after a hero standing on something above.
+            if (_motor.IsGrounded && _jumpCd <= 0f && (wall || (d.y > 1.4f && Mathf.Abs(d.x) < 3.5f)))
+            {
+                intent.Jump.Press(Time.time);
+                intent.Jump.SetHeld(true);
+                _jumpHold = d.y > 2.5f ? 0.4f : 0.25f;
+                _jumpCd = UnityEngine.Random.Range(0.9f, 1.4f);
+            }
+            intent.Move = Mathf.Abs(d.x) > 0.2f ? new Vector2(_dir * Speed, 0f) : Vector2.zero;
+
+            if (Definition.spitEvery > 0f && (_spitCd -= dt) <= 0f && Mathf.Abs(d.x) > 1.8f && Mathf.Abs(d.x) < 8f && Mathf.Abs(d.y) < 1.6f)
+            {
+                _spitCd = Definition.spitEvery * UnityEngine.Random.Range(0.85f, 1.25f);
+                if (_bodyArt == null) _bodyArt = GetComponentInChildren<SpriteRenderer>();
+                Projectile.Spawn(SpitMove, pos + new Vector2(0f, 0.2f), _dir, TeamIds.Enemy, _health, null,
+                                 _bodyArt != null ? _bodyArt.sharedMaterial : null);
+                Sfx.Play(Sfx.Burst, 0.35f, 0.15f);
+            }
+        }
+
+        /// <summary>The spitter's goo glob (a shared runtime move: 1 damage, slow, short range).</summary>
+        static MoveDefinition SpitMove
+        {
+            get
+            {
+                if (_spit != null) return _spit;
+                _spit = ScriptableObject.CreateInstance<MoveDefinition>();
+                _spit.name = "ZombieSpit";
+                _spit.id = "zombie_spit";
+                _spit.spawnsProjectile = true;
+                _spit.projectileSpeed = 7f;
+                _spit.projectileLifetime = 1.1f;
+                _spit.projectileRadius = 0.22f;
+                _spit.projectileSpawnOffset = new Vector2(0.4f, 0f);
+                _spit.projectileColor = new Color32(140, 255, 120, 255);
+                _spit.hit = new HitData
+                {
+                    damage = 1, pipDamage = 1, baseKnockback = 6f, exposedMultiplier = 1f, angleDegrees = 40f,
+                    baseHitstunFrames = 14, hitstopFrames = 3, isHeavy = false
+                };
+                return _spit;
+            }
+        }
+
+        void Burst()
+        {
+            Vector2 pos = _motor.Body != null ? _motor.Body.position : (Vector2)transform.position;
+            if (_bodyArt == null) _bodyArt = GetComponentInChildren<SpriteRenderer>();
+            var mat = _bodyArt != null ? _bodyArt.sharedMaterial : null;
+            PuffEffect.Play(pos, new Color32(150, 230, 90, 255), mat, 0.4f, 6f, 0.5f);
+            PuffEffect.Play(pos, new Color32(90, 140, 60, 255), mat, 0.28f, 4f, 0.6f);
+            Sfx.Play(Sfx.Burst, 0.8f, 0.08f);
+            var player = PlayerMarker.Current;
+            if (player == null || !player.TryGetComponent(out Damageable hero)) return;
+            Vector2 d = (Vector2)player.transform.position - pos;
+            if (d.sqrMagnitude > 1.9f * 1.9f) return;
+            var hit = new HitData
+            {
+                damage = 1, pipDamage = 1, baseKnockback = 11f, exposedMultiplier = 1f, angleDegrees = 60f,
+                baseHitstunFrames = 18, hitstopFrames = 5, isHeavy = true
+            };
+            hero.TakeHit(hit, d.x >= 0f ? 1 : -1, TeamIds.Enemy, out _, pos.x);
         }
 
         void Fly()
@@ -157,7 +254,7 @@ namespace PKR
                 }
             }
             _turnTimer = 0f;
-            Walk(intent, Definition.moveSpeed);
+            Walk(intent, Speed);
         }
 
         void Guard(FighterIntent intent)
@@ -203,7 +300,7 @@ namespace PKR
                 intent.Move = Vector2.zero;
                 return;
             }
-            Walk(intent, Definition.moveSpeed);
+            Walk(intent, Speed);
         }
 
         void OnHit(HitResult r)
@@ -254,6 +351,10 @@ namespace PKR
             _motor.Intent.Move = Vector2.zero;
         }
 
-        void OnDied() => Defeated?.Invoke(this);
+        void OnDied()
+        {
+            if (Definition != null && Definition.burstOnDeath) Burst();
+            Defeated?.Invoke(this);
+        }
     }
 }

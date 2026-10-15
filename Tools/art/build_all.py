@@ -274,6 +274,10 @@ def build_events():
         save(fn().image(), os.path.join(PIX, 'Events', f'collect_{name}.png'))
     for name, fn in events.ZOMBIE_PROPS.items():
         save(fn().image(), os.path.join(PIX, 'Events', f'{name}.png'), align='bottom')
+    # Zombie Survival gun shots: near-white so each gun tints its own (loaded at runtime from Resources).
+    shots = os.path.join(ROOT, 'Assets', '_Project', 'Resources', 'PKR', 'Shots')
+    for kind in ('ball', 'shard', 'spark', 'blob', 'comet', 'lance', 'crescent'):
+        save(fx.shot(kind, (236, 236, 236)).image(), os.path.join(shots, f'shot_{kind}.png'))
 
 
 def build_tiles():

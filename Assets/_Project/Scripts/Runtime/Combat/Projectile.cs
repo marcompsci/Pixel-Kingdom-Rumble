@@ -45,6 +45,26 @@ namespace PKR
             return p;
         }
 
+        /// <summary>Same, aimed angleDegrees above (+) or below (-) straight ahead: shotgun spread, sprays. The sprite is
+        /// tinted (white = untouched).</summary>
+        public static Projectile SpawnAimed(MoveDefinition move, Vector2 origin, int facing, int team, Damageable owner,
+                                            Material material, float angleDegrees, Color tint)
+        {
+            var p = Spawn(move, origin, facing, team, owner, null, material);
+            if (Mathf.Abs(angleDegrees) > 0.01f)
+            {
+                float a = angleDegrees * Mathf.Deg2Rad;
+                p._velocity = new Vector2(Mathf.Cos(a) * move.projectileSpeed * p._direction, Mathf.Sin(a) * move.projectileSpeed);
+                if (p._spin == 0f) p.transform.rotation = Quaternion.Euler(0f, 0f, angleDegrees * p._direction);
+            }
+            if (move.projectileSprite != null) p._renderer.color = tint;
+            return p;
+        }
+
+        /// <summary>True while a projectile's hit is being applied (so a Damageable.Hit / Died listener can tell gunfire from
+        /// melee, e.g. Zombie Survival's melee-kill bonus).</summary>
+        public static bool Resolving { get; private set; }
+
         void Init(MoveDefinition move, Vector2 origin, int facing, int team, Damageable owner, AttackRunner source, Material material)
         {
             _hit = source != null ? source.Capped(move.hit) : move.hit;
@@ -94,7 +114,12 @@ namespace PKR
             foreach (var target in _targets)
             {
                 if (target == _owner) continue;
-                if (target.TakeHit(_hit, _direction, _team, out var result, pos.x))
+                Resolving = true;
+                bool landed;
+                HitResult result;
+                try { landed = target.TakeHit(_hit, _direction, _team, out result, pos.x); }
+                finally { Resolving = false; }
+                if (landed)
                 {
                     if (_source != null) _source.ReportProjectileHit(target, result, _hit);
                     Despawn();

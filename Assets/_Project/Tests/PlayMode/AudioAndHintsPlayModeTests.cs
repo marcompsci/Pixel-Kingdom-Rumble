@@ -31,6 +31,9 @@ namespace PKR.Tests
         {
             Assert.AreEqual(Sfx.MusicTitle, AudioDirector.MusicFor(SceneIds.MainMenu));
             Assert.AreEqual(Sfx.MusicFrost, AudioDirector.MusicFor(SceneIds.ClockworkGlacier));
+            Assert.AreEqual(Sfx.MusicSurvival, AudioDirector.MusicFor(SceneIds.ZombieSurvival));
+            Assert.AreEqual(Sfx.MusicHaunted, AudioDirector.MusicFor(SceneIds.HauntedEscape));
+            Assert.AreEqual(Sfx.MusicHoliday, AudioDirector.MusicFor(SceneIds.WinterGiftRun));
             Assert.AreEqual(Sfx.MusicRealms, AudioDirector.MusicFor(SceneIds.SkyGardens));
             Assert.AreEqual(Sfx.MusicBoss, AudioDirector.MusicFor(SceneIds.FourfoldSovereign));
             Assert.AreEqual(Sfx.MusicBoss, AudioDirector.MusicFor(SceneIds.BossTest));

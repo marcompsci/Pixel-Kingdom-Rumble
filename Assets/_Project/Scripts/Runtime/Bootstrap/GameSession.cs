@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum SessionMode { StoryQuest, ArenaClash, Versus, Contracts }
+    public enum SessionMode { StoryQuest, ArenaClash, Versus, Contracts, Holiday, Halloween }
 
     /// <summary>
     /// What the player chose in the menus (mode, hero), carried into the next scene.
@@ -23,7 +23,15 @@ namespace PKR
             ContractScene = null;
             ContractWorldPage = -1;
             PendingWorldDoor = -1;
+            EventScene = null;
+            ReopenEventMenu = false;
         }
+
+        /// <summary>Set when leaving an event level: the main menu opens straight on the Holiday / Halloween panel.</summary>
+        public static bool ReopenEventMenu { get; set; }
+
+        /// <summary>Holiday / Halloween mode: the event level picked on the menu (loaded after Character Select).</summary>
+        public static string EventScene { get; set; }
 
         /// <summary>Shadow Contracts: the world page the board was last showing (-1 = pick automatically).</summary>
         public static int ContractWorldPage { get; set; } = -1;
@@ -67,6 +75,7 @@ namespace PKR
             {
                 if (Mode == SessionMode.ArenaClash) return SceneIds.ArenaTest;
                 if (Mode == SessionMode.Versus) return SceneIds.VersusStage;
+                if ((Mode == SessionMode.Holiday || Mode == SessionMode.Halloween) && !string.IsNullOrEmpty(EventScene)) return EventScene;
                 if (Mode == SessionMode.Contracts)
                     return !string.IsNullOrEmpty(ContractScene) ? ContractScene : SceneIds.MissionBoard;
                 return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;

@@ -150,6 +150,9 @@ namespace PKR.EditorTools
             { "Shadow Spire", "spire" }, { "Sovereign's Core", "spire" }, { "Shattered Crossing", "shattered" },
             { "Sky Foundry", "foundry" }, { "Tickworks Engine Hall", "foundry" }, { "Sunken Clockworks", "sunken" },
             { "Toy Fortress", "toy" }, { "Under the Isles", "cave" },
+            // Holiday Mode and Halloween Mode
+            { "Winter Village", "winter" }, { "Sweetheart Gardens", "valentine" }, { "Harvest Hollow", "harvest" },
+            { "Midnight City", "newyear" }, { "Haunted Hollow", "haunted" }, { "Moonlit Manor", "haunted" },
         };
 
         /// <summary>Art theme for a level's biome ("meadow" when unknown).</summary>

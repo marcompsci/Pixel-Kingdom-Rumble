@@ -36,6 +36,12 @@ namespace PKR
         public bool IsComplete => Run != null && Run.IsComplete;
         public int TotalShards { get; private set; }
         public int TotalSecrets { get; private set; }
+        /// <summary>Seconds left on a timed level (New Year's countdown); -1 when the level has no time limit.</summary>
+        public float TimeLeft => level != null && level.timeLimitSeconds > 0f && Run != null
+            ? Mathf.Max(0f, level.timeLimitSeconds + _bonusTime - Run.ElapsedSeconds) : -1f;
+        /// <summary>Extra seconds granted each time the countdown runs out.</summary>
+        public const float CountdownGrace = 15f;
+        float _bonusTime;
 
         PlatformerMotor2D _playerMotor;
         readonly List<EnemyAI> _enemies = new List<EnemyAI>();
@@ -120,6 +126,13 @@ namespace PKR
         {
             if (Run == null || IsComplete) return;
             if (Services.State == null || Services.State.State == GameState.Playing) Run.Tick(Time.deltaTime);
+            if (TimeLeft == 0f && !_respawning && PlayerHealth != null && !PlayerHealth.IsDead)
+            {
+                // Out of time: lose a heart, and the clock gives a little more.
+                _bonusTime += CountdownGrace;
+                EventBus<GameHint>.Raise(new GameHint { id = "countdown", text = $"TIME'S UP! -1 HEART, +{CountdownGrace:0}s. HURRY!" });
+                PlayerHealth.TakeDirectDamage(1);
+            }
         }
 
         void FixedUpdate()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using PKR.Core;
 using UnityEditor;
@@ -18,6 +19,7 @@ namespace PKR.EditorTools
     {
         public const string Folder = "Assets/_Project/Scenes/Story";
         public const string ContractFolder = "Assets/_Project/Scenes/Contracts";
+        public const string EventFolder = "Assets/_Project/Scenes/Events";
 
         static Material _mat;
         static Transform _root;
@@ -35,6 +37,28 @@ namespace PKR.EditorTools
         }
 
         static ContractOptions _contract;
+
+        /// <summary>Holiday / Halloween look for one map: the collectible art, which foes replace the usual ones, and
+        /// whether the zombie horde chases from the left.</summary>
+        public class EventStyle
+        {
+            public string treat;
+            public readonly Dictionary<char, System.Func<EnemyDefinition>> foes = new Dictionary<char, System.Func<EnemyDefinition>>();
+            public bool horde;
+        }
+
+        static EventStyle _style;
+        // Zombie Survival pieces found while building a survival map.
+        static readonly List<Transform> _windowSpawns = new List<Transform>(), _roofSpawns = new List<Transform>();
+        static readonly List<ZombieStation> _stations = new List<ZombieStation>();
+        static readonly List<Barricade> _barricades = new List<Barricade>();
+        static int _wallIndex, _perkIndex;
+
+        /// <summary>The usual foe for a map character, or the event's replacement.</summary>
+        static EnemyDefinition Foe(char c, System.Func<EnemyDefinition> usual) =>
+            _style != null && _style.foes.TryGetValue(c, out var f) ? f() : usual();
+
+        static Sprite EventArt(string name) => AssetDatabase.LoadAssetAtPath<Sprite>($"{PixelArt.Root}/Events/{name}.png");
         static readonly string[] RelicNames = { "Sun Idol", "Jade Mask", "Moon Amulet", "Gilded Gear", "Storm Coin", "Star Chalice" };
 
         [MenuItem("PKR/Build Map Levels", priority = 23)]
@@ -58,9 +82,47 @@ namespace PKR.EditorTools
             BuildLevel(SceneIds.SunkenClockworks, StoryLayouts.SunkenClockworks, () => DataAssets.GetOrCreateSunkenClockworks());
             BuildLevel(SceneIds.ToyFortress, StoryLayouts.ToyFortress, () => DataAssets.GetOrCreateToyFortress());
             BuildLevel(SceneIds.ShatteredCrossing, StoryLayouts.ShatteredCrossing, () => DataAssets.GetOrCreateShatteredCrossing());
+            // One maze per world.
+            BuildLevel(SceneIds.GearworkMaze, MazeLayouts.GearworkMaze, () => DataAssets.GetOrCreateGearworkMaze());
+            BuildLevel(SceneIds.FrozenVault, MazeLayouts.FrozenVault, () => DataAssets.GetOrCreateFrozenVault());
+            BuildLevel(SceneIds.ShatteredLabyrinth, MazeLayouts.ShatteredLabyrinth, () => DataAssets.GetOrCreateShatteredLabyrinth());
             DataAssets.GetOrCreateStoryWorld(); // keep the level select route in order
             DataAssets.GetOrCreateShatteredRealms();
+            BuildEvents();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Holiday Mode (four holiday runs) and Halloween Mode (Haunted Escape, Zombie Survival).</summary>
+        public static void BuildEvents()
+        {
+            var winter = new EventStyle { treat = "collect_gift" };
+            winter.foes['B'] = DataAssets.GetOrCreateSnowman;
+            BuildLevel(SceneIds.WinterGiftRun, EventLayouts.WinterGiftRun, () => DataAssets.GetOrCreateWinterGiftRun(), style: winter);
+
+            var valentine = new EventStyle { treat = "collect_heart" };
+            valentine.foes['M'] = DataAssets.GetOrCreateCupidBot;
+            BuildLevel(SceneIds.SweetheartSprint, EventLayouts.SweetheartSprint, () => DataAssets.GetOrCreateSweetheartSprint(), style: valentine);
+
+            var harvest = new EventStyle { treat = "collect_pie" };
+            harvest.foes['T'] = DataAssets.GetOrCreateTurkey;
+            BuildLevel(SceneIds.HarvestHustle, EventLayouts.HarvestHustle, () => DataAssets.GetOrCreateHarvestHustle(), style: harvest);
+
+            var newYear = new EventStyle { treat = "collect_firework_star" };
+            newYear.foes['B'] = DataAssets.GetOrCreateFirecracker;
+            newYear.foes['M'] = DataAssets.GetOrCreateCupidBot;
+            BuildLevel(SceneIds.CountdownClimb, EventLayouts.CountdownClimb, () => DataAssets.GetOrCreateCountdownClimb(), style: newYear);
+
+            var haunted = new EventStyle { treat = "collect_candy", horde = true };
+            haunted.foes['B'] = DataAssets.GetOrCreateZombieShambler;
+            haunted.foes['W'] = DataAssets.GetOrCreateZombieRunner;
+            haunted.foes['D'] = DataAssets.GetOrCreateZombieBloater;
+            haunted.foes['Y'] = DataAssets.GetOrCreateZombieSpitter;
+            haunted.foes['K'] = DataAssets.GetOrCreateZombieBrute;
+            haunted.foes['M'] = DataAssets.GetOrCreateZombieBat;
+            BuildLevel(SceneIds.HauntedEscape, EventLayouts.HauntedEscape, () => DataAssets.GetOrCreateHauntedEscape(), style: haunted);
+
+            BuildLevel(SceneIds.ZombieSurvival, EventLayouts.ZombieArena, () => DataAssets.GetOrCreateZombieSurvivalLevel(),
+                       style: new EventStyle());
         }
 
         /// <summary>Builds every Shadow Contracts scene (MS_*) from ContractLayouts.</summary>
@@ -98,9 +160,13 @@ namespace PKR.EditorTools
             }
         }
 
-        static void BuildLevel(string sceneName, string[] rows, System.Func<LevelDefinition> levelAsset, ContractOptions contract = null)
+        static void BuildLevel(string sceneName, string[] rows, System.Func<LevelDefinition> levelAsset, ContractOptions contract = null,
+                               EventStyle style = null)
         {
             _contract = contract;
+            _style = style;
+            _windowSpawns.Clear(); _roofSpawns.Clear(); _stations.Clear(); _barricades.Clear();
+            _wallIndex = _perkIndex = 0;
             _relicIndex = 0;
             var map = new AsciiLevel(rows);
             var errors = map.Validate();
@@ -117,6 +183,7 @@ namespace PKR.EditorTools
             var roster = DataAssets.GetOrCreateRoster();
             var nova = DataAssets.GetOrCreateNova();
             LoadArt();
+            if (_style != null && !string.IsNullOrEmpty(_style.treat) && EventArt(_style.treat) != null) _shard = EventArt(_style.treat);
             _shards = 0;
             _crates = 0;
             bool stealth = map.Count('g') > 0 || map.Count('E') > 0 || map.Count('V') > 0;
@@ -211,31 +278,42 @@ namespace PKR.EditorTools
                         break;
                     }
                     case 'u': Mover("Lift", new Vector2(cx, p.y + 0.25f), 3f, new Vector2(0f, 7f), 3f); break;
-                    case 'B': Enemy(DataAssets.GetOrCreateCogBeetle(), cx, p.y); break;
-                    case 'T': Enemy(DataAssets.GetOrCreateSpringTick(), cx, p.y); break;
-                    case 'M': Enemy(DataAssets.GetOrCreateGyroMoth(), cx, p.y + 0.5f); break;
-                    case 'K': Enemy(DataAssets.GetOrCreateBoltKnight(), cx, p.y); break;
-                    case 'F': Enemy(DataAssets.GetOrCreateFrostMite(), cx, p.y); break;
+                    case 'B': Enemy(Foe('B', DataAssets.GetOrCreateCogBeetle), cx, p.y); break;
+                    case 'T': Enemy(Foe('T', DataAssets.GetOrCreateSpringTick), cx, p.y); break;
+                    case 'M': Enemy(Foe('M', DataAssets.GetOrCreateGyroMoth), cx, p.y + 0.5f); break;
+                    case 'K': Enemy(Foe('K', DataAssets.GetOrCreateBoltKnight), cx, p.y); break;
+                    case 'F': Enemy(Foe('F', DataAssets.GetOrCreateFrostMite), cx, p.y); break;
                     case 'g': Enemy(DataAssets.GetOrCreateGearwatchSentry(), cx, p.y); break;
                     case 'E': Enemy(DataAssets.GetOrCreateGearwatchElite(), cx, p.y); break;
                     case 'V': Enemy(DataAssets.GetOrCreateGearwatchCaptain(), cx, p.y); break;
                     case 'R': Relic(new Vector2(cx, p.y + 0.5f)); break;
                     case 'Z': Scroll(new Vector2(cx, p.y + 0.5f)); break;
                     case 'f': Geyser(new Vector2(cx, p.y), p.x); break;
-                    case 'Y': Enemy(DataAssets.GetOrCreateCinderCrawler(), cx, p.y); break;
-                    case 'Q': Enemy(DataAssets.GetOrCreatePuffGlider(), cx, p.y + 0.5f); break;
-                    case 'D': Enemy(DataAssets.GetOrCreateRustCrab(), cx, p.y); break;
-                    case 'W': Enemy(DataAssets.GetOrCreateWindupSoldier(), cx, p.y); break;
+                    case 'Y': Enemy(Foe('Y', DataAssets.GetOrCreateCinderCrawler), cx, p.y); break;
+                    case 'Q': Enemy(Foe('Q', DataAssets.GetOrCreatePuffGlider), cx, p.y + 0.5f); break;
+                    case 'D': Enemy(Foe('D', DataAssets.GetOrCreateRustCrab), cx, p.y); break;
+                    case 'W': Enemy(Foe('W', DataAssets.GetOrCreateWindupSoldier), cx, p.y); break;
+                    // Zombie Survival
+                    case 'z': ZombieSpawn(map, p.x, p.y); break;
+                    case 'x': Station(StationKind.WallWeapon, _wallIndex++ % ZombieArmory.Wall.Length, cx, p.y); break;
+                    case 'b': Station(StationKind.MysteryCrate, 0, cx, p.y); break;
+                    case 'p': Station(StationKind.Perk, _perkIndex++ % 4, cx, p.y); break;
+                    case 'U': Station(StationKind.Forge, 0, cx, p.y); break;
+                    case 'j': Station(StationKind.Lantern, 0, cx, p.y); break;
                 }
             }
             ObstacleBuilder.Build(map, _root, _mat); // crushers, lasers, saws, keys/doors, switch blocks
+            foreach (var r in map.MergedRects('w')) BarricadeAt(r);
+            foreach (var r in map.MergedRects('q')) PaidDoor(r);
             if (map.HasSecret)
             {
                 var min = new Vector2(map.SecretMinX, map.SecretMinY);
                 var size = new Vector2(map.SecretMaxX - map.SecretMinX + 1, map.SecretMaxY - map.SecretMinY + 1);
                 SecretRoom($"secret_{level.id}", min + size * 0.5f, size);
             }
-            for (float x = 12f; x < map.Width - 6; x += 26f) Decor(new Vector2(x, map.Height - 5f), stealth ? 1.6f : 2.6f);
+            if (_style == null)
+                for (float x = 12f; x < map.Width - 6; x += 26f) Decor(new Vector2(x, map.Height - 5f), stealth ? 1.6f : 2.6f);
+            if (_style != null && _style.horde) Horde(start, groundY);
 
             // --- Hero, flow, UI --------------------------------------------------------------------------
             var startT = new GameObject("StartPoint").transform;
@@ -243,46 +321,243 @@ namespace PKR.EditorTools
             var hero = SandboxBuilder.BuildHero(nova, _mat, start, roster);
             follow.target = hero.transform;
 
-            var flow = new GameObject("LevelFlow").AddComponent<LevelFlowController>();
-            EditorUtil.SetField(flow, "level", level);
-            EditorUtil.SetField(flow, "roster", roster);
-            EditorUtil.SetField(flow, "player", hero);
-            EditorUtil.SetField(flow, "startPoint", startT);
-            EditorUtil.SetFloat(flow, "killY", -4f);
-            EditorUtil.SetField(flow, "spriteMaterial", _mat);
-            EditorUtil.SetField(flow, "shardSprite", _shard);
-            EditorUtil.SetField(flow, "healthSprite", PlaceholderArt.HealthCrystal());
-            if (stealth)
+            if (map.IsSurvival) Survival(hero, startT);
+            else
             {
-                var tracker = new GameObject("StealthTracker").AddComponent<StealthTracker>();
-                if (_contract != null) tracker.objectiveName = _contract.objectiveName;
-            }
-            if (_contract != null)
-            {
-                var mt = new GameObject("MissionTracker").AddComponent<MissionTracker>();
-                mt.contractId = _contract.contractId;
-                mt.clueId = _contract.clueId ?? "";
-                // The board tells the results screen which contract is behind this map's exit door.
-                mt.board = AssetDatabase.LoadAssetAtPath<MissionBoardDefinition>(DataAssets.BoardAssetPath);
+                var flow = new GameObject("LevelFlow").AddComponent<LevelFlowController>();
+                EditorUtil.SetField(flow, "level", level);
+                EditorUtil.SetField(flow, "roster", roster);
+                EditorUtil.SetField(flow, "player", hero);
+                EditorUtil.SetField(flow, "startPoint", startT);
+                EditorUtil.SetFloat(flow, "killY", -4f);
+                EditorUtil.SetField(flow, "spriteMaterial", _mat);
+                EditorUtil.SetField(flow, "shardSprite", _shard);
+                EditorUtil.SetField(flow, "healthSprite", PlaceholderArt.HealthCrystal());
+                if (stealth)
+                {
+                    var tracker = new GameObject("StealthTracker").AddComponent<StealthTracker>();
+                    if (_contract != null) tracker.objectiveName = _contract.objectiveName;
+                }
+                if (_contract != null)
+                {
+                    var mt = new GameObject("MissionTracker").AddComponent<MissionTracker>();
+                    mt.contractId = _contract.contractId;
+                    mt.clueId = _contract.clueId ?? "";
+                    // The board tells the results screen which contract is behind this map's exit door.
+                    mt.board = AssetDatabase.LoadAssetAtPath<MissionBoardDefinition>(DataAssets.BoardAssetPath);
+                }
             }
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             var touch = new GameObject("TouchControls").AddComponent<TouchControlsUI>();
             EditorUtil.SetField(hero.GetComponent<PlayerInputRouter>(), "touchControls", touch);
-            new GameObject("HUD").AddComponent<StoryHUD>();
+            if (map.IsSurvival) new GameObject("HUD").AddComponent<ZombieHUD>();
+            else new GameObject("HUD").AddComponent<StoryHUD>();
             new GameObject("PauseMenu").AddComponent<PauseMenu>();
-            new GameObject("LevelCompleteScreen").AddComponent<LevelCompleteScreen>();
+            if (!map.IsSurvival) new GameObject("LevelCompleteScreen").AddComponent<LevelCompleteScreen>();
 
             level.totalShards = _shards + _crates;
             level.totalSecrets = map.HasSecret ? 1 : 0;
             EditorUtility.SetDirty(level);
 
-            string folder = _contract != null ? ContractFolder : Folder;
+            string folder = _contract != null ? ContractFolder : _style != null ? EventFolder : Folder;
             string path = $"{folder}/{sceneName}.unity";
             EditorUtil.EnsureFolder(folder);
             EditorSceneManager.SaveScene(scene, path);
             EditorUtil.AddSceneToBuild(path);
             Debug.Log($"[PKR] Built {path}: {map.Width}x{map.Height}, {level.totalShards} shards, {map.Count('g')} guards, {map.Count('R')} relics.");
+        }
+
+        // ---- Halloween: the horde and Zombie Survival ----------------------------------------------------------
+
+        /// <summary>Haunted Escape: the horde starts ten cells behind the hero (a fog bank with zombies in it).</summary>
+        static void Horde(Vector2 start, float groundY)
+        {
+            var go = new GameObject("Horde");
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector3(start.x - 10f, groundY, 0f);
+            var wall = go.AddComponent<HordeWall>();
+            var glow = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Resources/PKR/fx_glow.png");
+            // A dark wall of fog trailing off to the left, with a sickly green edge.
+            var dark = Art("Dark", _ground, new Vector2(start.x - 16f, groundY + 6f), new Vector2(12f, 16f), 12, go.transform);
+            dark.color = new Color(0.04f, 0.05f, 0.04f, 0.92f);
+            if (glow != null)
+            {
+                var fog = new GameObject("Fog");
+                fog.transform.SetParent(go.transform, false);
+                fog.transform.localPosition = new Vector3(-1.5f, 2.5f, 0f);
+                fog.transform.localScale = new Vector3(1f, 1f, 1f);
+                var sr = fog.AddComponent<SpriteRenderer>();
+                sr.sprite = glow;
+                sr.color = new Color(0.35f, 0.6f, 0.3f, 0.55f);
+                if (_mat != null) sr.sharedMaterial = _mat;
+                sr.sortingOrder = 13;
+                fog.transform.localScale = new Vector3(5f, 7f, 1f);
+                wall.fog = fog.transform;
+            }
+            var frames = new List<Sprite>();
+            for (int i = 0; i < 6; i++)
+            {
+                var f = AssetDatabase.LoadAssetAtPath<Sprite>($"{PixelArt.Root}/Enemies/zombie_shambler/zombie_shambler_run_{i}.png");
+                if (f != null) frames.Add(f);
+            }
+            wall.walkFrames = frames.ToArray();
+            var walkers = new List<SpriteRenderer>();
+            for (int i = 0; i < 7; i++)
+            {
+                var z = new GameObject("Walker" + i);
+                z.transform.SetParent(go.transform, false);
+                z.transform.localPosition = new Vector3(-0.4f - (i % 4) * 0.9f, i < 4 ? 0f : 1.3f, 0f);
+                var sr = z.AddComponent<SpriteRenderer>();
+                sr.sprite = frames.Count > 0 ? frames[0] : null;
+                sr.color = i < 4 ? Color.white : new Color(0.55f, 0.6f, 0.55f, 1f);
+                if (_mat != null) sr.sharedMaterial = _mat;
+                sr.sortingOrder = i < 4 ? 15 : 14;
+                walkers.Add(sr);
+            }
+            wall.walkers = walkers.ToArray();
+        }
+
+        /// <summary>z: a zombie spawn. Spawns at ground level beside a window barricade are window spawns; others drop from the roof.</summary>
+        static void ZombieSpawn(AsciiLevel map, int x, int y)
+        {
+            bool window = false;
+            foreach (var r in map.MergedRects('w'))
+                if (Mathf.Abs(r.x - x) <= 4 && y >= r.y - 1 && y <= r.y + r.h) window = true;
+            var go = new GameObject(window ? "WindowSpawn" : "RoofSpawn");
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector2(x + 0.5f, y);
+            (window ? _windowSpawns : _roofSpawns).Add(go.transform);
+        }
+
+        static void Station(StationKind kind, int index, float cx, float groundY)
+        {
+            var go = new GameObject("Station_" + kind);
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector2(cx, groundY);
+            var st = go.AddComponent<ZombieStation>();
+            st.kind = kind;
+            st.index = index;
+            string art;
+            Vector2 offset = Vector2.zero;
+            Color tint = Color.white;
+            switch (kind)
+            {
+                case StationKind.WallWeapon:
+                    var w = ZombieArmory.Wall[index % ZombieArmory.Wall.Length];
+                    art = "wall_" + w.id;
+                    offset = new Vector2(0f, 1.1f);
+                    tint = Color.Lerp(Color.white, new Color32(w.r, w.g, w.b, 255), 0.45f);
+                    break;
+                case StationKind.MysteryCrate: art = "mystery_crate"; break;
+                case StationKind.Perk:
+                    art = "perk_" + new[] { "iron_heart", "quick_draw", "second_wind", "fleet_feet" }[index % 4];
+                    break;
+                case StationKind.Forge: art = "forge"; break;
+                default:
+                    art = "jack_lantern";
+                    st.reach = 1.1f;
+                    break;
+            }
+            var sr = new GameObject("Art").AddComponent<SpriteRenderer>();
+            sr.transform.SetParent(go.transform, false);
+            sr.transform.localPosition = offset;
+            sr.sprite = EventArt(art);
+            sr.color = kind == StationKind.Lantern ? new Color(0.55f, 0.45f, 0.4f, 1f) : tint; // lanterns start dark
+            if (_mat != null) sr.sharedMaterial = _mat;
+            sr.sortingOrder = kind == StationKind.WallWeapon ? 2 : 6;
+            st.art = sr;
+            if (kind == StationKind.Lantern)
+            {
+                var glow = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Resources/PKR/fx_glow.png");
+                var g = new GameObject("Glow");
+                g.transform.SetParent(go.transform, false);
+                g.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+                g.transform.localScale = Vector3.one * 2.2f;
+                var gs = g.AddComponent<SpriteRenderer>();
+                gs.sprite = glow;
+                gs.color = new Color(1f, 0.6f, 0.15f, 0.6f);
+                if (_mat != null) gs.sharedMaterial = _mat;
+                gs.sortingOrder = 5;
+                g.SetActive(false);
+            }
+            _stations.Add(st);
+        }
+
+        /// <summary>w: a boarded window in the manor wall (solid while it has boards).</summary>
+        static void BarricadeAt(AsciiLevel.Rect r)
+        {
+            var go = new GameObject("Barricade") { layer = PKRLayers.Ground };
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector2(r.x + r.w * 0.5f, r.y + r.h * 0.5f);
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = new Vector2(r.w, r.h);
+            var frame = Art("Frame", EventArt("window_frame"), new Vector2(r.x + r.w * 0.5f, r.y), new Vector2(r.w, r.h), 3, go.transform);
+            frame.drawMode = SpriteDrawMode.Simple;
+            var fs = frame.sprite != null ? frame.sprite.bounds.size : Vector3.one;
+            frame.transform.localScale = new Vector3(r.w / Mathf.Max(0.01f, fs.x), r.h / Mathf.Max(0.01f, fs.y), 1f);
+            var boardArt = EventArt("board");
+            var boards = new List<SpriteRenderer>();
+            for (int i = 0; i < ZombieRules.BarricadeBoards; i++)
+            {
+                var b = new GameObject("Board" + i).AddComponent<SpriteRenderer>();
+                b.transform.SetParent(go.transform, false);
+                float t = (i + 0.5f) / ZombieRules.BarricadeBoards;
+                b.transform.localPosition = new Vector3(0f, -r.h * 0.5f + t * r.h - 0.1f, 0f);
+                b.transform.localRotation = Quaternion.Euler(0f, 0f, i % 2 == 0 ? 14f : -12f);
+                b.transform.localScale = new Vector3(r.w * 1.3f, 1f, 1f);
+                b.sprite = boardArt;
+                if (_mat != null) b.sharedMaterial = _mat;
+                b.sortingOrder = 7;
+                boards.Add(b);
+            }
+            var bar = go.AddComponent<Barricade>();
+            bar.boards = boards.ToArray();
+            _barricades.Add(bar);
+        }
+
+        /// <summary>q: a door into the gallery that opens for points.</summary>
+        static void PaidDoor(AsciiLevel.Rect r)
+        {
+            var go = new GameObject("PaidDoor") { layer = PKRLayers.Ground };
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector2(r.x + r.w * 0.5f, r.y + r.h * 0.5f);
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = new Vector2(r.w, r.h);
+            var art = EventArt("paid_door");
+            var sr = Art("Door", art, new Vector2(r.x + r.w * 0.5f, r.y), new Vector2(r.w, r.h), 6, go.transform);
+            var st = go.AddComponent<ZombieStation>();
+            st.kind = StationKind.Door;
+            st.blocker = box;
+            st.art = sr;
+            _stations.Add(st);
+        }
+
+        /// <summary>The survival runtime: rules controller, the hero's guns, and the cast.</summary>
+        static void Survival(GameObject hero, Transform start)
+        {
+            var gunner = hero.AddComponent<ZombieGunner>();
+            gunner.material = _mat;
+            var game = new GameObject("ZombieSurvival").AddComponent<ZombieSurvival>();
+            game.player = hero;
+            game.startPoint = start;
+            game.spriteMaterial = _mat;
+            game.windowSpawns = _windowSpawns.ToArray();
+            game.roofSpawns = _roofSpawns.ToArray();
+            game.barricades = _barricades.ToArray();
+            game.stations = _stations.ToArray();
+            game.shambler = DataAssets.GetOrCreateZombieShambler();
+            game.runner = DataAssets.GetOrCreateZombieRunner();
+            game.bloater = DataAssets.GetOrCreateZombieBloater();
+            game.spitter = DataAssets.GetOrCreateZombieSpitter();
+            game.brute = DataAssets.GetOrCreateZombieBrute();
+            game.bat = DataAssets.GetOrCreateZombieBat();
+            game.pumpkinKing = DataAssets.GetOrCreatePumpkinKing();
+            game.powerUpSprites = new[]
+            {
+                EventArt("power_ammo"), EventArt("power_instakill"), EventArt("power_double"), EventArt("power_nuke"), EventArt("power_boardup")
+            };
+            game.healthSprite = PlaceholderArt.HealthCrystal();
         }
 
         static void LoadArt()

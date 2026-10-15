@@ -105,6 +105,15 @@ namespace PKR
             // Touchscreen can appear later (Device Simulator toggled on).
             if (Time.frameCount % 30 == 0) RefreshVisibility();
             UpdateJetpackButton();
+            UpdateZombieButtons();
+        }
+
+        /// <summary>FIRE and USE only exist in Zombie Survival (where the hero carries a gun).</summary>
+        void UpdateZombieButtons()
+        {
+            bool show = ZombieGunner.Player != null || EditMode;
+            foreach (var id in new[] { ControlIds.Fire, ControlIds.Use })
+                if (_buttons.TryGetValue(id, out var b) && b.gameObject.activeSelf != show) b.gameObject.SetActive(show);
         }
 
         /// <summary>JET shows only where the rescue jetpack exists (Story, Contracts); its ring shows the fuel left
@@ -291,6 +300,8 @@ namespace PKR
             BuildButton(right, ControlIds.Special, "SPECIAL");
             BuildButton(right, ControlIds.Dodge, "DODGE");
             BuildButton(right, ControlIds.Jetpack, "JET");
+            BuildButton(right, ControlIds.Fire, "FIRE");
+            BuildButton(right, ControlIds.Use, "USE");
             BuildFuelGauge();
             BuildEditBar(safe);
 

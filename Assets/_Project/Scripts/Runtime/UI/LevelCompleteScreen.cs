@@ -87,17 +87,25 @@ namespace PKR
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
-            // Back to the level select when it exists, else the main menu.
-            bool hasLevels = Application.CanStreamedLevelBeLoaded(e.isContract ? SceneIds.MissionBoard : SceneIds.LevelSelect);
+            var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
+            bool isEvent = flowLevel != null && flowLevel.isEvent;
+            // Back to the level select when it exists, else the main menu. Holiday / Halloween levels go back to their
+            // menu panel.
+            bool hasLevels = !isEvent && Application.CanStreamedLevelBeLoaded(e.isContract ? SceneIds.MissionBoard : SceneIds.LevelSelect);
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
             string backScene = hasLevels ? (e.isContract ? SceneIds.MissionBoard : SceneIds.LevelSelect) : SceneIds.MainMenu;
-            UIFactory.Button(buttons, hasLevels ? (e.isContract ? "CONTRACTS" : "LEVELS") : (hasMenu ? "MAIN MENU" : "MENU (SOON)"),
-                             () => { if (Services.Scenes != null) Services.Scenes.Load(backScene); },
+            string backText = isEvent ? (GameSession.Mode == SessionMode.Halloween ? "HALLOWEEN" : "HOLIDAYS")
+                            : hasLevels ? (e.isContract ? "CONTRACTS" : "LEVELS") : (hasMenu ? "MAIN MENU" : "MENU (SOON)");
+            UIFactory.Button(buttons, backText, () =>
+                             {
+                                 if (isEvent) GameSession.ReopenEventMenu = true;
+                                 if (Services.Scenes != null) Services.Scenes.Load(backScene);
+                             },
                              interactable: hasLevels || hasMenu);
-            var flowLevel = LevelFlowController.Current != null ? LevelFlowController.Current.Level : null;
             string next = flowLevel != null ? flowLevel.nextSceneName : "";
             bool hasNext = !string.IsNullOrEmpty(next) && Application.CanStreamedLevelBeLoaded(next);
-            if (!e.isContract)
+            if (isEvent) { } // event levels stand alone: no NEXT
+            else if (!e.isContract)
                 UIFactory.Button(buttons, hasNext ? "NEXT" : "NEXT (SOON)",
                                  () => { if (Services.Scenes != null) Services.Scenes.Load(next); },
                                  interactable: hasNext);

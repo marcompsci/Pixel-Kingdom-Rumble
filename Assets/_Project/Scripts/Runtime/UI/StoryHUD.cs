@@ -91,10 +91,17 @@ namespace PKR
 
             var run = flow.Run;
             if (_playerHealth != null) UpdateHealth(_playerHealth.Health, _playerHealth.MaxHealth);
-            _shards.text = flow.TotalShards > 0 || MissionTracker.Current == null ? $"SHARDS {run.Shards}/{flow.TotalShards}" : "";
+            string treats = flow.Level != null && !string.IsNullOrEmpty(flow.Level.collectibleName) ? flow.Level.collectibleName : "SHARDS";
+            _shards.text = flow.TotalShards > 0 || MissionTracker.Current == null ? $"{treats} {run.Shards}/{flow.TotalShards}" : "";
             _secrets.text = (flow.TotalSecrets > 0 ? $"SECRETS {run.SecretsFound}/{flow.TotalSecrets}" : "") +
                             (LevelPuzzleState.Keys > 0 ? $"   KEYS {LevelPuzzleState.Keys}" : "");
-            _time.text = FormatTime(run.ElapsedSeconds);
+            float left = flow.TimeLeft;
+            if (left >= 0f)
+            {
+                _time.text = $"COUNTDOWN {FormatTime(left)}";
+                _time.color = left < 15f && Mathf.Repeat(Time.unscaledTime, 0.5f) < 0.25f ? new Color(1f, 0.35f, 0.3f) : Color.white;
+            }
+            else _time.text = FormatTime(run.ElapsedSeconds);
             var stealth = StealthTracker.Current;
             if (stealth != null)
             {

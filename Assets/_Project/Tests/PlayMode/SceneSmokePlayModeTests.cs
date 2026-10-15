@@ -21,6 +21,9 @@ namespace PKR.Tests
             SceneIds.StoryTest, SceneIds.BossTest, SceneIds.ArenaTest, SceneIds.VersusSelect, SceneIds.VersusStage,
             SceneIds.SunspireHeights, SceneIds.GearfallCaverns, SceneIds.RooftopRun, SceneIds.NightMarketHeist, SceneIds.FrostgearAscent, SceneIds.ClockworkGlacier,
             SceneIds.EmberWastes, SceneIds.SkyGardens, SceneIds.SunkenClockworks, SceneIds.ToyFortress, SceneIds.ShatteredCrossing, SceneIds.FourfoldSovereign,
+            SceneIds.GearworkMaze, SceneIds.FrozenVault, SceneIds.ShatteredLabyrinth,
+            SceneIds.WinterGiftRun, SceneIds.SweetheartSprint, SceneIds.HarvestHustle, SceneIds.CountdownClimb, SceneIds.HauntedEscape,
+            SceneIds.ZombieSurvival,
             SceneIds.MissionBoard, "MS_FirstLight", "MS_ClocktowerShadow", "MS_GearworksFoundry", "MS_SkybridgeGala", "MS_FrozenGate", "MS_CloudDocks", "MS_LastContract"
         };
 
@@ -84,6 +87,48 @@ namespace PKR.Tests
             Assert.AreEqual(1, Object.FindObjectsByType<ClueScroll>().Length, "cipher scroll");
             Assert.IsNotNull(MissionTracker.Current);
             Assert.AreEqual(1, StealthTracker.Current.TargetsTotal, "one target");
+        }
+
+        [UnityTest]
+        public IEnumerator Mazes_HaveTheirObstacles()
+        {
+            yield return Load(SceneIds.GearworkMaze);
+            Assert.Greater(Object.FindObjectsByType<LockedDoor>().Length, 0, "locked doors");
+            Assert.Greater(Object.FindObjectsByType<KeyPickup>().Length, 0, "keys");
+            Assert.Greater(Object.FindObjectsByType<SwitchBlock>().Length, 0, "switch blocks");
+            Assert.Greater(Object.FindObjectsByType<LaserGate>().Length, 0, "lasers");
+            Assert.Greater(Object.FindObjectsByType<Crusher>().Length, 0, "crushers");
+            yield return Load(SceneIds.ShatteredCrossing);
+            Assert.Greater(Object.FindObjectsByType<SawBlade>().Length + Object.FindObjectsByType<Crusher>().Length, 2, "hardened level");
+        }
+
+        [UnityTest]
+        public IEnumerator HauntedEscape_HasTheHorde_AndCountdownClimbIsTimed()
+        {
+            yield return Load(SceneIds.HauntedEscape);
+            Assert.AreEqual(1, Object.FindObjectsByType<HordeWall>().Length, "the horde");
+            Assert.IsTrue(LevelFlowController.Current.Level.isEvent);
+            yield return Load(SceneIds.CountdownClimb);
+            Assert.Greater(LevelFlowController.Current.TimeLeft, 0f, "the countdown runs");
+        }
+
+        [UnityTest]
+        public IEnumerator ZombieSurvival_StartsRoundOne_AndSpawnsZombies()
+        {
+            yield return Load(SceneIds.ZombieSurvival);
+            var game = ZombieSurvival.Current;
+            Assert.IsNotNull(game, "the arena has a ZombieSurvival controller");
+            Assert.IsNotNull(ZombieGunner.Player, "the hero carries a gun");
+            Assert.AreEqual("pea_popper", ZombieGunner.Player.Current.spec.id);
+            Assert.Greater(Object.FindObjectsByType<Barricade>().Length, 1, "window barricades");
+            Assert.Greater(Object.FindObjectsByType<ZombieStation>().Length, 8, "stations");
+            // Keep the hero safe while the first zombies arrive.
+            var hero = game.player;
+            if (hero.TryGetComponent(out Invulnerability inv)) inv.Grant(60f);
+            yield return new WaitForSeconds(6f);
+            Assert.AreEqual(1, game.Run.Round, "round 1 started after the countdown");
+            Assert.Greater(Object.FindObjectsByType<EnemyAI>().Length, 0, "zombies are coming");
+            Assert.IsFalse(game.GameOver);
         }
     }
 }

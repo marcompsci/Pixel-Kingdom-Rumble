@@ -18,10 +18,11 @@ namespace PKR
         [Tooltip("Heroes, foes and places for the CODEX button. The button shows as disabled without it.")]
         [SerializeField] CodexDefinition codex;
 
-        RectTransform _menuRoot, _settingsRoot, _shopRoot, _codexRoot;
+        RectTransform _menuRoot, _settingsRoot, _shopRoot, _codexRoot, _eventRoot;
         SettingsPanel _settings;
         ShopPanel _shop;
         CodexPanel _codex;
+        EventMenuPanel _events;
 
         void Awake()
         {
@@ -37,12 +38,25 @@ namespace PKR
             _codexRoot = UIFactory.Rect("Codex", safe);
             UIFactory.Stretch(_codexRoot);
             _codex = gameObject.AddComponent<CodexPanel>();
+            _eventRoot = UIFactory.Rect("Events", safe);
+            UIFactory.Stretch(_eventRoot);
+            _events = gameObject.AddComponent<EventMenuPanel>();
         }
 
         void OnEnable() => EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
         void OnDisable() => EventBus<SettingsChanged>.Unsubscribe(OnSettingsChanged);
 
-        void Start() => ShowMenu();
+        void Start()
+        {
+            ShowMenu();
+            // Back from a Holiday / Halloween level: straight to that panel.
+            if (GameSession.ReopenEventMenu)
+            {
+                GameSession.ReopenEventMenu = false;
+                if (GameSession.Mode == SessionMode.Halloween) ShowHalloween();
+                else if (GameSession.Mode == SessionMode.Holiday) ShowHoliday();
+            }
+        }
 
         bool _lastHighContrast;
 
@@ -58,6 +72,7 @@ namespace PKR
             _settingsRoot.gameObject.SetActive(false);
             _shopRoot.gameObject.SetActive(false);
             _codexRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(false);
             _menuRoot.gameObject.SetActive(true);
             BuildMenu();
         }
@@ -94,6 +109,19 @@ namespace PKR
 
             var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest),
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
+            // Holiday Mode and Halloween (zombies) side by side.
+            var events = UIFactory.Rect("EventModes", panel);
+            events.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var row = events.gameObject.AddComponent<HorizontalLayoutGroup>();
+            row.spacing = 24f;
+            row.childControlWidth = true; row.childControlHeight = true;
+            row.childForceExpandWidth = true; row.childForceExpandHeight = true;
+            var holiday = UIFactory.Button(events, "HOLIDAY MODE", ShowHoliday);
+            UIFactory.Tint(holiday, new Color32(60, 150, 100, 255), Color.white);
+            var halloween = UIFactory.Button(events, "HALLOWEEN", ShowHalloween);
+            UIFactory.Tint(halloween, new Color32(220, 110, 30, 255), Color.white);
+            if (EventMenuPanel.IsHalloweenSeason) UIFactory.Highlight(halloween, new Color32(255, 200, 80, 255));
+
             bool hasArena = Application.CanStreamedLevelBeLoaded(SceneIds.ArenaTest);
             UIFactory.Button(panel, hasArena ? "ARENA CLASH" : "ARENA CLASH (SOON)", () => Choose(SessionMode.ArenaClash),
                              interactable: hasArena);
@@ -112,9 +140,16 @@ namespace PKR
                 });
                 UIFactory.Tint(contracts, new Color32(124, 104, 214, 255), Color.white);
             }
+            // Shop and Settings share a row (keeps the menu on one phone screen).
+            var misc = UIFactory.Rect("ShopSettings", panel);
+            misc.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var miscRow = misc.gameObject.AddComponent<HorizontalLayoutGroup>();
+            miscRow.spacing = 24f;
+            miscRow.childControlWidth = true; miscRow.childControlHeight = true;
+            miscRow.childForceExpandWidth = true; miscRow.childForceExpandHeight = true;
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
-                UIFactory.Button(panel, "SHOP", ShowShop);
-            UIFactory.Button(panel, "SETTINGS", ShowSettings);
+                UIFactory.Button(misc, "SHOP", ShowShop);
+            UIFactory.Button(misc, "SETTINGS", ShowSettings);
             if (codex != null)
             {
                 int unseen = codex.Progress().unseen;
@@ -134,6 +169,20 @@ namespace PKR
         {
             GameSession.Mode = mode;
             if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect);
+        }
+
+        void ShowHoliday()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(true);
+            _events.OpenHoliday(_eventRoot, ShowMenu);
+        }
+
+        void ShowHalloween()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(true);
+            _events.OpenHalloween(_eventRoot, ShowMenu);
         }
 
         void ShowShop()

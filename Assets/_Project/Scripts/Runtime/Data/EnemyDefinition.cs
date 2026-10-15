@@ -13,7 +13,9 @@ namespace PKR
         /// <summary>Walker with a front shield that turns to face a nearby hero (Bolt Knight).</summary>
         ShieldWalker,
         /// <summary>Patrols, pauses to look back, and watches a sight cone; chases once alerted (Patrol Guard).</summary>
-        Guard
+        Guard,
+        /// <summary>Always shambles toward the hero, hopping walls and ledges to reach them (Halloween zombies).</summary>
+        Chaser
     }
 
     /// <summary>
@@ -82,6 +84,14 @@ namespace PKR
             damage = 1, pipDamage = 1, baseKnockback = 7f, exposedMultiplier = 1f,
             angleDegrees = 45f, baseHitstunFrames = 18, hitstopFrames = 4, isHeavy = false
         };
+
+        [Header("Chaser (zombies)")]
+        [Tooltip("Seconds between spit shots at a hero in range (0 = never spits).")]
+        public float spitEvery = 0f;
+        [Tooltip("Bursts when defeated, hurting a hero standing close.")]
+        public bool burstOnDeath;
+        [Tooltip("A Chaser further than this from the hero just wanders (Zombie Survival overrides it: the whole arena).")]
+        public float chaseRange = 9f;
 
         [Header("Drops")]
         [Min(0)] public int shardDrop = 2;
