@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Dex_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 9f42d2d3f34004877b48e1e0ad059155, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: e66ae01117f18412b83f17d6a3fe59e3, type: 2}
+  airAttack: {fileID: 11400000, guid: 6acb1e036b926417abbbddca901e4593, type: 2}
+  groundSpecial: {fileID: 11400000, guid: b48778881827b4f41addef8b8e3f1ecb, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: cb69e1d1fedf04705967856d20dbbbda, type: 2}
+  downSpecial: {fileID: 11400000, guid: 934d76a03be034aa2ab13cf08987defe, type: 2}
+  abilityImpact: {fileID: 11400000, guid: eea0f8971e76f4b6dac43d0f81ce0cb5, type: 2}

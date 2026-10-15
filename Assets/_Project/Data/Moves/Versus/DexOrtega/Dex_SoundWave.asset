@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f01ab389b2b7ba3c1601ba72a81d1903, type: 3}
+  m_Name: Dex_SoundWave
+  m_EditorClassIdentifier: PKR.Runtime::PKR.MoveDefinition
+  id: dex_soundwave
+  displayName: Sound Wave
+  description: 'Special: a ring of sound that rolls across the floor.'
+  frames:
+    startup: 6
+    active: 1
+    recovery: 14
+    cancelWindow: 0
+  shape: 0
+  hitboxOffset: {x: 0.8, y: 0}
+  hitboxSize: {x: 1, y: 0.8}
+  hitboxRadius: 0.8
+  hit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 5
+    exposedMultiplier: 1.6
+    angleDegrees: 30
+    baseHitstunFrames: 11
+    hitstopFrames: 3
+    isHeavy: 0
+  rootedOnGround: 1
+  lungeSpeed: 0
+  endsOnLanding: 1
+  speedBonus: 0
+  superArmor: 0
+  armorStartFrame: 0
+  armorEndFrame: -1
+  followUp: {fileID: 0}
+  specialFollowUp: {fileID: 0}
+  spawnsProjectile: 1
+  projectileSpawnOffset: {x: 0.7, y: 0.1}
+  projectileSpeed: 14
+  projectileLifetime: 0.55
+  projectileRadius: 0.4
+  projectileColor: {r: 1, g: 0.47058824, b: 0.78431374, a: 1}
+  projectileSprite: {fileID: 21300000, guid: 68e44fe0b5fd8cd57423222f9755c689, type: 3}
+  spawnsTrap: 0
+  trapArmDelay: 0.35
+  trapLifetime: 6
+  trapRadius: 0.55
+  trapFallSpeed: 14
+  haptic: 0
+  shakeAmplitude: 0
+  shakeDuration: 0.12

@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: PrankBandit
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_prank_bandit
+  displayName: Prank Bandit
+  codexEntry: A masked mischief-maker on spring shoes. Bounces at you, steals nothing, laughs a lot.
+  sprite: {fileID: 21300000, guid: 83776b6f96073726de664ad6b6a20dbf, type: 3}
+  bodySize: {x: 0.6, y: 0.9}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 83776b6f96073726de664ad6b6a20dbf, type: 3}
+    - {fileID: 21300000, guid: b71458634f4ee29292e5881340244574, type: 3}
+    run: []
+    jump:
+    - {fileID: 21300000, guid: ddaf29b9b9061ae7c4926b026699678a, type: 3}
+    - {fileID: 21300000, guid: a8a95a68c5260d1768936b529a3562e5, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 8222338ab6fc7b361fcd89ece9e94dd1, type: 3}
+    - {fileID: 21300000, guid: d233eaa36d1978381028f26bd324ecaf, type: 3}
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: f43935e5a9a9a1b3d8278dbf29bf73c8, type: 3}
+    weaponName: 
+  maxHealth: 2
+  weight: 1
+  moveSpeed: 0
+  behavior: 1
+  hopCooldown: 1.2
+  hopRange: 7.5
+  hopDrift: 0.65
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 3

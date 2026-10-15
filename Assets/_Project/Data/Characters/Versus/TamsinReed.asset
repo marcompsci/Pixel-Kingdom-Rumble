@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: TamsinReed
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: tamsin_reed
+  displayName: Tamsin Reed
+  tagline: Librarian who reads spells out loud.
+  lore: Tamsin runs the night shift at the Tickworks archive and has read every book in it, twice. Some of them read her back. Her storybound tome fires pages like darts and conjures shapes straight out of the stories.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.98039216, g: 0.78431374, b: 0.8235294, a: 1}
+  bodySprite: {fileID: 21300000, guid: 941c73d00e667e9f3f8b09940094fb40, type: 3}
+  portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: c951712d4642940e11127f9f8ceaaed3, type: 3}
+    - {fileID: 21300000, guid: 65d77e330642a13ed6b59f28199e8ab7, type: 3}
+    - {fileID: 21300000, guid: a2cdf075dc04824be57a3703c03140aa, type: 3}
+    - {fileID: 21300000, guid: ad9ef484939bea305de3d5148340cd59, type: 3}
+    run:
+    - {fileID: 21300000, guid: 2b758bceeaa74fe367b1874269ffbe5c, type: 3}
+    - {fileID: 21300000, guid: 4b99c96996481048742f3016e11fabe5, type: 3}
+    - {fileID: 21300000, guid: 2bacdc4730d6cf8e5c58ce3c405e56a4, type: 3}
+    - {fileID: 21300000, guid: b78b73515bff20fda616459bf203c106, type: 3}
+    - {fileID: 21300000, guid: d1370e3615a4d3dd344da9df3f761ec4, type: 3}
+    - {fileID: 21300000, guid: 6a82f9cb0b9f99983c847bb0a26a6ab3, type: 3}
+    jump:
+    - {fileID: 21300000, guid: e0dc638bfabecaf2bba98801bfabbcff, type: 3}
+    fall:
+    - {fileID: 21300000, guid: adee0e0816b74b2b183eaa9154fe3e86, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 8fa03fc848797f42dcc62b4bccaf699b, type: 3}
+    - {fileID: 21300000, guid: ce4c628922ba832a69f151111780d546, type: 3}
+    - {fileID: 21300000, guid: d5f89daf3f4d3283428e45e08def23f0, type: 3}
+    special:
+    - {fileID: 21300000, guid: 4f7c4f0fd7f040dee337d6de10b2227c, type: 3}
+    - {fileID: 21300000, guid: 3c01c5ed5dff52574255b835c52e1710, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: ec8577733ccfeaa7efc68bbdda6acac1, type: 3}
+    weaponName: Storybound Tome
+  movement:
+    runSpeed: 7.2
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.2
+    timeToApex: 0.37
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 4
+  weight: 0.8
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: c25ff4aead2d54fc591a6058752a4d10, type: 2}
+  kit: {fileID: 11400000, guid: d5cf189246a29406a9785bbf93a30caf, type: 2}

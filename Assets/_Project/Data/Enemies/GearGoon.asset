@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: GearGoon
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_gear_goon
+  displayName: Gear Goon
+  codexEntry: Tickworks maintenance crew who decided breaking things is more fun than fixing them. Big wrench, bigger attitude.
+  sprite: {fileID: 21300000, guid: 809b7a79e9949715a33944ba5979d65c, type: 3}
+  bodySize: {x: 0.8, y: 1.1}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 809b7a79e9949715a33944ba5979d65c, type: 3}
+    - {fileID: 21300000, guid: d616b08d4130b999de035a5c434764ec, type: 3}
+    run:
+    - {fileID: 21300000, guid: 16031e56c4b9b5b1dbcca3a57beeeada, type: 3}
+    - {fileID: 21300000, guid: 38ae6a9917f3332c31f00efcdbf23bdb, type: 3}
+    - {fileID: 21300000, guid: 13a4f9f305c6b10532cdf48d2d2f9b5a, type: 3}
+    - {fileID: 21300000, guid: f38dee83021e7642c749775d957a6cb9, type: 3}
+    - {fileID: 21300000, guid: 7a2dd5241bd13a13bd7c4e9c0df0d145, type: 3}
+    - {fileID: 21300000, guid: 15eaeb97d6369ca517e7ec9b60539755, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: f67b26022cb8e0bf1493cd70ded5f9c0, type: 3}
+    weaponName: 
+  maxHealth: 4
+  weight: 1.4
+  moveSpeed: 0.32
+  behavior: 0
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 8
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 0
+  burstOnDeath: 0
+  chaseRange: 9
+  shardDrop: 3

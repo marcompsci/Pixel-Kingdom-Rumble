@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: DexOrtega
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: dex_ortega
+  displayName: Dex Ortega
+  tagline: Rock guitarist on roller sneakers.
+  lore: Dex plays the loudest band in the Isles and skates to every gig. His star-shaped guitar doubles as a club, and when he hits the big chord the shockwave clears the whole stage.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.19607843, g: 0.19607843, b: 0.23529412, a: 1}
+  bodySprite: {fileID: 21300000, guid: 40c93604ec34e672717033ba9f8af88e, type: 3}
+  portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: 2d6475d579a4abd5bda4d380bb2b5a3f, type: 3}
+    - {fileID: 21300000, guid: 13a717d68f8d7b9aa9db2807e3361d93, type: 3}
+    - {fileID: 21300000, guid: a20b8f5ef3dfe50d0d3744ff273526b8, type: 3}
+    - {fileID: 21300000, guid: 3334cbc39d22581fb9f3616768eabcfb, type: 3}
+    run:
+    - {fileID: 21300000, guid: d7c61becfcf6a788eca6fa3ad1ec928c, type: 3}
+    - {fileID: 21300000, guid: 7be984b27e3d82e43b0c79e40c0f8071, type: 3}
+    - {fileID: 21300000, guid: 404e6c0296ff63efd76147a9f72bd2c3, type: 3}
+    - {fileID: 21300000, guid: 625944b925786e2f1bd471a8724cf705, type: 3}
+    - {fileID: 21300000, guid: e7795e63407a61d4a5eb89dc8751617b, type: 3}
+    - {fileID: 21300000, guid: 229aad9fd98e190db9f38d137123a674, type: 3}
+    jump:
+    - {fileID: 21300000, guid: bc3e37d04d69089f7eb146ec535fdae5, type: 3}
+    fall:
+    - {fileID: 21300000, guid: a6644ffb23c8330c3e24bbb658e2487c, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 30c46753222748db0db8fafd05c9488c, type: 3}
+    - {fileID: 21300000, guid: b97b479604a5c0651d84774f9e80daae, type: 3}
+    - {fileID: 21300000, guid: 3644f39c2ac4bc43cb6e2e577680a87c, type: 3}
+    special:
+    - {fileID: 21300000, guid: 0dbc6f40d9bbdf40beec0e9f4fa9975a, type: 3}
+    - {fileID: 21300000, guid: a4563931679d36d5b8210bfd519861f0, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 13ac57ab7e0f467a8ef098ed3d653aab, type: 3}
+    weaponName: Starburst Axe
+  movement:
+    runSpeed: 8.6
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.2
+    timeToApex: 0.36
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: 9
+    skidDeceleration: 38
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 5
+  weight: 0.95
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 3b2449105d05d42e9b89fed50ebe0bd5, type: 2}
+  kit: {fileID: 11400000, guid: 1fe7a599a51e04dc883390c0bfdab5f3, type: 2}

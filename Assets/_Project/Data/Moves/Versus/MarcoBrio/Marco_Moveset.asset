@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Marco_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 95aee152aa85c4b3ea10270aeb8a9b03, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: d7adfa702f7cc47ccb7adf5fb47fd377, type: 2}
+  airAttack: {fileID: 11400000, guid: 6629e1a39e5e34beab40e6b05cd14aa4, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 6b0ae20a2bf314f359cd6cccee37509f, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: eac8afc6b897045e5afaa9da8f6b67c9, type: 2}
+  downSpecial: {fileID: 11400000, guid: 253b4cc0d46564af88ffdd0b73ce1b30, type: 2}
+  abilityImpact: {fileID: 11400000, guid: 97e04d0ab1e91418782c0c967a6bf978, type: 2}

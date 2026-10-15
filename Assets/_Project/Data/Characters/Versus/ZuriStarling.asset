@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: ZuriStarling
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: zuri_starling
+  displayName: Zuri Starling
+  tagline: Young stargazer with a moon on a string.
+  lore: Zuri maps the stars from the observatory dome above the Frostgear Peaks. She is the smallest fighter in the Isles and the hardest to pin down, and her crescent yo-yo hits from much further away than it looks.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.27450982, g: 0.23529412, b: 0.5882353, a: 1}
+  bodySprite: {fileID: 21300000, guid: bc11f78450a784da825bd7f937c9a0df, type: 3}
+  portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: af2af35d7dda99ad839107cc1f534475, type: 3}
+    - {fileID: 21300000, guid: 3b252f394e838d53dfd0a477df30f55b, type: 3}
+    - {fileID: 21300000, guid: 403686072a6f94e23217b0a9d450553e, type: 3}
+    - {fileID: 21300000, guid: 48511860fe4025a52c9aa4613a61af8a, type: 3}
+    run:
+    - {fileID: 21300000, guid: 7531cbf99a50cadd5888381371dd061c, type: 3}
+    - {fileID: 21300000, guid: 2adc8320e25cae5fc6b02bd1f8f3889b, type: 3}
+    - {fileID: 21300000, guid: 2d8ae85bb60c30209c17db1de8c36db6, type: 3}
+    - {fileID: 21300000, guid: 83af89ce2ab3a49807e4480d9ee667d2, type: 3}
+    - {fileID: 21300000, guid: 9fc35eaf3e6eca61c9b162cd8dec1211, type: 3}
+    - {fileID: 21300000, guid: b99c21321034be21f5d78b3affa457e0, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 5134f5d936f4c20869266838749b3bcd, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 2e80f983442b7d3c15a50cc8fb94b53c, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 69702f4efb2580cd4ebe3cfa22b71fba, type: 3}
+    - {fileID: 21300000, guid: fdc472b29830b80556a5b8a587790867, type: 3}
+    - {fileID: 21300000, guid: 955658b2da5905f7cd6c3ed61961f09c, type: 3}
+    special:
+    - {fileID: 21300000, guid: 70d826fe58602e2789c04cf02a4ea5cb, type: 3}
+    - {fileID: 21300000, guid: 62a6ff190589462928debcbc39ad5169, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: d8cc1f00ccacb03937fc2d1159b133fa, type: 3}
+    weaponName: Crescent Yo-Yo
+  movement:
+    runSpeed: 8.2
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.4
+    timeToApex: 0.35
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 1
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 4
+  weight: 0.65
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 501d1c85339434e458dcbe87bfa1e6b2, type: 2}
+  kit: {fileID: 11400000, guid: f2b4f74cba20b4b26bb14d24bd0c8917, type: 2}

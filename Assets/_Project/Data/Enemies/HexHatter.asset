@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f040713f33dd91f7a00fe7a3b3a04387, type: 3}
+  m_Name: HexHatter
+  m_EditorClassIdentifier: PKR.Runtime::PKR.EnemyDefinition
+  id: enemy_hex_hatter
+  displayName: Hex Hatter
+  codexEntry: A stage magician whose act got out of hand. Throws enchanted cards from a distance, then follows you.
+  sprite: {fileID: 21300000, guid: ae90e1525722f63c2c738faa03bd36c7, type: 3}
+  bodySize: {x: 0.62, y: 1.2}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: ae90e1525722f63c2c738faa03bd36c7, type: 3}
+    - {fileID: 21300000, guid: 1abe3e23c1da0d2f51a37a5955d027cc, type: 3}
+    run:
+    - {fileID: 21300000, guid: e7ee8667f2532947b1ed75a96ec22c7a, type: 3}
+    - {fileID: 21300000, guid: db4cd3914e6f13da4a56cab96e4f0447, type: 3}
+    - {fileID: 21300000, guid: 92ab2060e55f193b01e11700bf66ca8f, type: 3}
+    - {fileID: 21300000, guid: c869ba0937242b765ee78aeba36059c1, type: 3}
+    - {fileID: 21300000, guid: b86a7d4f55e02a5c26401c5c3345200f, type: 3}
+    - {fileID: 21300000, guid: e6ad5da4d296acb223cc2f655bf29008, type: 3}
+    jump: []
+    fall: []
+    attack: []
+    special: []
+    hurt:
+    - {fileID: 21300000, guid: 48c70791f18ddd9eef57ac57a43e6d6e, type: 3}
+    weaponName: 
+  maxHealth: 3
+  weight: 1
+  moveSpeed: 0.3
+  behavior: 5
+  hopCooldown: 1.4
+  hopRange: 7
+  hopDrift: 0.55
+  aggroRange: 6
+  swoopSpeed: 9
+  swoopTime: 0.8
+  swoopWindup: 0.55
+  flyerReturnSpeed: 4
+  swoopCooldown: 1.4
+  shieldBreakDuration: 1.6
+  guardRange: 4
+  shieldSprite: {fileID: 0}
+  sightRange: 6
+  sightHalfAngle: 32
+  lookBackInterval: 4
+  lookBackPause: 1.1
+  chaseSpeed: 0.62
+  noticeRate: 1.5
+  isMissionTarget: 0
+  contactHit:
+    damage: 1
+    pipDamage: 1
+    baseKnockback: 7
+    exposedMultiplier: 1
+    angleDegrees: 45
+    baseHitstunFrames: 18
+    hitstopFrames: 4
+    isHeavy: 0
+  spitEvery: 2.4
+  burstOnDeath: 0
+  chaseRange: 8
+  shardDrop: 4

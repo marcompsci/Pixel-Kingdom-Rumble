@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Zuri_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: 7bb7127d90e644a118fdf84f49825d21, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: f772e168ce9b94f05b3a59e921fbf524, type: 2}
+  airAttack: {fileID: 11400000, guid: a16001dacd7e346faa0a7eb8ea073d99, type: 2}
+  groundSpecial: {fileID: 11400000, guid: cd15fff3dc7234188b1d287561aaf1e9, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: fdf6568c1e9654de996690acb35beddc, type: 2}
+  downSpecial: {fileID: 11400000, guid: 7b4f792477ac34bfb86ee8210aae4563, type: 2}
+  abilityImpact: {fileID: 11400000, guid: 43789f20001a84fc1a19315afcf42e70, type: 2}

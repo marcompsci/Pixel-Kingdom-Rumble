@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: MarcoBrio
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: marco_brio
+  displayName: Marco Brio
+  tagline: Street painter. Every fight is a masterpiece.
+  lore: Marco paints the murals on the Brasslight Quarter's walls, usually without asking. His giant brush leaves streaks of colour wherever it lands, and a good splash of paint is surprisingly hard to see through.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.98039216, g: 0.9647059, b: 0.9254902, a: 1}
+  bodySprite: {fileID: 21300000, guid: 9c81e1ea5a7d6c0b4bb121bc108bcd58, type: 3}
+  portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: dc2920fdc6e2af43bf8d90885540de02, type: 3}
+    - {fileID: 21300000, guid: ebfe69c788737b350aa4fdf5fed97b03, type: 3}
+    - {fileID: 21300000, guid: 0b5e83a1760ca250f31dc4ef755bab92, type: 3}
+    - {fileID: 21300000, guid: b97043de1e2c7976caf06c57874bad51, type: 3}
+    run:
+    - {fileID: 21300000, guid: a60dac96a9a48a6c0a1cc2324fb0dc82, type: 3}
+    - {fileID: 21300000, guid: 0ac9e65f9dcb78269b4d4244fac760ba, type: 3}
+    - {fileID: 21300000, guid: d91b161079ae71036f5b2fda18b12927, type: 3}
+    - {fileID: 21300000, guid: b42bc0b3be52b77c3f8072b7343cfc6c, type: 3}
+    - {fileID: 21300000, guid: 2676ba6e2c4fcbb22c1bb243803e7082, type: 3}
+    - {fileID: 21300000, guid: d3dbe4d990f72bb9ac1abfeee78687a6, type: 3}
+    jump:
+    - {fileID: 21300000, guid: db826b0e84986981e8ad59eb089d223f, type: 3}
+    fall:
+    - {fileID: 21300000, guid: fec8d8fc41401966e83713b039fdef2a, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 67f6c34d4ff39897774fe0dadfb77950, type: 3}
+    - {fileID: 21300000, guid: 23721db4b9fca864ba4c223889c2bcc6, type: 3}
+    - {fileID: 21300000, guid: e33147ee795670b69bfd4d7287fc65fe, type: 3}
+    special:
+    - {fileID: 21300000, guid: 5908cd6114f6859daf5bb91e7042a426, type: 3}
+    - {fileID: 21300000, guid: 3499adb8fba9efd92eda9443f43d0e52, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: ecbd079942a9db66bd2676fad5ecbaac, type: 3}
+    weaponName: Masterstroke Brush
+  movement:
+    runSpeed: 7.8
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3.1
+    timeToApex: 0.37
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 5
+  weight: 1
+  armorPercent: 0
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: 818c29f03948d45eaa1563940204876f, type: 2}
+  kit: {fileID: 11400000, guid: 717c3db1e15d44f3489949836f81639b, type: 2}

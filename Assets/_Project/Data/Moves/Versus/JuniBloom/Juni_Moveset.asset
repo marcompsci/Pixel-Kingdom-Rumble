@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Juni_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: d7b2b23aa95614fa5800a352b781cbf1, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: e898dd5540cdd45528b6e39570298c11, type: 2}
+  airAttack: {fileID: 11400000, guid: 7157f85b9b880471d9211987181f4a53, type: 2}
+  groundSpecial: {fileID: 11400000, guid: dce8a600e0a6c45128579c855962f24a, type: 2}
+  airSpecial: {fileID: 11400000, guid: 6d6b690c2c53141c6b0f6300c92d35d5, type: 2}
+  sideSpecial: {fileID: 11400000, guid: a563b4b35b89445f0bf32e15762ab559, type: 2}
+  downSpecial: {fileID: 11400000, guid: f53fd5ca827494f7c94d93e601db7167, type: 2}
+  abilityImpact: {fileID: 0}

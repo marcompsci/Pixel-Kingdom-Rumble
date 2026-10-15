@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4893a5ed399a4e0125d177bdd2bfd2a, type: 3}
+  m_Name: Bo_Moveset
+  m_EditorClassIdentifier: PKR.Runtime::PKR.Moveset
+  groundAttack: {fileID: 11400000, guid: edcb6e1030ad14c16be8e1d206deda5a, type: 2}
+  groundUpAttack: {fileID: 11400000, guid: 5fccd331db3064bb88efef2f107506f8, type: 2}
+  airAttack: {fileID: 11400000, guid: 2f2541a1f213a4c239c83d0cf7ff9ad1, type: 2}
+  groundSpecial: {fileID: 11400000, guid: 7d11fa545708d48999b16e88e39dc723, type: 2}
+  airSpecial: {fileID: 0}
+  sideSpecial: {fileID: 11400000, guid: af6fc92bc431747499dc3cd0b2d24286, type: 2}
+  downSpecial: {fileID: 11400000, guid: 17977a038a3444f43a58f1c751ef04c8, type: 2}
+  abilityImpact: {fileID: 11400000, guid: 7e4ab43f8844f4e94883c4fd910b15db, type: 2}

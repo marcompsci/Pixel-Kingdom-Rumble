@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240f72ffb8df2f519e5106b6cf3b289, type: 3}
+  m_Name: OttoBrass
+  m_EditorClassIdentifier: PKR.Runtime::PKR.CharacterDefinition
+  id: otto_brass
+  displayName: Otto Brass
+  tagline: Old clockmaker who winds up his punches.
+  lore: Otto built half the clocks in the Tickworks and knows the other half personally. He's slower than he used to be, but he winds his giant key between swings, and a fully wound Otto hits like a falling clock tower.
+  unlockedByDefault: 1
+  playableInThisBuild: 1
+  unlockByClearingLevelId: 
+  unlockMinSecrets: 0
+  unlockHint: 
+  placeholderColor: {r: 0.47058824, g: 0.3137255, b: 0.23529412, a: 1}
+  bodySprite: {fileID: 21300000, guid: c79e810d556f9a1453fb4e2af20f195e, type: 3}
+  portrait: {fileID: 0}
+  frames:
+    idle:
+    - {fileID: 21300000, guid: de3fd294e054eba8a847919bc49d31a5, type: 3}
+    - {fileID: 21300000, guid: 45ccdacd05b57d9d9509f06a89ef7033, type: 3}
+    - {fileID: 21300000, guid: 0ac4bd74cfd42868f3cc25a1bc20942f, type: 3}
+    - {fileID: 21300000, guid: 8d7a0bd6d741e0fc285c3f81e6f3cfbd, type: 3}
+    run:
+    - {fileID: 21300000, guid: 65eeab9937fd8a0692703715f96ebd86, type: 3}
+    - {fileID: 21300000, guid: 0e9e14854ec3c10be7a07ec51f3b49fc, type: 3}
+    - {fileID: 21300000, guid: 8b745f1d735a51ea3d7b109c2fcc3a6a, type: 3}
+    - {fileID: 21300000, guid: f4795ef36f8d68f82d8a6078218ebee3, type: 3}
+    - {fileID: 21300000, guid: b2eeccf4165c7a2161e1b9352bf10d40, type: 3}
+    - {fileID: 21300000, guid: 433ae90584c114669460ca6c72ea351a, type: 3}
+    jump:
+    - {fileID: 21300000, guid: 2feeb0530dd29fb42306f37b65ac5b71, type: 3}
+    fall:
+    - {fileID: 21300000, guid: 4972a49bde260108bdb49e65e7be44e5, type: 3}
+    attack:
+    - {fileID: 21300000, guid: f52ee8270a7c731fb197beaef1cd3936, type: 3}
+    - {fileID: 21300000, guid: 05eb8881c29cbe45db08c3866eb2ff2f, type: 3}
+    - {fileID: 21300000, guid: df009515c9ccada209d084448157241a, type: 3}
+    special:
+    - {fileID: 21300000, guid: 6f1e8413d9d0dae51e9dbc59d72de71b, type: 3}
+    - {fileID: 21300000, guid: e27995f92b8e4b1b6b82e9660ea83249, type: 3}
+    hurt:
+    - {fileID: 21300000, guid: 196021257f0a215d84061642ffff9cb6, type: 3}
+    weaponName: Wind-Up Key
+  movement:
+    runSpeed: 6.8
+    groundAcceleration: 70
+    groundDeceleration: 80
+    airAcceleration: 45
+    airDeceleration: 25
+    jumpHeight: 3
+    timeToApex: 0.39
+    fallGravityMultiplier: 1.7
+    jumpCutMultiplier: 0.45
+    maxFallSpeed: 18
+    apexHangThreshold: 1.2
+    apexGravityMultiplier: 0.55
+    coyoteTime: 0.1
+    jumpBufferTime: 0.12
+    airJumps: 0
+    coastDeceleration: -1
+    skidDeceleration: -1
+    wallRideTime: 0
+    wallRideSpeed: 6
+    wallRideMinSpeed: 4
+    wallJumpSpeedX: 8
+  maxHealth: 6
+  weight: 1.15
+  armorPercent: 0.1
+  guardPips: 3
+  dodgeSpeed: 11
+  dodgeDuration: 0.22
+  dodgeInvulnerability: 0.18
+  dodgeCooldown: 0.35
+  moveset: {fileID: 11400000, guid: c35e8a981b51f47bea921ee1e7050195, type: 2}
+  kit: {fileID: 11400000, guid: 0d62aca4282fa4f2eb734aa48f4a331d, type: 2}
