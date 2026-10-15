@@ -208,7 +208,7 @@ namespace PKR
             if (hero == null) { label.fontSize = 64; return; }
             var art = UIFactory.Rect("Art", (RectTransform)b.transform);
             UIFactory.Stretch(art);
-            art.offsetMin = new Vector2(10f, 30f);
+            art.offsetMin = new Vector2(10f, 36f);
             art.offsetMax = new Vector2(-10f, -6f);
             var a = art.gameObject.AddComponent<Image>();
             a.sprite = hero.bodySprite;
@@ -216,9 +216,12 @@ namespace PKR
             a.raycastTarget = false;
             a.color = selectable ? (roster != null ? roster.TintFor(hero.id) : Color.white) : Silhouette;
             label.text = selectable ? Short(hero.displayName) : "???";
-            label.fontSize = 22;
+            // Small name strip under the portrait (best-fit would grow it back over the face).
+            label.resizeTextForBestFit = false;
+            label.fontSize = 20;
             label.alignment = TextAnchor.LowerCenter;
-            label.rectTransform.offsetMin = new Vector2(2f, 2f);
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.rectTransform.offsetMin = new Vector2(2f, 8f);
         }
 
         static string Short(string name)

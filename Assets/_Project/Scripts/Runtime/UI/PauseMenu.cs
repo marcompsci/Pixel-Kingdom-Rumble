@@ -166,7 +166,7 @@ namespace PKR
         {
             UIFactory.Clear(_menu);
             UIFactory.Dim(_menu);
-            var panel = UIFactory.Panel(_menu, new Vector2(820f, 940f));
+            var panel = UIFactory.Panel(_menu, new Vector2(820f, 830f)); // fits the five rows
             UIFactory.Label(panel, "PAUSED", 72, TextAnchor.MiddleCenter, 110f, title: true);
             var resume = UIFactory.Button(panel, "RESUME", () => { if (Services.State != null) Services.State.Resume(); });
             UIFactory.Button(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
