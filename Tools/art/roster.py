@@ -1,4 +1,4 @@
-"""The 14 playable fighters: looks + signature weapons (all original designs)."""
+"""The 22 playable fighters: looks + signature weapons (all original designs)."""
 from chars import C, METAL, GOLD, WOOD
 
 ROSTER = {
@@ -77,7 +77,51 @@ ROSTER = {
                            accent2=C(60, 60, 70), pants=C(50, 70, 120), shoes=C(240, 240, 240),
                            weapon=dict(type='board', color=C(90, 200, 160), accent=C(250, 240, 220), fx=C(255, 200, 120),
                                        reach=18, name='Grind Deck')),
+    # ---- October 2026 cast (original designs in the chibi style) ----
+    'juni_bloom': dict(name='Juni Bloom', file='ph_vs_juni_bloom', build='slim', head='flowers', long=True, extra=None,
+                       skin=C(250, 214, 186), hair=C(230, 150, 70), top=C(120, 200, 120), accent=C(255, 160, 190),
+                       pants=C(250, 238, 210), shoes=C(160, 110, 70), belt=C(90, 160, 90), eye=C(70, 140, 80),
+                       weapon=dict(type='parasol', color=C(110, 200, 110), handle=C(150, 100, 60), accent=C(255, 160, 190),
+                                   fx=C(170, 255, 170), reach=18, name='Leaf Parasol')),
+    'marco_brio': dict(name='Marco Brio', file='ph_vs_marco_brio', build='normal', head='beret', extra='scarf',
+                       skin=C(214, 160, 120), hair=C(60, 40, 30), top=C(250, 246, 236), accent=C(220, 60, 70),
+                       pants=C(60, 90, 160), shoes=C(70, 50, 40), scarf=C(255, 200, 60), belt=C(60, 50, 50), emblem=C(60, 160, 230),
+                       weapon=dict(type='brush', handle=C(160, 110, 70), accent=C(60, 160, 230), fx=C(120, 200, 255), reach=19,
+                                   name='Masterstroke Brush')),
+    'tamsin_reed': dict(name='Tamsin Reed', file='ph_vs_tamsin_reed', build='slim', head='bob', extra=None,
+                        skin=C(244, 200, 170), hair=C(120, 80, 60), top=C(250, 200, 210), accent=C(150, 90, 160),
+                        pants=C(100, 70, 60), shoes=C(110, 70, 50), eye=C(110, 90, 70), glasses=C(84, 52, 74), belt=C(150, 90, 160),
+                        weapon=dict(type='tome', color=C(110, 70, 160), accent=C(255, 210, 90), fx=C(220, 180, 255), reach=17,
+                                    name='Storybound Tome')),
+    'dex_ortega': dict(name='Dex Ortega', file='ph_vs_dex_ortega', build='normal', head='spiky', extra=None,
+                       skin=C(170, 110, 80), hair=C(210, 70, 170), top=C(50, 50, 60), accent=C(255, 230, 90),
+                       pants=C(70, 70, 120), shoes=C(240, 240, 240), sleeve=C(170, 110, 80), emblem=C(255, 230, 90), belt=C(40, 40, 50),
+                       eye=C(70, 200, 160),
+                       weapon=dict(type='guitar', color=C(240, 70, 110), accent=C(255, 230, 90), fx=C(255, 150, 220), reach=19,
+                                   name='Starburst Axe')),
+    'pepper_quinn': dict(name='Pepper Quinn', file='ph_vs_pepper_quinn', build='bulky', head='bandana', extra=None,
+                         skin=C(120, 78, 52), hair=C(30, 24, 22), top=C(255, 250, 240), accent=C(230, 70, 60),
+                         pants=C(60, 70, 90), shoes=C(50, 40, 40), overalls=True, belt=C(230, 70, 60),
+                         weapon=dict(type='pan', color=C(70, 70, 80), handle=C(120, 80, 50), fx=C(255, 180, 90), reach=18,
+                                     name='Sizzle Skillet')),
+    'bo_tidewell': dict(name='Bo Tidewell', file='ph_vs_bo_tidewell', build='bulky', head='beanie', extra=None,
+                        skin=C(232, 186, 150), hair=C(200, 120, 60), top=C(250, 200, 50), accent=C(40, 80, 140),
+                        accent2=C(250, 250, 250), pants=C(40, 60, 100), shoes=C(70, 60, 50), belt=C(40, 80, 140),
+                        weapon=dict(type='anchor', color=C(120, 130, 150), accent=C(200, 160, 90), fx=C(140, 220, 255), reach=19,
+                                    name='Harbor Anchor')),
+    'zuri_starling': dict(name='Zuri Starling', file='ph_vs_zuri_starling', build='small', head='buns', extra='cape',
+                          skin=C(110, 70, 48), hair=C(40, 28, 34), top=C(70, 60, 150), accent=C(255, 220, 110),
+                          pants=C(50, 44, 110), shoes=C(255, 220, 110), emblem=C(255, 220, 110), eye=C(80, 60, 120),
+                          weapon=dict(type='yoyo', color=C(240, 240, 220), accent=C(160, 170, 220), fx=C(255, 240, 160), reach=20,
+                                      name='Crescent Yo-Yo')),
+    'otto_brass': dict(name='Otto Brass', file='ph_vs_otto_brass', build='normal', head='goggles', extra='satchel',
+                       skin=C(240, 200, 170), hair=C(230, 230, 236), top=C(120, 80, 60), accent=C(220, 170, 70),
+                       pants=C(80, 70, 70), shoes=C(60, 44, 36), glasses=C(150, 110, 50), mustache=C(236, 236, 240),
+                       belt=C(70, 50, 40), emblem=C(220, 170, 70),
+                       weapon=dict(type='key', color=C(220, 170, 70), accent=C(150, 110, 50), fx=C(255, 220, 140), reach=18,
+                                   name='Wind-Up Key')),
 }
 
 ORDER = ['nova', 'brick', 'luma', 'rex_rollo', 'kai_tempest', 'mara_vex', 'volt_ramirez', 'sola_brightwing', 'grizz',
-         'pixel_pip', 'nyx_frost', 'blaze_torres', 'juno_strike', 'ollie_kickflip']
+         'pixel_pip', 'nyx_frost', 'blaze_torres', 'juno_strike', 'ollie_kickflip',
+         'juni_bloom', 'marco_brio', 'tamsin_reed', 'dex_ortega', 'pepper_quinn', 'bo_tidewell', 'zuri_starling', 'otto_brass']

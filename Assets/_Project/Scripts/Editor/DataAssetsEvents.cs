@@ -146,6 +146,20 @@ namespace PKR.EditorTools
             EnemyBehavior.Flyer, new Vector2(0.75f, 0.5f), 1, 0f, 1,
             d => { d.aggroRange = 15f; d.swoopSpeed = 9f; d.swoopTime = 1.1f; d.swoopWindup = 0.45f; d.flyerReturnSpeed = 4f; d.swoopCooldown = 1.4f; d.weight = 0.5f; });
 
+        // ---- October 2026 chibi foes ----------------------------------------------------------------------------
+        public static EnemyDefinition GetOrCreateGearGoon() => EventFoe("GearGoon", "enemy_gear_goon", "Gear Goon",
+            "Tickworks maintenance crew who decided breaking things is more fun than fixing them. Big wrench, bigger attitude.",
+            EnemyBehavior.Walker, new Vector2(0.8f, 1.1f), 4, 0.32f, 3, d => { d.contactHit = Bite(1, 8f); d.weight = 1.4f; });
+
+        public static EnemyDefinition GetOrCreatePrankBandit() => EventFoe("PrankBandit", "enemy_prank_bandit", "Prank Bandit",
+            "A masked mischief-maker on spring shoes. Bounces at you, steals nothing, laughs a lot.",
+            EnemyBehavior.Hopper, new Vector2(0.6f, 0.9f), 2, 0f, 3, d => { d.hopCooldown = 1.2f; d.hopRange = 7.5f; d.hopDrift = 0.65f; });
+
+        public static EnemyDefinition GetOrCreateHexHatter() => EventFoe("HexHatter", "enemy_hex_hatter", "Hex Hatter",
+            "A stage magician whose act got out of hand. Throws enchanted cards from a distance, then follows you.",
+            EnemyBehavior.Chaser, new Vector2(0.62f, 1.2f), 3, 0.3f, 4,
+            d => { d.spitEvery = 2.4f; d.chaseRange = 8f; d.contactHit = Bite(1, 7f); });
+
         public static EnemyDefinition GetOrCreatePumpkinKing() => EventFoe("PumpkinKing", "enemy_pumpkin_king", "The Pumpkin King",
             "Every fifth night he climbs out of the patch to lead the horde. Huge, tough and furious. Bring the big guns.",
             EnemyBehavior.Chaser, new Vector2(1f, 1.6f), 40, 0.42f, 10, d => { d.contactHit = Bite(2, 13f); d.weight = 2.5f; });

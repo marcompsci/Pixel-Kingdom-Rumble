@@ -24,6 +24,9 @@ namespace PKR.EditorTools
             { "sola_brightwing", "Dawn Spear" }, { "grizz", "Timber Mallet" }, { "pixel_pip", "Gadget Blaster" },
             { "nyx_frost", "Rime Staff" }, { "blaze_torres", "Rescue Axe" }, { "juno_strike", "Strike Ball" },
             { "ollie_kickflip", "Grind Deck" },
+            { "juni_bloom", "Leaf Parasol" }, { "marco_brio", "Masterstroke Brush" }, { "tamsin_reed", "Storybound Tome" },
+            { "dex_ortega", "Starburst Axe" }, { "pepper_quinn", "Sizzle Skillet" }, { "bo_tidewell", "Harbor Anchor" },
+            { "zuri_starling", "Crescent Yo-Yo" }, { "otto_brass", "Wind-Up Key" },
         };
 
         public static string WeaponName(string id) => id != null && Weapons.TryGetValue(id, out var w) ? w : "";

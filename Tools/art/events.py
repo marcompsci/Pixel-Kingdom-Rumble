@@ -360,10 +360,10 @@ def pumpkin_king(a=None):
             if base.px[y][x] is not None:
                 c.px[y][x + 4] = base.px[y][x]
     bobv = 1 if kind == 'walk' and i % 2 else 0
-    for y in range(29, 56):                           # the pumpkin replaces the head
+    for y in range(19, 56):                           # the pumpkin replaces the (chibi) head
         for x in range(40):
             c.px[y][x] = None
-    cy = 38 + bobv
+    cy = 28 + bobv
     c.fill(c.mask_ellipse(20, cy, 11, 9), Ramp(C(240, 130, 40)))
     for dx in (-5, 0, 5):
         for y in range(cy - 7, cy + 8):

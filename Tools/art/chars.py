@@ -17,12 +17,16 @@ def C(r, g, b):
 
 
 # ---- builds (y-up, relative to feet) -------------------------------------------------------------
+# Chibi proportions (October 2026 restyle): a big round head about as tall as the whole body below it, a short boxy
+# torso, short sturdy legs, round mitten hands and chunky shoes.
 BUILDS = {
-    'normal': dict(hip=12, top=24, tw=5.0, sh=5.0, hcy=32.5, hrx=7.6, hry=7.0, leg=2.3, arm=1.8, hand=2.0, foot=3),
-    'slim':   dict(hip=12, top=24, tw=4.2, sh=4.4, hcy=32.5, hrx=7.4, hry=7.0, leg=2.0, arm=1.6, hand=1.8, foot=3),
-    'bulky':  dict(hip=12, top=26, tw=7.2, sh=7.0, hcy=34.0, hrx=7.6, hry=6.8, leg=2.9, arm=2.6, hand=2.6, foot=4),
-    'small':  dict(hip=8, top=18, tw=4.6, sh=4.6, hcy=26.0, hrx=7.4, hry=6.6, leg=1.9, arm=1.6, hand=1.8, foot=3),
+    'normal': dict(hip=7, top=15, tw=4.8, sh=4.8, hcy=24.5, hrx=10.4, hry=9.8, leg=2.5, arm=2.0, hand=2.4, foot=4),
+    'slim':   dict(hip=7, top=15, tw=4.2, sh=4.4, hcy=24.5, hrx=10.0, hry=9.6, leg=2.2, arm=1.8, hand=2.2, foot=4),
+    'bulky':  dict(hip=7, top=16, tw=6.4, sh=6.4, hcy=26.0, hrx=10.6, hry=9.8, leg=3.0, arm=2.6, hand=2.9, foot=5),
+    'small':  dict(hip=5, top=12, tw=4.2, sh=4.2, hcy=20.5, hrx=9.4, hry=8.8, leg=2.0, arm=1.7, hand=2.1, foot=3),
 }
+# Pose offsets were authored for the old, taller rig: legs and hands are scaled to the chibi body.
+LEG_SCALE, HAND_SCALE = 0.62, 0.72
 
 
 # ---- poses ---------------------------------------------------------------------------------------
@@ -236,6 +240,93 @@ def draw_weapon(c, grip, ang, w, glow, scale=1.0):
             wp = (q[0] - n[0] * 2, q[1] - n[1] * 2)
             c.fill(c.mask_ellipse(wp[0], wp[1], 1.3, 1.3), Ramp(acc))
         tip = b
+    elif t == 'parasol':   # Juni: a leaf parasol (closed it's a club, open it's a shield)
+        a, b = at(-4), at(12)
+        c.fill(c.mask_capsule(*a, *b, 0.7), Ramp(w.get('handle', WOOD)))
+        n = rot(d, 90)
+        h = at(12)
+        pts = [(h[0] + n[0] * 6, h[1] + n[1] * 6), at(18), (h[0] - n[0] * 6, h[1] - n[1] * 6), at(10)]
+        c.fill(c.mask_poly(pts), Ramp(col))
+        for k in (-3, 0, 3):
+            q = (h[0] + n[0] * k, h[1] + n[1] * k)
+            for (x, y) in c.line_pts(q[0], q[1], *at(17)):
+                c.put(x, y, shift(col, dl=-0.18))
+        c.fill(c.mask_ellipse(*at(-4), 1.3, 1.3), Ramp(acc))
+        tip = at(18)
+    elif t == 'brush':     # Marco: a giant paintbrush dripping paint
+        a, b = at(-4), at(11)
+        c.fill(c.mask_capsule(*a, *b, 1.0), Ramp(w.get('handle', WOOD)))
+        c.fill(c.mask_capsule(*at(10), *at(12), 1.5), Ramp(METAL))
+        n = rot(d, 90)
+        h = at(13)
+        pts = [(h[0] + n[0] * 2.4, h[1] + n[1] * 2.4), (h[0] - n[0] * 2.4, h[1] - n[1] * 2.4), at(19)]
+        c.fill(c.mask_poly(pts) + c.mask_ellipse(*at(15), 2.4, 2.4), Ramp(acc))
+        tip = at(19)
+    elif t == 'tome':      # Tamsin: a floating spellbook held open
+        h = at(5)
+        n = rot(d, 90)
+        c.fill(c.mask_rect(h[0] - 4, h[1] - 3, h[0] + 4, h[1] + 3, r=1), Ramp(col))
+        c.fill(c.mask_rect(h[0] - 3, h[1] - 2, h[0] + 3, h[1] + 2), Ramp(C(250, 244, 226)))
+        for x in range(int(h[0] - 2), int(h[0] + 3)):
+            if x != int(h[0]):
+                c.put(x, int(h[1]), C(160, 150, 140), lock=True)
+        c.fill(c.mask_rect(h[0], h[1] - 2, h[0], h[1] + 2), Ramp(acc), soft=True)
+        tip = (h[0] + 4, h[1])
+    elif t == 'guitar':    # Dex: a star-shaped electric guitar swung like a bat
+        a, b = at(-2), at(13)
+        c.fill(c.mask_capsule(*a, *b, 0.9), Ramp(C(60, 50, 50)))
+        body = at(-1)
+        n = rot(d, 90)
+        pts = []
+        for k in range(10):
+            r_ = 5.0 if k % 2 == 0 else 2.6
+            ang_ = math.radians(ang + 180 + k * 36)
+            pts.append((body[0] + math.cos(ang_) * r_, body[1] + math.sin(ang_) * r_))
+        c.fill(c.mask_poly(pts), Ramp(col))
+        c.fill(c.mask_ellipse(body[0], body[1], 1.2, 1.2), Ramp(acc))
+        c.fill(c.mask_capsule(*at(13), *at(15), 1.5), Ramp(acc))
+        tip = at(15)
+    elif t == 'pan':       # Pepper: a cast-iron skillet
+        a, b = at(-3), at(7)
+        c.fill(c.mask_capsule(*a, *b, 1.0), Ramp(w.get('handle', C(60, 50, 50))))
+        h = at(12)
+        c.fill(c.mask_ellipse(h[0], h[1], 5.2, 5.2), Ramp(col))
+        c.fill(c.mask_ellipse(h[0] + 0.5, h[1] + 0.5, 3.6, 3.6), Ramp(shift(col, dl=-0.12)))
+        c.specular(int(h[0] - 2), int(h[1] + 2))
+        tip = at(17)
+    elif t == 'anchor':    # Bo: a ship's anchor on a short chain
+        a, b = at(-3), at(12)
+        c.fill(c.mask_capsule(*a, *b, 1.1), Ramp(col))
+        n = rot(d, 90)
+        h = at(12)
+        c.fill(c.mask_capsule(h[0] + n[0] * 5, h[1] + n[1] * 5, h[0] - n[0] * 5, h[1] - n[1] * 5, 1.2), Ramp(col))
+        for sgn in (1, -1):
+            e = (h[0] + n[0] * 5 * sgn, h[1] + n[1] * 5 * sgn)
+            c.fill(c.mask_poly([(e[0], e[1]), (e[0] - d[0] * 3 + n[0] * 1.5 * sgn, e[1] - d[1] * 3 + n[1] * 1.5 * sgn),
+                                (e[0] - d[0] * 0.5 - n[0] * 1.2 * sgn, e[1] - d[1] * 0.5 - n[1] * 1.2 * sgn)]), Ramp(col))
+        c.fill(c.mask_ellipse(*at(-4), 1.8, 1.8), Ramp(acc))
+        tip = at(13)
+    elif t == 'yoyo':      # Zuri: a moon yo-yo on a glowing string
+        reach = w.get('reach', 18) * 0.55 * scale
+        e = (grip[0] + d[0] * reach, grip[1] + d[1] * reach)
+        for (x, y) in c.line_pts(grip[0], grip[1], e[0], e[1]):
+            c.put(x, y, C(255, 250, 220))
+        c.fill(c.mask_ellipse(e[0], e[1], 3.4, 3.4), Ramp(col))
+        c.fill([p for p in c.mask_ellipse(e[0], e[1], 3.4, 3.4) if (p[0] - e[0] - 1.4) ** 2 + (p[1] - e[1] - 1) ** 2 < 5], Ramp(acc))
+        tip = e
+    elif t == 'key':       # Otto: a giant wind-up key
+        a, b = at(-2), at(10)
+        c.fill(c.mask_capsule(*a, *b, 1.2), Ramp(col))
+        n = rot(d, 90)
+        for sgn in (1, -1):
+            lobe = (grip[0] - d[0] * 4 + n[0] * 3.2 * sgn, grip[1] - d[1] * 4 + n[1] * 3.2 * sgn)
+            c.fill(c.mask_ellipse(lobe[0], lobe[1], 2.8, 2.8), Ramp(col))
+            for (x, y) in c.mask_ellipse(lobe[0], lobe[1], 1.0, 1.0):
+                if c.inside(x, y):
+                    c.px[y][x] = None
+        bit = at(10)
+        c.fill(c.mask_rect(bit[0] - 1.5, bit[1] - 2.5, bit[0] + 2, bit[1] + 0.5), Ramp(acc))
+        tip = at(12)
     elif t == 'stick':
         a, b = at(-4), at(13)
         c.fill(c.mask_capsule(*a, *b, 0.9), Ramp(col))
@@ -279,54 +370,69 @@ def draw_smear(c, origin, kind, color, reach=22):
 
 # ---- heads ---------------------------------------------------------------------------------------
 def draw_face(c, cx, cy, spec, eyes, rx, ry):
-    skin = Ramp(spec['skin'])
-    eye = spec.get('eye') or INK
-    ex = int(round(cx + rx * 0.38))
-    ey = int(round(cy - ry * 0.05))
-    ex2 = int(round(cx - rx * 0.12))
-    white = C(250, 250, 255)
+    """Chibi face: two big glossy eyes (iris + highlight), a small smile and rosy cheeks. Robots get a visor."""
+    eye = spec.get('eye') or C(60, 40, 34)
+    ex = int(round(cx + rx * 0.45))      # near eye (the hero faces right, three-quarter view)
+    ex2 = int(round(cx - rx * 0.05))     # far eye
+    ey = int(round(cy - ry * 0.18))
+    white = C(255, 255, 255)
     kind = spec.get('face', 'human')
     if kind == 'robot':
-        # visor band
-        pts = c.mask_rect(cx - rx * 0.55, ey - 1, cx + rx * 0.95, ey + 2, r=1)
+        pts = c.mask_rect(cx - rx * 0.6, ey - 2, cx + rx * 0.95, ey + 2, r=1)
         c.flat(pts, C(30, 40, 60), lock=True)
-        for x in range(int(cx - rx * 0.4), int(cx + rx * 0.85)):
+        for x in range(int(cx - rx * 0.45), int(cx + rx * 0.85)):
             if eyes in ('blink', 'hurt'):
                 if x % 2 == 0:
                     c.put(x, ey, eye, lock=True)
-            elif x in (ex, ex + 1, ex2, ex2 + 1):
-                c.put(x, ey, eye, lock=True)
-                c.put(x, ey + 1, eye, lock=True)
+            elif x in (ex - 1, ex, ex2 - 1, ex2):
+                for y in (ey - 1, ey, ey + 1):
+                    c.put(x, y, eye, lock=True)
         return
-    if eyes == 'blink':
-        for x in (ex - 1, ex, ex2):
-            c.put(x, ey, shift(spec['skin'], dl=-0.35), lock=True)
-    elif eyes == 'hurt':
-        for (x, y) in ((ex - 1, ey + 1), (ex, ey), (ex - 1, ey - 1)):
-            c.put(x, y, INK, lock=True)
-        for (x, y) in ((ex2 + 1, ey + 1), (ex2, ey), (ex2 + 1, ey - 1)):
-            c.put(x, y, INK, lock=True)
-    else:
-        # big readable eyes: 2x3 with a glint; far eye slimmer (3/4 view)
-        for y in range(ey - 1, ey + 2):
-            c.put(ex, y, eye, lock=True)
-            c.put(ex - 1, y, eye if y < ey + 1 else shift(eye, dl=0.12), lock=True)
-            c.put(ex2, y, eye, lock=True)
-        c.put(ex, ey + 1, white, lock=True)
-        c.put(ex2, ey + 1, white, lock=True)
+    lid = shift(spec['skin'], dl=-0.38)
+    for x0 in (ex - 1, ex2 - 2):
+        if eyes == 'blink':
+            c.put(x0, ey, lid, lock=True)
+            c.put(x0 + 1, ey, lid, lock=True)
+            c.put(x0 - 1 if x0 == ex2 - 2 else x0 + 2, ey + 1, lid, lock=True)
+            continue
+        if eyes == 'hurt':
+            for (dx, dy) in ((0, 1), (1, 0), (0, -1)):
+                c.put(x0 + dx, ey + dy, INK, lock=True)
+            continue
+        # big glossy eye, 3 wide on the near side and 2 on the far side (three-quarter view), 5 tall:
+        # dark lash line on top, coloured iris, darker base, white highlight up top plus a small low sparkle
+        wide = 3 if x0 == ex - 1 else 2
+        for y in range(ey - 2, ey + 3):
+            for x in range(x0, x0 + wide):
+                c.put(x, y, eye, lock=True)
+        for x in range(x0, x0 + wide):
+            c.put(x, ey + 2, INK, lock=True)
+            c.put(x, ey - 2, shift(eye, dl=-0.18), lock=True)
+        c.put(x0, ey + 1, white, lock=True)
+        if wide == 3:
+            c.put(x0 + 1, ey + 1, white, lock=True)
+            c.put(x0 + 2, ey - 1, mix(eye, white, 0.6), lock=True)
         if eyes == 'angry':
-            c.put(ex - 1, ey + 2, INK, lock=True)
-            c.put(ex, ey + 2, INK, lock=True)
-            c.put(ex + 1, ey + 3, INK, lock=True)
-            c.put(ex2, ey + 2, INK, lock=True)
-            c.put(ex2 - 1, ey + 3, INK, lock=True)
-    # blush + mouth
-    if kind == 'human':
-        c.put(ex + 1, ey - 2, mix(spec['skin'], C(255, 110, 110), 0.45), lock=True)
-        mouth_y = ey - 3
-        c.put(ex - 1, mouth_y, shift(spec['skin'], dl=-0.3), lock=True)
-        if eyes == 'angry':
-            c.put(ex - 2, mouth_y, shift(spec['skin'], dl=-0.3), lock=True)
+            c.put(x0 - 1, ey + 4, INK, lock=True)
+            for x in range(x0, x0 + wide):
+                c.put(x, ey + 3, INK, lock=True)
+            c.put(x0 + wide, ey + 2, INK, lock=True)
+    if kind in ('human', 'bear', 'lizard', 'golem'):
+        blush = mix(spec['skin'], C(255, 120, 130), 0.5)
+        if kind == 'human':
+            for x in (ex + 2, ex + 3, ex2 - 4, ex2 - 3):
+                c.put(x, ey - 3, blush, lock=True)
+        mx = (ex + ex2) // 2
+        my = ey - 5
+        mouth = shift(spec['skin'], dl=-0.42)
+        if eyes in ('angry', 'hurt'):
+            for x in (mx - 1, mx, mx + 1):
+                c.put(x, my, mouth, lock=True)
+        else:
+            c.put(mx - 1, my + 1, mouth, lock=True)
+            c.put(mx, my, mouth, lock=True)
+            c.put(mx + 1, my, mouth, lock=True)
+            c.put(mx + 2, my + 1, mouth, lock=True)
 
 
 def draw_head(c, cx, cy, spec, eyes, b, flutter):
@@ -341,7 +447,7 @@ def draw_head(c, cx, cy, spec, eyes, b, flutter):
         for ex in (cx - rx * 0.6, cx + rx * 0.35):
             c.fill(c.mask_ellipse(ex, cy + ry * 0.85, 2.6, 2.6), Ramp(hair))
             c.flat(c.mask_ellipse(ex, cy + ry * 0.85, 1.2, 1.2), shift(hair, dl=0.15))
-    if kind == 'hair' and spec.get('long'):
+    if kind in ('hair', 'flowers', 'bob') and spec.get('long'):
         sway = [0, 1, 1, 0, -1, 0][flutter % 6]
         c.fill(c.mask_poly([(cx - rx * 0.2, cy + ry * 0.8), (cx - rx - 2 + sway, cy - ry - 3), (cx - rx * 0.9, cy - ry * 0.2),
                             (cx + rx * 0.3, cy + ry * 0.2)]), Ramp(hair))
@@ -357,7 +463,29 @@ def draw_head(c, cx, cy, spec, eyes, b, flutter):
         for (x, y) in ((cx - 3, cy + 2), (cx + 1, cy - 4), (cx - 5, cy - 2)):
             c.put(x, y, shift(spec['skin'], dl=-0.2))
             c.put(x + 1, y, shift(spec['skin'], dl=-0.2))
+    # Hair covers the back and side of the head and frames the face (three-quarter view).
+    if face == 'human' and kind in ('hair', 'spiky', 'band', 'goggles', 'courier', 'cap', 'mohawk', 'buns', 'beanie',
+                                     'curls', 'ponytail', 'beret', 'bandana', 'tophat', 'flowers', 'bob'):
+        back = [p for p in c.mask_ellipse(cx, cy, rx + 0.4, ry + 0.4)
+                if p[0] < cx - rx * 0.32 + (p[1] - cy) * 0.25 and p[1] > cy - ry * (0.55 if kind != 'mohawk' else 0.1)]
+        c.fill(back, Ramp(hair if kind != 'mohawk' else shift(spec['skin'], dl=-0.1)))
     draw_face(c, cx, cy, spec, eyes, rx, ry)
+    if spec.get('glasses'):   # round frames around both eyes
+        g = spec['glasses']
+        ex, ex2, ey = int(round(cx + rx * 0.45)), int(round(cx - rx * 0.05)), int(round(cy - ry * 0.18))
+        for (x0, wdt) in ((ex - 2, 5), (ex2 - 3, 4)):
+            for x in range(x0, x0 + wdt):
+                c.put(x, ey + 3, g, lock=True)
+                c.put(x, ey - 3, g, lock=True)
+            for y in range(ey - 2, ey + 3):
+                c.put(x0, y, g, lock=True)
+                c.put(x0 + wdt - 1, y, g, lock=True)
+        c.put(ex2 + 1, ey + 1, g, lock=True)
+        c.put(ex - 2, ey + 1, g, lock=True)
+    if spec.get('mustache'):
+        m = spec['mustache']
+        mx, my = int(round(cx + rx * 0.2)), int(round(cy - ry * 0.18)) - 5
+        c.fill(c.mask_ellipse(mx - 1.5, my + 0.5, 2.2, 1.2) + c.mask_ellipse(mx + 2, my + 0.5, 2.2, 1.2), Ramp(m))
     if face == 'lizard':
         c.put(int(cx + rx * 1.1), int(cy - ry * 0.1), shift(spec['skin'], dl=-0.35), lock=True)
     # top-of-head pieces
@@ -367,8 +495,8 @@ def draw_head(c, cx, cy, spec, eyes, b, flutter):
         pts = [p for p in pts if p[1] >= cy + ry * 0.05 or p[0] < cx - rx * 0.45]
         c.fill(pts, Ramp(hair))
         # fringe spikes over the forehead
-        for i, fx in enumerate((cx + 1, cx + 3.5, cx + 6)):
-            c.fill(c.mask_poly([(fx - 2, cy + ry * 0.6), (fx + 1.5, cy + ry * 0.6), (fx + 0.5, cy + ry * 0.05 - (i % 2))]), Ramp(hair))
+        for i, fx in enumerate((cx + rx * 0.1, cx + rx * 0.42, cx + rx * 0.74)):
+            c.fill(c.mask_poly([(fx - 2.5, cy + ry * 0.6), (fx + 2, cy + ry * 0.6), (fx + 0.5, cy + ry * 0.12 - (i % 2))]), Ramp(hair))
     elif kind == 'spiky':
         base = c.mask_ellipse(cx - 0.5, cy + ry * 0.45, rx + 0.5, ry * 0.7)
         c.fill([p for p in base if p[1] >= cy + ry * 0.1], Ramp(hair))
@@ -430,6 +558,56 @@ def draw_head(c, cx, cy, spec, eyes, b, flutter):
         for i in range(4):
             bx = cx - 5 + i * 3.2
             c.fill(c.mask_ellipse(bx, top - 0.5, 2.2, 1.8), Ramp(hair))
+    elif kind == 'bob':       # rounded bob with straight bangs
+        pts = c.mask_ellipse(cx - 0.3, cy + ry * 0.12, rx + 1.2, ry + 0.6)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.3 or p[0] < cx - rx * 0.25 or (p[1] >= cy - ry * 0.55 and p[0] > cx + rx * 0.85)],
+               Ramp(hair))
+    elif kind == 'buns':      # two round puffs on top
+        base = c.mask_ellipse(cx - 0.4, cy + ry * 0.4, rx + 0.6, ry * 0.72)
+        c.fill([p for p in base if p[1] >= cy + ry * 0.22], Ramp(hair))
+        for bx_ in (cx - rx * 0.55, cx + rx * 0.5):
+            c.fill(c.mask_ellipse(bx_, top + 1.5, 4.0, 3.6), Ramp(hair))
+    elif kind == 'beanie':    # knit cap with a pompom and a fold
+        cap = [p for p in c.mask_ellipse(cx, cy + ry * 0.3, rx + 1, ry * 0.85) if p[1] >= cy + ry * 0.28]
+        c.fill(cap, Ramp(spec['accent']))
+        fold = [p for p in cap if int(cy + ry * 0.28) <= p[1] <= int(cy + ry * 0.28) + 2]
+        c.fill(fold, Ramp(shift(spec['accent'], dl=-0.12)), soft=True)
+        c.fill(c.mask_ellipse(cx - 1, top + 2, 2.4, 2.2), Ramp(spec.get('accent2', C(250, 250, 250))))
+        c.fill(c.mask_poly([(cx - rx - 0.5, cy + ry * 0.3), (cx - rx - 1.5, cy - 2), (cx - rx + 2, cy - 1)]), Ramp(hair))
+    elif kind == 'curls':     # big curly mop
+        for (dx, dy, r_) in ((-6, 3, 4.2), (-2, 6.5, 4.4), (3, 7, 4.2), (7, 4.5, 3.6), (-8, -1, 3.6), (-7, -5, 3.0)):
+            c.fill(c.mask_ellipse(cx + dx * rx / 10, cy + dy * ry / 10, r_, r_), Ramp(hair))
+    elif kind == 'ponytail':
+        pts = c.mask_ellipse(cx - 0.6, cy + ry * 0.45, rx + 0.6, ry * 0.72)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.2], Ramp(hair))
+        sway = [0, 1, 2, 1, 0, -1][flutter % 6]
+        c.fill(c.mask_capsule(cx - rx * 0.9, cy + ry * 0.4, cx - rx - 4, cy - ry * 0.4 + sway, 2.8), Ramp(hair))
+        c.fill(c.mask_ellipse(cx - rx * 0.85, cy + ry * 0.4, 1.6, 1.6), Ramp(spec['accent']))
+    elif kind == 'beret':
+        pts = c.mask_ellipse(cx - 0.6, cy + ry * 0.4, rx + 0.4, ry * 0.65)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.2], Ramp(hair))
+        c.fill(c.mask_ellipse(cx - 1.5, top - 0.5, rx * 0.95, 3.2), Ramp(spec['accent']))
+        c.put(int(cx - 1), int(top + 3), shift(spec['accent'], dl=-0.2), lock=True)
+    elif kind == 'bandana':
+        pts = c.mask_ellipse(cx - 0.4, cy + ry * 0.42, rx + 0.8, ry * 0.75)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.25], Ramp(spec['accent']))
+        for k in range(4):
+            c.put(int(cx - rx * 0.4 + k * 3), int(cy + ry * 0.62), C(250, 250, 250), lock=True)
+        sway = [0, 1, 1, 0, -1, 0][flutter % 6]
+        c.fill(c.mask_poly([(cx - rx, cy + ry * 0.35), (cx - rx - 4, cy + ry * 0.1 - sway), (cx - rx - 3, cy - 2 - sway)]), Ramp(spec['accent']))
+    elif kind == 'tophat':
+        pts = c.mask_ellipse(cx - 0.6, cy + ry * 0.4, rx + 0.4, ry * 0.6)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.25], Ramp(hair))
+        c.fill(c.mask_rect(cx - rx * 0.9, top - 1.5, cx + rx * 0.9, top, r=0.5), Ramp(spec['accent']))
+        c.fill(c.mask_rect(cx - rx * 0.6, top - 1, cx + rx * 0.6, top + 7), Ramp(spec['accent']))
+        c.fill(c.mask_rect(cx - rx * 0.6, top + 0.5, cx + rx * 0.6, top + 1.5), Ramp(spec.get('accent2', C(200, 60, 80))), soft=True)
+    elif kind == 'flowers':   # long hair with a flower crown
+        pts = c.mask_ellipse(cx - 0.6, cy + ry * 0.45, rx + 0.8, ry * 0.75)
+        c.fill([p for p in pts if p[1] >= cy + ry * 0.2], Ramp(hair))
+        for k, col in enumerate((C(255, 120, 150), C(255, 230, 90), C(255, 255, 255), C(255, 150, 60))):
+            fx_ = cx - rx * 0.7 + k * rx * 0.45
+            c.fill(c.mask_ellipse(fx_, cy + ry * 0.62 + (k % 2), 1.8, 1.8), Ramp(col))
+            c.put(int(fx_), int(cy + ry * 0.62 + (k % 2)), C(255, 210, 60), lock=True)
     elif kind == 'courier':  # Nova: swept hair + aviator cap with comet pin
         pts = c.mask_ellipse(cx - 0.4, cy + ry * 0.45, rx + 0.8, ry * 0.75)
         c.fill([p for p in pts if p[1] >= cy + ry * 0.2], Ramp(spec['accent2']))
@@ -454,6 +632,8 @@ def draw_fighter(spec, pose, w=W, h=H, ox=OX):
     flutter = pose['flutter']
     weapon = spec['weapon']
     glow = pose['glow']
+    pose = dict(pose, legs=tuple((fx * LEG_SCALE, fy * LEG_SCALE) for fx, fy in pose['legs']),
+                hands=tuple((hx * HAND_SCALE, hy * HAND_SCALE) for hx, hy in pose['hands']))
 
     leg_len = b['hip'] - 1
     l1 = l2 = leg_len / 2 + 0.6
@@ -515,8 +695,10 @@ def draw_fighter(spec, pose, w=W, h=H, ox=OX):
             for wx in (f0, f0 + fl):
                 c.fill(c.mask_ellipse(wx, foot[1] - 2, 1.3, 1.3), Ramp(C(250, 200, 60)))
         else:
-            c.fill(c.mask_rect(f0 - 1, foot[1] - 2, f0 + fl, foot[1] + 1, r=1), sh_ramp)
-            c.flat([(x, int(foot[1] - 2)) for x in range(int(f0 - 1), int(f0 + fl) + 1)], shift(shoes, dl=-0.25))
+            # chunky rounded shoe with a thick sole
+            c.fill(c.mask_rect(f0 - 1.5, foot[1] - 2, f0 + fl + 0.5, foot[1] + 1.5, r=1.5), sh_ramp)
+            c.flat([(x, int(foot[1] - 2)) for x in range(int(f0 - 1), int(f0 + fl) + 1)], shift(shoes, dl=-0.3))
+            c.put(int(f0 + fl - 1), int(foot[1] + 1), shift(shoes, dl=0.18), lock=True)
 
     # -- torso
     tw = b['tw']

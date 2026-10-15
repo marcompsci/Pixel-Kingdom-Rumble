@@ -135,4 +135,8 @@ SHOTS = {
     'sola_brightwing': ('lance', C(255, 220, 120)), 'grizz': ('rock', C(150, 104, 60)), 'pixel_pip': ('bolt', C(255, 110, 100)),
     'nyx_frost': ('shard', C(170, 230, 255)), 'blaze_torres': ('blob', C(90, 170, 255)), 'juno_strike': ('ball', C(255, 255, 255)),
     'ollie_kickflip': ('bolt', C(90, 220, 170)),
+    'juni_bloom': ('crescent', C(150, 230, 140)), 'marco_brio': ('blob', C(90, 170, 255)),
+    'tamsin_reed': ('star', C(230, 200, 255), C(150, 90, 200)), 'dex_ortega': ('bolt', C(255, 120, 200)),
+    'pepper_quinn': ('ball', C(255, 170, 80)), 'bo_tidewell': ('blob', C(120, 210, 255)),
+    'zuri_starling': ('star', C(255, 240, 160), C(160, 170, 230)), 'otto_brass': ('spark', C(255, 210, 120)),
 }

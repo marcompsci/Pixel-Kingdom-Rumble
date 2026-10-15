@@ -167,6 +167,7 @@ namespace PKR.EditorTools
             _style = style;
             _windowSpawns.Clear(); _roofSpawns.Clear(); _stations.Clear(); _barricades.Clear();
             _wallIndex = _perkIndex = 0;
+            _folkIndex = sceneName.Length; // a different local first in each level
             _relicIndex = 0;
             var map = new AsciiLevel(rows);
             var errors = map.Validate();
@@ -293,6 +294,9 @@ namespace PKR.EditorTools
                     case 'Q': Enemy(Foe('Q', DataAssets.GetOrCreatePuffGlider), cx, p.y + 0.5f); break;
                     case 'D': Enemy(Foe('D', DataAssets.GetOrCreateRustCrab), cx, p.y); break;
                     case 'W': Enemy(Foe('W', DataAssets.GetOrCreateWindupSoldier), cx, p.y); break;
+                    case 'h': Enemy(Foe('h', DataAssets.GetOrCreateGearGoon), cx, p.y); break;
+                    case 'r': Enemy(Foe('r', DataAssets.GetOrCreatePrankBandit), cx, p.y); break;
+                    case 'e': Enemy(Foe('e', DataAssets.GetOrCreateHexHatter), cx, p.y); break;
                     // Zombie Survival
                     case 'z': ZombieSpawn(map, p.x, p.y); break;
                     case 'x': Station(StationKind.WallWeapon, _wallIndex++ % ZombieArmory.Wall.Length, cx, p.y); break;
@@ -310,6 +314,15 @@ namespace PKR.EditorTools
                 var min = new Vector2(map.SecretMinX, map.SecretMinY);
                 var size = new Vector2(map.SecretMaxX - map.SecretMinX + 1, map.SecretMaxY - map.SecretMinY + 1);
                 SecretRoom($"secret_{level.id}", min + size * 0.5f, size);
+            }
+            // Town folk: one near the start and one beside each checkpoint (not in stealth maps or the survival arena).
+            if (!stealth && !map.IsSurvival)
+            {
+                foreach (var p in map.Points)
+                {
+                    if (p.tile == 'P') TownFolk(map, p.x + 3, p.y);
+                    else if (p.tile == 'C') TownFolk(map, p.x - 2, p.y);
+                }
             }
             if (_style == null)
                 for (float x = 12f; x < map.Width - 6; x += 26f) Decor(new Vector2(x, map.Height - 5f), stealth ? 1.6f : 2.6f);
@@ -366,6 +379,78 @@ namespace PKR.EditorTools
             EditorSceneManager.SaveScene(scene, path);
             EditorUtil.AddSceneToBuild(path);
             Debug.Log($"[PKR] Built {path}: {map.Width}x{map.Height}, {level.totalShards} shards, {map.Count('g')} guards, {map.Count('R')} relics.");
+        }
+
+        // ---- Town folk ------------------------------------------------------------------------------------
+
+        static readonly (string id, string name, string[] lines)[] Folk =
+        {
+            ("mayor_opal", "Mayor Opal", new[]
+            {
+                "Welcome, hero! The whole town is cheering for you.",
+                "Keys open locked doors. Look up high, they love a ledge.",
+                "If a jump goes wrong, your jetpack will catch you. Tap JET!",
+                "Every world has a maze now. Think first, then dash!",
+            }),
+            ("rosie_crumb", "Rosie Crumb", new[]
+            {
+                "Fresh buns at the bakery after this! Be careful out there.",
+                "Crushers shake before they drop. Wait for the shake, then run under.",
+                "Double jump in the air to reach the high shards.",
+                "Lasers flicker before they switch on. Watch the flicker!",
+            }),
+            ("fitz_postwell", "Fitz Postwell", new[]
+            {
+                "Got a parcel for you... oh, it's a shard! Keep it.",
+                "Floor switches swap the sun blocks and the moon blocks.",
+                "Saw blades roll back and forth. Time your jump over them.",
+                "A checkpoint flag saves your spot. Touch every one!",
+            }),
+            ("lila_sprout", "Lila Sprout", new[]
+            {
+                "Hi! Mind the flowers on your way through.",
+                "Stand next to a switch block when it vanishes and you'll fall. Jump first!",
+                "Secret rooms hide behind fake walls. Try walking into odd bricks.",
+                "Try Holiday Mode and Halloween from the main menu!",
+            }),
+            ("benji_bolts", "Benji Bolts", new[]
+            {
+                "I built a robot once. It ran away. Seen it?",
+                "Crumbling blocks come back after a moment. Don't stand still on them!",
+                "Hold up on a vine to climb, let go to hang.",
+                "In Zombie Survival, hit all three lanterns. Trust me.",
+            }),
+        };
+        static int _folkIndex;
+
+        static void TownFolk(AsciiLevel map, int x, int y)
+        {
+            // Needs open air to stand in and solid ground (not a plank or a hazard) under the feet.
+            if (x < 1 || x >= map.Width - 1) return;
+            char under = map.At(x, y - 1);
+            if (map.At(x, y) != '.' || map.At(x, y + 1) != '.' || (under != '#' && under != 'X')) return;
+            var f = Folk[_folkIndex % Folk.Length];
+            string line = f.lines[(_folkIndex / Folk.Length + x) % f.lines.Length];
+            _folkIndex++;
+            var go = new GameObject("NPC_" + f.name);
+            go.transform.SetParent(_root, false);
+            go.transform.position = new Vector2(x + 0.5f, y);
+            var sr = new GameObject("Art").AddComponent<SpriteRenderer>();
+            sr.transform.SetParent(go.transform, false);
+            if (_mat != null) sr.sharedMaterial = _mat;
+            sr.sortingOrder = 5;
+            var frames = new List<Sprite>();
+            for (int i = 0; i < 4; i++)
+            {
+                var s = AssetDatabase.LoadAssetAtPath<Sprite>($"{PixelArt.Root}/NPCs/{f.id}/{f.id}_idle_{i}.png");
+                if (s != null) frames.Add(s);
+            }
+            sr.sprite = frames.Count > 0 ? frames[0] : null;
+            var npc = go.AddComponent<TownNPC>();
+            npc.displayName = f.name;
+            npc.line = line;
+            npc.frames = frames.ToArray();
+            npc.art = sr;
         }
 
         // ---- Halloween: the horde and Zombie Survival ----------------------------------------------------------

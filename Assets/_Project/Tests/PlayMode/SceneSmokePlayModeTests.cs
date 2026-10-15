@@ -78,6 +78,7 @@ namespace PKR.Tests
             Assert.Greater(Object.FindObjectsByType<SpringPad>().Length, 0, "springs");
             Assert.Greater(Object.FindObjectsByType<ShardCrate>().Length, 0, "crates");
             Assert.Greater(Object.FindObjectsByType<ClimbZone>().Length, 0, "vines");
+            Assert.Greater(Object.FindObjectsByType<TownNPC>().Length, 0, "town folk");
             yield return Load(SceneIds.RooftopRun);
             Assert.Greater(Object.FindObjectsByType<HideSpot>().Length, 0, "hiding spots");
             Assert.AreEqual(1, Object.FindObjectsByType<StealthObjective>().Length, "objective");

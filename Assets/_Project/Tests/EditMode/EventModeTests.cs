@@ -40,6 +40,20 @@ namespace PKR.Tests
         }
 
         [Test]
+        public void NewChibiFoes_AppearInTheStory()
+        {
+            int goons = 0, bandits = 0, hatters = 0;
+            foreach (var kv in StoryLayouts.All())
+            {
+                var m = new AsciiLevel(kv.Value);
+                goons += m.Count('h'); bandits += m.Count('r'); hatters += m.Count('e');
+            }
+            Assert.Greater(goons, 2, "gear goons");
+            Assert.Greater(bandits, 1, "prank bandits");
+            Assert.Greater(hatters, 2, "hex hatters");
+        }
+
+        [Test]
         public void LaterStoryLevels_HaveMoreObstacles()
         {
             int Obstacles(string[] rows)

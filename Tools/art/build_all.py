@@ -280,6 +280,19 @@ def build_events():
         save(fx.shot(kind, (236, 236, 236)).image(), os.path.join(shots, f'shot_{kind}.png'))
 
 
+def build_cast():
+    import cast
+    for name, (fn, clips) in cast.FOE_CLIPS.items():
+        for kind, n in clips.items():
+            for i in range(n):
+                img = fn((kind, i, n)).image()
+                for clip in ENEMY_CLIP_FILES[kind]:
+                    save(img, os.path.join(PIX, 'Enemies', name, f'{name}_{clip}_{i}.png'), align='bottom')
+    for nid in cast.NPCS:
+        for i, c in enumerate(cast.npc_frames(nid)):
+            save(c.image(), os.path.join(PIX, 'NPCs', nid, f'{nid}_idle_{i}.png'), align='bottom')
+
+
 def build_tiles():
     for i, (theme, th) in enumerate(tiles.THEMES.items()):
         base = os.path.join(PIX, 'Tiles', theme)
@@ -305,7 +318,7 @@ def build_fx():
 
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'tiles', 'backgrounds', 'fx']
+    only = sys.argv[1:] or ['fighters', 'props', 'enemies', 'controls', 'ui', 'obstacles', 'events', 'cast', 'tiles', 'backgrounds', 'fx']
     for step in only:
         globals()['build_' + step]()
         print(step, 'done')

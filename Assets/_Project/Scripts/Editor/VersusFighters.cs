@@ -16,7 +16,7 @@ namespace PKR.EditorTools
     /// side and down Specials, an air dodge and (most) a dive. Starting values only; tune the assets in the
     /// Inspector. Existing assets are never overwritten.
     /// </summary>
-    public static class VersusFighters
+    public static partial class VersusFighters
     {
         public const string Folder = "Assets/_Project/Data/Characters/Versus";
         public const string MovesRoot = "Assets/_Project/Data/Moves/Versus";
@@ -203,7 +203,9 @@ namespace PKR.EditorTools
         public static List<CharacterDefinition> GetOrCreateAll() => new List<CharacterDefinition>
         {
             KaiTempest(), MaraVex(), VoltRamirez(), SolaBrightwing(), Grizz(),
-            PixelPip(), NyxFrost(), BlazeTorres(), JunoStrike(), OllieKickflip()
+            PixelPip(), NyxFrost(), BlazeTorres(), JunoStrike(), OllieKickflip(),
+            // October 2026 cast (VersusFightersNew.cs)
+            JuniBloom(), MarcoBrio(), TamsinReed(), DexOrtega(), PepperQuinn(), BoTidewell(), ZuriStarling(), OttoBrass()
         };
 
         // ---- The ten -----------------------------------------------------------------------------
