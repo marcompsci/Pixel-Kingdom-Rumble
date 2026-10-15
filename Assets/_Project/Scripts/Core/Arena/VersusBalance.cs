@@ -14,15 +14,13 @@ namespace PKR.Core
         public static readonly IReadOnlyDictionary<string, int> HealthAdjust = new Dictionary<string, int>
         {
             { "grizz", -3 },
-            { "volt_ramirez", -3 },
             { "bo_tidewell", -2 },
-            { "blaze_torres", -1 },
-            { "mara_vex", 2 },
-            { "rex_rollo", 2 },
-            { "brick", 2 },
-            { "luma", 2 },
+            { "brick", 1 },
+            { "juni_bloom", 2 },
+            { "luma", 3 },
+            { "rex_rollo", 3 },
+            { "nova", 3 },
             { "zuri_starling", 3 },
-            { "nova", 4 },
         };
 
         public static int Adjust(string heroId) =>

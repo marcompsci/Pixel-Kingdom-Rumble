@@ -12,6 +12,8 @@ namespace PKR.EditorTools
     ///   Volt (won 93% of lab games): his 2-frame jab beat every other first hit; now 4 frames like the rest; finishers -1.
     ///   Grizz (83%): armor from the first frame of Maul Rush made it unanswerable; paw swipe and toss hit a little softer.
     ///   Nova (14%): the shortest combo in the cast; her sweep, rising arc and comet bolt hit harder and the sweep is faster.
+    ///   Run 3: heavies still won most (Grizz 86%, Bo 88%): their two-damage openers and extra health stacked with
+    ///   knockback resistance. Openers now hit for 1 like everyone's, and weight adds half as much health.
     ///   Nova, Brick, Luma, Rex (14-25%): their combo hits now hold the foe long enough to connect (chain hitstun).
     /// </summary>
     public static class BalancePatch
@@ -32,6 +34,10 @@ namespace PKR.EditorTools
             { "Grizz_MaulRush", P(armorStart: 4) },
             { "Grizz_PawSwipe", P(damage: 1) },
             { "Grizz_BearHugToss", P(damage: 3) },
+            { "Grizz_DoubleSwipe", P(damage: 1) },
+            { "Grizz_MaulSlam", P(damage: 3) },
+            { "Bo_ShoulderShove", P(damage: 1) },
+            { "Bo_ChainHook", P(damage: 1) },
             { "Nova_CometSweep", P(startup: 4, damage: 3) },
             { "Nova_RisingArc", P(damage: 3) },
             { "Nova_CometBolt", P(damage: 2) },

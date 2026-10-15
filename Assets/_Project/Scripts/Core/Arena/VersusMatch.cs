@@ -113,7 +113,7 @@ namespace PKR.Core
 
         public static int HealthFor(float weight)
         {
-            int bonus = (int)Math.Round((weight - 1f) * 8f);
+            int bonus = (int)Math.Round((weight - 1f) * 4f); // balance lab: heavies already resist knockback
             return Math.Max(16, Math.Min(34, BaseHealth + bonus));
         }
 
