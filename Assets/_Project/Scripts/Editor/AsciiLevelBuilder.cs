@@ -320,8 +320,8 @@ namespace PKR.EditorTools
             {
                 foreach (var p in map.Points)
                 {
-                    if (p.tile == 'P') TownFolk(map, p.x + 3, p.y);
-                    else if (p.tile == 'C') TownFolk(map, p.x - 2, p.y);
+                    if (p.tile == 'P') TownFolk(map, p.x, p.y, new[] { 3, 4, 2, 5, 6, -2 });
+                    else if (p.tile == 'C') TownFolk(map, p.x, p.y, new[] { -2, -3, 2, 3, -4, 4 });
                 }
             }
             if (_style == null)
@@ -423,12 +423,20 @@ namespace PKR.EditorTools
         };
         static int _folkIndex;
 
-        static void TownFolk(AsciiLevel map, int x, int y)
+        static bool FolkSpot(AsciiLevel map, int x, int y)
         {
-            // Needs open air to stand in and solid ground (not a plank or a hazard) under the feet.
-            if (x < 1 || x >= map.Width - 1) return;
+            // Open air to stand in and solid ground (not a plank or a hazard) under the feet.
+            if (x < 1 || x >= map.Width - 1) return false;
             char under = map.At(x, y - 1);
-            if (map.At(x, y) != '.' || map.At(x, y + 1) != '.' || (under != '#' && under != 'X')) return;
+            return map.At(x, y) == '.' && map.At(x, y + 1) == '.' && (under == '#' || under == 'X');
+        }
+
+        static void TownFolk(AsciiLevel map, int px, int y, int[] offsets)
+        {
+            int x = -1;
+            foreach (int o in offsets)
+                if (FolkSpot(map, px + o, y)) { x = px + o; break; }
+            if (x < 0) return;
             var f = Folk[_folkIndex % Folk.Length];
             string line = f.lines[(_folkIndex / Folk.Length + x) % f.lines.Length];
             _folkIndex++;
