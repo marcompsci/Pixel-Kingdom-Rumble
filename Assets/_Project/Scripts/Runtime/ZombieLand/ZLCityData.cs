@@ -79,8 +79,14 @@ namespace PKR
             foreach (var p in props)
             {
                 if (p.solid == 0) continue;
-                int x = Mathf.FloorToInt(p.x), y = Mathf.FloorToInt(p.y);
-                if (x >= 0 && y >= 0 && x < w && y < h) _blocked[x, y] = true;
+                // Block every tile the prop's body covers (a 2-wide wreck used to block only its centre tile, so
+                // the dead were sent through gaps their bodies couldn't fit and got stuck).
+                bool turned = p.r == 90 || p.r == 270;
+                float hw = Mathf.Max(1, turned ? p.h : p.w) * 0.5f - 0.05f, hh = Mathf.Max(1, turned ? p.w : p.h) * 0.5f - 0.05f;
+                if (p.k == "tree" || p.k == "pine" || p.k == "lamp") { hw = hh = 0.45f; }   // only the trunk blocks (as in ZLWorld)
+                for (int y = Mathf.FloorToInt(p.y - hh); y <= Mathf.FloorToInt(p.y + hh); y++)
+                    for (int x = Mathf.FloorToInt(p.x - hw); x <= Mathf.FloorToInt(p.x + hw); x++)
+                        if (x >= 0 && y >= 0 && x < w && y < h) _blocked[x, y] = true;
             }
         }
 

@@ -39,8 +39,8 @@ class Pier(zb.Block):
         self.fill(8, 1, 12, 3, 'w')        # boat slips cut into the planks
         self.fill(47, 1, 51, 3, 'w')
         self.building(24, 9, 35, 13, 'old_slate', 'BAIT & TACKLE')
-        self.prop('wreck_white', 10.5, 5.0, solid=True, rot=0, w=2, h=1)   # boats tied up
-        self.prop('wreck_blue', 49.5, 5.0, solid=True, rot=0, w=2, h=1)
+        self.prop('wreck_white', 10.5, 7.0, solid=True, rot=0, w=2, h=1)   # parked by the boat slips (a lane stays open)
+        self.prop('wreck_blue', 49.5, 7.0, solid=True, rot=0, w=2, h=1)
         for x, y in ((16.5, 6.5), (43.5, 6.5), (20.5, 11.5), (39.5, 11.5)):
             self.prop('barricade', x, y, solid=True)                        # crates and nets
         for x, y in ((5.5, 12.5), (54.5, 12.5), (30.5, 2.5)):
