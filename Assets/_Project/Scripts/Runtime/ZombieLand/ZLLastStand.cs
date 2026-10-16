@@ -883,6 +883,26 @@ namespace PKR
         {
             yield return new WaitForSeconds(1f);
             if (shot == "over") { Run.NextRound(); Run.NextRound(); Run.NextRound(); GameOver(); yield break; }
+            if (shot.EndsWith("demo"))
+            {
+                // The trailer: everyone (you too) is played by the AI, deep enough in for riot shields and leapers,
+                // with both wonder weapons out.
+                var touch = FindAnyObjectByType<TouchControlsUI>();
+                if (touch != null) touch.gameObject.SetActive(false);
+                if (_g.Squad.Count < 2) SetupAI(3);
+                _g.Player.Loadout = _g.Progress;
+                _g.Player.BecomeAI(new ZLAIBrain(_g, 0));
+                foreach (var h in _g.Squad) if (h != null) h.DebugInvulnerable = true;
+                DebugGivePoints(12000);
+                foreach (var dd in _doors.ToArray()) if (dd != null && !dd.Cleared) OpenDoor(dd);
+                DebugSkipToRound(9);
+                yield return null;
+                yield return null;   // round 9 starts (the AI kit their guns)...
+                GiveGun(_g.Player, ZLCatalog.RimeCannon);   // ...then the wonders come out
+                var second = HeroInSlot(1);
+                if (second != null) GiveGun(second, ZLCatalog.StormCoil);
+                yield break;
+            }
             DebugGivePoints(8000);
             foreach (var h in _g.Squad) if (h != null) h.DebugInvulnerable = true;
             if (shot == "box" && Box != null)

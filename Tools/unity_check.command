@@ -14,6 +14,7 @@ pause_end() { [ -z "$PKR_NO_PAUSE" ] && read -r -p "Press Return to close." _; }
 # The watcher only knows about check requests; an iOS build request rides along with one.
 if [ -f Logs/balance_request ]; then exec bash Tools/balance_lab.command; fi
 if [ -f Logs/zombie_balance_request ]; then exec bash Tools/zombie_balance_lab.command; fi
+if [ -f Logs/trailer_request ]; then rm -f Logs/trailer_request; exec bash Tools/sim_trailer.command; fi
 if [ -f Logs/shots_request ]; then rm -f Logs/shots_request; exec bash Tools/sim_screenshots.command; fi
 if [ -f Logs/upload_request ]; then rm -f Logs/upload_request; PKR_UPLOAD_ONLY=1 exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/testflight_request ]; then rm -f Logs/testflight_request; exec bash Tools/testflight_upload.command; fi

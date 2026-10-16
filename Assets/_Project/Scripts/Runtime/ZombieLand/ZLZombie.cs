@@ -318,6 +318,7 @@ namespace PKR
             _body.linearVelocity = Vector2.MoveTowards(_body.linearVelocity, want, 30f * dt);
             // Which way it faces (the riot shield points this way): at the hero when close, else where it walks.
             Vector2 look = hunting && dist < 7f ? (target - pos).normalized : want.sqrMagnitude > 0.05f ? want.normalized : _facing;
+            if (look.sqrMagnitude > 0.5f && Vector2.Dot(_facing, look) < -0.98f) _facing = Vector2.Perpendicular(_facing);   // turn round (no axis when exactly opposite)
             if (look.sqrMagnitude > 0.5f) _facing = ((Vector2)Vector3.RotateTowards(_facing, look, 7f * dt, 0f)).normalized;
         }
 

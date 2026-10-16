@@ -201,7 +201,7 @@ namespace PKR.Tests
             yield return null;
             Assert.IsTrue(p.chapter2Done);
             Assert.IsFalse(p.InChapter2);
-            Assert.AreEqual(shards + ZLRules.Chapter2Reward, Services.Save.Data.starShards);
+            Assert.GreaterOrEqual(Services.Save.Data.starShards, shards + ZLRules.Chapter2Reward, "the reward (plus any Survivor Rank shards)");
             yield return Calm();
         }
 

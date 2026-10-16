@@ -179,6 +179,10 @@ namespace PKR
                 Puzzle = ZLPuzzle.FromSeed(1);
                 World = gameObject.AddComponent<ZLWorld>();
                 World.material = material;
+                // Screenshot / trailer runs: EV_LastStand@pierplay, @demo (an AI squad plays itself), @pierdemo
+                string sp = BootLoader.ShotPanel ?? "";
+                if (sp.StartsWith("pier")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.SaltPier.Id; }
+                if (sp.EndsWith("demo")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieSquad = SquadKind.AISquad; }
                 LsMap = LastStandMap.Get(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMap : LastStandRules.MapId);
                 if (!World.Build(LsMap.File)) return;
                 Flow = new ZLFlowField(City);
@@ -188,7 +192,8 @@ namespace PKR
                 if (Services.State != null) Services.State.SetState(GameState.Playing);
                 Ready = true;
                 Flow.Build(TargetPos);
-                string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over");
+                string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over")
+                                ?? BootLoader.TakeShotPanel("pierplay") ?? BootLoader.TakeShotPanel("demo") ?? BootLoader.TakeShotPanel("pierdemo");
                 if (lsShot != null) StartCoroutine(Stand.ShotSetup(lsShot));
                 return;
             }
@@ -216,7 +221,7 @@ namespace PKR
             Flow.Build(TargetPos);
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
-                          ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop");
+                          ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop") ?? BootLoader.TakeShotPanel("isle");
             if (shot != null)
             {
                 Progress.introSeen = true;
@@ -1417,6 +1422,29 @@ namespace PKR
                 panel.Open(_safehouses.Count > 0 ? _safehouses[0] : null);
             }
             else if (shot == "boss") DebugSpawnBoss(TargetPos + Vector2.up * 5f);
+            else if (shot == "isle")
+            {
+                // Chapter 2 on a fresh screenshot install: across the causeway, in the Blackwater village street
+                Progress.bossDefeated = true;
+                Progress.chapter2Begun = true;
+                var d = City.doors.Find(x => x.id == ZLCatalog.IsleBridge);
+                if (d != null) City.Open(d);
+                if (_isleGate != null) Destroy(_isleGate);
+                SpawnNests();
+                Vector2 at = new Vector2(222.5f, 126.5f);
+                Player.transform.position = at;
+                Player.Body.position = at;
+                Player.DebugInvulnerable = true;
+                Player.Loadout = Progress;
+                Player.BecomeAI(new ZLAIBrain(this, 0));   // it plays itself for the trailer
+                var touch = FindAnyObjectByType<TouchControlsUI>();
+                if (touch != null) touch.gameObject.SetActive(false);
+                ZLRules.GiveGun(Progress, ZLCatalog.RimeCannon, ZLCatalog.RimeCannon.magazine + ZLCatalog.RimeCannon.maxReserve);
+                Progress.equipped = ZLCatalog.RimeCannon.id;
+                var kinds = new[] { ZLFoe.Riot, ZLFoe.Leaper, ZLFoe.Shambler, ZLFoe.Riot, ZLFoe.Runner, ZLFoe.Leaper };
+                for (int i = 0; i < kinds.Length; i++) SpawnZombie(kinds[i], at + new Vector2(5f + i % 3, -3f + i), 5, true);
+                ShowToast(ZLCatalog.Chapter2Name + "  ·  SIGILS 0/" + ZLCatalog.SigilsNeeded, 10f);
+            }
             else
             {
                 // walk up the street a little so some of the dead are about

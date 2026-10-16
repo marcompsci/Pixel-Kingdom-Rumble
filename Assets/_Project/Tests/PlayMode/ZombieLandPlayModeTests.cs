@@ -51,8 +51,8 @@ namespace PKR.Tests
             yield return Load();
             var g = ZLGame.Current;
             Assert.Greater(g.City.buildings.Count, 50);
-            Assert.AreEqual(14, g.Markers.Count, "every mission has a marker");
-            Assert.AreEqual(7, g.Safehouses.Count);
+            Assert.AreEqual(ZLCatalog.Missions.Length + ZLCatalog.Chapter2Missions.Length, g.Markers.Count, "every mission (both chapters) has a marker");
+            Assert.AreEqual(8, g.Safehouses.Count, "seven in New Hollow, one on Blackwater Isle");
             Assert.Greater(g.Vehicles.Count, 20);
             Assert.IsNotNull(g.Player);
             Assert.AreEqual(25, g.Progress.Gun(ZLCatalog.Pistol.id).mag + g.Progress.Gun(ZLCatalog.Pistol.id).reserve);
