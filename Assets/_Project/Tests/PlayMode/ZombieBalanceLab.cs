@@ -35,9 +35,14 @@ namespace PKR.Tests
             string careerBackup = save != null && save.zombieCareer != null ? JsonUtility.ToJson(save.zombieCareer) : null;
             int shardsBackup = save != null ? save.starShards : 0;
 
+            // Logs/zombie_balance_only ("hollow_block:Solo", one per line) limits the runs; slow rounds dump where the dead are.
+            var onlyPath = Path.Combine(Root, "Logs", "zombie_balance_only");
+            string only = File.Exists(onlyPath) ? File.ReadAllText(onlyPath) : null;
+            var stuck = new StringBuilder("map,squad,round,roundSeconds,heroX,heroY,kind,x,y,vx,vy,hunting,dist\n");
             foreach (var map in LastStandMap.All)
                 foreach (var squad in new[] { SquadKind.Solo, SquadKind.AISquad })
                 {
+                    if (only != null && !only.Contains(map.Id + ":" + squad)) continue;
                     GameSession.Mode = SessionMode.Zombies;
                     GameSession.ZombieMode = SurvivalMode.Endless;
                     GameSession.ZombieSquad = squad;
@@ -56,16 +61,31 @@ namespace PKR.Tests
                     Time.timeScale = Speed;
                     float real = 0f, game = 0f, roundStart = 0f;
                     int lastRound = 0;
+                    float nextDump = 60f;
                     while (!st.Over && real < MaxRealSeconds && st.Run.Round <= MaxRound)
                     {
                         real += Time.unscaledDeltaTime;
                         game += Time.deltaTime;
+                        if (game - roundStart > nextDump && !st.Intermission)
+                        {
+                            nextDump += 30f;
+                            Vector2 hp = g.Player.transform.position;
+                            foreach (var z in st.Alive)
+                            {
+                                if (z == null) continue;
+                                Vector2 zp = z.transform.position;
+                                var v = z.Body != null ? z.Body.linearVelocity : Vector2.zero;
+                                stuck.Append($"{map.Id},{squad},{st.Run.Round},{game - roundStart:F0},{hp.x:F1},{hp.y:F1},{z.kind},{zp.x:F1},{zp.y:F1},{v.x:F2},{v.y:F2},{z.hunting},{Vector2.Distance(zp, hp):F1}\n");
+                            }
+                            File.WriteAllText(Path.Combine(outDir, "stuck.csv"), stuck.ToString());
+                        }
                         if (st.Run.Round != lastRound)
                         {
                             if (lastRound > 0)
                                 rounds.Append($"{map.Id},{squad},{lastRound},{game - roundStart:F1},{st.Run.Points},{st.Run.Kills},{g.Player.Health}\n");
                             lastRound = st.Run.Round;
                             roundStart = game;
+                            nextDump = 60f;
                         }
                         yield return null;
                     }
