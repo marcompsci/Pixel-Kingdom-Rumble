@@ -45,15 +45,23 @@ say "      OK: $APP"
 say "[3/3] Installing on a connected iPhone..."
 xcrun devicectl list devices > "$OUT/devices.txt" 2>&1
 # Column 4 is the state; "unavailable" means asleep, locked, or not connected.
-DEVICE="$(grep -i "iphone" "$OUT/devices.txt" | grep -viE "unavailable" | grep -iE "available|connected" \
-  | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" | head -1)"
-if [ -z "$DEVICE" ]; then
+# Every connected iPhone, in list order; try each until one accepts the install (one may have Developer Mode off).
+DEVICES="$(grep -i "iphone" "$OUT/devices.txt" | grep -viE "unavailable" | grep -iE "available|connected" \
+  | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")"
+if [ -z "$DEVICES" ]; then
   say "      No reachable iPhone (Logs/ios/devices.txt lists them; 'unavailable' = not connected or asleep)."
   say "      Plug the iPhone into the Mac with a cable, unlock it, tap Trust if asked, and make sure Developer Mode"
   say "      is on (Settings > Privacy & Security). Then run this again; the app is already built."
   pause_end; exit 2
 fi
-if xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.log" 2>&1; then
+: > "$OUT/install.log"
+DEVICE=""
+for D in $DEVICES; do
+  say "      Trying $D ($(grep "$D" "$OUT/devices.txt" | awk -F'   +' '{print $1}'))..."
+  if xcrun devicectl device install app --device "$D" "$APP" >> "$OUT/install.log" 2>&1; then DEVICE="$D"; break; fi
+  say "      ...failed: $(grep -m1 -E 'ERROR|error' "$OUT/install.log" | tail -c 200)"
+done
+if [ -n "$DEVICE" ]; then
   say "      Installed on $DEVICE. Launching; recording the game's log for 90 s (Logs/ios/device_console.log)..."
   xcrun devicectl device process launch --console --terminate-existing --device "$DEVICE" "$BUNDLE" \
     > "$OUT/device_console.log" 2>&1 &
@@ -61,7 +69,7 @@ if xcrun devicectl device install app --device "$DEVICE" "$APP" > "$OUT/install.
   # Stopping the log stream also closes the game, so start it again (no log) for the player.
   sleep 2; xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE" > /dev/null 2>&1
   say "      Launched."
-else say "      Install FAILED (Logs/ios/install.log)"; tail -5 "$OUT/install.log" | tee -a "$OUT/SUMMARY.txt"; fi
+else say "      Install FAILED on every iPhone (Logs/ios/install.log)"; tail -5 "$OUT/install.log" | tee -a "$OUT/SUMMARY.txt"; fi
 
 say ""
 say "DONE."
