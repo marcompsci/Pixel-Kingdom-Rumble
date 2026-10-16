@@ -51,8 +51,9 @@ namespace PKR.Tests
             GameSession.Mode = SessionMode.Zombies;
             GameSession.ZombieMode = mode;
             SceneManager.LoadScene(SceneIds.LastStand, LoadSceneMode.Single);
+            yield return null;   // the old scene (maybe Zombie Land) goes away first
             float t = 0f;
-            while ((ZLGame.Current == null || !ZLGame.Current.Ready) && t < 10f) { t += Time.unscaledDeltaTime; yield return null; }
+            while ((ZLGame.Current == null || !ZLGame.Current.Ready || !ZLGame.Current.IsLastStand) && t < 10f) { t += Time.unscaledDeltaTime; yield return null; }
             Assert.IsNotNull(ZLGame.Current);
             Assert.IsTrue(ZLGame.Current.IsLastStand);
             Assert.IsNotNull(ZLGame.Current.Stand, "the Last Stand controller exists");
@@ -188,8 +189,9 @@ namespace PKR.Tests
             ZLRules.NewGame(save.zombieLand, 4321);
             save.zombieLand.introSeen = true;
             SceneManager.LoadScene(SceneIds.ZombieLand, LoadSceneMode.Single);
+            yield return null;
             float t = 0f;
-            while ((ZLGame.Current == null || !ZLGame.Current.Ready) && t < 10f) { t += Time.unscaledDeltaTime; yield return null; }
+            while ((ZLGame.Current == null || !ZLGame.Current.Ready || ZLGame.Current.IsLastStand) && t < 10f) { t += Time.unscaledDeltaTime; yield return null; }
             var g = ZLGame.Current;
             Assert.IsFalse(g.IsLastStand);
             var p = g.Player;
