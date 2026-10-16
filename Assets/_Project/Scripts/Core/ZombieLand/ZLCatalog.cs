@@ -25,7 +25,9 @@ namespace PKR.Core
         Brute,      // nest guards: slow, huge, hit hard
         Hound,      // blood hounds: his hunting pack, loosed when he senses you (after 5 minutes out in the open)
         Herald,     // district lieutenants (mission targets): elite, armored
-        FirstTurned // the master
+        FirstTurned, // the master
+        Riot,       // riot police who turned with their shields up: bullets glance off the front, flank them or blow them up
+        Leaper      // wiry, low to the ground: crouches, then springs across the gap at you
     }
 
     public enum ZLMissionType { Signal, Retrieve, Rescue, PurgeNest, PowerUp, HuntHerald, Delivery, HoldOut }
@@ -56,6 +58,8 @@ namespace PKR.Core
         public int count;
         /// <summary>Missions whose lead you learn when this one is done (the trail across the city).</summary>
         public string[] reveals = new string[0];
+        /// <summary>1 = New Hollow (Graystone shards), 2 = Blackwater Isle (sea-glass sigils).</summary>
+        public int chapter = 1;
     }
 
     public class ZLLair
@@ -90,6 +94,8 @@ namespace PKR.Core
         public bool isRelic;
         /// <summary>Box-only wonder weapon (never lying around the city).</summary>
         public bool wonder;
+        /// <summary>Freezes what it hits for this many seconds (the Rime Cannon); frozen zombies crawl and take extra damage.</summary>
+        public float freeze;
         /// <summary>Hollow-forged at the upgrade forge (a copy made by ZLShop.Effective).</summary>
         public bool forged;
 
@@ -124,6 +130,7 @@ namespace PKR.Core
             new ZLDistrict { id = "harbor", name = "Saltmouth Harbor", threat = 3, blurb = "Cranes, containers and a freighter that never left." },
             new ZLDistrict { id = "university", name = "College Hill", threat = 4, blurb = "Larkin Labs and the stadium. Where it started." },
             new ZLDistrict { id = "industrial", name = "Ironside", threat = 4, blurb = "Warehouses, the rail depot and the waterworks." },
+            new ZLDistrict { id = "isle", name = "Blackwater Isle", threat = 5, blurb = "The fishing village, the cannery and the old prison. Chapter 2." },
         };
 
         public static ZLDistrict District(string id)
@@ -204,6 +211,17 @@ namespace PKR.Core
             shot = "spark", wonder = true
         };
 
+        /// <summary>The second wonder weapon: a frost bolt that bursts into rime, freezing everything near where it lands.</summary>
+        public static readonly ZLGun RimeCannon = new ZLGun
+        {
+            id = "rime_cannon", name = "RIME CANNON", damage = 14, magazine = 8, maxReserve = 64, pellets = 1,
+            shotsPerSecond = 2.2f, reloadSeconds = 1.9f, speed = 20f, range = 12f, noise = 0.45f, r = 170, g = 235, b = 255,
+            shot = "lance", wonder = true, freeze = 3f
+        };
+
+        /// <summary>Radius of the Rime Cannon's frost burst, and how much harder frozen zombies are hit.</summary>
+        public const float FreezeRadius = 1.8f, FrozenDamageScale = 1.5f, FrozenSpeedScale = 0.25f;
+
         public static readonly ZLGun[] Guns =
         {
             Pistol,
@@ -220,6 +238,7 @@ namespace PKR.Core
             new ZLGun { id = "thumper", name = "THUMPER LAUNCHER", damage = 30, magazine = 1, maxReserve = 12, pellets = 1,
                         shotsPerSecond = 0.9f, reloadSeconds = 1.6f, speed = 12f, range = 11f, noise = 1f, r = 255, g = 140, b = 60, shot = "comet" },
             StormCoil,
+            RimeCannon,
         };
 
 
@@ -333,8 +352,65 @@ namespace PKR.Core
         public static ZLMissionSpec Mission(string id)
         {
             foreach (var m in Missions) if (m.id == id) return m;
+            foreach (var m in Chapter2Missions) if (m.id == id) return m;
             return null;
         }
+
+        // ---- chapter 2: Blackwater Isle -----------------------------------------------------------------
+
+        public const string Chapter2Name = "CHAPTER 2: BLACKWATER";
+        public const string Chapter2BossName = "MOTHER BRINE";
+        public const int SigilsNeeded = 4;
+        /// <summary>The quarantine line on the causeway to the isle (a door in city.json).</summary>
+        public const string IsleBridge = "isle_bridge";
+        public const string TideGate = "tide_gate";
+
+        public static readonly ZLMissionSpec[] Chapter2Missions =
+        {
+            new ZLMissionSpec { id = "c2_ferry", name = "THE LAST FERRY", district = "isle", giver = "CAPTAIN ADAEZE", type = ZLMissionType.Rescue, required = true, chapter = 2,
+                briefing = "The ferry captain who saw it come out of the water is hiding in the village net shed. Get her to the Blackwater safehouse.",
+                done = "\"It was a stone, like yours, but it sank. The tide's been bringing them back ever since.\" She presses a cold sea-glass sigil into your hand.",
+                reveals = new[] { "c2_cannery", "c2_smuggler" } },
+            new ZLMissionSpec { id = "c2_cannery", name = "CANNERY ROW", district = "isle", giver = "OLD TOMASZ", type = ZLMissionType.PurgeNest, required = true, chapter = 2,
+                briefing = "Something is nesting in the cannery's freezer hall, and it smells of the deep. Old Tomasz wants it burned out.",
+                done = "The nest bursts into brine and weed. Tangled in it, a sea-glass sigil glows green.",
+                reveals = new[] { "c2_beacon" } },
+            new ZLMissionSpec { id = "c2_beacon", name = "LIGHT THE BEACON", district = "isle", giver = "KEEPER IMOGEN", type = ZLMissionType.Signal, required = true, seconds = 40f, chapter = 2,
+                briefing = "Keeper Imogen can relight the north beacon and warn the mainland boats away. Hold the lamp room while it warms up.",
+                done = "The beam sweeps the water. Where it touches the waves, something huge flinches. Imogen hands you the sigil from the lens housing.",
+                reveals = new[] { "c2_cellblock" } },
+            new ZLMissionSpec { id = "c2_cellblock", name = "CELL BLOCK D", district = "isle", giver = "DR. HALE", type = ZLMissionType.Retrieve, required = true, count = 3, chapter = 2,
+                briefing = "Dr. Hale tracked the second stone's research to Blackwater Penitentiary. Three logbooks are scattered across the prison yard.",
+                done = "The logs end with the warden walking into the sea. The last page holds the fourth sigil, and a drawing of a gate beneath the prison.",
+                reveals = new string[0] },
+            new ZLMissionSpec { id = "c2_smuggler", name = "SMUGGLER'S RUN", district = "isle", giver = "PIXIE", type = ZLMissionType.Delivery, seconds = 55f, chapter = 2,
+                briefing = "Pixie stashed a truck of army surplus in the village. Drive it to the lighthouse lot before the tide crawlers swarm it.",
+                done = "\"Told you it was worth it.\" The truck held a Patrol LMG with your name on it.",
+                reward = "patrol_lmg" },
+        };
+
+        public static readonly string[] Chapter2StartingLeads = { "c2_ferry" };
+
+        public static readonly string[] Chapter2Intro =
+        {
+            "DR. HALE (radio): \"You did it. But I was wrong about one thing. There were TWO stones.\"",
+            "\"The second fell into the sea off Blackwater Isle. The dead there don't answer to Silas. They answer to the water.\"",
+            "The army's quarantine line on the causeway is open. Cross to the isle and find four sea-glass sigils.",
+            "Watch for the new dead: riot police with their shields still up, and the leapers that spring from the dark.",
+        };
+
+        public static readonly string[] Chapter2BossIntro =
+        {
+            "The four sigils burn cold. Under the prison, the tide gate grinds open.",
+            "MOTHER BRINE rises out of the black water, wearing the warden's keys.",
+        };
+
+        public static readonly string[] Chapter2Ending =
+        {
+            "Mother Brine sinks, and the second stone cracks apart in the tide.",
+            "On Blackwater Isle the dead lie down in the shallows and do not get up again.",
+            "CHAPTER 2 COMPLETE. New Hollow and the isle are yours to roam.",
+        };
 
         public static int RequiredCount
         {

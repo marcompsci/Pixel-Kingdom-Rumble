@@ -210,6 +210,7 @@ namespace PKR
             SpawnLairs();
             SpawnNests();
             SpawnMarkers();
+            SetupIsleBridge();
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             Ready = true;
             Flow.Build(TargetPos);
@@ -226,8 +227,92 @@ namespace PKR
                 Progress.introSeen = true;
                 Story("", ZLCatalog.Intro, "zl_city", null);
             }
-            else ShowToast(Progress.bossDefeated ? "ZOMBIE LAND IS CLEAR. ROAM FREE." : $"SHARDS {Progress.Shards}/{ZLCatalog.ShardsNeeded}. KEEP GOING.");
+            else if (Progress.bossDefeated && !Progress.chapter2Begun && shot == null) StartChapter2();
+            else ShowToast(Progress.InChapter2 ? $"{ZLCatalog.Chapter2Name}  ·  SIGILS {Progress.Sigils}/{ZLCatalog.SigilsNeeded}. CROSS THE CAUSEWAY."
+                         : Progress.bossDefeated ? "ZOMBIE LAND IS CLEAR. ROAM FREE." : $"SHARDS {Progress.Shards}/{ZLCatalog.ShardsNeeded}. KEEP GOING.");
         }
+
+        // ---- chapter 2: Blackwater Isle --------------------------------------------------------------
+
+        GameObject _isleGate;
+        readonly HashSet<string> _nestIds = new HashSet<string>();
+
+        /// <summary>The army's quarantine line on the causeway: sealed (barricades) until the First Turned falls.</summary>
+        void SetupIsleBridge()
+        {
+            var d = City.doors.Find(x => x.id == ZLCatalog.IsleBridge);
+            if (d == null) return;
+            if (Progress.bossDefeated) { City.Open(d); return; }
+            _isleGate = new GameObject("QuarantineLine");
+            _isleGate.transform.position = new Vector2(d.x + d.w * 0.5f, d.y + d.h * 0.5f);
+            for (int y = d.y; y < d.y + d.h; y++)
+            {
+                var t = new GameObject("Barricade");
+                t.transform.SetParent(_isleGate.transform, false);
+                t.transform.position = new Vector2(d.x + d.w * 0.5f, y + 0.5f);
+                t.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+                var sr = t.AddComponent<SpriteRenderer>();
+                sr.sprite = Sprite("Props/barricade");
+                sr.sortingOrder = ZLSort.ByY(y + 0.5f);
+                if (material != null) sr.sharedMaterial = material;
+            }
+        }
+
+        /// <summary>Chapter 2 begins: Dr. Hale's call, the causeway opens, the first Blackwater lead.</summary>
+        public void StartChapter2()
+        {
+            if (!ZLRules.BeginChapter2(Progress)) return;
+            var d = City.doors.Find(x => x.id == ZLCatalog.IsleBridge);
+            if (d != null) City.Open(d);
+            if (_isleGate != null) { Destroy(_isleGate); _isleGate = null; }
+            SpawnNests();
+            Save(true);
+            Story("DR. HALE", ZLCatalog.Chapter2Intro, "zl_city", () => ShowToast(ZLCatalog.Chapter2Name + ": CROSS THE CAUSEWAY EAST OF THE HARBOR."));
+        }
+
+        /// <summary>The tide gate under Blackwater Penitentiary: Mother Brine, once you carry every sigil.</summary>
+        public void TryTideGate(Vector2 door)
+        {
+            if (Boss != null || !Progress.InChapter2) return;
+            if (!ZLRules.TideGateOpen(Progress))
+            {
+                ShowToast($"THE TIDE GATE: SEALED. SEA-GLASS SIGILS {Progress.Sigils}/{ZLCatalog.SigilsNeeded}.");
+                Sfx.Play(Sfx.Click, 0.7f, 0f);
+                return;
+            }
+            Story(ZLCatalog.Chapter2BossName, ZLCatalog.Chapter2BossIntro, "zl_boss", () =>
+            {
+                Vector2 at = door + Vector2.down * 4f;
+                if (!City.Walkable(at)) at = door + Vector2.right * 4f;
+                if (!City.Walkable(at)) at = door;
+                var go = new GameObject("MotherBrine");
+                go.transform.position = at;
+                Boss = go.AddComponent<ZLBoss>();
+                Boss.Init(this, Frames("boss_idle", 2), Frames("boss_walk", 4), Frames("boss_attack", 2));
+                Boss.MakeBrine();
+                ShowToast(ZLCatalog.Chapter2BossName + "!");
+            });
+        }
+
+        void Chapter2BossDefeated(ZLBoss boss)
+        {
+            Progress.chapter2Done = true;
+            foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
+            _zombies.Clear();
+            foreach (var n in _nests.ToArray()) if (n != null) Destroy(n.gameObject);
+            _nests.Clear();
+            Destroy(boss.gameObject, 0.1f);
+            Boss = null;
+            if (Services.Save != null) Services.Save.Data.starShards += ZLRules.Chapter2Reward;
+            ProgressTracker.AddXp(600);
+            AddXp(SurvivorRank.ZLBossXp);
+            FlushXp();
+            Sfx.Play(Sfx.Victory, 1f);
+            Save(true);
+            Story("", ZLCatalog.Chapter2Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter2Reward} STAR SHARDS. BLACKWATER IS CLEAR."));
+        }
+
+        bool OnIsle => City != null && City.DistrictAt(TargetPos) == "isle";
 
         public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
 
@@ -358,11 +443,14 @@ namespace PKR
 
         void SpawnNests()
         {
-            if (Progress.bossDefeated) return;
+            if (Progress.chapter2Done) return;
             var frames = new[] { Sprite("Props/nest_0"), Sprite("Props/nest_1") };
             foreach (var n in City.nests)
             {
                 if (Progress.nestsCleared.Contains(n.id)) continue;
+                // the mainland's nests die with the First Turned; Blackwater's wake with chapter 2
+                if (n.district == "isle" ? !Progress.bossDefeated : Progress.bossDefeated) continue;
+                if (!_nestIds.Add(n.id)) continue;
                 var go = new GameObject("Nest_" + n.id);
                 go.transform.position = new Vector2(n.x, n.y);
                 var nest = go.AddComponent<ZLNest>();
@@ -427,7 +515,7 @@ namespace PKR
             _discoverT -= dt;
             if (_discoverT <= 0f) { _discoverT = 0.5f; Discover(); }
 
-            if (!Progress.bossDefeated)
+            if (!Progress.bossDefeated || Progress.InChapter2 && OnIsle)
             {
                 _groanT -= dt;
                 if (_groanT <= 0f)
@@ -532,6 +620,8 @@ namespace PKR
                 case ZLFoe.Spitter: def = spitter; break;
                 case ZLFoe.Brute: def = brute; scale = 1f; break;
                 case ZLFoe.Herald: def = brute; scale = 1.35f; tint = new Color(0.75f, 0.7f, 0.95f); break;
+                case ZLFoe.Riot: def = shambler; scale = 0.82f; tint = new Color(0.62f, 0.7f, 0.85f); break;
+                case ZLFoe.Leaper: def = runner; scale = 0.66f; tint = new Color(0.75f, 0.95f, 0.65f); break;
                 default: def = shambler; break;
             }
             if (kind == ZLFoe.Hound)
@@ -548,6 +638,7 @@ namespace PKR
                 hurt = f != null ? f.hurt : new Sprite[0];
             }
             z.Init(this, kind, threat, idle, move, hurt, tint, scale);
+            if (kind == ZLFoe.Riot) z.AddShield(Sprite("Props/riot_shield"));
             if (kind == ZLFoe.Herald)
             {
                 var crown = new GameObject("Crown").AddComponent<SpriteRenderer>();
@@ -826,6 +917,14 @@ namespace PKR
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.2f, 0.2f);
         }
 
+        /// <summary>The Rime Cannon's frost burst: every zombie near the hit freezes.</summary>
+        public void FreezeAround(Vector2 at, float seconds)
+        {
+            ZLFx.Spawn(GlowHalo.Sprite, at, new Color(0.6f, 0.9f, 1f, 0.75f), 0.4f, ZLCatalog.FreezeRadius * 0.5f, ZLCatalog.FreezeRadius * 2f, material);
+            foreach (var z in _zombies)
+                if (z != null && z.Alive && Vector2.Distance(z.transform.position, at) < ZLCatalog.FreezeRadius) z.Freeze(seconds);
+        }
+
         IEnumerable<IZLHittable> Hostiles()
         {
             foreach (var z in _zombies.ToArray()) if (z != null && z.Alive) yield return z;
@@ -1096,7 +1195,10 @@ namespace PKR
             AddXp(spec.required ? SurvivorRank.ZLStoryMissionXp : SurvivorRank.ZLMissionXp);
             int got = ZLShop.Earn(Progress, spec.required ? ZLShop.StoryMissionScrap : ZLShop.BonusMissionScrap, false);
             var lines = new List<string> { spec.done + $"  (+{got} scrap)" };
-            if (spec.required)
+            if (spec.required && spec.chapter == 2)
+                lines.Add($"SEA-GLASS SIGILS: {Progress.Sigils}/{ZLCatalog.SigilsNeeded}" +
+                          (Progress.Sigils >= ZLCatalog.SigilsNeeded ? ". The tide gate under the penitentiary will open now." : ""));
+            else if (spec.required)
             {
                 if (Puzzle.Clues.TryGetValue(spec.id, out var clue)) lines.Add("CLUE: " + clue.text);
                 lines.Add($"GRAYSTONE SHARDS: {Progress.Shards}/{ZLCatalog.ShardsNeeded}" +
@@ -1129,6 +1231,7 @@ namespace PKR
 
         public void TryLair(string lairId, Vector2 door)
         {
+            if (lairId == ZLCatalog.TideGate) { TryTideGate(door); return; }
             var lair = ZLCatalog.Lair(lairId);
             if (Boss != null || Progress.bossDefeated) return;
             if (Progress.Shards < ZLCatalog.ShardsNeeded)
@@ -1169,6 +1272,7 @@ namespace PKR
 
         public void BossDefeated(ZLBoss boss)
         {
+            if (boss != null && boss.Brine) { Chapter2BossDefeated(boss); return; }
             Progress.bossDefeated = true;
             foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
             _zombies.Clear();
@@ -1182,7 +1286,11 @@ namespace PKR
             FlushXp();
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
-            Story("", ZLCatalog.Ending, "dawn", () => ShowToast($"+{ZLRules.ClearReward} STAR SHARDS. ZOMBIE LAND IS CLEAR."));
+            Story("", ZLCatalog.Ending, "dawn", () =>
+            {
+                ShowToast($"+{ZLRules.ClearReward} STAR SHARDS. ZOMBIE LAND IS CLEAR.");
+                StartChapter2();
+            });
         }
 
         // ---- death and checkpoints ---------------------------------------------------------------------
@@ -1249,6 +1357,8 @@ namespace PKR
 
         public void Story(string speaker, string[] lines, string art, Action done)
         {
+            // Batch runs (tests, the balance lab) have nobody to tap through a story: carry straight on.
+            if (!CutscenePlayer.Allowed) { done?.Invoke(); return; }
             var panels = new BeatPanel[lines.Length];
             for (int i = 0; i < lines.Length; i++) panels[i] = new BeatPanel(speaker, lines[i], art);
             CutscenePlayer.Play(new StoryBeat { id = "zombieland", panels = panels }, done);

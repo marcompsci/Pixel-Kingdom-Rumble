@@ -43,6 +43,10 @@ namespace PKR.Core
             double spitter = r >= 6 ? Math.Min(0.12, 0.05 + 0.01 * (r - 6)) : 0;
             double bloater = r >= 4 ? 0.08 : 0;
             double runner = Math.Min(0.45, 0.12 + 0.03 * (r - 3));
+            double riot = r >= 7 ? Math.Min(0.08, 0.03 + 0.005 * (r - 7)) : 0;
+            double leaper = r >= 9 ? Math.Min(0.1, 0.03 + 0.007 * (r - 9)) : 0;
+            if ((roll -= riot) < 0) return ZLFoe.Riot;
+            if ((roll -= leaper) < 0) return ZLFoe.Leaper;
             if ((roll -= brute) < 0) return ZLFoe.Brute;
             if ((roll -= spitter) < 0) return ZLFoe.Spitter;
             if ((roll -= bloater) < 0) return ZLFoe.Bloater;
@@ -88,6 +92,8 @@ namespace PKR.Core
                 case ZLFoe.Spitter: return 90;
                 case ZLFoe.Hound: return 80;
                 case ZLFoe.Brute: return 150;
+                case ZLFoe.Riot: return 110;
+                case ZLFoe.Leaper: return 90;
                 case ZLFoe.Herald: return 1000;
                 default: return 60;
             }

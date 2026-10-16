@@ -61,7 +61,7 @@ namespace PKR
             {
                 switch (Spec.type)
                 {
-                    case ZLMissionType.Signal: return $"HOLD THE MAST: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
+                    case ZLMissionType.Signal: return $"{(Spec.id == "c2_beacon" ? "HOLD THE LAMP ROOM" : "HOLD THE MAST")}: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
                     case ZLMissionType.HoldOut: return $"HOLD THE ZONE: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
                     case ZLMissionType.Retrieve: return $"FIND THEM: {_count}/{Spec.count}";
                     case ZLMissionType.PowerUp: return $"START THE GENERATORS: {_count}/{Spec.count}";
@@ -105,7 +105,7 @@ namespace PKR
                     break;
                 case ZLMissionType.Retrieve:
                 {
-                    string art = Spec.id == "m_notes" ? "Props/pk_folder" : "Props/pk_cooler";
+                    string art = Spec.id == "m_notes" || Spec.id == "c2_cellblock" ? "Props/pk_folder" : "Props/pk_cooler";
                     foreach (var p in Points(Spec.count)) Prop(p, _g.Sprite(art), null, Color.white, 1.4f);
                     break;
                 }

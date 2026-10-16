@@ -6,7 +6,8 @@ namespace PKR
     /// <summary>
     /// One of the dead (top-down). Wanders until it sees or hears the hero, then hunts: straight at you when close and
     /// in sight, otherwise along the city flow field around buildings. Kinds: shamblers, runners, screamers (call a
-    /// horde), bloaters (burst into rot), spitters (lob acid), brutes, blood hounds and the Heralds.
+    /// horde), bloaters (burst into rot), spitters (lob acid), brutes, blood hounds and the Heralds; riot zombies (a shield
+    /// that stops bullets from the front) and leapers (crouch, then spring at you). The Rime Cannon freezes them.
     /// </summary>
     public class ZLZombie : MonoBehaviour, IZLHittable
     {
@@ -36,6 +37,15 @@ namespace PKR
         Vector2 _lastPos;
         bool _dead;
         Color _tint = Color.white;
+        Vector2 _facing = Vector2.right;
+        float _frozen, _leapWind, _leapT, _leapCool;
+        Vector2 _leapDir;
+        SpriteRenderer _shield;
+        /// <summary>Frozen by the Rime Cannon (crawls, takes extra damage).</summary>
+        public bool Frozen => _frozen > 0f;
+        public bool Leaping => _leapT > 0f;
+        public bool Crouching => _leapWind > 0f;
+        public Vector2 Facing => _facing;
 
         public bool Hostile => true;
         public bool Alive => !_dead;
@@ -72,6 +82,19 @@ namespace PKR
             if (_dead || Puppet) return;
             var by = ZLBullet.LastOwner != null ? ZLBullet.LastOwner : _game.MeleeAttacker;
             if (by != null) LastHitBy = by;
+            if (kind == ZLFoe.Riot && ZLBullet.Striking && !_game.InstaKills(kind))
+            {
+                int through = ZLRules.RiotDamage(damage, _facing.x, _facing.y, dir.x, dir.y);
+                if (through < damage)
+                {
+                    // CLANK: the shield takes it
+                    ZLFx.Spawn(GlowHalo.Sprite, (Vector2)transform.position + _facing * 0.45f + Vector2.up * 0.3f, new Color(0.8f, 0.9f, 1f, 0.9f), 0.15f, 0.3f, 1.2f, _game.material);
+                    if (by != null && by == _game.Player && Random.value < 0.35f) ZLFloater.Show("SHIELD", transform.position + Vector3.up * 0.9f, new Color(0.7f, 0.85f, 1f), 0.6f);
+                    damage = through;
+                }
+            }
+            if (Frozen) damage = ZLRules.FrozenDamage(damage);
+            if (gun != null && gun.freeze > 0f) _game.FreezeAround(transform.position, gun.freeze);
             if (_game.InstaKills(kind)) damage = Mathf.Max(damage, hp);
             hp -= damage;
             _hurt = 0.12f;
@@ -82,6 +105,24 @@ namespace PKR
             if (!hunting) StartHunt();
             ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material);
             if (hp <= 0) Die();
+        }
+
+        /// <summary>The Rime Cannon: frozen for this long (crawls, takes extra damage; a leap in progress stops).</summary>
+        public void Freeze(float seconds)
+        {
+            if (_dead) return;
+            _frozen = Mathf.Max(_frozen, kind == ZLFoe.Herald || kind == ZLFoe.Brute ? seconds * 0.5f : seconds);
+            _leapT = 0f; _leapWind = 0f;
+        }
+
+        /// <summary>Riot zombies carry a shield (a child sprite in front of them).</summary>
+        public void AddShield(Sprite s)
+        {
+            var go = new GameObject("Shield");
+            go.transform.SetParent(transform, false);
+            _shield = go.AddComponent<SpriteRenderer>();
+            _shield.sprite = s;
+            if (_game.material != null) _shield.sharedMaterial = _game.material;
         }
 
         /// <summary>Recolours this zombie (bosses); the hurt flash returns to this colour.</summary>
@@ -197,6 +238,33 @@ namespace PKR
 
             Vector2 dir;
             float sp = speed;
+            if (_frozen > 0f) { _frozen -= dt; sp *= ZLCatalog.FrozenSpeedScale; }
+            _leapCool -= dt;
+            // Leapers: crouch (a tell), then spring along a straight line at the hero
+            if (kind == ZLFoe.Leaper && _frozen <= 0f)
+            {
+                if (_leapT > 0f)
+                {
+                    _leapT -= dt;
+                    _body.linearVelocity = _leapDir * ZLRules.LeapSpeed;
+                    if (dist < _col.radius + 0.6f && _bite <= 0f) { _bite = 0.9f; _game.Bite(this, ZLRules.Bite(kind)); _leapT = 0f; }
+                    if (!_game.City.Walkable(pos + _leapDir * 0.5f)) _leapT = 0f;
+                    return;
+                }
+                if (_leapWind > 0f)
+                {
+                    _leapWind -= dt;
+                    _body.linearVelocity = Vector2.zero;
+                    if (_leapWind <= 0f) { _leapT = ZLRules.LeapTime; _leapCool = ZLRules.LeapCooldown; _leapDir = (target - pos).normalized; }
+                    return;
+                }
+                if (hunting && _leapCool <= 0f && dist > ZLRules.LeapMin && dist < ZLRules.LeapMax && _game.City.Sees(pos, target))
+                {
+                    _leapWind = ZLRules.LeapWindup;
+                    _facing = (target - pos).normalized;
+                    return;
+                }
+            }
             if (hunting)
             {
                 bool close = dist < 3.5f && _game.City.Sees(pos, target);
@@ -248,6 +316,9 @@ namespace PKR
 
             var want = dir * sp;
             _body.linearVelocity = Vector2.MoveTowards(_body.linearVelocity, want, 30f * dt);
+            // Which way it faces (the riot shield points this way): at the hero when close, else where it walks.
+            Vector2 look = hunting && dist < 7f ? (target - pos).normalized : want.sqrMagnitude > 0.05f ? want.normalized : _facing;
+            if (look.sqrMagnitude > 0.5f) _facing = ((Vector2)Vector3.RotateTowards(_facing, look, 7f * dt, 0f)).normalized;
         }
 
         void LateUpdate()
@@ -260,7 +331,17 @@ namespace PKR
             if (_body != null && Mathf.Abs(_body.linearVelocity.x) > 0.05f) _sr.flipX = _body.linearVelocity.x < 0f;
             _sr.sortingOrder = ZLSort.ByY(transform.position.y);
             // Hurt flash: a quick white pop that always fades back to the zombie's own colour.
-            _sr.color = _hurt > 0f ? Color.Lerp(_tint, Color.white, 0.65f) : _tint;
+            var baseCol = _frozen > 0f ? Color.Lerp(_tint, new Color(0.55f, 0.85f, 1f), 0.7f) : _tint;
+            if (_leapWind > 0f) baseCol = Color.Lerp(baseCol, new Color(1f, 0.4f, 0.3f), 0.5f + 0.5f * Mathf.Sin(_animT * 40f));   // the tell
+            _sr.color = _hurt > 0f ? Color.Lerp(baseCol, Color.white, 0.65f) : baseCol;
+            if (_shield != null)
+            {
+                _shield.transform.localPosition = new Vector3(_facing.x * 0.38f, 0.3f + _facing.y * 0.25f, 0f);
+                _shield.flipX = _facing.x < 0f;
+                _shield.sortingOrder = _sr.sortingOrder + (_facing.y < -0.3f ? 1 : _facing.y > 0.3f ? -1 : 1);
+            }
+            if (_leapWind > 0f && _sr != null) _sr.transform.localScale = new Vector3(_sr.transform.localScale.x, Mathf.Abs(_sr.transform.localScale.x) * 0.8f, 1f);
+            else if (_sr != null) _sr.transform.localScale = new Vector3(_sr.transform.localScale.x, Mathf.Abs(_sr.transform.localScale.x), 1f);
         }
     }
 }

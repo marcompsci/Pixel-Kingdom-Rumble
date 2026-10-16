@@ -36,6 +36,8 @@ namespace PKR.Core
         public float playSeconds;
         public bool bossDefeated;
         public bool introSeen;
+        /// <summary>Chapter 2 (Blackwater Isle): begun after the First Turned falls; done when Mother Brine falls.</summary>
+        public bool chapter2Begun, chapter2Done;
         /// <summary>Bonus rewards unlocked (motorcycles, medkits, assault_rifle, riot_shotgun).</summary>
         public List<string> rewards = new List<string>();
         /// <summary>SCRAP to spend at safehouse supply crates, and all scrap ever earned.</summary>
@@ -75,11 +77,29 @@ namespace PKR.Core
                 foreach (var id in completed)
                 {
                     var m = ZLCatalog.Mission(id);
-                    if (m != null && m.required) n++;
+                    if (m != null && m.required && m.chapter == 1) n++;
                 }
                 return n;
             }
         }
+
+        /// <summary>Chapter 2: sea-glass sigils (one per required Blackwater mission).</summary>
+        public int Sigils
+        {
+            get
+            {
+                int n = 0;
+                foreach (var id in completed)
+                {
+                    var m = ZLCatalog.Mission(id);
+                    if (m != null && m.required && m.chapter == 2) n++;
+                }
+                return n;
+            }
+        }
+
+        /// <summary>Chapter 2 is under way: the First Turned is dead and Mother Brine isn't yet.</summary>
+        public bool InChapter2 => bossDefeated && chapter2Begun && !chapter2Done;
 
         public ZLOwnedGun Gun(string id)
         {
@@ -140,6 +160,8 @@ namespace PKR.Core
                 case ZLFoe.Hound: baseHp = 14; break;
                 case ZLFoe.Herald: baseHp = 260; break;
                 case ZLFoe.FirstTurned: return 900;
+                case ZLFoe.Riot: baseHp = 20; break;
+                case ZLFoe.Leaper: baseHp = 10; break;
                 default: baseHp = 10; break;
             }
             return (int)Math.Round(baseHp * (1f + 0.15f * (Math.Max(1, threat) - 1)));
@@ -159,6 +181,8 @@ namespace PKR.Core
                 case ZLFoe.Hound: s = 7.2f; break;
                 case ZLFoe.Herald: s = 2.6f; break;
                 case ZLFoe.FirstTurned: s = 3f; break;
+                case ZLFoe.Riot: s = 1.7f; break;
+                case ZLFoe.Leaper: s = 2.9f; break;
                 default: s = 1.5f; break;
             }
             return s * (1f + 0.05f * (Math.Max(1, threat) - 1));
@@ -174,6 +198,8 @@ namespace PKR.Core
                 case ZLFoe.Herald: return 18;
                 case ZLFoe.FirstTurned: return 25;
                 case ZLFoe.Bloater: return 12;
+                case ZLFoe.Riot: return 14;
+                case ZLFoe.Leaper: return 12;
                 default: return 10;
             }
         }
@@ -186,6 +212,10 @@ namespace PKR.Core
             double spitter = threat >= 2 ? 0.07 : 0;
             double bloater = 0.06 + 0.01 * threat;
             double runner = 0.12 + 0.04 * threat;
+            double riot = threat >= 3 ? 0.03 + 0.02 * (threat - 3) : 0;
+            double leaper = threat >= 4 ? 0.03 + 0.03 * (threat - 4) : 0;
+            if ((roll -= riot) < 0) return ZLFoe.Riot;
+            if ((roll -= leaper) < 0) return ZLFoe.Leaper;
             if ((roll -= brute) < 0) return ZLFoe.Brute;
             if ((roll -= screamer) < 0) return ZLFoe.Screamer;
             if ((roll -= spitter) < 0) return ZLFoe.Spitter;
@@ -226,7 +256,56 @@ namespace PKR.Core
             p.equipped = ZLCatalog.Pistol.id;
             p.medkits = 1; p.armor = 0; p.deaths = 0; p.kills = 0; p.playSeconds = 0f;
             p.bossDefeated = false; p.introSeen = false;
+            p.chapter2Begun = false; p.chapter2Done = false;
         }
+
+        // ---- chapter 2 ---------------------------------------------------------------------------------
+
+        /// <summary>Star Shards for beating Mother Brine.</summary>
+        public const int Chapter2Reward = 2000;
+        /// <summary>Mother Brine's health (every weapon hurts her, unlike the First Turned).</summary>
+        public const int Chapter2BossHealth = 2400;
+
+        /// <summary>Opens chapter 2 (only once the First Turned is dead): the causeway opens and the first lead is known.</summary>
+        public static bool BeginChapter2(ZombieLandProgress p)
+        {
+            if (p == null || !p.bossDefeated || p.chapter2Begun) return false;
+            p.chapter2Begun = true;
+            foreach (var id in ZLCatalog.Chapter2StartingLeads) if (!p.leads.Contains(id)) p.leads.Add(id);
+            return true;
+        }
+
+        /// <summary>The tide gate opens for Mother Brine when you carry every sigil.</summary>
+        public static bool TideGateOpen(ZombieLandProgress p) => p != null && p.InChapter2 && p.Sigils >= ZLCatalog.SigilsNeeded;
+
+        // ---- the new dead ---------------------------------------------------------------------------------
+
+        /// <summary>A riot zombie's shield covers this many degrees either side of where it faces.</summary>
+        public const float ShieldHalfAngle = 60f;
+        /// <summary>Bullets that hit the shield do this share of their damage.</summary>
+        public const float ShieldScale = 0.2f;
+
+        /// <summary>
+        /// Damage a riot zombie takes from a shot travelling along (dx, dy) while it faces (fx, fy): reduced when the
+        /// shot comes at the front of the shield. Explosions and melee pass shotX = shotY = 0 (full damage).
+        /// </summary>
+        public static int RiotDamage(int damage, float fx, float fy, float dx, float dy)
+        {
+            float fl = (float)Math.Sqrt(fx * fx + fy * fy), dl = (float)Math.Sqrt(dx * dx + dy * dy);
+            if (fl < 1e-4f || dl < 1e-4f) return damage;
+            // the shot comes from the front when it travels against the facing
+            float cos = -(fx * dx + fy * dy) / (fl * dl);
+            bool front = cos >= Math.Cos(ShieldHalfAngle * Math.PI / 180.0);
+            return front ? Math.Max(1, (int)Math.Round(damage * ShieldScale)) : damage;
+        }
+
+        public static bool ShieldBlocks(float fx, float fy, float dx, float dy) => RiotDamage(100, fx, fy, dx, dy) < 100;
+
+        /// <summary>Leapers: spring from this range, after this long crouched, for this long, this much faster.</summary>
+        public const float LeapMin = 2.5f, LeapMax = 6.5f, LeapWindup = 0.5f, LeapTime = 0.38f, LeapSpeed = 13f, LeapCooldown = 2.4f;
+
+        /// <summary>Damage to a frozen zombie (the Rime Cannon's shatter).</summary>
+        public static int FrozenDamage(int damage) => (int)Math.Round(damage * ZLCatalog.FrozenDamageScale);
 
         /// <summary>
         /// After dying: progress (missions, shards, clues, guns found, lit safehouses) is kept. The pistol comes back

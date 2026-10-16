@@ -15,6 +15,7 @@ namespace PKR
         ZLFlowField _toLeader;
         float _flowT, _wobbleT, _dodgeCool;
         Vector2 _wobble;
+        bool _trigger;
 
         public ZLAIBrain(ZLGame g, int slot)
         {
@@ -53,7 +54,8 @@ namespace PKR
             {
                 if (dd < SquadRules.ReviveRange * 0.8f) { f.useHeld = true; return f; }
                 f.move = Steer(me, downed.transform.position);
-                f.fire = nearest != null && nd < 6f;
+                _trigger = !_trigger;
+                f.fire = nearest != null && nd < 6f && (self.Gun == null || self.Gun.automatic || _trigger);
                 if (nearest != null) f.face = ((Vector2)nearest.transform.position - me).normalized;
                 return f;
             }
@@ -81,7 +83,9 @@ namespace PKR
             if (nearest != null && gun != null && nd < gun.range * 0.95f)
             {
                 f.face = ((Vector2)nearest.transform.position - me).normalized;
-                f.fire = true;
+                // Semi-automatic guns fire on a press: let go of the trigger every other frame.
+                _trigger = !_trigger;
+                f.fire = gun.automatic || _trigger;
             }
             return f;
         }

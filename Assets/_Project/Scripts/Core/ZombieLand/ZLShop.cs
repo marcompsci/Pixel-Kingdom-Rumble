@@ -184,7 +184,13 @@ namespace PKR.Core
         public static ZLGun RollBox(double roll, string holdingId, int spinsSinceWonder)
         {
             var pool = BoxPool();
-            if (spinsSinceWonder >= BoxPity && holdingId != ZLCatalog.StormCoil.id) return ZLCatalog.StormCoil;
+            // Pity: after BoxPity dry spins a wonder weapon is certain (whichever of the two you're not holding).
+            if (spinsSinceWonder >= BoxPity)
+            {
+                var w = roll < 0.5 ? ZLCatalog.StormCoil : ZLCatalog.RimeCannon;
+                if (holdingId == w.id) w = w == ZLCatalog.StormCoil ? ZLCatalog.RimeCannon : ZLCatalog.StormCoil;
+                return w;
+            }
             float total = 0f;
             foreach (var (g, w) in pool) if (g.id != holdingId) total += w;
             double t = roll * total;

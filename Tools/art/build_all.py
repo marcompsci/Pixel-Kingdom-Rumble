@@ -426,11 +426,12 @@ def build_zombieland():
         if s_['k'] == 'gun' and s_['id'] not in gun_cols:
             save(zl.wall_gun(GUN_TINTS.get(s_['id'], (200, 200, 200))), os.path.join(props, 'wall_' + s_['id'] + '.png'), ppu=16)
     save(zl.bell(), os.path.join(props, 'bell.png'), ppu=16)
+    save(zl.riot_shield(), os.path.join(props, 'riot_shield.png'), ppu=16)
     save(zl.minimap(pier, zl.building_color), os.path.join(res, 'minimap_pier.png'), ppu=16)
 
 
 GUN_TINTS = {'street_smg': (255, 220, 100), 'riot_shotgun': (255, 200, 120), 'ranger_rifle': (240, 240, 220),
-             'assault_rifle': (255, 210, 140)}
+             'assault_rifle': (255, 210, 140), 'rime_cannon': (170, 235, 255)}
 
 
 def build_fx():

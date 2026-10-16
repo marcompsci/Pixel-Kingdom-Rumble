@@ -867,3 +867,14 @@ def bell():
     d.line([(4, 5), (3, 9)], fill=(255, 230, 150, 255))
     d.ellipse([5, 11, 7, 13], fill=(120, 90, 40, 255), outline=INK)
     return im
+
+
+def riot_shield():
+    """A riot shield (10x16) seen edge-on from above: scuffed clear polycarbonate with a dark rim and a POLICE stripe."""
+    im = img(10, 16)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([1, 0, 8, 15], radius=2, fill=(150, 175, 205, 200), outline=INK)
+    d.rectangle([2, 6, 7, 8], fill=(40, 52, 90, 255))
+    d.line([(3, 2), (3, 4)], fill=(235, 245, 255, 255))
+    d.point([(6, 11), (4, 13)], fill=(110, 120, 130, 255))
+    return im

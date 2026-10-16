@@ -148,7 +148,7 @@ namespace PKR.Tests
             while (!st.Intermission && t < 5f) { t += Time.deltaTime; yield return null; }
             Assert.IsTrue(st.WeeklyPaid, "reaching the goal pays");
             Assert.IsTrue(ZombieWeekly.Done(Services.Save.Data.zombieCareer, w));
-            Assert.AreEqual(shards + w.RewardShards, Services.Save.Data.starShards);
+            Assert.GreaterOrEqual(Services.Save.Data.starShards, shards + w.RewardShards, "the reward (plus any Survivor Rank shards the XP brings)");
             Assert.AreEqual(0, Services.Save.Data.zombieCareer.Best(w.MapId, w.Mode), "weekly runs don't touch the map's records");
             yield return Calm();
         }

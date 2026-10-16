@@ -24,6 +24,8 @@ namespace PKR
 
         /// <summary>Who fired the last bullet that hit (points go to them in Last Stand co-op).</summary>
         public static ZLPlayer LastOwner { get; private set; }
+        /// <summary>True while a bullet is landing its hit (riot shields only stop bullets, not blasts or melee).</summary>
+        public static bool Striking { get; private set; }
 
         public static void Fire(Vector2 from, Vector2 dir, ZLGun gun, int damage, bool hostile, Sprite sprite, Color tint,
                                 Material mat, Collider2D ignore, float speedOverride = 0f, float rangeOverride = 0f,
@@ -85,7 +87,9 @@ namespace PKR
                 {
                     if (!target.Alive || target.Hostile == _hostile) continue; // friendly: pass through
                     LastOwner = _owner;
+                    Striking = true;
                     target.Hit(_damage, _vel.normalized, _gun);
+                    Striking = false;
                     LastOwner = null;
                     if (_gun != null && _gun.shot == "comet") ZLGame.Current?.Explode(Hits[i].point, 2.2f, _damage / 2, !_hostile);
                     Despawn();

@@ -346,9 +346,9 @@ namespace PKR
                 return;
             }
 
-            _shards.text = prog.bossDefeated ? "ZOMBIE LAND CLEARED" : $"GRAYSTONE SHARDS {prog.Shards}/{ZLCatalog.ShardsNeeded}";
+            _shards.text = prog.InChapter2 ? $"SEA-GLASS SIGILS {prog.Sigils}/{ZLCatalog.SigilsNeeded}" : prog.chapter2Done ? "ZOMBIE LAND & BLACKWATER CLEARED" : prog.bossDefeated ? "ZOMBIE LAND CLEARED" : $"GRAYSTONE SHARDS {prog.Shards}/{ZLCatalog.ShardsNeeded}";
             if (prog.bossDefeated) _hounds.text = "";
-            else if (_g.Boss != null) { _hounds.text = $"THE FIRST TURNED {Mathf.CeilToInt(_g.Boss.Health01 * 100f)}%"; _hounds.color = new Color(1f, 0.4f, 0.5f); }
+            else if (_g.Boss != null) { _hounds.text = $"{_g.Boss.BossName} {Mathf.CeilToInt(_g.Boss.Health01 * 100f)}%"; _hounds.color = new Color(1f, 0.4f, 0.5f); }
             else if (_g.InSafehouse) { _hounds.text = "SAFEHOUSE: THE HOUNDS CAN'T SMELL YOU"; _hounds.color = new Color(0.6f, 1f, 0.7f); }
             else if (_g.HoundsIn > 0f)
             {

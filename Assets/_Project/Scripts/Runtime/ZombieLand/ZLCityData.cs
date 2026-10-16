@@ -97,6 +97,7 @@ namespace PKR
 
         public string DistrictAt(Vector2 p)
         {
+            if (p.x >= 200) return "isle";      // chapter 2: Blackwater Isle, across the causeway
             if (p.x >= 177) return "harbor";
             string best = "suburbs";
             foreach (var d in districts)

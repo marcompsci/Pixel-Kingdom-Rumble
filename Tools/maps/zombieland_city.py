@@ -13,7 +13,8 @@ Ground chars:
 """
 import json, os, random, sys
 
-W, H = 192, 192
+W, H = 240, 192
+ISLE_X = 200             # chapter 2: Blackwater Isle lies east of here, across the causeway
 RIVER = (92, 98)          # y range of the river (inclusive)
 SEA_X = 177               # sea from here east
 
@@ -25,6 +26,7 @@ DISTRICTS = [  # id, x0, y0, x1, y1 (inclusive), drawn in this order (later wins
     ('park', 64, 99, 111, 189),
     ('university', 112, 99, 150, 189),
     ('harbor', 151, 99, 176, 189),
+    ('isle', 204, 50, 237, 181),
 ]
 
 V_AVENUES = [30, 64, 96, 128, 151]     # x of 4-wide north-south avenues (left edge)
@@ -37,6 +39,7 @@ class City:
         self.buildings, self.props, self.sites = [], [], {}
         self.safehouses, self.vehicles, self.pickups = [], [], []
         self.nests, self.relics, self.lairs, self.missions = [], [], [], []
+        self.doors = []
         self.rng = random.Random(1337)
 
     # -- grid helpers ----------------------------------------------------------------------------
@@ -64,6 +67,8 @@ class City:
         return True
 
     def district_of(self, x, y):
+        if x >= ISLE_X:
+            return 'isle'
         if x >= SEA_X:
             return 'harbor'
         best = 'suburbs'
@@ -127,11 +132,12 @@ class City:
         self.place_vehicles()
         self.place_pickups()
         self.place_nests()
+        self.isle()
         self.border()
         return self
 
     def ground(self):
-        base = {'suburbs': 'g', 'downtown': 's', 'industrial': 'i', 'oldtown': 'o', 'park': 'g', 'university': 'g', 'harbor': 'i'}
+        base = {'suburbs': 'g', 'downtown': 's', 'industrial': 'i', 'oldtown': 'o', 'park': 'g', 'university': 'g', 'harbor': 'i', 'isle': 'w'}
         for y in range(H):
             for x in range(W):
                 self.g[y][x] = base[self.district_of(x, y)]
@@ -529,6 +535,97 @@ class City:
             for k in range(10):
                 self.prop('rot', fx + self.rng.uniform(-3, 3), fy + self.rng.uniform(-3, 3))
 
+    # -- chapter 2: Blackwater Isle ------------------------------------------------------------------
+    def isle(self):
+        """Blackwater Isle (east, across a causeway sealed until the First Turned falls). Drawn last with its own
+        random generator so the mainland stays exactly as it was."""
+        rng = random.Random(4040)
+        X0, X1, Y0, Y1 = 204, 237, 52, 179
+        # the island: grass and salt marsh, a shore of planks in places
+        for y in range(Y0, Y1 + 1):
+            for x in range(X0, X1 + 1):
+                edge = min(x - X0, X1 - x, y - Y0, Y1 - y)
+                wobble = (hash_s(f'{x},{y}') % 3)
+                if edge + wobble < 2:
+                    continue  # ragged coast: water
+                self.g[y][x] = 'y' if (x * 7 + y * 3) % 11 == 0 else 'g'
+        # the causeway (bridge deck) from the harbor quay, with the army's quarantine line (D) at the mainland end
+        self.fill(SEA_X, 117, X0 - SEA_X + 1, 4, 'b')
+        self.fill(SEA_X + 2, 117, 2, 4, 'D')
+        self.doors.append(dict(id='isle_bridge', name='QUARANTINE LINE', x=SEA_X + 2, y=117, w=2, h=4, cost=0, opens='isle'))
+        # roads: the island road north-south and the causeway road east-west
+        self.road(220, Y0 + 3, 4, Y1 - Y0 - 6, True)
+        self.road(X0, 117, X1 - X0 - 1, 4, False)
+        # fishing village (east, cobbles) with the ferry dock
+        self.fill(225, 98, 11, 38, 'o')
+        for (hx, hy, st) in ((226, 124, 'house_blue'), (231, 124, 'house_gray'), (226, 106, 'house_green'), (231, 106, 'house_red'),
+                             (226, 130, 'house_red'), (231, 130, 'house_blue')):
+            self.building(hx, hy, 4, 4, st)
+        self.fill(228, 100, 10, 3, 'd')   # ferry dock out to the water
+        self.building(229, 112, 6, 4, 'old_slate', 'NET SHED')
+        self.site('netshed', 231.5, 110.5)
+        # the cannery (east, south)
+        self.fill(224, 60, 12, 34, 'i')
+        self.building(225, 72, 11, 9, 'warehouse_rust', 'BLACKWATER CANNERY')
+        self.site('cannery', 230.5, 70.5)
+        self.prop('crane', 233.5, 64.5, solid=True, w=2, h=2)
+        # the penitentiary (west, north) and the prison yard
+        self.fill(205, 128, 14, 44, 'i')
+        self.building(206, 146, 12, 18, 'campus_stone', 'BLACKWATER PENITENTIARY')
+        self.site('prison', 212.0, 143.5)
+        self.site('tide_gate', 211.5, 166.5)
+        for x in range(206, 218, 2):
+            self.prop('barricade', x + 0.5, 131.5, solid=True)   # the old yard fence
+        self.fill(210, 131, 4, 1, 'i')                          # its gate
+        # the lighthouse (north tip) and its lot
+        self.fill(222, 160, 10, 16, 'i')
+        self.landmark('isle_lighthouse', 225, 168, 5, 5, 'lighthouse', 'NORTH BEACON', 'i', (2.5, -1.5))
+        self.site('beacon', 227.5, 166.5)
+        self.site('lighthouse_lot', 226.0, 162.0)
+        # marsh (west, south): trees, the smuggler's stash
+        for _ in range(60):
+            x, y = rng.randint(X0 + 2, 218), rng.randint(Y0 + 3, 114)
+            if self.get(x, y) in ('g', 'y') and not self.occupied(x, y):
+                self.prop(rng.choice(['tree', 'pine', 'bush', 'bush']), x + 0.5, y + 0.5, solid=True)
+        self.fill(208, 92, 6, 5, 'l')
+        self.site('stash', 210.5, 94.5)
+        # chapter 2 missions and the tide gate
+        self.mission('c2_ferry', 'netshed')
+        self.mission('c2_cannery', 'cannery')
+        self.mission('c2_beacon', 'beacon')
+        self.mission('c2_cellblock', 'prison', extra=(3, 4, 12))
+        self.mission('c2_smuggler', 'stash', dest='lighthouse_lot')
+        tx, ty = self.near_free(*self.sites['tide_gate'])
+        self.lairs.append(dict(id='tide_gate', x=tx, y=ty))
+        # a safehouse at the end of the causeway
+        fx, fy = self.near_free(209, 123, allowed=('g', 'y', 'i', 'o', 's'))
+        self.safehouses.append(dict(id='safe_isle', name='BLACKWATER SAFEHOUSE', x=fx, y=fy, district='isle'))
+        # nests, vehicles, loot
+        for i, (x, y) in enumerate(((214, 80), (232, 140), (209, 158))):
+            nx, ny = self.near_free(x, y, allowed=('g', 'i', 'o', 'y', 'l'))
+            self.nests.append(dict(id=f'nest_isle_{i}', x=nx, y=ny, district='isle'))
+            for k in range(8):
+                self.prop('rot', nx + rng.uniform(-3, 3), ny + rng.uniform(-3, 3))
+        for k, x, y, a in (('Car', 216.5, 125.5, 0), ('Motorcycle', 221.5, 140.5, 90), ('Truck', 226.5, 88.5, 0)):
+            self.vehicles.append(dict(k=k, x=x, y=y, a=a))
+        n = 0
+        for kind, count in (('ammo', 12), ('medkit', 5), ('armor', 3)):
+            got, tries = 0, 0
+            while got < count and tries < 4000:
+                tries += 1
+                x, y = rng.randint(X0 + 2, X1 - 2), rng.randint(Y0 + 2, Y1 - 2)
+                if self.get(x, y) not in ('i', 'o', 'l', 'y', 'g') or self.occupied(x, y):
+                    continue
+                if not any(self.get(x + dx, y + dy) == 'B' for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                    continue
+                self.pickups.append(dict(id=f'pi{n}', k=kind, x=x + 0.5, y=y + 0.5))
+                n += 1
+                got += 1
+        # lamps along the island road
+        for y in range(Y0 + 6, Y1 - 6, 9):
+            if self.get(219, y) in ('g', 'y', 'i', 'o'):
+                self.prop('lamp', 219.5, y + 0.5, solid=True)
+
     def border(self):
         for y in range(H):
             for x in range(W):
@@ -543,7 +640,7 @@ class City:
             w=W, h=H, rows=rows, start=dict(x=self.start[0], y=self.start[1]),
             districts=[dict(id=d, x0=x0, y0=y0, x1=x1, y1=y1) for d, x0, y0, x1, y1 in DISTRICTS],
             buildings=self.buildings, props=self.props, safehouses=self.safehouses, vehicles=self.vehicles,
-            pickups=self.pickups, nests=self.nests, relics=self.relics, lairs=self.lairs, missions=self.missions,
+            pickups=self.pickups, nests=self.nests, relics=self.relics, lairs=self.lairs, missions=self.missions, doors=self.doors,
             sites=[dict(key=k, x=v[0], y=v[1]) for k, v in self.sites.items()])
 
 

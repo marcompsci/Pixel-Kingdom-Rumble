@@ -10,8 +10,9 @@ namespace PKR
         public string lairId;
         public Vector2 UsePos => transform.position;
         public float UseRange => 2.2f;
-        public bool CanUse => !game.Progress.bossDefeated && game.Boss == null;
-        public string Prompt => "SEARCH " + ZLCatalog.Lair(lairId).name.ToUpperInvariant();
+        bool TideGate => lairId == ZLCatalog.TideGate;
+        public bool CanUse => game.Boss == null && (TideGate ? game.Progress.InChapter2 : !game.Progress.bossDefeated);
+        public string Prompt => TideGate ? "THE TIDE GATE" : "SEARCH " + ZLCatalog.Lair(lairId).name.ToUpperInvariant();
 
         public void Init(ZLGame g, string id)
         {
@@ -24,8 +25,15 @@ namespace PKR
         protected override void Update()
         {
             base.Update();
-            if (label != null)
-                label.text = game.Progress.lairsSearched.Contains(lairId) ? "EMPTY" : game.Progress.Shards >= ZLCatalog.ShardsNeeded ? "LAIR?" : "SEALED";
+            if (label == null) return;
+            if (TideGate)
+            {
+                var p = game.Progress;
+                label.text = !p.InChapter2 ? "" : p.Sigils >= ZLCatalog.SigilsNeeded ? "TIDE GATE" : $"SIGILS {p.Sigils}/{ZLCatalog.SigilsNeeded}";
+                if (sr != null) sr.enabled = p.InChapter2;
+                return;
+            }
+            label.text = game.Progress.lairsSearched.Contains(lairId) ? "EMPTY" : game.Progress.Shards >= ZLCatalog.ShardsNeeded ? "LAIR?" : "SEALED";
         }
     }
 }
