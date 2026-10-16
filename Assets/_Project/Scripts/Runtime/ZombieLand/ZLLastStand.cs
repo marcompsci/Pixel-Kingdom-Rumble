@@ -426,7 +426,9 @@ namespace PKR
                                 30, TextAnchor.MiddleCenter, 48f).color = RanksReached.Count > 0 ? (Color)gold : UITheme.Current.subtle;
             }
             var buttons = UIFactory.Rect("Buttons", panel);
-            buttons.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var ble = buttons.gameObject.AddComponent<LayoutElement>();
+            ble.preferredHeight = ble.minHeight = UIFactory.RowHeight;
+            ble.flexibleHeight = 0f;
             var h = buttons.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.spacing = 24f;
             h.childControlWidth = true; h.childControlHeight = true;
