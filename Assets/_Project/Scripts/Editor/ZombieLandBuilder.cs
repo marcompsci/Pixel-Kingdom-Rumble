@@ -8,8 +8,8 @@ using UnityEngine.InputSystem.UI;
 namespace PKR.EditorTools
 {
     /// <summary>
-    /// Builds EV_ZombieLand: a near-empty scene (camera, touch controls, HUD, pause menu and the ZLGame controller).
-    /// The whole city is generated at runtime from Resources/PKR/ZombieLand/city.json.
+    /// Builds EV_ZombieLand and EV_LastStand: near-empty scenes (camera, touch controls, HUD, pause menu and the ZLGame
+    /// controller). The city / block is generated at runtime from Resources/PKR/ZombieLand/city.json or block.json.
     /// </summary>
     public static class ZombieLandBuilder
     {
@@ -21,6 +21,13 @@ namespace PKR.EditorTools
         }
 
         public static void BuildNoPrompt()
+        {
+            BuildScene(ZLMode.Campaign, SceneIds.ZombieLand);
+            BuildScene(ZLMode.LastStand, SceneIds.LastStand);
+        }
+
+        /// <summary>Zombie Land (the city) and Last Stand: Hollow Block (round-based on block.json) share everything.</summary>
+        static void BuildScene(ZLMode mode, string sceneId)
         {
             EditorUtil.EnsureLayers();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -36,7 +43,8 @@ namespace PKR.EditorTools
             camGo.AddComponent<CameraFollowTopDown>();
             PixelArt.PostFX(cam);
 
-            var game = new GameObject("ZombieLand").AddComponent<ZLGame>();
+            var game = new GameObject(mode == ZLMode.LastStand ? "LastStand" : "ZombieLand").AddComponent<ZLGame>();
+            game.mode = mode;
             game.material = mat;
             game.roster = DataAssets.GetOrCreateRoster();
             game.shambler = DataAssets.GetOrCreateZombieShambler();
@@ -57,7 +65,7 @@ namespace PKR.EditorTools
             new GameObject("HUD").AddComponent<ZLHUD>();
             new GameObject("PauseMenu").AddComponent<PauseMenu>();
 
-            string path = $"{AsciiLevelBuilder.EventFolder}/{SceneIds.ZombieLand}.unity";
+            string path = $"{AsciiLevelBuilder.EventFolder}/{sceneId}.unity";
             EditorUtil.EnsureFolder(AsciiLevelBuilder.EventFolder);
             EditorSceneManager.SaveScene(scene, path);
             EditorUtil.AddSceneToBuild(path);

@@ -393,6 +393,33 @@ def build_zombieland():
     save(zl.herald_crown(), os.path.join(props, 'crown.png'), ppu=16)
     save(zl.minimap(city, zl.building_color), os.path.join(res, 'minimap.png'), ppu=16)
     save(zl.vignette(), os.path.join(res, 'vignette.png'), ppu=100, filt=1)
+    # The classic loop (Zombie Land and Last Stand)
+    for k in zl.POWERUP_COLORS:
+        save(zl.powerup(k), os.path.join(props, 'pu_' + k + '.png'), ppu=16)
+    for k in zl.PERK_COLORS:
+        save(zl.perk_machine(k), os.path.join(props, 'perk_' + k.lower() + '.png'), ppu=16)
+    save(zl.mystery_box(False), os.path.join(props, 'box_closed.png'), ppu=16)
+    save(zl.mystery_box(True), os.path.join(props, 'box_open.png'), ppu=16)
+    save(zl.forge_machine(), os.path.join(props, 'forge.png'), ppu=16)
+    import zombieland_block
+    block = zombieland_block.build().to_json()
+    with open(os.path.join(res, 'block.json'), 'w', newline='\n') as f:
+        json.dump(block, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'block.json'))
+    gun_cols = {}
+    for s_ in block['stations']:
+        if s_['k'] == 'gun':
+            gun_cols[s_['id']] = True
+    for gid in gun_cols:
+        save(zl.wall_gun(GUN_TINTS.get(gid, (200, 200, 200))), os.path.join(props, 'wall_' + gid + '.png'), ppu=16)
+    for i in range(3):
+        save(zl.debris(i), os.path.join(props, f'debris_{i}.png'), ppu=16)
+    save(zl.fragment(), os.path.join(props, 'fragment.png'), ppu=16)
+    save(zl.minimap(block, zl.building_color), os.path.join(res, 'minimap_block.png'), ppu=16)
+
+
+GUN_TINTS = {'street_smg': (255, 220, 100), 'riot_shotgun': (255, 200, 120), 'ranger_rifle': (240, 240, 220),
+             'assault_rifle': (255, 210, 140)}
 
 
 def build_fx():

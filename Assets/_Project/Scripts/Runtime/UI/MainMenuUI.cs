@@ -18,11 +18,12 @@ namespace PKR
         [Tooltip("Heroes, foes and places for the CODEX button. The button shows as disabled without it.")]
         [SerializeField] CodexDefinition codex;
 
-        RectTransform _menuRoot, _settingsRoot, _shopRoot, _codexRoot, _eventRoot;
+        RectTransform _menuRoot, _settingsRoot, _shopRoot, _codexRoot, _eventRoot, _zombiesRoot;
         SettingsPanel _settings;
         ShopPanel _shop;
         CodexPanel _codex;
         EventMenuPanel _events;
+        ZombiesMenuPanel _zombies;
 
         void Awake()
         {
@@ -41,6 +42,9 @@ namespace PKR
             _eventRoot = UIFactory.Rect("Events", safe);
             UIFactory.Stretch(_eventRoot);
             _events = gameObject.AddComponent<EventMenuPanel>();
+            _zombiesRoot = UIFactory.Rect("Zombies", safe);
+            UIFactory.Stretch(_zombiesRoot);
+            _zombies = gameObject.AddComponent<ZombiesMenuPanel>();
         }
 
         void OnEnable() => EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
@@ -53,7 +57,8 @@ namespace PKR
             if (GameSession.ReopenEventMenu)
             {
                 GameSession.ReopenEventMenu = false;
-                if (GameSession.Mode == SessionMode.Halloween) ShowHalloween();
+                if (GameSession.Mode == SessionMode.Zombies) ShowZombies();
+                else if (GameSession.Mode == SessionMode.Halloween) ShowHalloween();
                 else if (GameSession.Mode == SessionMode.Holiday) ShowHoliday();
             }
             // Screenshot runs: open one panel straight away.
@@ -63,6 +68,7 @@ namespace PKR
             else if (BootLoader.TakeShotPanel("codex") != null && codex != null) ShowCodex();
             else if (BootLoader.TakeShotPanel("holiday") != null) ShowHoliday();
             else if (BootLoader.TakeShotPanel("halloween") != null) ShowHalloween();
+            else if (BootLoader.TakeShotPanel("zombies") != null) ShowZombies();
         }
 
         bool _lastHighContrast;
@@ -80,6 +86,7 @@ namespace PKR
             _shopRoot.gameObject.SetActive(false);
             _codexRoot.gameObject.SetActive(false);
             _eventRoot.gameObject.SetActive(false);
+            _zombiesRoot.gameObject.SetActive(false);
             _menuRoot.gameObject.SetActive(true);
             BuildMenu();
         }
@@ -98,7 +105,6 @@ namespace PKR
                 le.preferredHeight = le.minHeight = 190f;
                 TitleCast.Build(castRow, roster, 6);
             }
-            UIFactory.Label(panel, "Adventures of the Sunspire Isles", 40, TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
 
             var save = Services.Save != null ? Services.Save.Data : null;
             int shards = save != null ? save.starShards : 0;
@@ -117,6 +123,20 @@ namespace PKR
             string levelName = featuredLevel != null ? featuredLevel.displayName : "Story Quest";
             UIFactory.Label(panel, $"{levelName}: {best}", 36, TextAnchor.MiddleCenter, 70f).color = UITheme.Current.subtle;
 
+            // ZOMBIES leads the menu, all year round.
+            var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 130f);
+            UIFactory.Tint(zombies, new Color32(190, 40, 40, 255), Color.white);
+            UIFactory.Highlight(zombies, new Color32(255, 200, 80, 255));
+            var zt = zombies.GetComponentInChildren<Text>();
+            if (zt != null)
+            {
+                var career = save != null ? save.zombieCareer : null;
+                int zr = career != null ? SurvivorRank.RankFor(career.xp) : 1;
+                zt.supportRichText = true;
+                zt.resizeTextForBestFit = false;
+                zt.fontSize = 52;
+                zt.text = $"ZOMBIES\n<size=26>Zombie Land · Last Stand · Survival  ·  Rank {zr}</size>";
+            }
             var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest),
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
             // Holiday Mode and Halloween (zombies) side by side.
@@ -176,7 +196,7 @@ namespace PKR
                 gc.GetComponentInChildren<Text>().fontSize = 30;
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
-            UIFactory.Select(story);
+            UIFactory.Select(zombies);
         }
 
         void Choose(SessionMode mode)
@@ -197,6 +217,13 @@ namespace PKR
             _menuRoot.gameObject.SetActive(false);
             _eventRoot.gameObject.SetActive(true);
             _events.OpenHoliday(_eventRoot, ShowMenu);
+        }
+
+        void ShowZombies()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _zombiesRoot.gameObject.SetActive(true);
+            _zombies.Open(_zombiesRoot, ShowMenu);
         }
 
         void ShowHalloween()

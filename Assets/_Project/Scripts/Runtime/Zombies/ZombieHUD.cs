@@ -74,6 +74,8 @@ namespace PKR
             _left.text = _game.GameOver ? ""
                 : _game.Intermission ? (run.Round == 0 ? $"GET READY  {Mathf.CeilToInt(_game.IntermissionLeft)}" : $"NEXT ROUND IN {Mathf.CeilToInt(_game.IntermissionLeft)}")
                 : $"ZOMBIES LEFT {_game.ZombiesLeft}";
+            if (_game.Mode != SurvivalMode.Endless && !_game.GameOver)
+                _left.text = (_game.Mode == SurvivalMode.Raid ? $"RAID {run.Round}/{SurvivalModes.RaidRounds}" : "HARDCORE") + "   " + _left.text;
 
             var gun = _game.Gunner;
             var slot = gun != null ? gun.Current : null;
@@ -88,6 +90,7 @@ namespace PKR
 
             var sb = new StringBuilder();
             foreach (var p in run.Perks) sb.Append(sb.Length > 0 ? "  " : "").Append(ZombieRules.PerkName(p));
+            if (run.PerkCount > 0) sb.Append($"  ({run.PerkCount}/{run.PerkLimit})");
             _perks.text = sb.ToString();
             sb.Clear();
             if (_game.InstaKillLeft > 0f) sb.Append($"SPOOKY STRIKE {Mathf.CeilToInt(_game.InstaKillLeft)}   ");
@@ -223,16 +226,28 @@ namespace PKR
             var save = Services.Save != null ? Services.Save.Data : null;
             var safe = UIFactory.CreateCanvas(transform, "GameOverCanvas", sortingOrder + 20, landscape: true, out _);
             UIFactory.Dim(safe);
-            var panel = UIFactory.Panel(safe, new Vector2(1180f, 900f));
-            var title = UIFactory.Label(panel, "THE HORDE GOT YOU", 80, TextAnchor.MiddleCenter, 120f, title: true);
-            title.color = Blood;
-            UIFactory.Label(panel, $"YOU SURVIVED {run.Round} ROUND{(run.Round == 1 ? "" : "S")}", 56, TextAnchor.MiddleCenter, 80f, title: true);
-            UIFactory.Label(panel, $"{run.Kills} zombies  ·  {run.TotalEarned} points", 40, TextAnchor.MiddleCenter, 60f);
-            string best = save != null ? $"Best: round {save.zombieBestRound} · {save.zombieBestPoints} pts" : "";
-            var bestLabel = UIFactory.Label(panel, _game.NewBest ? "NEW BEST!  " + best : best, 38, TextAnchor.MiddleCenter, 60f);
+            var panel = UIFactory.Panel(safe, new Vector2(1180f, 980f));
+            var title = UIFactory.Label(panel, run.Won ? "RAID COMPLETE!" : "THE HORDE GOT YOU", 80, TextAnchor.MiddleCenter, 110f, title: true);
+            title.color = run.Won ? Gold : Blood;
+            int shown = run.Won ? run.Round : run.Round;
+            UIFactory.Label(panel, $"{SurvivalModes.Name(_game.Mode)}  ·  ROUND {shown}" + (_game.WraithBeaten ? "  ·  WRAITH SLAIN" : ""), 52,
+                            TextAnchor.MiddleCenter, 74f, title: true);
+            UIFactory.Label(panel, $"{run.Kills} zombies  ·  {run.TotalEarned} points  ·  {_game.CachesEarned} supply cache{(_game.CachesEarned == 1 ? "" : "s")}",
+                            36, TextAnchor.MiddleCenter, 56f);
+            var career = save != null ? save.zombieCareer : null;
+            int best = career != null ? career.Best(ZombieSurvival.MapId, _game.Mode) : 0;
+            var bestLabel = UIFactory.Label(panel, (_game.NewBest ? "NEW BEST!  " : "") + $"Best {SurvivalModes.Name(_game.Mode)} round: {best}", 36,
+                                            TextAnchor.MiddleCenter, 54f);
             bestLabel.color = _game.NewBest ? Gold : UITheme.Current.subtle;
             if (_game.ShardReward > 0)
-                UIFactory.Label(panel, $"+{_game.ShardReward} Star Shards", 40, TextAnchor.MiddleCenter, 60f).color = Gold;
+                UIFactory.Label(panel, $"+{_game.ShardReward} Star Shards   ·   +{_game.XpEarned} Survivor XP", 38, TextAnchor.MiddleCenter, 56f).color = Gold;
+            if (career != null)
+            {
+                int rank = SurvivorRank.RankFor(career.xp);
+                string rk = _game.RanksReached.Count > 0 ? $"RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
+                          : $"SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(SurvivorRank.Progress01(career.xp) * 100f)}% to the next";
+                UIFactory.Label(panel, rk, 32, TextAnchor.MiddleCenter, 50f).color = _game.RanksReached.Count > 0 ? (Color)Gold : UITheme.Current.subtle;
+            }
 
             var buttons = UIFactory.Rect("Buttons", panel);
             buttons.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
@@ -242,10 +257,12 @@ namespace PKR
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             var again = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             int round = run.Round, kills = run.Kills;
+            bool won = run.Won;
             UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(
-                $"I survived {round} round{(round == 1 ? "" : "s")} of zombies ({kills} down) in Pixel Kingdom Rumble's Halloween mode! " +
-                ShareCard.Link));
-            UIFactory.Button(buttons, "HALLOWEEN", () =>
+                (won ? $"I beat the Raid ({kills} zombies down)" : $"I survived {round} round{(round == 1 ? "" : "s")} of zombies ({kills} down)") +
+                " in Pixel Kingdom Rumble! " + ShareCard.Link));
+            bool zombiesMenu = GameSession.Mode == SessionMode.Zombies;
+            UIFactory.Button(buttons, zombiesMenu ? "ZOMBIES" : "HALLOWEEN", () =>
             {
                 GameSession.ReopenEventMenu = true;
                 if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu);

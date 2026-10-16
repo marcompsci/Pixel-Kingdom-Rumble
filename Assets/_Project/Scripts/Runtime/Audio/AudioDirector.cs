@@ -36,7 +36,7 @@ namespace PKR
         public static string MusicFor(string scene)
         {
             if (string.IsNullOrEmpty(scene) || scene == SceneIds.Boot) return null;
-            if (scene == SceneIds.ZombieSurvival || scene == SceneIds.ZombieLand) return Sfx.MusicSurvival;
+            if (scene == SceneIds.ZombieSurvival || scene == SceneIds.ZombieLand || scene == SceneIds.LastStand) return Sfx.MusicSurvival;
             if (scene == SceneIds.HauntedEscape) return Sfx.MusicHaunted;
             if (scene.StartsWith(SceneIds.EventPrefix)) return Sfx.MusicHoliday;
             if (scene.StartsWith(SceneIds.ContractPrefix) || scene == SceneIds.MissionBoard ||

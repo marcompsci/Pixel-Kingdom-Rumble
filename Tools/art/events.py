@@ -476,6 +476,7 @@ def mystery_crate():
 
 PERKS = {
     'iron_heart': C(220, 60, 70), 'quick_draw': C(90, 200, 255), 'second_wind': C(120, 230, 120), 'fleet_feet': C(255, 200, 70),
+    'deadeye': C(240, 240, 250), 'scavenger': C(200, 140, 60),
 }
 
 

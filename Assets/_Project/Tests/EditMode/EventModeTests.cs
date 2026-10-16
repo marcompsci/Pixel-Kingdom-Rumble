@@ -134,7 +134,7 @@ namespace PKR.Tests
             Assert.GreaterOrEqual(lvl.MergedRects('w').Count, 2, "a barricade per window");
             Assert.GreaterOrEqual(lvl.Count('x'), 4, "wall weapons");
             Assert.AreEqual(1, lvl.Count('b'), "mystery crate");
-            Assert.GreaterOrEqual(lvl.Count('p'), 4, "a shrine per perk");
+            Assert.GreaterOrEqual(lvl.Count('p'), 6, "a shrine per perk");
             Assert.AreEqual(1, lvl.Count('U'), "forge");
             Assert.AreEqual(3, lvl.Count('j'), "three lanterns");
             Assert.GreaterOrEqual(lvl.MergedRects('q').Count, 1, "paid door");

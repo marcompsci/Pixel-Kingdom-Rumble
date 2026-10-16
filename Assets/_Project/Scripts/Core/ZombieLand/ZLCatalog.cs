@@ -88,6 +88,12 @@ namespace PKR.Core
         public string shot;
         public ZLRelic relic;
         public bool isRelic;
+        /// <summary>Box-only wonder weapon (never lying around the city).</summary>
+        public bool wonder;
+        /// <summary>Hollow-forged at the upgrade forge (a copy made by ZLShop.Effective).</summary>
+        public bool forged;
+
+        public ZLGun Clone() => (ZLGun)MemberwiseClone();
     }
 
     public class ZLVehicleSpec
@@ -190,6 +196,14 @@ namespace PKR.Core
         };
         public const int StartingRounds = 25;
 
+        /// <summary>The mystery box's wonder weapon: twin bolts of storm light that chew through crowds.</summary>
+        public static readonly ZLGun StormCoil = new ZLGun
+        {
+            id = "storm_coil", name = "STORM COIL", damage = 11, magazine = 30, maxReserve = 150, pellets = 2, spreadDegrees = 9f,
+            shotsPerSecond = 6f, reloadSeconds = 1.7f, speed = 26f, range = 12f, automatic = true, noise = 0.5f, r = 140, g = 220, b = 255,
+            shot = "spark", wonder = true
+        };
+
         public static readonly ZLGun[] Guns =
         {
             Pistol,
@@ -205,7 +219,9 @@ namespace PKR.Core
                         shotsPerSecond = 9f, reloadSeconds = 3.2f, speed = 26f, range = 12f, automatic = true, noise = 1f, r = 255, g = 190, b = 90, shot = "shard" },
             new ZLGun { id = "thumper", name = "THUMPER LAUNCHER", damage = 30, magazine = 1, maxReserve = 12, pellets = 1,
                         shotsPerSecond = 0.9f, reloadSeconds = 1.6f, speed = 12f, range = 11f, noise = 1f, r = 255, g = 140, b = 60, shot = "comet" },
+            StormCoil,
         };
+
 
         /// <summary>Relic weapons: damage everything, but only the true one hurts the First Turned.</summary>
         public static ZLGun RelicGun(ZLRelic relic)

@@ -34,7 +34,19 @@ namespace PKR
         public Sprite[] powerUpSprites = new Sprite[5]; // PowerUpKind order
         public Sprite healthSprite;
 
-        public SurvivalRun Run { get; } = new SurvivalRun();
+        public SurvivalRun Run { get; private set; } = new SurvivalRun();
+        public SurvivalMode Mode => Run.Mode;
+        /// <summary>Supply caches earned this run (one every 3 rounds survived).</summary>
+        public int CachesEarned { get; private set; }
+        /// <summary>Hardcore secret: the Lantern Wraith is out (or beaten).</summary>
+        public bool WraithSummoned { get; private set; }
+        public bool WraithBeaten { get; private set; }
+        public List<int> RanksReached { get; private set; } = new List<int>();
+        public int XpEarned { get; private set; }
+        bool _wraithPending, _freeSpin;
+        EnemyAI _wraith;
+        /// <summary>Map id for records (Survivor Rank bests).</summary>
+        public const string MapId = "manor";
         public bool GameOver { get; private set; }
         public bool Intermission { get; private set; } = true;
         public float IntermissionLeft { get; private set; }
@@ -64,6 +76,10 @@ namespace PKR
         void Awake()
         {
             Current = this;
+            int xp = Services.Save != null && Services.Save.Data.zombieCareer != null ? Services.Save.Data.zombieCareer.xp : 0;
+            var mode = GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMode : SurvivalMode.Endless;
+            Run = new SurvivalRun(mode, SurvivorRank.BonusPoints(xp));
+            _freeSpin = SurvivorRank.Has(xp, "kit_spin");
             if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (player != null)
             {
@@ -91,6 +107,16 @@ namespace PKR
                 PlayerHealth.Hit += OnPlayerHit;
             }
             foreach (var b in barricades) if (b != null) b.Repaired += OnRepaired;
+            if (Gunner != null)
+            {
+                int xp = Services.Save != null && Services.Save.Data.zombieCareer != null ? Services.Save.Data.zombieCareer.xp : 0;
+                int tier = SurvivorRank.StarterTier(xp);
+                if (tier > 0)
+                {
+                    if (Gunner.Slots.Count == 0) Gunner.Give(ZombieArmory.PeaPopper);
+                    Gunner.Give(ZombieArmory.Wall[Mathf.Clamp(tier, 1, ZombieArmory.Wall.Length - 1)]);
+                }
+            }
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             StartCoroutine(NextRound(3f));
         }
@@ -109,11 +135,18 @@ namespace PKR
             if (GameOver) yield break;
             int round = Run.NextRound();
             _toSpawn = ZombieRules.ZombiesInRound(round);
-            _bossPending = ZombieRules.IsBossRound(round) && pumpkinKing != null;
+            _bossPending = SurvivalModes.IsBossRound(Mode, round) && pumpkinKing != null;
             _spawnTimer = 1f;
             Intermission = false;
             Sfx.Play(Sfx.RoundStart, 0.9f, 0f);
-            Banner?.Invoke(_bossPending ? $"ROUND {round}\nTHE PUMPKIN KING RISES!" : $"ROUND {round}");
+            string head = Mode == SurvivalMode.Raid ? $"ROUND {round}/{SurvivalModes.RaidRounds}" : $"ROUND {round}";
+            if (SurvivalModes.IsFinalRound(Mode, round)) head += "\nFINAL ROUND!";
+            Banner?.Invoke(_bossPending ? head + "\nTHE PUMPKIN KING RISES!" : head);
+            if (_wraithPending)
+            {
+                _wraithPending = false;
+                SpawnWraith();
+            }
         }
 
         void Update()
@@ -148,8 +181,16 @@ namespace PKR
             if (!Intermission && _toSpawn <= 0 && !_bossPending && _alive.Count == 0)
             {
                 int bonus = Run.Earn(ZombieRules.RoundBonus(Run.Round));
+                if (SurvivalModes.IsFinalRound(Mode, Run.Round))
+                {
+                    Run.Won = true;
+                    Banner?.Invoke("RAID COMPLETE!");
+                    EndRun();
+                    return;
+                }
                 Banner?.Invoke($"ROUND {Run.Round} SURVIVED!  +{bonus}");
-                StartCoroutine(NextRound(ZombieRules.Intermission));
+                if (SurvivalModes.CacheAfter(Run.Round)) StartCoroutine(SupplyCache());
+                StartCoroutine(NextRound(SurvivalModes.Intermission(Mode)));
                 Intermission = true;
             }
         }
@@ -169,7 +210,7 @@ namespace PKR
             if (_toSpawn <= 0) return;
             _toSpawn--;
             Spawn(ZombieRules.Pick(Run.Round, Random.value));
-            _spawnTimer = ZombieRules.SpawnInterval(Run.Round);
+            _spawnTimer = ZombieRules.SpawnInterval(Run.Round) * SurvivalModes.SpawnScale(Mode);
         }
 
         EnemyDefinition DefFor(ZombieKind k)
@@ -203,8 +244,10 @@ namespace PKR
             int dir = player != null && player.transform.position.x < pos.x ? -1 : 1;
             var ai = EnemyFactory.Spawn(def, pos + Vector2.up * (def.bodySize.y * 0.5f + 0.05f), dir, spriteMaterial);
             var health = ai.GetComponent<Damageable>();
-            health.Configure(DamageModel.StoryHealth, TeamIds.Enemy, ZombieRules.Health(kind, Run.Round), def.weight, 0f, 0f);
-            if (kind != ZombieKind.Bat) ai.SpeedOverride = ZombieRules.Speed(kind, Run.Round);
+            int hp = ZombieRules.Health(kind, Run.Round);
+            hp = kind == ZombieKind.PumpkinKing ? SurvivalModes.BossHealth(Mode, Run.Round, hp) : Mathf.RoundToInt(hp * SurvivalModes.HealthScale(Mode));
+            health.Configure(DamageModel.StoryHealth, TeamIds.Enemy, Mathf.Max(1, hp), def.weight, 0f, 0f);
+            if (kind != ZombieKind.Bat) ai.SpeedOverride = ZombieRules.Speed(kind, Run.Round) * SurvivalModes.SpeedScale(Mode);
             ai.ChaseRangeOverride = 200f; // in the arena every zombie knows where you are
             ai.Defeated -= OnZombieDefeated;
             ai.Defeated += OnZombieDefeated;
@@ -232,8 +275,13 @@ namespace PKR
             Vector2 pos = ai.transform.position;
             RemoveZombie(ai);
             PuffEffect.Play(pos, new Color32(120, 200, 90, 255), spriteMaterial, 0.24f, 4f, 0.45f);
-            if (kind == ZombieKind.PumpkinKing) Banner?.Invoke("THE PUMPKIN KING FALLS!");
-            if (!_nuking && ZombieRules.Drops(kind, Run.DropsThisRound, Random.value))
+            if (ai == _wraith)
+            {
+                _wraith = null;
+                WraithDefeated();
+            }
+            else if (kind == ZombieKind.PumpkinKing) Banner?.Invoke("THE PUMPKIN KING FALLS!");
+            if (!_nuking && ZombieRules.Drops(kind, Run.DropsThisRound, Run.KillsSinceDrop, Random.value, Mode, Run.HasPerk(PerkKind.Scavenger)))
             {
                 Run.CountDrop();
                 SpawnDrop(ZombieRules.PickPowerUp(Random.value), pos + Vector2.up * 0.4f);
@@ -363,14 +411,15 @@ namespace PKR
                 case StationKind.WallWeapon:
                     var w = s.Weapon;
                     return Gunner.Holds(w.id) ? $"USE: {w.name} AMMO  {w.AmmoCost}" : $"USE: BUY {w.name}  {w.cost}";
-                case StationKind.MysteryCrate: return $"USE: MYSTERY CRATE  {ZombieRules.CrateCost}";
+                case StationKind.MysteryCrate: return _freeSpin ? "USE: MYSTERY CRATE  FREE!" : $"USE: MYSTERY CRATE  {ZombieRules.CrateCost}";
                 case StationKind.Perk:
                     var p = s.Perk;
                     return Run.HasPerk(p) ? $"{ZombieRules.PerkName(p)} (OWNED)"
+                        : !Run.PerkSlotFree ? $"{ZombieRules.PerkName(p)}  (PERK LIMIT {Run.PerkLimit})"
                         : $"USE: {ZombieRules.PerkName(p)}  {ZombieRules.PerkCost(p)}\n{ZombieRules.PerkInfo(p)}";
                 case StationKind.Forge:
                     return Gunner.Current != null && Gunner.Current.spec.upgraded ? "THIS GUN IS ALREADY CURSED"
-                        : $"USE: UPGRADE FORGE  {ZombieRules.ForgeCost}";
+                        : $"USE: UPGRADE FORGE  {ForgeCost}";
                 case StationKind.Door: return $"USE: OPEN THE GALLERY  {ZombieRules.DoorCost}";
                 default: return "";
             }
@@ -392,12 +441,24 @@ namespace PKR
                     break;
                 }
                 case StationKind.MysteryCrate:
-                    if (Pay(ZombieRules.CrateCost)) StartCoroutine(SpinCrate(s));
+                    if (_freeSpin)
+                    {
+                        _freeSpin = false;
+                        Banner?.Invoke("LUCKY FIRST SPIN!");
+                        StartCoroutine(SpinCrate(s));
+                    }
+                    else if (Pay(ZombieRules.CrateCost)) StartCoroutine(SpinCrate(s));
                     break;
                 case StationKind.Perk:
                 {
                     var p = s.Perk;
                     if (Run.HasPerk(p)) return;
+                    if (!Run.PerkSlotFree)
+                    {
+                        Sfx.Play(Sfx.Click, 0.6f, 0f);
+                        Banner?.Invoke($"PERK LIMIT ({Run.PerkLimit})" + (Run.ExtraPerkSlot ? "" : "\nLIGHT EVERY LANTERN FOR ONE MORE"));
+                        return;
+                    }
                     if (!Run.CanAfford(ZombieRules.PerkCost(p))) { Deny(); return; }
                     Run.BuyPerk(p);
                     ApplyPerk(p);
@@ -407,7 +468,7 @@ namespace PKR
                 }
                 case StationKind.Forge:
                     if (Gunner.Current == null || Gunner.Current.spec.upgraded) return;
-                    if (Pay(ZombieRules.ForgeCost)) StartCoroutine(Forge(s));
+                    if (Pay(ForgeCost)) StartCoroutine(Forge(s));
                     break;
                 case StationKind.Door:
                     if (Pay(ZombieRules.DoorCost))
@@ -417,6 +478,15 @@ namespace PKR
                         Banner?.Invoke("THE GALLERY IS OPEN!");
                     }
                     break;
+            }
+        }
+
+        int ForgeCost
+        {
+            get
+            {
+                int xp = Services.Save != null && Services.Save.Data.zombieCareer != null ? Services.Save.Data.zombieCareer.xp : 0;
+                return SurvivorRank.Has(xp, "kit_forge") ? Mathf.RoundToInt(ZombieRules.ForgeCost * 0.6f) : ZombieRules.ForgeCost;
             }
         }
 
@@ -437,7 +507,8 @@ namespace PKR
         {
             s.BusyUntil = Time.time + 2.4f;
             string holding = Gunner.Current != null ? Gunner.Current.spec.id : "";
-            ZombieWeapon prize = ZombieArmory.RollCrate(Random.value, holding);
+            ZombieWeapon prize = ZombieArmory.RollCrate(Random.value, holding, Run.SpinsSinceWonder);
+            Run.CountSpin(ZombieArmory.IsWonder(prize.id));
             float t = 0f;
             int i = 0;
             while (t < 2.2f)
@@ -490,6 +561,9 @@ namespace PKR
                 case PerkKind.FleetFeet:
                     if (_motor != null) _motor.SpeedScale = ZombieRules.FleetFeetSpeed;
                     break;
+                case PerkKind.Deadeye:
+                    if (Gunner != null) Gunner.DamageBonus = ZombieRules.DeadeyeBonus;
+                    break;
             }
         }
 
@@ -504,10 +578,14 @@ namespace PKR
                 Banner?.Invoke($"A LANTERN FLICKERS ON... ({LanternsLit}/{LanternsTotal})");
                 return;
             }
-            // The secret: every lantern lit. A free cursed Moonbeam Ray and a pile of points.
+            // The secret: every lantern lit. A free cursed Moonbeam Ray, a pile of points and a fifth perk slot.
+            // In Hardcore it also wakes the Lantern Wraith, who comes with the next round.
             Run.Earn(ZombieRules.LanternReward);
+            Run.ExtraPerkSlot = true;
             if (Gunner != null) Gunner.Give(ZombieArmory.Upgrade(ZombieArmory.MoonbeamRay));
-            Banner?.Invoke("ALL THE LANTERNS BURN!\nCURSED MOONBEAM RAY!");
+            Banner?.Invoke("ALL THE LANTERNS BURN!\nCURSED MOONBEAM RAY · 5TH PERK SLOT" +
+                           (Mode == SurvivalMode.Hardcore ? "\nSOMETHING WAKES IN THE DARK..." : ""));
+            if (Mode == SurvivalMode.Hardcore && !WraithSummoned) { WraithSummoned = true; _wraithPending = true; }
             var save = Services.Save;
             if (save != null && !save.Data.zombieLanternsLit)
             {
@@ -556,29 +634,115 @@ namespace PKR
             StopAllCoroutines();
             if (player != null)
             {
-                PuffEffect.Play(player.transform.position, new Color32(120, 200, 90, 255), spriteMaterial, 0.3f, 4f, 0.6f);
+                if (!Run.Won) PuffEffect.Play(player.transform.position, new Color32(120, 200, 90, 255), spriteMaterial, 0.3f, 4f, 0.6f);
                 if (player.TryGetComponent(out PlayerInputRouter router)) router.enabled = false;
             }
             var save = Services.Save;
+            int survived = Run.Won ? Run.Round : Mathf.Max(0, Run.Round - 1);
+            CachesEarned = SurvivalModes.Caches(survived);
             if (save != null)
             {
-                NewBest = save.Data.RecordSurvival(Run.Round, Run.TotalEarned, Run.Kills);
-                ShardReward = ShardsFor(Run.Round, Run.Kills);
+                var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
+                NewBest = c.RecordRound(MapId, Mode, Run.Round);
+                if (Mode == SurvivalMode.Endless) NewBest |= save.Data.RecordSurvival(Run.Round, Run.TotalEarned, Run.Kills);
+                c.totalKills += Run.Kills;
+                if (Run.Won) c.raidWins++;
+                if (Mode == SurvivalMode.Hardcore) c.hardcoreRuns++;
+                ShardReward = SurvivalModes.Shards(Mode, Run.Round, Run.Kills, Run.Won);
                 Economy.Grant(save.Data, ShardReward);
                 save.SaveNow();
             }
             ProgressTracker.Report(ChallengeKind.SurvivalRound, Run.Round);
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
+            XpEarned = SurvivorRank.RunXp(Mode, Run.Round, Run.Kills, Run.Won);
+            RanksReached = ProgressTracker.AddZombieXp(XpEarned);
             if (Services.Save != null) Services.Save.SaveNow();
             if (Services.State != null) Services.State.SetState(GameState.Results);
-            Sfx.Play(Sfx.KO, 0.9f, 0f);
+            Sfx.Play(Run.Won ? Sfx.Victory : Sfx.KO, 0.9f, 0f);
             RunEnded?.Invoke();
+        }
+
+        // ---- supply caches and the Lantern Wraith ---------------------------------------------------------------
+
+        IEnumerator SupplyCache()
+        {
+            yield return new WaitForSeconds(1.2f);
+            if (GameOver) yield break;
+            Vector2 at = startPoint != null ? (Vector2)startPoint.position + Vector2.up * 0.6f : (player != null ? (Vector2)player.transform.position + Vector2.up : Vector2.zero);
+            var kind = Run.Round % 2 == 0 ? PowerUpKind.AmmoPinata : ZombieRules.PickPowerUp(Random.value);
+            SpawnDrop(kind, at);
+            Banner?.Invoke($"SUPPLY CACHE!  ({Run.Round / SurvivalModes.CacheEvery})\n+{SurvivalModes.ShardsPerCache} SHARDS AT THE END");
+        }
+
+        void SpawnWraith()
+        {
+            var def = pumpkinKing != null ? pumpkinKing : brute;
+            if (def == null) return;
+            Vector2 pos = SpawnPoint(ZombieKind.PumpkinKing);
+            int dir = player != null && player.transform.position.x < pos.x ? -1 : 1;
+            var ai = EnemyFactory.Spawn(def, pos + Vector2.up * (def.bodySize.y * 0.5f + 0.05f), dir, spriteMaterial);
+            var health = ai.GetComponent<Damageable>();
+            int hp = Mathf.RoundToInt((ZombieRules.Health(ZombieKind.PumpkinKing, Run.Round) * 2.5f + 60) * SurvivalModes.HealthScale(Mode));
+            health.Configure(DamageModel.StoryHealth, TeamIds.Enemy, hp, def.weight, 0f, 0f);
+            ai.SpeedOverride = 0.55f;
+            ai.ChaseRangeOverride = 200f;
+            ai.transform.localScale = ai.transform.localScale * 1.3f;
+            foreach (var sr in ai.GetComponentsInChildren<SpriteRenderer>()) sr.color = new Color(0.65f, 0.85f, 1f, 0.9f);
+            ai.Defeated -= OnZombieDefeated;
+            ai.Defeated += OnZombieDefeated;
+            System.Action<HitResult> onHit = r => OnZombieHit(ai);
+            health.Hit += onHit;
+            _hitHandlers[health] = onHit;
+            _alive[ai] = ZombieKind.PumpkinKing;
+            _wraith = ai;
+            Banner?.Invoke("THE LANTERN WRAITH!");
+            if (CameraFollow2D.Main != null) CameraFollow2D.Main.Shake(0.35f, 0.7f);
+            Sfx.Play(Sfx.Spotted, 1f, 0f);
+        }
+
+        void WraithDefeated()
+        {
+            WraithBeaten = true;
+            Run.Earn(2000);
+            Banner?.Invoke($"THE LANTERN WRAITH IS GONE!\n+{SurvivalModes.HiddenBossShards} STAR SHARDS");
+            var save = Services.Save;
+            if (save != null)
+            {
+                var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
+                if (!c.Has("lantern_wraith")) c.secrets.Add("lantern_wraith");
+                Economy.Grant(save.Data, SurvivalModes.HiddenBossShards);
+                save.SaveNow();
+            }
+            ProgressTracker.AddZombieXp(SurvivorRank.HiddenBossXp);
+            Sfx.Play(Sfx.Victory, 0.9f, 0f);
+        }
+
+        /// <summary>Test hook: jump to a round (the next one starts after a short wait).</summary>
+        public void DebugSkipToRound(int round)
+        {
+            StopAllCoroutines();
+            foreach (var e in new List<EnemyAI>(_alive.Keys)) if (e != null) RemoveZombie(e);
+            _alive.Clear();
+            _toSpawn = 0;
+            _bossPending = false;
+            while (Run.Round < round - 1) Run.NextRound();
+            Intermission = true;
+            StartCoroutine(NextRound(0.1f));
+        }
+
+        /// <summary>Test hook: every zombie on the field and still to come is gone (the round ends).</summary>
+        public void DebugClearRound()
+        {
+            _toSpawn = 0;
+            _bossPending = false;
+            foreach (var e in new List<EnemyAI>(_alive.Keys))
+                if (e != null && e.TryGetComponent(out Damageable d)) d.Kill();
         }
 
         public bool NewBest { get; private set; }
         public int ShardReward { get; private set; }
 
-        /// <summary>Star Shards for a run: 5 a round survived plus 1 for every 4 kills.</summary>
-        public static int ShardsFor(int round, int kills) => Mathf.Max(0, round - 1) * 5 + kills / 4;
+        /// <summary>Star Shards for an Endless run: 5 a round survived, 1 for every 4 kills, plus the supply caches.</summary>
+        public static int ShardsFor(int round, int kills) => SurvivalModes.Shards(SurvivalMode.Endless, round, kills, false);
     }
 }

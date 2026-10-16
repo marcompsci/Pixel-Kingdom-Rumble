@@ -79,7 +79,8 @@ namespace PKR
             string modeName = GameSession.Mode == SessionMode.ArenaClash ? "ARENA CLASH"
                             : GameSession.Mode == SessionMode.Contracts ? "SHADOW CONTRACTS"
                             : GameSession.Mode == SessionMode.Holiday ? "HOLIDAY MODE"
-                            : GameSession.Mode == SessionMode.Halloween ? "HALLOWEEN" : "STORY QUEST";
+                            : GameSession.Mode == SessionMode.Halloween ? "HALLOWEEN"
+                            : GameSession.Mode == SessionMode.Zombies ? "ZOMBIES" : "STORY QUEST";
             UIFactory.Label(panel, $"{modeName}\nCHOOSE YOUR HERO", 56, TextAnchor.MiddleCenter, 150f, title: true);
 
             // Preview with arrows.

@@ -63,8 +63,10 @@ namespace PKR
         public void Hit(int damage, Vector2 dir, ZLGun gun)
         {
             if (_dead) return;
+            if (_game.InstaKills(kind)) damage = Mathf.Max(damage, hp);
             hp -= damage;
             _hurt = 0.12f;
+            if (_game.IsLastStand && _game.Stand != null) _game.Stand.ZombieHit(this, hp <= 0);
             _body.linearVelocity += dir * (kind == ZLFoe.Brute || kind == ZLFoe.Herald ? 0.8f : 3f);
             if (!hunting) StartHunt();
             ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material);

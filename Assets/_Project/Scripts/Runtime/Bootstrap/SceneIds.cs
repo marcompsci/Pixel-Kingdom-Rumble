@@ -53,6 +53,8 @@ namespace PKR
         public const string ZombieSurvival = "EV_ZombieSurvival";
         /// <summary>Zombie Land: the top-down open-city campaign against the First Turned.</summary>
         public const string ZombieLand = "EV_ZombieLand";
+        /// <summary>Last Stand: Hollow Block, round-based survival on the Zombie Land engine.</summary>
+        public const string LastStand = "EV_LastStand";
 
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";

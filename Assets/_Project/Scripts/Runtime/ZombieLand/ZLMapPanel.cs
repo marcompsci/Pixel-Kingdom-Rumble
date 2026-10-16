@@ -99,7 +99,7 @@ namespace PKR
             holder.anchorMin = holder.anchorMax = new Vector2(0.32f, 0.5f);
             holder.sizeDelta = new Vector2(city.w * px, city.h * px);
             var img = holder.gameObject.AddComponent<Image>();
-            img.sprite = _g.Sprite("minimap");
+            img.sprite = _g.Minimap;
             var inner = UIFactory.Rect("Inner", holder);
             inner.anchorMin = inner.anchorMax = Vector2.zero;
             inner.pivot = Vector2.zero;

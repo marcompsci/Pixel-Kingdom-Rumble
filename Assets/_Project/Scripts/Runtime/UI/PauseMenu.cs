@@ -173,8 +173,13 @@ namespace PKR
             UIFactory.Button(panel, "PHOTO MODE", () => PhotoMode.Begin(null));
             UIFactory.Button(panel, "SETTINGS", ShowSettings);
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
-            UIFactory.Button(panel, hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",
-                             () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu); },
+            bool zombies = GameSession.Mode == SessionMode.Zombies;
+            UIFactory.Button(panel, zombies ? "ZOMBIES MENU" : hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",
+                             () =>
+                             {
+                                 if (zombies) GameSession.ReopenEventMenu = true;
+                                 if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu);
+                             },
                              interactable: hasMenu);
             UIFactory.Select(resume);
         }

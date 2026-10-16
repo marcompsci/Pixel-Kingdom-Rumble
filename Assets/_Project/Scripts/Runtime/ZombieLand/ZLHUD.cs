@@ -15,7 +15,9 @@ namespace PKR
         ZLGame _g;
         RectTransform _safe;
         Image _hp, _armor, _vehicleBar, _reload, _missionBar, _arrow, _deathDim;
-        Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText;
+        Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText, _scrap, _perks, _powers;
+        int _shownScrap = -1;
+        float _scrapPulse;
         RectTransform _arrowRt, _mapInner, _playerDot, _missionGroup, _vehicleGroup;
         readonly List<(RectTransform rt, Image img, System.Func<bool> show, System.Func<Color> color)> _dots =
             new List<(RectTransform, Image, System.Func<bool>, System.Func<Color>)>();
@@ -159,14 +161,23 @@ namespace PKR
             var city = _g.City;
             _mapInner.sizeDelta = new Vector2(city.w * MapPx, city.h * MapPx);
             var mapImg = _mapInner.gameObject.AddComponent<Image>();
-            mapImg.sprite = _g.Sprite("minimap");
+            mapImg.sprite = _g.Minimap;
             mapImg.raycastTarget = false;
             BuildDots(_mapInner, MapPx, 10f, _dots);
             _playerDot = Box(view, "You", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(18f, 18f));
             var pd = _playerDot.gameObject.AddComponent<Image>();
             pd.sprite = _g.Sprite("Props/pk_arrow");
             pd.color = Color.white;
-            SmallButton(_safe, "MAP", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f + MiniSize + 12f, -110f), new Vector2(150f, 76f), OpenMap);
+            if (!_g.IsLastStand)
+                SmallButton(_safe, "MAP", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f + MiniSize + 12f, -110f), new Vector2(150f, 76f), OpenMap);
+
+            // Scrap (Zombie Land) or points (Last Stand), perks and power-ups, under the minimap
+            var sc = Box(_safe, "Scrap", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -350f), new Vector2(420f, 52f));
+            _scrap = Txt(sc, "", 44, TextAnchor.MiddleLeft, new Color(1f, 0.85f, 0.35f));
+            var pk = Box(_safe, "Perks", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -400f), new Vector2(520f, 34f));
+            _perks = Txt(pk, "", 24, TextAnchor.MiddleLeft, new Color(0.6f, 0.9f, 1f), false);
+            var pw = Box(_safe, "Powers", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -232f), new Vector2(900f, 44f));
+            _powers = Txt(pw, "", 34, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.35f));
 
             // Vehicle health
             _vehicleGroup = Box(_safe, "Vehicle", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-190f, 90f), new Vector2(380f, 60f));
@@ -244,6 +255,15 @@ namespace PKR
                 Dot(new Vector2(l.x, l.y), g.Sprite("Props/pk_lair"), size * 1.3f, () => !g.Progress.bossDefeated,
                     () => g.Progress.lairsSearched.Contains(id) || !g.Puzzle.LairsLeft(g.Progress.completed).Contains(id) ? new Color(0.5f, 0.5f, 0.5f, 0.6f) : Color.white);
             }
+            // Scout's Eye (Survivor Rank): guns and ammo lying about show on the map
+            if (SurvivorRank.Has(g.CareerXp, "zl_scout"))
+                foreach (var l in g.Loot)
+                {
+                    var loot = l;
+                    if (loot == null || loot.temporary) continue;
+                    Dot(loot.transform.position, g.Sprite("Props/pk_" + (ZLCatalog.Gun(loot.kind) != null ? "weapon" : loot.kind)), size * 1.1f,
+                        () => loot != null && loot.Available, () => new Color(1f, 1f, 1f, 0.85f));
+                }
             // the active objective
             Dot(Vector2.zero, g.Sprite("Props/pk_marker"), size * 1.8f, () => g.Active != null, () => new Color(1f, 0.4f, 0.3f));
         }
@@ -275,11 +295,37 @@ namespace PKR
             var prog = _g.Progress;
             if (p == null) return;
 
-            _hp.fillAmount = p.Health / (float)ZLRules.HeroHealth;
+            _hp.fillAmount = p.Health / (float)p.MaxHealth;
             _hpText.text = p.Health.ToString();
             _armor.fillAmount = prog.armor / (float)ZLRules.MaxArmor;
             _armor.transform.parent.gameObject.SetActive(prog.armor > 0);
             _med.text = $"MED x{prog.medkits}";
+
+            // Scrap / points, perks, power-ups
+            int money = _g.IsLastStand ? _g.Stand.Run.Points : prog.scrap;
+            if (money != _shownScrap)
+            {
+                if (_shownScrap >= 0 && money > _shownScrap) _scrapPulse = 1f;
+                _shownScrap = money;
+                _scrap.text = _g.IsLastStand ? $"{money}" : $"SCRAP {money}";
+            }
+            _scrapPulse = Mathf.MoveTowards(_scrapPulse, 0f, Time.unscaledDeltaTime * 4f);
+            _scrap.transform.localScale = Vector3.one * (1f + _scrapPulse * 0.12f);
+            _scrap.color = _g.DoubleScrap ? new Color(1f, 1f, 0.6f) : new Color(1f, 0.85f, 0.35f);
+            var ps = new System.Text.StringBuilder();
+            foreach (var k in prog.perks)
+                if (System.Enum.TryParse(k, out ZLPerk perk)) ps.Append(ps.Length > 0 ? " · " : "").Append(ZLShop.PerkName(perk));
+            _perks.text = ps.ToString();
+            ps.Clear();
+            if (_g.InstaKillLeft > 0f) ps.Append($"INSTA-KILL {Mathf.CeilToInt(_g.InstaKillLeft)}   ");
+            if (_g.DoubleScrapLeft > 0f) ps.Append((_g.IsLastStand ? "DOUBLE POINTS " : "DOUBLE SCRAP ") + Mathf.CeilToInt(_g.DoubleScrapLeft));
+            _powers.text = ps.ToString();
+
+            if (_g.IsLastStand)
+            {
+                UpdateLastStand(p);
+                return;
+            }
 
             _shards.text = prog.bossDefeated ? "ZOMBIE LAND CLEARED" : $"GRAYSTONE SHARDS {prog.Shards}/{ZLCatalog.ShardsNeeded}";
             if (prog.bossDefeated) _hounds.text = "";
@@ -343,6 +389,7 @@ namespace PKR
             var gun = p.Gun;
             var ammo = p.Ammo;
             _gun.text = gun != null ? gun.name + (gun.isRelic ? "  (RELIC)" : "") : "";
+            _gun.color = gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : new Color(1f, 0.9f, 0.6f);
             _ammo.text = ammo != null ? $"{ammo.mag} / {ammo.reserve}" : "";
             _ammo.color = ammo != null && ammo.mag + ammo.reserve == 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
             _reload.fillAmount = p.Reloading ? p.Reload01 : 0f;
@@ -358,6 +405,67 @@ namespace PKR
             bool dead = _g.RespawnPending;
             _deathDim.enabled = dead;
             _death.enabled = dead;
+        }
+
+        /// <summary>Last Stand: round, what's left, and an arrow to the last few of the dead.</summary>
+        void UpdateLastStand(ZLPlayer p)
+        {
+            var st = _g.Stand;
+            var run = st.Run;
+            _missionGroup.gameObject.SetActive(false);
+            _shards.text = run.Round == 0 ? "LAST STAND" : st.Mode == SurvivalMode.Raid ? $"ROUND {run.Round}/{SurvivalModes.RaidRounds}" : $"ROUND {run.Round}";
+            _shards.color = new Color(1f, 0.35f, 0.3f);
+            if (st.Over) _hounds.text = "";
+            else if (st.Intermission) { _hounds.text = run.Round == 0 ? $"GET READY  {Mathf.CeilToInt(st.IntermissionLeft)}" : $"NEXT ROUND IN {Mathf.CeilToInt(st.IntermissionLeft)}"; _hounds.color = Color.white; }
+            else { _hounds.text = (st.HoundRound ? "HOUNDS LEFT " : "ZOMBIES LEFT ") + st.ZombiesLeft; _hounds.color = st.HoundRound ? new Color(1f, 0.4f, 0.3f) : Color.white; }
+            if (st.Mode == SurvivalMode.Hardcore && !st.Over) _hounds.text = "HARDCORE   " + _hounds.text;
+
+            // arrow to the nearest of the last three
+            Vector2? wp = null;
+            if (!st.Intermission && st.ZombiesLeft <= 3)
+            {
+                float bd = float.MaxValue;
+                foreach (var z in st.Alive)
+                {
+                    if (z == null || !z.Alive) continue;
+                    float d = Vector2.Distance(z.transform.position, _g.TargetPos);
+                    if (d < bd) { bd = d; wp = z.transform.position; }
+                }
+            }
+            var cam = Camera.main;
+            _arrow.enabled = false;
+            if (wp.HasValue && cam != null)
+            {
+                Vector2 vp = cam.WorldToViewportPoint(wp.Value);
+                bool onScreen = vp.x > 0.08f && vp.x < 0.92f && vp.y > 0.12f && vp.y < 0.88f;
+                if (!onScreen)
+                {
+                    _arrow.enabled = true;
+                    Vector2 dir = (vp - new Vector2(0.5f, 0.5f)).normalized;
+                    var canvasSize = _safe.rect.size;
+                    _arrowRt.anchoredPosition = new Vector2(dir.x * canvasSize.x * 0.42f, dir.y * canvasSize.y * 0.38f);
+                    _arrowRt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f);
+                    _arrow.color = new Color(1f, 0.35f, 0.3f);
+                }
+            }
+
+            _mapInner.anchoredPosition = -_g.TargetPos * MapPx;
+            float heading = Mathf.Atan2(p.Aim.y, p.Aim.x) * Mathf.Rad2Deg - 90f;
+            _playerDot.localRotation = Quaternion.Euler(0f, 0f, heading);
+            _vehicleGroup.gameObject.SetActive(false);
+
+            var gun = p.Gun;
+            var ammo = p.Ammo;
+            _gun.text = gun != null ? gun.name : "";
+            _gun.color = gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : new Color(1f, 0.9f, 0.6f);
+            _ammo.text = ammo != null ? $"{ammo.mag} / {ammo.reserve}" : "";
+            _ammo.color = ammo != null && ammo.mag + ammo.reserve == 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
+            _reload.fillAmount = p.Reloading ? p.Reload01 : 0f;
+            _prompt.text = st.Over ? "" : p.Nearby != null ? "USE: " + p.Nearby.Prompt : "";
+            _toast.text = _g.ToastLeft > 0f ? _g.Toast : "";
+            var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
+            _deathDim.enabled = st.Over && !st.Run.Won;
+            _death.enabled = false;
         }
 
         Vector2? NearestLead()

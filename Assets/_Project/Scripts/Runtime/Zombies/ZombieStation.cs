@@ -25,7 +25,7 @@ namespace PKR
         public float BusyUntil { get; set; }
 
         public ZombieWeapon Weapon => ZombieArmory.Wall[Mathf.Clamp(index, 0, ZombieArmory.Wall.Length - 1)];
-        public PerkKind Perk => (PerkKind)Mathf.Clamp(index, 0, 3);
+        public PerkKind Perk => (PerkKind)Mathf.Clamp(index, 0, 5);
 
         public bool InReach(Vector2 hero)
         {

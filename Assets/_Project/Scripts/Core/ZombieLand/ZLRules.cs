@@ -38,6 +38,32 @@ namespace PKR.Core
         public bool introSeen;
         /// <summary>Bonus rewards unlocked (motorcycles, medkits, assault_rifle, riot_shotgun).</summary>
         public List<string> rewards = new List<string>();
+        /// <summary>SCRAP to spend at safehouse supply crates, and all scrap ever earned.</summary>
+        public int scrap, scrapEarned;
+        /// <summary>Perks bought (ZLPerk names; kept through death, Second Chance is used up).</summary>
+        public List<string> perks = new List<string>();
+        /// <summary>Guns hollow-forged at the upgrade forge.</summary>
+        public List<string> forged = new List<string>();
+        /// <summary>Mystery box spins since the wonder weapon, and kills since the last power-up (the pity timers).</summary>
+        public int spinsSinceWonder, killsSinceDrop;
+
+        /// <summary>Fills in lists missing from older saves.</summary>
+        public void Sanitize()
+        {
+            if (completed == null) completed = new List<string>();
+            if (leads == null) leads = new List<string>();
+            if (safehouses == null) safehouses = new List<string>();
+            if (guns == null) guns = new List<ZLOwnedGun>();
+            if (nestsCleared == null) nestsCleared = new List<string>();
+            if (taken == null) taken = new List<string>();
+            if (lairsSearched == null) lairsSearched = new List<string>();
+            if (rewards == null) rewards = new List<string>();
+            if (perks == null) perks = new List<string>();
+            if (forged == null) forged = new List<string>();
+            if (checkpoint == null) checkpoint = "";
+            if (equipped == null) equipped = "";
+            if (scrap < 0) scrap = 0;
+        }
 
         public bool Done(string missionId) => completed.Contains(missionId);
 
@@ -192,6 +218,8 @@ namespace PKR.Core
             p.seed = seed == 0 ? 1 : seed;
             p.completed.Clear(); p.leads.Clear(); p.safehouses.Clear(); p.guns.Clear(); p.nestsCleared.Clear();
             p.taken.Clear(); p.lairsSearched.Clear(); p.rewards.Clear();
+            p.perks.Clear(); p.forged.Clear();
+            p.scrap = 0; p.scrapEarned = 0; p.spinsSinceWonder = 0; p.killsSinceDrop = 0;
             p.leads.AddRange(ZLCatalog.StartingLeads);
             p.checkpoint = "";
             p.guns.Add(new ZLOwnedGun { id = ZLCatalog.Pistol.id, mag = ZLCatalog.Pistol.magazine, reserve = ZLCatalog.StartingRounds - ZLCatalog.Pistol.magazine });
@@ -204,7 +232,10 @@ namespace PKR.Core
         /// After dying: progress (missions, shards, clues, guns found, lit safehouses) is kept. The pistol comes back
         /// with its starting 25 rounds if it had less; other guns keep what they had. The hound timer restarts.
         /// </summary>
-        public static void Respawn(ZombieLandProgress p)
+        public static void Respawn(ZombieLandProgress p) => Respawn(p, 1, 0);
+
+        /// <summary>Respawn with Survivor Rank field kits: at least this many medkits and this much armor.</summary>
+        public static void Respawn(ZombieLandProgress p, int minMedkits, int minArmor)
         {
             p.deaths++;
             var pistol = p.Gun(ZLCatalog.Pistol.id);
@@ -219,7 +250,8 @@ namespace PKR.Core
                 pistol.mag = ZLCatalog.Pistol.magazine;
                 pistol.reserve = ZLCatalog.StartingRounds - ZLCatalog.Pistol.magazine;
             }
-            if (p.medkits < 1) p.medkits = 1;
+            if (p.medkits < minMedkits) p.medkits = Math.Min(MaxMedkits, minMedkits);
+            if (p.armor < minArmor) p.armor = Math.Min(MaxArmor, minArmor);
         }
 
         /// <summary>Marks a mission done, adds its follow-up leads and applies a bonus reward. Returns false if it was already done.</summary>
@@ -249,9 +281,10 @@ namespace PKR.Core
                 if (gun.isRelic) p.guns.RemoveAll(x => { var s = ZLCatalog.Gun(x.id); return s != null && s.isRelic; }); // one relic at a time
                 p.guns.Add(g);
             }
+            var e = ZLShop.Effective(p, gun);
             int total = g.mag + g.reserve + rounds;
-            g.mag = Math.Min(gun.magazine, total);
-            g.reserve = Math.Min(gun.maxReserve, total - g.mag);
+            g.mag = Math.Min(e.magazine, total);
+            g.reserve = Math.Min(e.maxReserve, total - g.mag);
         }
 
         /// <summary>An ammo box: tops up every gun by about two magazines (relics too, a little).</summary>
@@ -259,7 +292,7 @@ namespace PKR.Core
         {
             foreach (var g in p.guns)
             {
-                var spec = ZLCatalog.Gun(g.id);
+                var spec = ZLShop.Effective(p, ZLCatalog.Gun(g.id));
                 if (spec == null) continue;
                 int add = spec.isRelic ? spec.magazine / 2 : Math.Max(spec.magazine * 2, 10);
                 g.reserve = Math.Min(spec.maxReserve, g.reserve + add);

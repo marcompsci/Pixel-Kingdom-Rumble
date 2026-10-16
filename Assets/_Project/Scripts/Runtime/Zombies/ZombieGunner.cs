@@ -37,6 +37,17 @@ namespace PKR
 
         public const int MaxSlots = 2;
         public float FireRateScale { get; set; } = 1f;
+        int _damageBonus;
+        /// <summary>Deadeye: extra damage on every shot (rebuilds the guns in hand).</summary>
+        public int DamageBonus
+        {
+            get => _damageBonus;
+            set
+            {
+                _damageBonus = value;
+                foreach (var s in _slots) s.move = BuildMove(s.spec, _damageBonus);
+            }
+        }
         public Slot Current => _current < _slots.Count ? _slots[_current] : null;
         public IReadOnlyList<Slot> Slots => _slots;
         public bool Reloading => _reloadLeft > 0f;
@@ -119,7 +130,7 @@ namespace PKR
             slot.spec = w;
             slot.mag = w.magazine;
             slot.reserve = w.reserve;
-            slot.move = BuildMove(w);
+            slot.move = BuildMove(w, _damageBonus);
             slot.tint = new Color32(w.r, w.g, w.b, 255);
         }
 
@@ -222,7 +233,7 @@ namespace PKR
         }
 
         /// <summary>A runtime projectile move for a gun (hits like the game's other shots, team Player).</summary>
-        static MoveDefinition BuildMove(ZombieWeapon w)
+        static MoveDefinition BuildMove(ZombieWeapon w, int bonus)
         {
             var m = ScriptableObject.CreateInstance<MoveDefinition>();
             m.name = "Gun_" + w.id;
@@ -237,7 +248,7 @@ namespace PKR
             m.projectileSprite = Shot(w.shot);
             m.hit = new HitData
             {
-                damage = w.damage, pipDamage = 1, baseKnockback = w.damage >= 6 ? 7f : 3.5f, exposedMultiplier = 1f,
+                damage = w.damage + bonus, pipDamage = 1, baseKnockback = w.damage >= 6 ? 7f : 3.5f, exposedMultiplier = 1f,
                 angleDegrees = 30f, baseHitstunFrames = w.damage >= 6 ? 14 : 6, hitstopFrames = w.damage >= 6 ? 3 : 1,
                 isHeavy = w.damage >= 6
             };

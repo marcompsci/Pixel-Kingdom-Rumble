@@ -69,6 +69,8 @@ namespace PKR.Core
         public int zombieBestRound, zombieBestPoints, zombieBestKills;
         /// <summary>Zombie Land: the open city campaign against the First Turned.</summary>
         public ZombieLandProgress zombieLand = new ZombieLandProgress();
+        /// <summary>Survivor Rank and zombie records shared by every zombie mode.</summary>
+        public ZombieCareer zombieCareer = new ZombieCareer();
         /// <summary>Found the Zombie Survival lantern secret at least once.</summary>
         public bool zombieLanternsLit;
 
@@ -208,6 +210,9 @@ namespace PKR.Core
 
             if (starShards < 0) starShards = 0;
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
+            zombieLand.Sanitize();
+            if (zombieCareer == null) zombieCareer = new ZombieCareer();
+            zombieCareer.Sanitize();
             if (zombieBestRound < 0) zombieBestRound = 0;
             if (playerXp < 0) playerXp = 0;
             if (dailyChallenges == null) dailyChallenges = new List<ChallengeRecord>();

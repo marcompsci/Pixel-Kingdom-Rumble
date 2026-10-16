@@ -21,13 +21,18 @@ namespace PKR
         public bool Dead => Health <= 0;
         public ZLVehicle Driving { get; private set; }
         public Vector2 Aim { get; private set; } = Vector2.right;
-        public ZLGun Gun => game != null ? ZLCatalog.Gun(game.Progress.equipped) : ZLCatalog.Pistol;
+        /// <summary>The gun in hand as it really is (hollow-forged guns are stronger).</summary>
+        public ZLGun Gun => game != null ? ZLShop.Effective(game.Progress, ZLCatalog.Gun(game.Progress.equipped)) : ZLCatalog.Pistol;
+        public int MaxHealth => game != null ? ZLShop.MaxHealth(game.Progress) : ZLRules.HeroHealth;
         public ZLOwnedGun Ammo => game != null ? game.Progress.Gun(game.Progress.equipped) : null;
         public bool Reloading => _reload > 0f;
-        public float Reload01 => Gun != null && _reload > 0f ? 1f - _reload / Gun.reloadSeconds : 1f;
+        public float Reload01 => Gun != null && _reload > 0f ? 1f - _reload / ReloadTime : 1f;
+        float ReloadTime => Gun != null ? Gun.reloadSeconds * (game != null ? ZLShop.ReloadScale(game.Progress) : 1f) : 1f;
         public IZLUse Nearby { get; private set; }
         public Rigidbody2D Body { get; private set; }
         public float HurtFlash { get; private set; }
+        /// <summary>Tests and screenshots: nothing hurts the hero.</summary>
+        public bool DebugInvulnerable { get; set; }
 
         PlayerInputRouter _router;
         FighterIntent Intent => _router != null ? _router.Intent : null;
@@ -78,6 +83,7 @@ namespace PKR
             _use.AddBinding("<Keyboard>/e"); _use.AddBinding("<Gamepad>/leftTrigger");
             _fire.Enable(); _use.Enable();
             _touch = Object.FindAnyObjectByType<TouchControlsUI>();
+            Health = MaxHealth;
         }
 
         void OnDestroy()
@@ -96,19 +102,19 @@ namespace PKR
             }
         }
 
-        public void SetHealth(int hp) => Health = Mathf.Clamp(hp, 0, ZLRules.HeroHealth);
+        public void SetHealth(int hp) => Health = Mathf.Clamp(hp, 0, MaxHealth);
 
         public void Heal(int amount)
         {
             if (Dead) return;
-            Health = Mathf.Min(ZLRules.HeroHealth, Health + amount);
+            Health = Mathf.Min(MaxHealth, Health + amount);
             ZLFloater.Show("+" + amount, transform.position, new Color(0.5f, 1f, 0.5f));
             Sfx.Play(Sfx.Heal, 0.7f);
         }
 
         public void Hurt(int damage, Vector2 from)
         {
-            if (Dead || _invuln > 0f || game == null || game.Paused) return;
+            if (Dead || _invuln > 0f || game == null || game.Paused || DebugInvulnerable) return;
             if (Driving != null) { Driving.Damage(damage); return; }
             var p = game.Progress;
             if (p.armor > 0)
@@ -156,7 +162,7 @@ namespace PKR
             Body.linearVelocity = Vector2.zero;
             _col.enabled = true;
             _sr.enabled = true;
-            Health = ZLRules.HeroHealth;
+            Health = MaxHealth;
             _invuln = 2f;
             _reload = 0f;
         }
@@ -202,6 +208,7 @@ namespace PKR
             {
                 float speed = move.magnitude > 0.92f && !FireHeld ? ZLRules.SprintSpeed : ZLRules.WalkSpeed;
                 if (game.Progress.rewards.Contains("fleet")) speed *= 1.1f;
+                speed *= ZLShop.SpeedScale(game.Progress);
                 Body.linearVelocity = Vector2.ClampMagnitude(move, 1f) * speed;
             }
 
@@ -250,7 +257,7 @@ namespace PKR
             {
                 float spread = gun.spreadDegrees * (pellets > 1 ? (i / (float)(pellets - 1) - 0.5f) : (Random.value - 0.5f));
                 var dir = Quaternion.Euler(0f, 0f, spread) * Aim;
-                ZLBullet.Fire(from, dir, gun, gun.damage, false, game.ShotSprite(gun.shot), new Color32(gun.r, gun.g, gun.b, 255), material, _col);
+                ZLBullet.Fire(from, dir, gun, ZLShop.ShotDamage(game.Progress, ZLCatalog.Gun(gun.id)), false, game.ShotSprite(gun.shot), new Color32(gun.r, gun.g, gun.b, 255), material, _col);
             }
             _flashT = 0.08f;
             if (_flash != null) _flash.transform.localPosition = Aim * 0.6f + new Vector2(0f, 0.25f);
@@ -263,7 +270,7 @@ namespace PKR
         {
             var gun = Gun;
             if (gun == null) return;
-            _reload = gun.reloadSeconds;
+            _reload = ReloadTime;
             Sfx.Play(Sfx.Reload, 0.6f, 0f);
         }
 

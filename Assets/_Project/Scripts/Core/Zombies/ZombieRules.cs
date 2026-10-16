@@ -9,8 +9,15 @@ namespace PKR.Core
     /// <summary>Power-ups a zombie can drop.</summary>
     public enum PowerUpKind { AmmoPinata, SpookyStrike, TwinTreats, Moonburst, BoardUp }
 
-    /// <summary>Perk shrines (each bought once per run).</summary>
-    public enum PerkKind { IronHeart, QuickDraw, SecondWind, FleetFeet }
+    /// <summary>Perk shrines (each bought once per run; at most ZombieRules.PerkLimit at a time).</summary>
+    public enum PerkKind { IronHeart, QuickDraw, SecondWind, FleetFeet, Deadeye, Scavenger }
+
+    /// <summary>
+    /// How a Survival run is played. Endless: rounds forever. Raid: ten rounds and the boss on the tenth (a short
+    /// session that can be won). Hardcore: tougher, faster dead, fewer drops, more points, and the lantern secret
+    /// summons a hidden boss.
+    /// </summary>
+    public enum SurvivalMode { Endless, Raid, Hardcore }
 
     /// <summary>
     /// Zombie Survival numbers (pure, so they can be unit-tested): how many zombies a round sends and how fast,
@@ -135,9 +142,26 @@ namespace PKR.Core
         public const int MoonburstPoints = 400;
         public const int BoardUpPoints = 200;
 
+        /// <summary>No drop for this many kills in a row makes the next kill drop one (players hated dry spells).</summary>
+        public const int DropPity = 30;
+
         /// <summary>True if a kill drops a power-up (roll in [0, 1)); the boss always drops one.</summary>
         public static bool Drops(ZombieKind k, int dropsThisRound, double roll) =>
             k == ZombieKind.PumpkinKing || (dropsThisRound < MaxDropsPerRound && roll < DropChance);
+
+        /// <summary>
+        /// The full drop check: the boss always drops; otherwise a chance per kill (lower in Hardcore, higher with
+        /// Scavenger), capped per round, and guaranteed after DropPity kills without one.
+        /// </summary>
+        public static bool Drops(ZombieKind k, int dropsThisRound, int killsSinceDrop, double roll, SurvivalMode mode, bool scavenger)
+        {
+            if (k == ZombieKind.PumpkinKing) return true;
+            int cap = MaxDropsPerRound + (scavenger ? 2 : 0);
+            if (dropsThisRound >= cap) return false;
+            if (killsSinceDrop >= DropPity) return true;
+            double chance = DropChance * (mode == SurvivalMode.Hardcore ? 0.75 : 1.0) * (scavenger ? 1.6 : 1.0);
+            return roll < chance;
+        }
 
         public static PowerUpKind PickPowerUp(double roll)
         {
@@ -175,9 +199,14 @@ namespace PKR.Core
                 case PerkKind.IronHeart: return 2500;
                 case PerkKind.QuickDraw: return 3000;
                 case PerkKind.SecondWind: return 1500;
+                case PerkKind.Deadeye: return 3500;
+                case PerkKind.Scavenger: return 2000;
                 default: return 2000;
             }
         }
+
+        /// <summary>Perks you can hold at once; lighting every lantern opens a fifth slot.</summary>
+        public static int PerkLimit(bool lanternsLit) => lanternsLit ? 5 : 4;
 
         public static string PerkName(PerkKind p)
         {
@@ -186,6 +215,8 @@ namespace PKR.Core
                 case PerkKind.IronHeart: return "IRON HEART";
                 case PerkKind.QuickDraw: return "QUICK DRAW";
                 case PerkKind.SecondWind: return "SECOND WIND";
+                case PerkKind.Deadeye: return "DEADEYE";
+                case PerkKind.Scavenger: return "SCAVENGER";
                 default: return "FLEET FEET";
             }
         }
@@ -197,6 +228,8 @@ namespace PKR.Core
                 case PerkKind.IronHeart: return "+3 max health";
                 case PerkKind.QuickDraw: return "Faster fire and reloads";
                 case PerkKind.SecondWind: return "Get back up once";
+                case PerkKind.Deadeye: return "+1 damage on every shot";
+                case PerkKind.Scavenger: return "More power-ups drop";
                 default: return "Run 20% faster";
             }
         }
@@ -204,6 +237,7 @@ namespace PKR.Core
         public const int IronHeartBonusHealth = 3;
         public const float QuickDrawRate = 1.4f;
         public const float FleetFeetSpeed = 1.2f;
+        public const int DeadeyeBonus = 1;
 
         /// <summary>Secret: light every jack-o'-lantern in the arena.</summary>
         public const int LanternReward = 2500;
@@ -288,6 +322,23 @@ namespace PKR.Core
         public static readonly ZombieWeapon[] Crate = { PumpkinLauncher, BoneRifle, MoonbeamRay, CandyRepeater, HexScattergun, EctoSprayer };
         public static readonly float[] CrateWeights = { 1f, 1.2f, 0.8f, 1.6f, 1.6f, 1.6f };
 
+        /// <summary>The crate-only wonders.</summary>
+        public static bool IsWonder(string id) => id == PumpkinLauncher.id || id == BoneRifle.id || id == MoonbeamRay.id;
+
+        /// <summary>Spins without a wonder before the next spin is guaranteed one (bad-luck protection).</summary>
+        public const int CratePity = 4;
+
+        /// <summary>Crate roll with bad-luck protection: after CratePity spins without a wonder, a wonder is certain.</summary>
+        public static ZombieWeapon RollCrate(double roll, string holdingId, int spinsSinceWonder)
+        {
+            if (spinsSinceWonder < CratePity) return RollCrate(roll, holdingId);
+            var wonders = new List<ZombieWeapon>();
+            foreach (var w in Crate) if (IsWonder(w.id) && w.id != holdingId) wonders.Add(w);
+            if (wonders.Count == 0) return RollCrate(roll, holdingId);
+            int i = Math.Min(wonders.Count - 1, (int)(roll * wonders.Count));
+            return wonders[i];
+        }
+
         /// <summary>Weighted crate roll (roll in [0, 1)), never the weapon the hero is holding.</summary>
         public static ZombieWeapon RollCrate(double roll, string holdingId)
         {
@@ -326,15 +377,34 @@ namespace PKR.Core
     /// <summary>The state of one Zombie Survival run: round, points (with Twin Treats doubling), kills, perks.</summary>
     public class SurvivalRun
     {
+        public SurvivalMode Mode { get; }
         public int Round { get; private set; }
         public int Points { get; private set; } = ZombieRules.StartingPoints;
         /// <summary>Everything earned this run (the score; spending doesn't lower it).</summary>
         public int TotalEarned { get; private set; }
         public int Kills { get; private set; }
         public int DropsThisRound { get; private set; }
+        /// <summary>Kills since the last power-up dropped (the drop pity timer).</summary>
+        public int KillsSinceDrop { get; private set; }
+        /// <summary>Mystery crate spins since the last wonder weapon (bad-luck protection).</summary>
+        public int SpinsSinceWonder { get; private set; }
         public bool DoublePoints { get; set; }
+        /// <summary>Every lantern lit this run: a fifth perk slot.</summary>
+        public bool ExtraPerkSlot { get; set; }
+        /// <summary>Raid won (the final boss fell).</summary>
+        public bool Won { get; set; }
         readonly HashSet<PerkKind> _perks = new HashSet<PerkKind>();
         public IEnumerable<PerkKind> Perks => _perks;
+        public int PerkCount => _perks.Count;
+        public int PerkLimit => ZombieRules.PerkLimit(ExtraPerkSlot);
+
+        public SurvivalRun() : this(SurvivalMode.Endless, 0) { }
+
+        public SurvivalRun(SurvivalMode mode, int bonusStartPoints)
+        {
+            Mode = mode;
+            Points = ZombieRules.StartingPoints + Math.Max(0, bonusStartPoints);
+        }
 
         public int NextRound()
         {
@@ -346,7 +416,8 @@ namespace PKR.Core
         public int Earn(int amount)
         {
             if (amount <= 0) return 0;
-            int got = DoublePoints ? amount * 2 : amount;
+            int got = (int)Math.Round(amount * SurvivalModes.PointScale(Mode));
+            if (DoublePoints) got *= 2;
             Points += got;
             TotalEarned += got;
             return got;
@@ -361,25 +432,107 @@ namespace PKR.Core
             return true;
         }
 
-        public int Kill(ZombieKind kind, bool melee)
+        public int Kill(ZombieKind kind, bool melee) => KillFor(ZombieRules.KillPoints(kind) + (melee ? ZombieRules.MeleeKillBonus : 0));
+
+        /// <summary>Counts a kill worth this many points (Last Stand uses its own table).</summary>
+        public int KillFor(int points)
         {
             Kills++;
-            return Earn(ZombieRules.KillPoints(kind) + (melee ? ZombieRules.MeleeKillBonus : 0));
+            KillsSinceDrop++;
+            return Earn(points);
         }
 
-        public void CountDrop() => DropsThisRound++;
+        public void CountDrop()
+        {
+            DropsThisRound++;
+            KillsSinceDrop = 0;
+        }
+
+        public void CountSpin(bool wonder) => SpinsSinceWonder = wonder ? 0 : SpinsSinceWonder + 1;
 
         public bool HasPerk(PerkKind p) => _perks.Contains(p);
 
-        /// <summary>Buys a perk once (false if owned or too expensive).</summary>
-        public bool BuyPerk(PerkKind p)
+        public bool PerkSlotFree => _perks.Count < PerkLimit;
+
+        /// <summary>Buys a perk once (false if owned, no slot is free, or it's too expensive).</summary>
+        public bool BuyPerk(PerkKind p) => BuyPerk(p, ZombieRules.PerkCost(p));
+
+        public bool BuyPerk(PerkKind p, int cost)
         {
-            if (_perks.Contains(p) || !Spend(ZombieRules.PerkCost(p))) return false;
+            if (_perks.Contains(p) || !PerkSlotFree || !Spend(cost)) return false;
+            _perks.Add(p);
+            return true;
+        }
+
+        /// <summary>A perk given for free (a Survivor Rank kit); still needs a free slot.</summary>
+        public bool GrantPerk(PerkKind p)
+        {
+            if (_perks.Contains(p) || !PerkSlotFree) return false;
             _perks.Add(p);
             return true;
         }
 
         /// <summary>Second Wind is used up when it saves you.</summary>
         public bool UseSecondWind() => _perks.Remove(PerkKind.SecondWind);
+    }
+
+    /// <summary>Survival mode numbers (Endless / Raid / Hardcore) and the run's rewards.</summary>
+    public static class SurvivalModes
+    {
+        public const int RaidRounds = 10;
+
+        public static string Name(SurvivalMode m) => m == SurvivalMode.Raid ? "RAID" : m == SurvivalMode.Hardcore ? "HARDCORE" : "ENDLESS";
+
+        public static string Blurb(SurvivalMode m)
+        {
+            switch (m)
+            {
+                case SurvivalMode.Raid: return "10 rounds, then the boss. A quick run you can win.";
+                case SurvivalMode.Hardcore: return "Tougher dead, fewer drops, more points. The secret wakes a hidden boss.";
+                default: return "Rounds forever. How far can you get?";
+            }
+        }
+
+        /// <summary>Boss rounds: every 5th; in a Raid the 5th and the final 10th.</summary>
+        public static bool IsBossRound(SurvivalMode m, int round) =>
+            m == SurvivalMode.Raid ? round == 5 || round == RaidRounds : ZombieRules.IsBossRound(round);
+
+        public static bool IsFinalRound(SurvivalMode m, int round) => m == SurvivalMode.Raid && round >= RaidRounds;
+
+        public static float HealthScale(SurvivalMode m) => m == SurvivalMode.Hardcore ? 1.4f : 1f;
+        public static float SpeedScale(SurvivalMode m) => m == SurvivalMode.Hardcore ? 1.1f : 1f;
+        /// <summary>Multiplies the time between spawns.</summary>
+        public static float SpawnScale(SurvivalMode m) => m == SurvivalMode.Hardcore ? 0.85f : 1f;
+        public static float PointScale(SurvivalMode m) => m == SurvivalMode.Hardcore ? 1.25f : 1f;
+        public static float Intermission(SurvivalMode m) => m == SurvivalMode.Raid ? 5f : ZombieRules.Intermission;
+
+        /// <summary>The final Raid boss is tougher than a normal boss round.</summary>
+        public static int BossHealth(SurvivalMode m, int round, int normal) =>
+            m == SurvivalMode.Raid && round >= RaidRounds ? (int)Math.Round(normal * 1.8f) : (int)Math.Round(normal * HealthScale(m));
+
+        /// <summary>A supply cache every 3 rounds survived (CODM paid a reward every 3 rounds), at most 10 a run.</summary>
+        public const int CacheEvery = 3, MaxCaches = 10;
+
+        public static int Caches(int roundsSurvived) => Math.Min(MaxCaches, Math.Max(0, roundsSurvived) / CacheEvery);
+
+        /// <summary>True when finishing this round earns a supply cache.</summary>
+        public static bool CacheAfter(int round) => round > 0 && round % CacheEvery == 0 && round / CacheEvery <= MaxCaches;
+
+        public const int ShardsPerCache = 15;
+        public const int RaidWinShards = 150;
+        public const int HiddenBossShards = 500;
+
+        /// <summary>
+        /// Star Shards for a run: 5 a round survived, 1 per 4 kills, the supply caches, a Raid win bonus, and
+        /// Hardcore pays half again.
+        /// </summary>
+        public static int Shards(SurvivalMode m, int round, int kills, bool won)
+        {
+            int survived = Math.Max(0, won ? round : round - 1);
+            int s = survived * 5 + kills / 4 + Caches(survived) * ShardsPerCache;
+            if (won) s += RaidWinShards;
+            if (m == SurvivalMode.Hardcore) s = (int)Math.Round(s * 1.5f);
+            return s;
+        }
     }
 }

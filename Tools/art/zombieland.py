@@ -695,7 +695,8 @@ def minimap(city, building_color):
     W_, H_ = city['w'], city['h']
     col = {'r': (58, 58, 64), 'h': (58, 58, 64), 'v': (58, 58, 64), 'c': (88, 88, 92), 'C': (88, 88, 92), 's': (128, 126, 120),
            'g': (64, 112, 56), 'y': (80, 128, 62), 'p': (150, 126, 86), 'o': (118, 98, 86), 'i': (104, 104, 100), 'd': (120, 84, 52),
-           'w': (40, 84, 140), 'b': (96, 82, 70), 'f': (30, 30, 30), 'x': (96, 80, 64), 'B': (40, 40, 44), 'l': (78, 78, 84)}
+           'w': (40, 84, 140), 'b': (96, 82, 70), 'f': (30, 30, 30), 'x': (96, 80, 64), 'B': (40, 40, 44), 'l': (78, 78, 84),
+           'D': (150, 104, 60)}
     im = Image.new('RGBA', (W_, H_))
     p = im.load()
     for y, row in enumerate(city['rows']):
@@ -725,4 +726,132 @@ def vignette(size=256):
             d = math.hypot((x - c) / c, (y - c) / c)
             a = max(0.0, min(1.0, (d - 0.55) / 0.6))
             p[x, y] = (24, 6, 10, int(210 * a * a))
+    return im
+
+
+# ---- the classic loop: power-ups, perk machines, the box, the forge, wall guns, debris, fragments ---------------
+
+POWERUP_COLORS = {'ammo': (90, 170, 255), 'instakill': (230, 60, 60), 'double': (255, 205, 60), 'nuke': (190, 120, 255)}
+
+
+def powerup(kind):
+    """A glowing token (20x20) that floats where a zombie fell."""
+    im = img(20, 20)
+    d = ImageDraw.Draw(im)
+    col = POWERUP_COLORS[kind]
+    d.ellipse([0, 0, 19, 19], fill=col + (90,))
+    d.ellipse([2, 2, 17, 17], fill=shade(col + (255,), 0.75), outline=INK)
+    d.ellipse([4, 4, 15, 15], fill=col + (255,))
+    w = (255, 255, 255, 255)
+    if kind == 'ammo':
+        for x in (6, 9, 12):
+            d.rectangle([x, 6, x + 1, 13], fill=w)
+            d.point((x, 5), fill=w)
+    elif kind == 'instakill':
+        d.ellipse([6, 5, 13, 11], fill=w)
+        d.rectangle([7, 11, 12, 13], fill=w)
+        d.point([(8, 8), (11, 8)], fill=col + (255,))
+        d.line([(8, 13), (11, 13)], fill=col + (255,))
+    elif kind == 'double':
+        d.ellipse([5, 6, 9, 13], outline=w, width=2)
+        d.ellipse([10, 6, 14, 13], outline=w, width=2)
+    elif kind == 'nuke':
+        for k in range(6):
+            a = k * math.tau / 6
+            d.line([(9.5, 9.5), (9.5 + math.cos(a) * 5, 9.5 + math.sin(a) * 5)], fill=w, width=2)
+        d.ellipse([7, 7, 12, 12], fill=w)
+    return im
+
+
+PERK_COLORS = {'ThickSkin': (210, 50, 60), 'QuickHands': (70, 170, 240), 'SteadyAim': (235, 235, 245),
+               'FleetFoot': (250, 200, 60), 'SecondChance': (90, 210, 110)}
+
+
+def perk_machine(perk):
+    """A vending machine seen from above and a little in front (20x26): coloured panel and a glowing bottle."""
+    col = PERK_COLORS[perk]
+    im = img(20, 26)
+    d = ImageDraw.Draw(im)
+    d.rectangle([1, 22, 18, 25], fill=(0, 0, 0, 90))
+    d.rectangle([1, 2, 18, 23], fill=shade(col + (255,), 0.55), outline=INK)
+    d.rectangle([1, 2, 18, 6], fill=shade(col + (255,), 0.85))
+    d.rectangle([4, 8, 15, 19], fill=(28, 28, 40, 255))
+    d.ellipse([7, 10, 12, 18], fill=col + (255,))
+    d.rectangle([9, 8, 10, 11], fill=col + (255,))
+    d.point((8, 12), fill=(255, 255, 255, 255))
+    d.line([(4, 21), (15, 21)], fill=(230, 190, 70, 255))
+    return im
+
+
+def mystery_box(open_=False):
+    """The mystery box from above (32x20): purple, gold trim, a question mark; open shows a glow."""
+    im = img(32, 20)
+    d = ImageDraw.Draw(im)
+    d.rectangle([1, 16, 30, 19], fill=(0, 0, 0, 90))
+    d.rectangle([1, 3, 30, 17], fill=(96, 56, 118, 255), outline=INK)
+    for x in (4, 27):
+        d.rectangle([x, 3, x + 1, 17], fill=(230, 190, 70, 255))
+    if open_:
+        d.rectangle([5, 5, 26, 15], fill=(255, 240, 170, 255))
+        d.rectangle([7, 7, 24, 13], fill=(255, 255, 230, 255))
+    else:
+        q = (255, 220, 110, 255)
+        d.line([(13, 6), (18, 6)], fill=q, width=2)
+        d.line([(18, 6), (18, 9)], fill=q, width=2)
+        d.line([(18, 9), (15, 11)], fill=q, width=2)
+        d.rectangle([15, 13, 16, 14], fill=q)
+    return im
+
+
+def forge_machine():
+    """The upgrade forge from above (28x28): an iron drum with a violet core and a gold gear rim."""
+    im = img(28, 28)
+    d = ImageDraw.Draw(im)
+    d.ellipse([2, 4, 27, 27], fill=(0, 0, 0, 80))
+    d.ellipse([2, 2, 25, 25], fill=(230, 190, 70, 255), outline=INK)
+    for k in range(10):
+        a = k * math.tau / 10
+        x, y = 13.5 + math.cos(a) * 12, 13.5 + math.sin(a) * 12
+        d.rectangle([x - 1, y - 1, x + 1, y + 1], fill=(200, 160, 50, 255))
+    d.ellipse([5, 5, 22, 22], fill=(70, 66, 86, 255), outline=INK)
+    d.ellipse([8, 8, 19, 19], fill=(170, 120, 255, 255))
+    d.ellipse([11, 11, 16, 16], fill=(240, 220, 255, 255))
+    return im
+
+
+def wall_gun(col):
+    """A wall-gun board (24x12) hung on a building face: a chalk gun outline on dark wood, tinted by the gun."""
+    im = img(24, 12)
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, 23, 11], fill=(70, 50, 40, 255), outline=INK)
+    chalk = (min(255, 150 + col[0] // 3), min(255, 150 + col[1] // 3), min(255, 150 + col[2] // 3), 255)
+    d.rectangle([3, 4, 18, 6], outline=chalk)
+    d.rectangle([7, 6, 9, 9], outline=chalk)
+    d.line([(18, 5), (21, 5)], fill=chalk)
+    return im
+
+
+def debris(v):
+    """One tile of a debris barricade (16x16): planks, a door and junk piled across the gap."""
+    im = img(16, 16)
+    d = ImageDraw.Draw(im)
+    r = random.Random(900 + v)
+    d.rectangle([0, 0, 15, 15], fill=(70, 62, 56, 255))
+    for _ in range(4):
+        y = r.randint(1, 12)
+        d.rectangle([0, y, 15, y + 2], fill=jitter((128, 92, 58), r, 14), outline=INK)
+    for _ in range(3):
+        x, y = r.randint(1, 12), r.randint(1, 12)
+        d.rectangle([x, y, x + 3, y + 2], fill=jitter((120, 120, 128), r, 16), outline=INK)
+    d.line([(r.randint(0, 5), 15), (r.randint(10, 15), 0)], fill=(60, 44, 30, 255), width=2)
+    return im
+
+
+def fragment():
+    """A graystone fragment (12x14) glowing faintly violet: the Last Stand Easter egg."""
+    im = img(12, 14)
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 2, 11, 13], fill=(170, 120, 255, 70))
+    d.polygon([(6, 1), (10, 6), (6, 13), (2, 6)], fill=(156, 156, 172, 255), outline=INK)
+    d.line([(6, 3), (6, 10)], fill=(225, 215, 255, 255))
     return im

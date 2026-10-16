@@ -5,7 +5,8 @@ using UnityEngine;
 namespace PKR
 {
     /// <summary>A safehouse: walk up to light it (it becomes your respawn checkpoint). Nothing spawns next to it, the
-    /// hound timer pauses inside, and resting (USE) heals you once a minute (plus rewards you've earned).</summary>
+    /// hound timer pauses inside, and USE opens its supply crate: rest (once a minute, plus rewards you've earned),
+    /// and spend SCRAP on supplies, perks, the mystery box and the upgrade forge.</summary>
     public class ZLSafehouse : ZLMarkerBase, IZLUse
     {
         public const float SafeRadius = 4f;
@@ -15,8 +16,10 @@ namespace PKR
 
         public Vector2 UsePos => transform.position;
         public float UseRange => 2.2f;
-        public bool CanUse => _lit && _restCool <= 0f;
-        public string Prompt => "REST";
+        public bool CanUse => _lit;
+        public string Prompt => "SUPPLIES & REST";
+        public bool CanRest => _restCool <= 0f;
+        public int RestSeconds => Mathf.CeilToInt(Mathf.Max(0f, _restCool));
         public bool Lit => _lit;
 
         public void Init(ZLGame g, ZLCityData.Safehouse s)
@@ -45,8 +48,17 @@ namespace PKR
 
         public void Use(ZLPlayer p)
         {
+            var panel = game.GetComponent<ZLShopPanel>();
+            if (panel == null) panel = game.gameObject.AddComponent<ZLShopPanel>();
+            panel.Open(this);
+        }
+
+        /// <summary>Rest: full health once a minute (and the rewards you've earned).</summary>
+        public void Rest(ZLPlayer p)
+        {
+            if (!CanRest) return;
             _restCool = 60f;
-            p.Heal(ZLRules.HeroHealth);
+            p.Heal(p.MaxHealth);
             var prog = game.Progress;
             if (prog.rewards.Contains("assault_rifle")) { ZLRules.AmmoBox(prog); ZLRules.AmmoBox(prog); game.ShowToast("RESTED. HEALTH AND AMMO TOPPED UP."); }
             else game.ShowToast("RESTED. HEALTH RESTORED.");

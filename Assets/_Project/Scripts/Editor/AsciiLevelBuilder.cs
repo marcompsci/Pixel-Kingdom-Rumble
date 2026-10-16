@@ -311,7 +311,7 @@ namespace PKR.EditorTools
                     case 'z': ZombieSpawn(map, p.x, p.y); break;
                     case 'x': Station(StationKind.WallWeapon, _wallIndex++ % ZombieArmory.Wall.Length, cx, p.y); break;
                     case 'b': Station(StationKind.MysteryCrate, 0, cx, p.y); break;
-                    case 'p': Station(StationKind.Perk, _perkIndex++ % 4, cx, p.y); break;
+                    case 'p': Station(StationKind.Perk, _perkIndex++ % 6, cx, p.y); break;
                     case 'U': Station(StationKind.Forge, 0, cx, p.y); break;
                     case 'j': Station(StationKind.Lantern, 0, cx, p.y); break;
                 }
@@ -554,7 +554,7 @@ namespace PKR.EditorTools
                     break;
                 case StationKind.MysteryCrate: art = "mystery_crate"; break;
                 case StationKind.Perk:
-                    art = "perk_" + new[] { "iron_heart", "quick_draw", "second_wind", "fleet_feet" }[index % 4];
+                    art = "perk_" + new[] { "iron_heart", "quick_draw", "second_wind", "fleet_feet", "deadeye", "scavenger" }[index % 6];
                     break;
                 case StationKind.Forge: art = "forge"; break;
                 default:

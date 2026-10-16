@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PKR
 {
-    public enum SessionMode { StoryQuest, ArenaClash, Versus, Contracts, Holiday, Halloween }
+    public enum SessionMode { StoryQuest, ArenaClash, Versus, Contracts, Holiday, Halloween, Zombies }
 
     /// <summary>
     /// What the player chose in the menus (mode, hero), carried into the next scene.
@@ -25,7 +25,11 @@ namespace PKR
             PendingWorldDoor = -1;
             EventScene = null;
             ReopenEventMenu = false;
+            ZombieMode = PKR.Core.SurvivalMode.Endless;
         }
+
+        /// <summary>ZOMBIES: Endless, Raid or Hardcore for Survival and Last Stand (picked on the ZOMBIES menu).</summary>
+        public static PKR.Core.SurvivalMode ZombieMode { get; set; } = PKR.Core.SurvivalMode.Endless;
 
         /// <summary>Set when leaving an event level: the main menu opens straight on the Holiday / Halloween panel.</summary>
         public static bool ReopenEventMenu { get; set; }
@@ -75,7 +79,7 @@ namespace PKR
             {
                 if (Mode == SessionMode.ArenaClash) return SceneIds.ArenaTest;
                 if (Mode == SessionMode.Versus) return SceneIds.VersusStage;
-                if ((Mode == SessionMode.Holiday || Mode == SessionMode.Halloween) && !string.IsNullOrEmpty(EventScene)) return EventScene;
+                if ((Mode == SessionMode.Holiday || Mode == SessionMode.Halloween || Mode == SessionMode.Zombies) && !string.IsNullOrEmpty(EventScene)) return EventScene;
                 if (Mode == SessionMode.Contracts)
                     return !string.IsNullOrEmpty(ContractScene) ? ContractScene : SceneIds.MissionBoard;
                 return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;

@@ -12,6 +12,8 @@ namespace PKR
     /// hounds after five minutes out in the open), the fourteen missions, safehouse checkpoints, loot, the relic cases,
     /// the six lairs and the First Turned. Progress lives in SaveData.zombieLand and survives death.
     /// </summary>
+    public enum ZLMode { Campaign, LastStand }
+
     [DefaultExecutionOrder(-30)]
     public class ZLGame : MonoBehaviour
     {
@@ -22,6 +24,21 @@ namespace PKR
         public CharacterRoster roster;
         public EnemyDefinition shambler, runner, bloater, spitter, brute;
         public Sprite[] survivorFrames = new Sprite[0];
+        [Tooltip("Campaign = Zombie Land (city.json). LastStand = round-based survival on block.json.")]
+        public ZLMode mode = ZLMode.Campaign;
+
+        public bool IsLastStand => mode == ZLMode.LastStand;
+        public ZLLastStand Stand { get; private set; }
+        /// <summary>Power-ups running: insta-kill and double scrap/points (seconds left).</summary>
+        public float InstaKillLeft { get; private set; }
+        public float DoubleScrapLeft { get; private set; }
+        public bool DoubleScrap => DoubleScrapLeft > 0f;
+        /// <summary>The Survivor Rank XP (read once at start, for field kits).</summary>
+        public int CareerXp { get; private set; }
+        public IReadOnlyList<ZLLoot> Loot => _loot;
+        readonly List<(GameObject go, ZLPowerUp kind, float until)> _powerUps = new List<(GameObject, ZLPowerUp, float)>();
+        int _pendingXp;
+        bool _nuking;
 
         public ZLWorld World { get; private set; }
         public ZLCityData City => World != null ? World.City : null;
@@ -42,7 +59,7 @@ namespace PKR
         {
             get
             {
-                if (CutscenePlayer.IsPlaying || RespawnPending || ZLMapPanel.IsOpen) return true;
+                if (CutscenePlayer.IsPlaying || RespawnPending || ZLMapPanel.IsOpen || ZLShopPanel.IsOpen) return true;
                 var s = Services.State;
                 return s != null && s.State == GameState.Paused;
             }
@@ -83,13 +100,56 @@ namespace PKR
         void OnDestroy()
         {
             if (Current == this) Current = null;
-            if (Progress != null) Save(true);
+            if (Progress != null && !IsLastStand) Save(true);
+            FlushXp();
+        }
+
+        /// <summary>Survivor Rank XP earned in Zombie Land is banked a little at a time (kills add up).</summary>
+        public void AddXp(int xp) => _pendingXp += xp;
+
+        void FlushXp()
+        {
+            if (_pendingXp <= 0) return;
+            int xp = _pendingXp;
+            _pendingXp = 0;
+            ProgressTracker.AddZombieXp(xp);
         }
 
         void Start()
         {
             var save = Services.Save != null ? Services.Save.Data : null;
+            CareerXp = save != null && save.zombieCareer != null ? save.zombieCareer.xp : 0;
+            if (IsLastStand)
+            {
+                // A fresh, unsaved loadout for the run (Zombie Land's own progress is never touched).
+                Progress = new ZombieLandProgress();
+                ZLRules.NewGame(Progress, 1);
+                var pistol = Progress.Gun(ZLCatalog.Pistol.id);
+                pistol.reserve = LastStandRules.PistolRounds - pistol.mag;
+                var starter = LastStandRules.StarterGun(SurvivorRank.StarterTier(CareerXp));
+                if (starter != null && starter.id != ZLCatalog.Pistol.id)
+                {
+                    ZLRules.GiveGun(Progress, starter, starter.magazine * 4);
+                    Progress.equipped = starter.id;
+                }
+                Progress.medkits = 0;
+                Puzzle = ZLPuzzle.FromSeed(1);
+                World = gameObject.AddComponent<ZLWorld>();
+                World.material = material;
+                if (!World.Build("block")) return;
+                Flow = new ZLFlowField(City);
+                SpawnHero();
+                Stand = gameObject.AddComponent<ZLLastStand>();
+                Stand.Init(this);
+                if (Services.State != null) Services.State.SetState(GameState.Playing);
+                Ready = true;
+                Flow.Build(TargetPos);
+                string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over");
+                if (lsShot != null) StartCoroutine(Stand.ShotSetup(lsShot));
+                return;
+            }
             Progress = save != null ? save.zombieLand : new ZombieLandProgress();
+            Progress.Sanitize();
             if (Progress.seed == 0) ZLRules.NewGame(Progress, Mathf.Abs(Environment.TickCount) % 100000 + 1);
             Puzzle = ZLPuzzle.FromSeed(Progress.seed);
 
@@ -111,7 +171,7 @@ namespace PKR
             Flow.Build(TargetPos);
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
-                          ?? BootLoader.TakeShotPanel("boss");
+                          ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop");
             if (shot != null)
             {
                 Progress.introSeen = true;
@@ -126,6 +186,9 @@ namespace PKR
         }
 
         public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
+
+        /// <summary>The minimap image for this map.</summary>
+        public Sprite Minimap => Sprite(IsLastStand ? "minimap_block" : "minimap");
 
         public Sprite ShotSprite(string kind)
         {
@@ -151,6 +214,7 @@ namespace PKR
 
         Vector2 RespawnPoint()
         {
+            if (IsLastStand) return new Vector2(City.start.x, City.start.y);
             foreach (var s in City.safehouses)
                 if (s.id == Progress.checkpoint) return new Vector2(s.x + 1f, s.y);
             return new Vector2(City.start.x, City.start.y);
@@ -298,6 +362,15 @@ namespace PKR
 
             _flowT -= dt;
             if (_flowT <= 0f) { _flowT = 0.35f; Flow.Build(TargetPos); }
+            if (InstaKillLeft > 0f) InstaKillLeft -= dt;
+            if (DoubleScrapLeft > 0f) DoubleScrapLeft -= dt;
+            UpdatePowerUps();
+            if (IsLastStand)
+            {
+                Stand.Tick(dt);
+                CollectLoot();
+                return;
+            }
 
             InSafehouse = false;
             foreach (var s in _safehouses)
@@ -322,7 +395,7 @@ namespace PKR
             CollectLoot();
 
             _saveT -= dt;
-            if (_saveT <= 0f) { _saveT = 20f; Save(false); }
+            if (_saveT <= 0f) { _saveT = 20f; Save(false); FlushXp(); }
         }
 
         void Discover()
@@ -459,8 +532,10 @@ namespace PKR
             if (n.missionId == null && !Progress.nestsCleared.Contains(n.id))
             {
                 Progress.nestsCleared.Add(n.id);
-                ShowToast("ROT NEST DESTROYED. " + ZLCatalog.District(n.district).name.ToUpperInvariant() + " GETS QUIETER.");
+                int got = ZLShop.Earn(Progress, ZLShop.NestScrap, DoubleScrap);
+                ShowToast("ROT NEST DESTROYED. " + ZLCatalog.District(n.district).name.ToUpperInvariant() + $" GETS QUIETER.  +{got} SCRAP");
                 ProgressTracker.AddXp(40);
+                AddXp(SurvivorRank.ZLNestXp);
             }
             Active?.NestDestroyed(n);
             Save(false);
@@ -472,11 +547,96 @@ namespace PKR
             if (_fromNest.TryGetValue(z, out var n)) { _fromNest.Remove(z); if (n != null) _nestSpawns[n] = Mathf.Max(0, NestSpawnCount(n) - 1); }
             Progress.kills++;
             ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
+            if (_nuking) return;
+            Progress.killsSinceDrop++;
+            if (IsLastStand)
+            {
+                Stand.ZombieDied(z);
+                if (!Stand.HoundRound && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value, 0.04f, 30)) SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
+                return;
+            }
             Active?.ZombieDied(z);
+            int scrap = ZLShop.Earn(Progress, ZLShop.ScrapForKill(z.kind), DoubleScrap);
+            if (scrap >= 100) ZLFloater.Show($"+{scrap}", z.transform.position, new Color(1f, 0.85f, 0.35f), 0.9f);
+            AddXp(SurvivorRank.ZLKillXp);
+            if (Boss == null && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value))
+            {
+                SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
+                return;
+            }
             float roll = UnityEngine.Random.value;
             if (roll < 0.07f) DropLoot("ammo", z.transform.position);
             else if (roll < 0.09f) DropLoot("medkit", z.transform.position);
         }
+
+        // ---- power-ups ------------------------------------------------------------------------------------
+
+        public void SpawnPowerUp(ZLPowerUp kind, Vector2 at)
+        {
+            Progress.killsSinceDrop = 0;
+            var go = new GameObject("PowerUp_" + kind);
+            go.transform.position = at;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = Sprite("Props/" + ZLShop.PowerUpArt(kind));
+            sr.sortingOrder = ZLSort.Canopy - 1;
+            if (material != null) sr.sharedMaterial = material;
+            _powerUps.Add((go, kind, Time.time + ZLShop.PowerUpLifetime));
+            Sfx.Play(Sfx.Shard, 0.7f, 0f);
+        }
+
+        void UpdatePowerUps()
+        {
+            Vector2 hero = TargetPos;
+            for (int i = _powerUps.Count - 1; i >= 0; i--)
+            {
+                var p = _powerUps[i];
+                if (p.go == null) { _powerUps.RemoveAt(i); continue; }
+                float left = p.until - Time.time;
+                p.go.transform.localScale = Vector3.one * (1.1f + Mathf.Sin(Time.time * 5f) * 0.1f);
+                var sr = p.go.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.enabled = left > 5f || Mathf.Repeat(Time.time, 0.3f) < 0.2f;
+                if (left <= 0f) { Destroy(p.go); _powerUps.RemoveAt(i); continue; }
+                if (Vector2.Distance(p.go.transform.position, hero) < 1.1f)
+                {
+                    ApplyPowerUp(p.kind, p.go.transform.position);
+                    Destroy(p.go);
+                    _powerUps.RemoveAt(i);
+                }
+            }
+        }
+
+        public void ApplyPowerUp(ZLPowerUp kind, Vector2 at)
+        {
+            Sfx.Play(Sfx.PowerUp, 0.9f, 0f);
+            ZLFx.Spawn(GlowHalo.Sprite, at, new Color(1f, 0.9f, 0.5f, 0.8f), 0.5f, 1f, 4f, material);
+            string label = ZLShop.PowerUpName(kind);
+            switch (kind)
+            {
+                case ZLPowerUp.InstaKill: InstaKillLeft = ZLShop.PowerUpSeconds; break;
+                case ZLPowerUp.DoubleScrap: DoubleScrapLeft = ZLShop.PowerUpSeconds; if (IsLastStand) label = "DOUBLE POINTS"; break;
+                case ZLPowerUp.MaxAmmo: ZLShop.MaxAmmo(Progress); Player.CancelReload(); break;
+                case ZLPowerUp.Nuke: Nuke(at); break;
+            }
+            ShowToast(label + "!", 2.5f);
+        }
+
+        /// <summary>Every ordinary zombie near the hero drops (not Heralds, bosses or nests). Pays a flat bonus.</summary>
+        public void Nuke(Vector2 at)
+        {
+            _nuking = true;
+            foreach (var z in _zombies.ToArray())
+                if (z != null && z.Alive && z.kind != ZLFoe.Herald && Vector2.Distance(z.transform.position, TargetPos) < ZLShop.NukeRadius)
+                    z.Hit(99999, Vector2.up, null);
+            _nuking = false;
+            _zombies.RemoveAll(z => z == null || !z.Alive);
+            if (IsLastStand) Stand.Nuked();
+            else ZLShop.Earn(Progress, ZLShop.NukeScrap, DoubleScrap);
+            ZLFx.Spawn(GlowHalo.Sprite, TargetPos, new Color(1f, 1f, 0.9f, 0.9f), 0.6f, 2f, 30f, material);
+            if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.4f, 0.4f);
+        }
+
+        /// <summary>Insta-kill: one hit drops anything but a Herald or a boss.</summary>
+        public bool InstaKills(ZLFoe kind) => InstaKillLeft > 0f && kind != ZLFoe.Herald && kind != ZLFoe.FirstTurned;
 
         void DropLoot(string kind, Vector2 at)
         {
@@ -622,6 +782,10 @@ namespace PKR
 
         // ---- interactables, loot -----------------------------------------------------------------------
 
+        /// <summary>Adds something the hero can USE (Last Stand stations, doors, the box).</summary>
+        public void RegisterUse(IZLUse u) { if (u != null && !_uses.Contains(u)) _uses.Add(u); }
+        public void UnregisterUse(IZLUse u) => _uses.Remove(u);
+
         public IZLUse NearestUse(Vector2 at)
         {
             IZLUse best = null;
@@ -665,7 +829,7 @@ namespace PKR
                     Sfx.Play(Sfx.Reload, 0.8f);
                     return true;
                 case "medkit":
-                    if (p.medkits >= ZLRules.MaxMedkits) { if (Player.Health < ZLRules.HeroHealth) { Player.Heal(ZLRules.MedkitHeal); return true; } return false; }
+                    if (p.medkits >= ZLRules.MaxMedkits) { if (Player.Health < Player.MaxHealth) { Player.Heal(ZLRules.MedkitHeal); return true; } return false; }
                     p.medkits++;
                     ZLFloater.Show("+MEDKIT", l.transform.position, new Color(1f, 0.6f, 0.6f));
                     Sfx.Play(Sfx.Heal, 0.7f);
@@ -692,7 +856,7 @@ namespace PKR
 
         public void UseMedkit()
         {
-            if (Player == null || Player.Dead || Progress.medkits <= 0 || Player.Health >= ZLRules.HeroHealth) return;
+            if (Player == null || Player.Dead || Progress.medkits <= 0 || Player.Health >= Player.MaxHealth) return;
             Progress.medkits--;
             Player.Heal(ZLRules.MedkitHeal);
         }
@@ -756,7 +920,9 @@ namespace PKR
             run.Cleanup();
             foreach (var m in _markers) if (m.Spec.id == spec.id) m.Refresh();
             ProgressTracker.AddXp(spec.required ? 120 : 80);
-            var lines = new List<string> { spec.done };
+            AddXp(spec.required ? SurvivorRank.ZLStoryMissionXp : SurvivorRank.ZLMissionXp);
+            int got = ZLShop.Earn(Progress, spec.required ? ZLShop.StoryMissionScrap : ZLShop.BonusMissionScrap, false);
+            var lines = new List<string> { spec.done + $"  (+{got} scrap)" };
             if (spec.required)
             {
                 if (Puzzle.Clues.TryGetValue(spec.id, out var clue)) lines.Add("CLUE: " + clue.text);
@@ -839,6 +1005,8 @@ namespace PKR
             Boss = null;
             if (Services.Save != null) Services.Save.Data.starShards += ZLRules.ClearReward;
             ProgressTracker.AddXp(600);
+            AddXp(SurvivorRank.ZLBossXp);
+            FlushXp();
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
             Story("", ZLCatalog.Ending, "dawn", () => ShowToast($"+{ZLRules.ClearReward} STAR SHARDS. ZOMBIE LAND IS CLEAR."));
@@ -860,6 +1028,25 @@ namespace PKR
         public void PlayerDied()
         {
             if (RespawnPending) return;
+            bool second = IsLastStand ? Stand.UseSecondChance() : ZLShop.UseSecondChance(Progress);
+            if (second)
+            {
+                if (IsLastStand) Progress.perks.Remove(ZLShop.PerkKey(ZLPerk.SecondChance));
+                Player.Revive(Player.transform.position);
+                ShowToast("SECOND CHANCE!", 2.5f);
+                _nuking = true;
+                foreach (var z in _zombies.ToArray())
+                    if (z != null && z.Alive && z.kind != ZLFoe.Herald && Vector2.Distance(z.transform.position, Player.transform.position) < 4f) z.Hit(99999, Vector2.up, null);
+                _nuking = false;
+                ZLFx.Spawn(GlowHalo.Sprite, Player.transform.position, new Color(0.5f, 1f, 0.6f, 0.9f), 0.6f, 1f, 9f, material);
+                return;
+            }
+            if (IsLastStand)
+            {
+                RespawnPending = true;
+                Stand.GameOver();
+                return;
+            }
             RespawnPending = true;
             if (Active != null) { var run = Active; Active = null; run.Cleanup(); }
             StartCoroutine(Respawn());
@@ -869,7 +1056,7 @@ namespace PKR
         {
             Sfx.Play(Sfx.KO, 0.9f, 0f);
             yield return new WaitForSecondsRealtime(2.6f);
-            ZLRules.Respawn(Progress);
+            ZLRules.Respawn(Progress, SurvivorRank.Has(CareerXp, "zl_medic") ? 2 : 1, SurvivorRank.Has(CareerXp, "zl_armor") ? ZLRules.MaxArmor / 2 : 0);
             Roamed = 0f;
             _houndPacks = 0;
             _houndT = 0f;
@@ -902,7 +1089,7 @@ namespace PKR
 
         public void Save(bool now)
         {
-            if (Services.Save == null) return;
+            if (Services.Save == null || IsLastStand) return;
             Services.Save.MarkDirty();
             if (now) Services.Save.SaveNow();
         }
@@ -945,6 +1132,13 @@ namespace PKR
                 for (int i = 0; i < 90 && best != null; i++) { best.Drive(best.transform.right); yield return null; }
             }
             else if (shot == "map") { var hud = FindAnyObjectByType<ZLMapPanel>(); if (hud != null) hud.Open(); }
+            else if (shot == "shop")
+            {
+                Progress.scrap = Mathf.Max(Progress.scrap, 6000);
+                var panel = FindAnyObjectByType<ZLShopPanel>();
+                if (panel == null) panel = gameObject.AddComponent<ZLShopPanel>();
+                panel.Open(_safehouses.Count > 0 ? _safehouses[0] : null);
+            }
             else if (shot == "boss") DebugSpawnBoss(TargetPos + Vector2.up * 5f);
             else
             {

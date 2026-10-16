@@ -20,6 +20,12 @@ namespace PKR
         [Serializable] public class Lair { public string id; public float x, y; }
         [Serializable] public class Mission { public string id; public float x, y; public List<P> points = new List<P>(); public P dest; public int hasDest; }
         [Serializable] public class Site { public string key; public float x, y; }
+        // Last Stand (block.json)
+        [Serializable] public class Zone { public string id, name; }
+        [Serializable] public class Door { public string id, name, opens; public int x, y, w, h, cost; }
+        [Serializable] public class Station { public string k, id, zone; public float x, y; public int cost; }
+        [Serializable] public class Spawn { public float x, y; public string zone; }
+        [Serializable] public class Spot { public float x, y; public string zone; }
 
         public int w, h;
         public string[] rows;
@@ -35,12 +41,21 @@ namespace PKR
         public List<Lair> lairs = new List<Lair>();
         public List<Mission> missions = new List<Mission>();
         public List<Site> sites = new List<Site>();
+        public List<Zone> zones = new List<Zone>();
+        public List<Door> doors = new List<Door>();
+        public List<Station> stations = new List<Station>();
+        public List<Spawn> spawns = new List<Spawn>();
+        public List<Spot> boxSpots = new List<Spot>();
+        public List<Spot> eggs = new List<Spot>();
 
         [NonSerialized] bool[,] _blocked;
 
-        public static ZLCityData Load()
+        public static ZLCityData Load() => Load("city");
+
+        /// <summary>Loads a map from Resources/PKR/ZombieLand/{name}.json ("city" or "block").</summary>
+        public static ZLCityData Load(string name)
         {
-            var ta = Resources.Load<TextAsset>("PKR/ZombieLand/city");
+            var ta = Resources.Load<TextAsset>("PKR/ZombieLand/" + name);
             if (ta == null) return null;
             var c = JsonUtility.FromJson<ZLCityData>(ta.text);
             c.BuildGrid();
@@ -60,13 +75,21 @@ namespace PKR
             _blocked = new bool[w, h];
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
-                    _blocked[x, y] = SolidTile(Tile(x, y));
+                    _blocked[x, y] = SolidTile(Tile(x, y)) || Tile(x, y) == 'D';
             foreach (var p in props)
             {
                 if (p.solid == 0) continue;
                 int x = Mathf.FloorToInt(p.x), y = Mathf.FloorToInt(p.y);
                 if (x >= 0 && y >= 0 && x < w && y < h) _blocked[x, y] = true;
             }
+        }
+
+        /// <summary>Last Stand: a debris barricade is cleared (its tiles become walkable).</summary>
+        public void Open(Door d)
+        {
+            for (int y = d.y; y < d.y + d.h; y++)
+                for (int x = d.x; x < d.x + d.w; x++)
+                    if (x >= 0 && y >= 0 && x < w && y < h) _blocked[x, y] = false;
         }
 
         public bool Blocked(int x, int y) => x < 0 || y < 0 || x >= w || y >= h || _blocked[x, y];

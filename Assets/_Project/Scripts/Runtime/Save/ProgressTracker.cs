@@ -65,6 +65,30 @@ namespace PKR
             if (Services.Save != null) Services.Save.SaveNow();
         }
 
+        static readonly Color RankColor = new Color32(200, 60, 60, 255);
+
+        /// <summary>
+        /// Survivor Rank XP (every zombie mode). Each new rank pays Star Shards once and pops a toast. Returns the
+        /// ranks reached.
+        /// </summary>
+        public static List<int> AddZombieXp(int xp)
+        {
+            var save = Save;
+            if (save == null || xp <= 0) return new List<int>();
+            if (save.zombieCareer == null) save.zombieCareer = new ZombieCareer();
+            var reached = SurvivorRank.Grant(save.zombieCareer, xp);
+            foreach (int r in reached)
+            {
+                int shards = SurvivorRank.ShardsFor(r);
+                Economy.Grant(save, shards);
+                string unlock = "";
+                foreach (var u in SurvivorRank.Unlocks) if (u.rank == r) unlock = "  ·  " + u.name;
+                Toast($"SURVIVOR RANK {r}: {SurvivorRank.Title(r)}", $"+{shards} Star Shards{unlock}", RankColor);
+            }
+            Services.Save.MarkDirty();
+            return reached;
+        }
+
         static void Toast(string title, string detail, Color color)
         {
             EventBus<ProgressToast>.Raise(new ProgressToast { title = title, detail = detail, color = color });

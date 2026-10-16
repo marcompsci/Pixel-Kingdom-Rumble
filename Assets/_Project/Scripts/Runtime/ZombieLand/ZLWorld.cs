@@ -33,10 +33,12 @@ namespace PKR
             return s;
         }
 
-        public bool Build()
+        public bool Build() => Build("city");
+
+        public bool Build(string mapName)
         {
-            City = ZLCityData.Load();
-            if (City == null) { Debug.LogError("[ZombieLand] city.json missing (run Tools/art/build_all.py zombieland)"); return false; }
+            City = ZLCityData.Load(mapName);
+            if (City == null) { Debug.LogError($"[ZombieLand] {mapName}.json missing (run Tools/art/build_all.py zombieland)"); return false; }
             _root = new GameObject("City").transform;
             _root.SetParent(transform, false);
             Ground();
@@ -71,6 +73,7 @@ namespace PKR
                 case 'f': key = "f0"; break;
                 case 'l': key = "l" + (x % 4 == 0 ? 1 : 0); break;
                 case 'x': key = "x0"; break;
+                case 'D': key = "r0"; break;   // road under a Last Stand debris barricade
                 default: key = "bldg"; break;
             }
             if (_tiles.TryGetValue(key, out var t)) return t;
