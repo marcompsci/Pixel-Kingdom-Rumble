@@ -245,6 +245,7 @@ namespace PKR
         public void Tick(float dt)
         {
             if (Over || _guest) return;
+            ResupplyAI(dt);
             if (Intermission)
             {
                 IntermissionLeft -= dt;
@@ -288,6 +289,32 @@ namespace PKR
             if (_kingPending) head += "  ·  " + Map.HiddenBossName + " WAKES";
             _g.Announce(head, 3.5f);
             if (HoundRound && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+        }
+
+        readonly Dictionary<ZLPlayer, float> _aiDry = new Dictionary<ZLPlayer, float>();
+
+        /// <summary>
+        /// AI teammates don't buy ammo, so one that has run dry scrounges a few magazines after a short wait (the
+        /// balance lab found whole AI squads standing empty-handed in long rounds while the round never ended).
+        /// </summary>
+        void ResupplyAI(float dt)
+        {
+            foreach (var h in _g.Squad)
+            {
+                if (h == null || h.Control != ZLControl.AI || h.Loadout == null) continue;
+                var ammo = h.Ammo;
+                if (ammo == null || ammo.mag + ammo.reserve > 0) { _aiDry[h] = 0f; continue; }
+                _aiDry.TryGetValue(h, out float t);
+                t += dt;
+                if (t >= LastStandRules.AIResupplySeconds)
+                {
+                    var gun = h.Gun;
+                    ammo.reserve = (gun != null ? gun.magazine : 12) * 3;
+                    if (h == _g.Player || Kind == SquadKind.AISquad && Random.value < 0.3f) ZLFloater.Show("+AMMO", h.transform.position, new Color(1f, 0.9f, 0.5f), 0.7f);
+                    t = 0f;
+                }
+                _aiDry[h] = t;
+            }
         }
 
         void KitAI(ZLPlayer h, int round)

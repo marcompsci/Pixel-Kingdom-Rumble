@@ -78,6 +78,14 @@ namespace PKR
             }
             f.move = Vector2.ClampMagnitude(move, 1f) * 0.9f;
 
+            // out of ammo: knife whatever is right on top of us
+            var held = self.Ammo;
+            if (held != null && held.mag + held.reserve == 0 && nearest != null && nd < 1.4f)
+            {
+                f.face = ((Vector2)nearest.transform.position - me).normalized;
+                f.melee = true;
+            }
+
             // shoot what's closest
             var gun = self.Gun;
             if (nearest != null && gun != null && nd < gun.range * 0.95f)

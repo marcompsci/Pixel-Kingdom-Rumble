@@ -101,6 +101,9 @@ namespace PKR.Core
 
         public const int BoxCost = 950, ForgeCost = 5000, PerkLimit = 4;
 
+        /// <summary>An AI teammate with no ammo at all scrounges three magazines after this long.</summary>
+        public const float AIResupplySeconds = 4f;
+
         /// <summary>The box moves to another spot after this many spins (the classic teddy bear moment).</summary>
         public const int BoxMovesAfter = 8;
 
