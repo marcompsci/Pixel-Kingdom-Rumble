@@ -21,6 +21,14 @@ namespace PKR.Tests
         const int MaxRound = 25;
         const float MaxRealSeconds = 300f, Speed = 4f;
 
+        static string Squad(ZLGame g)
+        {
+            var sb = new StringBuilder();
+            foreach (var h in g.Squad)
+                if (h != null) sb.Append($"{h.DisplayName}@{h.transform.position.x:F1}/{h.transform.position.y:F1}/{(h.Standing ? "up" : h.Downed ? "down" : "out")}/{(h.Gun != null ? h.Gun.id : "-")}/{(h.Ammo != null ? h.Ammo.mag + "+" + h.Ammo.reserve : "-")} ");
+            return sb.ToString().Trim();
+        }
+
         [UnityTest, Timeout(10800000)]
         public IEnumerator RunLab()
         {
@@ -38,7 +46,7 @@ namespace PKR.Tests
             // Logs/zombie_balance_only ("hollow_block:Solo", one per line) limits the runs; slow rounds dump where the dead are.
             var onlyPath = Path.Combine(Root, "Logs", "zombie_balance_only");
             string only = File.Exists(onlyPath) ? File.ReadAllText(onlyPath) : null;
-            var stuck = new StringBuilder("map,squad,round,roundSeconds,heroX,heroY,kind,x,y,vx,vy,hunting,dist\n");
+            var stuck = new StringBuilder("map,squad,round,roundSeconds,heroX,heroY,kind,x,y,vx,vy,hunting,dist,hp,maxHp,squad\n");
             foreach (var map in LastStandMap.All)
                 foreach (var squad in new[] { SquadKind.Solo, SquadKind.AISquad })
                 {
@@ -75,7 +83,7 @@ namespace PKR.Tests
                                 if (z == null) continue;
                                 Vector2 zp = z.transform.position;
                                 var v = z.Body != null ? z.Body.linearVelocity : Vector2.zero;
-                                stuck.Append($"{map.Id},{squad},{st.Run.Round},{game - roundStart:F0},{hp.x:F1},{hp.y:F1},{z.kind},{zp.x:F1},{zp.y:F1},{v.x:F2},{v.y:F2},{z.hunting},{Vector2.Distance(zp, hp):F1}\n");
+                                stuck.Append($"{map.Id},{squad},{st.Run.Round},{game - roundStart:F0},{hp.x:F1},{hp.y:F1},{z.kind},{zp.x:F1},{zp.y:F1},{v.x:F2},{v.y:F2},{z.hunting},{Vector2.Distance(zp, hp):F1},{z.hp},{z.maxHp},{Squad(g)}\n");
                             }
                             File.WriteAllText(Path.Combine(outDir, "stuck.csv"), stuck.ToString());
                         }
