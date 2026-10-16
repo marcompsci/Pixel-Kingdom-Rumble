@@ -13,7 +13,9 @@ namespace PKR
 
         public Vector2 UsePos => transform.position;
         public float UseRange => 1.7f;
-        public bool CanUse => _stand != null && !_stand.Over;
+        public bool CanUse => _stand != null && !_stand.Over && !Boarded;
+        /// <summary>Box Fever: wall guns are boarded up.</summary>
+        public bool Boarded => Data != null && Data.k == "gun" && _stand != null && _stand.Mut.NoWallGuns;
 
         public void Init(ZLGame g, ZLLastStand stand, ZLCityData.Station s)
         {
@@ -27,6 +29,7 @@ namespace PKR
                     _gun = ZLCatalog.Gun(s.id);
                     art = "Props/wall_" + s.id;
                     text = (_gun != null ? _gun.name : s.id) + "  " + s.cost;
+                    if (stand.Mut.NoWallGuns) { text = "BOARDED UP"; c = new Color(0.6f, 0.55f, 0.5f); }
                     break;
                 case "perk":
                     _perk = (ZLPerk)System.Enum.Parse(typeof(ZLPerk), s.id);

@@ -27,7 +27,15 @@ namespace PKR
             ReopenEventMenu = false;
             ZombieMode = PKR.Core.SurvivalMode.Endless;
             ZombieSquad = PKR.Core.SquadKind.Solo;
+            ZombieMap = PKR.Core.LastStandRules.MapId;
+            ZombieWeekly = false;
         }
+
+        /// <summary>Last Stand: which map (a LastStandMap id).</summary>
+        public static string ZombieMap { get; set; } = PKR.Core.LastStandRules.MapId;
+
+        /// <summary>Last Stand: this run is the weekly challenge (its map, mode and mutators).</summary>
+        public static bool ZombieWeekly { get; set; }
 
         /// <summary>Last Stand: alone, with three AI teammates, or online (picked on the ZOMBIES menu).</summary>
         public static PKR.Core.SquadKind ZombieSquad { get; set; } = PKR.Core.SquadKind.Solo;

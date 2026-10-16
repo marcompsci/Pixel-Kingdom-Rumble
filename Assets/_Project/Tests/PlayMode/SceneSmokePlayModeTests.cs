@@ -117,6 +117,22 @@ namespace PKR.Tests
         [UnityTest]
         public IEnumerator ZombieSurvival_StartsRoundOne_AndSpawnsZombies()
         {
+            // A fresh career: Survivor Rank starter guns would replace the pea popper.
+            var save = Services.Save != null ? Services.Save.Data : null;
+            int xp = save != null && save.zombieCareer != null ? save.zombieCareer.xp : 0;
+            if (save != null && save.zombieCareer != null) save.zombieCareer.xp = 0;
+            try
+            {
+                yield return ZombieSurvivalBody();
+            }
+            finally
+            {
+                if (save != null && save.zombieCareer != null) save.zombieCareer.xp = xp;
+            }
+        }
+
+        IEnumerator ZombieSurvivalBody()
+        {
             yield return Load(SceneIds.ZombieSurvival);
             var game = ZombieSurvival.Current;
             Assert.IsNotNull(game, "the arena has a ZombieSurvival controller");

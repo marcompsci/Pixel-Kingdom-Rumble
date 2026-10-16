@@ -39,6 +39,15 @@ namespace PKR
         public ZLZombie HollowKing { get; private set; }
         public int SquadSize => _g != null ? _g.Squad.Count : 1;
         public SquadKind Kind { get; private set; } = SquadKind.Solo;
+        /// <summary>The map (Hollow Block, Salt Pier...).</summary>
+        public LastStandMap Map => _g != null ? _g.LsMap : LastStandMap.HollowBlock;
+        /// <summary>The weekly challenge being played (null for a normal run).</summary>
+        public WeeklyChallenge Weekly { get; private set; }
+        /// <summary>The rule changes for this run (the weekly challenge's mutators, or none).</summary>
+        public MutatorSet Mut { get; private set; } = MutatorSet.None;
+        public bool WeeklyPaid { get; private set; }
+        public int BoxCost => Mut.BoxCost(LastStandRules.BoxCost);
+        public int DoorCost(ZLCityData.Door d) => Mut.DoorCost(d.cost);
 
         ZLGame _g;
         readonly List<ZLZombie> _alive = new List<ZLZombie>();
@@ -61,6 +70,12 @@ namespace PKR
         {
             _g = g;
             int xp = g.CareerXp;
+            if (GameSession.Mode == SessionMode.Zombies && GameSession.ZombieWeekly && GameSession.ZombieSquad != SquadKind.Online)
+            {
+                Weekly = ZombieWeekly.Current(System.DateTime.UtcNow);
+                Mut = Weekly.Set;
+                GameSession.ZombieMode = Weekly.Mode;
+            }
             Ls = new LastStandRun(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMode : SurvivalMode.Endless, SurvivorRank.BonusPoints(xp))
             {
                 FreeSpinLeft = SurvivorRank.Has(xp, "kit_spin")
@@ -99,7 +114,7 @@ namespace PKR
                 var go = new GameObject("Fragment_" + i);
                 go.transform.position = new Vector2(e.x, e.y);
                 var f = go.AddComponent<ZLFragment>();
-                f.Init(g, this);
+                f.Init(g, this, Map);
                 g.RegisterUse(f);
             }
             IntermissionLeft = 4f;
@@ -111,7 +126,9 @@ namespace PKR
                 SetupOnline(match.Transport, match.IsHost, match.MySlot, match.Slots);
             else if (kind == SquadKind.AISquad) SetupAI(3);
             string squad = Kind == SquadKind.AISquad ? "  ·  AI SQUAD" : Kind == SquadKind.Online ? "  ·  ONLINE CO-OP" : "";
-            g.ShowToast($"LAST STAND: HOLLOW BLOCK  ·  {SurvivalModes.Name(Mode)}{squad}", 4f);
+            ApplyHeroMutators();
+            if (Weekly != null) g.ShowToast($"WEEKLY  ·  {Map.Title}  ·  {Mut.Names()}  ·  REACH ROUND {Weekly.GoalRound}{squad}", 5f);
+            else g.ShowToast($"{Map.FullTitle}  ·  {SurvivalModes.Name(Mode)}{squad}", 4f);
         }
 
         // ---- the squad -----------------------------------------------------------------------------------
@@ -139,6 +156,8 @@ namespace PKR
             var h = _g.SpawnSquadHero(heroId, control, StartSpot(slot), slot, name, SlotColors[slot % SlotColors.Length]);
             h.Loadout = NewLoadout();
             h.Wallet = new SurvivalRun(Mode, 0);
+            h.MaxHealthScale = Mut.HeroHealth;
+            h.SetHealth(h.MaxHealth);
             if (control == ZLControl.AI) h.Brain = new ZLAIBrain(_g, slot);
             return h;
         }
@@ -193,6 +212,16 @@ namespace PKR
             return null;
         }
 
+        void ApplyHeroMutators()
+        {
+            foreach (var h in _g.Squad)
+            {
+                if (h == null) continue;
+                h.MaxHealthScale = Mut.HeroHealth;
+                h.SetHealth(h.MaxHealth);
+            }
+        }
+
         public void MakeAI(ZLPlayer h)
         {
             h.BecomeAI(new ZLAIBrain(_g, h.Slot));
@@ -232,7 +261,7 @@ namespace PKR
             int round = Run.NextRound();
             foreach (var h in _g.Squad) if (h != null && h.Wallet != null && h.Wallet != Run) h.Wallet.NextRound();
             Intermission = false;
-            HoundRound = LastStandRules.IsHoundRound(Mode, round);
+            HoundRound = Mut.IsHoundRound(Mode, round);
             int n = SquadSize;
             _toSpawn = HoundRound ? SquadRules.HoundsInRound(round, n) : SquadRules.ZombiesInRound(round, n);
             _bossPending = LastStandRules.IsBossRound(Mode, round);
@@ -255,8 +284,8 @@ namespace PKR
             Sfx.Play(Sfx.RoundStart, 0.9f, 0f);
             string head = Mode == SurvivalMode.Raid ? $"ROUND {round}/{SurvivalModes.RaidRounds}" : $"ROUND {round}";
             if (HoundRound) head += "  ·  THE HOUNDS ARE COMING";
-            if (_bossPending) head += "  ·  " + LastStandRules.BossName + "!";
-            if (_kingPending) head += "  ·  " + LastStandRules.HiddenBossName + " WAKES";
+            if (_bossPending) head += "  ·  " + Map.BossName + "!";
+            if (_kingPending) head += "  ·  " + Map.HiddenBossName + " WAKES";
             _g.Announce(head, 3.5f);
             if (HoundRound && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
         }
@@ -285,12 +314,29 @@ namespace PKR
                 GameOver();
                 return;
             }
-            _g.Announce($"ROUND {Run.Round} SURVIVED!  +{bonus}", 2.5f);
+            if (CheckWeekly(Run.Round)) _g.Announce($"WEEKLY CHALLENGE COMPLETE!  +{Weekly.RewardShards} STAR SHARDS  ·  +{Weekly.RewardXp} XP", 4f);
+            else _g.Announce($"ROUND {Run.Round} SURVIVED!  +{bonus}", 2.5f);
             if (SurvivalModes.CacheAfter(Run.Round))
                 _g.SpawnPowerUp(Run.Round % 2 == 0 ? ZLPowerUp.MaxAmmo : ZLShop.PickPowerUp(Random.value), _g.TargetPos + Vector2.up * 1.5f);
             Intermission = true;
             IntermissionLeft = SurvivalModes.Intermission(Mode);
             HoundRound = false;
+        }
+
+        /// <summary>Weekly: records the round; pays the reward the first time the goal is reached this week.</summary>
+        bool CheckWeekly(int roundsSurvived)
+        {
+            if (Weekly == null || _guest) return false;
+            var save = Services.Save;
+            if (save == null) return false;
+            var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
+            if (!ZombieWeekly.Record(c, Weekly, roundsSurvived)) return false;
+            WeeklyPaid = true;
+            Economy.Grant(save.Data, Weekly.RewardShards);
+            save.SaveNow();
+            ProgressTracker.AddZombieXp(Weekly.RewardXp);
+            Sfx.Play(Sfx.Victory, 0.9f, 0f);
+            return true;
         }
 
         void SpawnTick(float dt)
@@ -345,8 +391,8 @@ namespace PKR
             var z = _g.SpawnZombie(kind, p, 1, true);
             z.pinned = true;
             z.NetId = ++_nextNetId & 0xffff;
-            z.maxHp = z.hp = LastStandRules.Health(kind, Run.Round, Mode);
-            z.speed = LastStandRules.Speed(kind, Run.Round, Mode) * Random.Range(0.9f, 1.1f);
+            z.maxHp = z.hp = Mut.Health(LastStandRules.Health(kind, Run.Round, Mode));
+            z.speed = LastStandRules.Speed(kind, Run.Round, Mode) * Mut.ZombieSpeed * Random.Range(0.9f, 1.1f);
             _alive.Add(z);
             return z;
         }
@@ -355,10 +401,10 @@ namespace PKR
         {
             var z = Spawn(ZLFoe.Herald);
             if (z == null) return;
-            z.maxHp = z.hp = SquadRules.BossHealth(LastStandRules.BossHealth(Run.Round, Mode, false), SquadSize);
-            z.speed = 2.8f * SurvivalModes.SpeedScale(Mode);
+            z.maxHp = z.hp = Mut.Health(SquadRules.BossHealth(LastStandRules.BossHealth(Run.Round, Mode, false), SquadSize));
+            z.speed = 2.8f * SurvivalModes.SpeedScale(Mode) * Mut.ZombieSpeed;
             Butcher = z;
-            _g.Announce(LastStandRules.BossName + "!", 3f);
+            _g.Announce(Map.BossName + "!", 3f);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.3f, 0.5f);
             Sfx.Play(Sfx.Spotted, 1f, 0f);
         }
@@ -367,12 +413,12 @@ namespace PKR
         {
             var z = Spawn(ZLFoe.Herald);
             if (z == null) return;
-            z.maxHp = z.hp = SquadRules.BossHealth(LastStandRules.BossHealth(Run.Round, Mode, true), SquadSize);
-            z.speed = 3.1f * SurvivalModes.SpeedScale(Mode);
+            z.maxHp = z.hp = Mut.Health(SquadRules.BossHealth(LastStandRules.BossHealth(Run.Round, Mode, true), SquadSize));
+            z.speed = 3.1f * SurvivalModes.SpeedScale(Mode) * Mut.ZombieSpeed;
             z.transform.localScale = Vector3.one * 1.5f;
-            foreach (var sr in z.GetComponentsInChildren<SpriteRenderer>()) sr.color = new Color(0.75f, 0.65f, 1f);
+            z.SetTint(Map == LastStandMap.SaltPier ? new Color(0.55f, 0.95f, 0.85f) : new Color(0.75f, 0.65f, 1f));
             HollowKing = z;
-            _g.Announce(LastStandRules.HiddenBossName + "!", 3.5f);
+            _g.Announce(Map.HiddenBossName + "!", 3.5f);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.4f, 0.8f);
             Sfx.Play(Sfx.Spotted, 1f, 0f);
         }
@@ -382,7 +428,8 @@ namespace PKR
         public void ZombieHit(ZLZombie z, bool killing)
         {
             if (Over || killing || _guest) return;
-            Earn(z.LastHitBy != null ? z.LastHitBy : _g.Player, LastStandRules.HitPoints);
+            int pts = Mut.Hit(LastStandRules.HitPoints);
+            if (pts > 0) Earn(z.LastHitBy != null ? z.LastHitBy : _g.Player, pts);
         }
 
         public void ZombieDied(ZLZombie z)
@@ -390,13 +437,15 @@ namespace PKR
             _alive.Remove(z);
             _lastKillAt = z.transform.position;
             var by = z.LastHitBy != null ? z.LastHitBy : _g.Player;
-            int pts = LastStandRules.KillPoints(z.kind);
-            Wallet(by).KillFor(_g.DoubleScrap ? pts * 2 : pts);
+            int pts = Mut.Kill(LastStandRules.KillPoints(z.kind));
+            int paid = _g.DoubleScrap ? pts * 2 : pts;
+            Wallet(by).KillFor(paid);
             by.Kills++;
+            if (by == _g.Player && !_guest) ZLFloater.Show("+" + paid, z.transform.position, new Color(1f, 0.85f, 0.35f), 0.75f);
             if (z == Butcher)
             {
                 Butcher = null;
-                _g.Announce(LastStandRules.BossName + " FALLS!", 3f);
+                _g.Announce(Map.BossName + " FALLS!", 3f);
                 _g.SpawnPowerUp(ZLShop.PickPowerUp(Random.value), z.transform.position);
             }
             if (z == HollowKing)
@@ -431,7 +480,7 @@ namespace PKR
         public void OpenDoor(ZLDebrisDoor door, ZLPlayer by)
         {
             var d = door.Data;
-            if (Ls.DoorsOpen.Contains(d.id) || !Pay(by, d.cost)) return;
+            if (Ls.DoorsOpen.Contains(d.id) || !Pay(by, DoorCost(d))) return;
             Ls.DoorsOpen.Add(d.id);
             Sfx.Play(Sfx.Secret, 0.8f, 0f);
             ClearDoor(door);
@@ -461,7 +510,7 @@ namespace PKR
             if (ZLShop.HasPerk(lo, k)) return false;
             if (lo.perks.Count >= Ls.PerkLimit)
             {
-                if (p == _g.Player) _g.ShowToast($"PERK LIMIT ({Ls.PerkLimit})" + (Ls.HiddenBossBeaten ? "" : ". THE HOLLOW KING GUARDS A FIFTH."), 2.5f);
+                if (p == _g.Player) _g.ShowToast($"PERK LIMIT ({Ls.PerkLimit})" + (Ls.HiddenBossBeaten ? "" : $". {Map.HiddenBossName} GUARDS A FIFTH."), 2.5f);
                 return false;
             }
             if (!Pay(p, LastStandRules.PerkCost(k))) return false;
@@ -529,8 +578,8 @@ namespace PKR
         /// <summary>Pays for a box spin (the local hero's Lucky First Spin is free).</summary>
         public bool PayForBox(ZLPlayer p)
         {
-            if (p == _g.Player) return Ls.PayForSpin() || Pay(p, LastStandRules.BoxCost) && CountSpin();
-            if (!Pay(p, LastStandRules.BoxCost)) return false;
+            if (p == _g.Player) return Ls.PayForSpin(BoxCost) || Pay(p, BoxCost) && CountSpin();
+            if (!Pay(p, BoxCost)) return false;
             Ls.CountBoxSpin();
             return true;
         }
@@ -546,11 +595,11 @@ namespace PKR
             _g.UnregisterUse(f);
             if (!last)
             {
-                _g.Announce($"A GRAYSTONE FRAGMENT HUMS... ({Ls.FragmentsFound}/{LastStandRules.Fragments})", 3f);
+                _g.Announce($"{Map.EggName} {(Map == LastStandMap.SaltPier ? "RINGS" : "HUMS")}... ({Ls.FragmentsFound}/{LastStandRules.Fragments})", 3f);
                 return;
             }
             Ls.HiddenBossSummoned = true;
-            _g.Announce("THE FRAGMENTS SING. SOMETHING UNDER THE BLOCK IS AWAKE.", 4f);
+            _g.Announce(Map == LastStandMap.SaltPier ? "THE BELLS TOLL. SOMETHING RISES FROM THE WATER." : "THE FRAGMENTS SING. SOMETHING UNDER THE BLOCK IS AWAKE.", 4f);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.3f, 0.8f);
         }
 
@@ -559,7 +608,7 @@ namespace PKR
             Ls.HiddenBossBeaten = true;
             foreach (var h in _g.Squad) if (h != null) Wallet(h).Earn(3000);
             RecordHollowKing();
-            _g.Announce($"THE HOLLOW KING IS DEAD!  +{SurvivalModes.HiddenBossShards} STAR SHARDS  ·  5TH PERK SLOT", 4.5f);
+            _g.Announce($"{Map.HiddenBossName} IS DEAD!  +{SurvivalModes.HiddenBossShards} STAR SHARDS  ·  5TH PERK SLOT", 4.5f);
             Sfx.Play(Sfx.Victory, 1f, 0f);
         }
 
@@ -569,7 +618,7 @@ namespace PKR
             if (save != null)
             {
                 var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
-                if (!c.Has(LastStandRules.HiddenBossSecret)) c.secrets.Add(LastStandRules.HiddenBossSecret);
+                if (!c.Has(Map.HiddenSecret)) c.secrets.Add(Map.HiddenSecret);
                 Economy.Grant(save.Data, SurvivalModes.HiddenBossShards);
                 save.SaveNow();
             }
@@ -728,7 +777,8 @@ namespace PKR
             if (save != null)
             {
                 var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
-                NewBest = c.RecordRound(LastStandRules.MapId, Mode, Run.Round);
+                // Weekly runs (mutators) keep their own best; they don't touch the map's records or leaderboards.
+                if (Weekly == null) NewBest = c.RecordRound(Map.Id, Mode, Run.Round);
                 c.totalKills += Run.Kills;
                 if (Run.Won) c.raidWins++;
                 if (Mode == SurvivalMode.Hardcore) c.hardcoreRuns++;
@@ -741,7 +791,8 @@ namespace PKR
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
             XpEarned = SurvivorRank.RunXp(Mode, Run.Round, Run.Kills, Run.Won);
             RanksReached = ProgressTracker.AddZombieXp(XpEarned);
-            ZombieBoards.Submit(LastStandRules.MapId, Mode, Run.Round);
+            if (Weekly != null) CheckWeekly(Mathf.Max(0, Run.Won ? Run.Round : Run.Round - 1));
+            else ZombieBoards.Submit(Map.Id, Mode, Run.Round);
             if (Services.Save != null) Services.Save.SaveNow();
             Sfx.Play(Run.Won ? Sfx.Victory : Sfx.KO, 0.9f, 0f);
             StartCoroutine(ShowOver());
@@ -758,9 +809,9 @@ namespace PKR
             var gold = new Color32(255, 214, 90, 255);
             bool squad = _g.Squad.Count > 1;
             var panel = UIFactory.Panel(safe, new Vector2(1300f, squad ? 1000f : 960f));
-            var title = UIFactory.Label(panel, Run.Won ? "RAID COMPLETE!" : "HOLLOW BLOCK FELL", 70, TextAnchor.MiddleCenter, 96f, title: true);
+            var title = UIFactory.Label(panel, Run.Won ? "RAID COMPLETE!" : Map.Title + " FELL", 70, TextAnchor.MiddleCenter, 96f, title: true);
             title.color = Run.Won ? (Color)gold : new Color32(255, 100, 70, 255);
-            UIFactory.Label(panel, $"{SurvivalModes.Name(Mode)}  ·  ROUND {Run.Round}" + (Ls.HiddenBossBeaten ? "  ·  HOLLOW KING SLAIN" : ""), 46,
+            UIFactory.Label(panel, $"{SurvivalModes.Name(Mode)}  ·  ROUND {Run.Round}" + (Ls.HiddenBossBeaten ? $"  ·  {Map.HiddenBossName} SLAIN" : ""), 46,
                             TextAnchor.MiddleCenter, 64f, title: true);
             if (squad)
             {
@@ -778,9 +829,19 @@ namespace PKR
                 UIFactory.Label(panel, $"{Run.Kills} zombies  ·  {Run.TotalEarned} points  ·  {SurvivalModes.Caches(Run.Won ? Run.Round : Run.Round - 1)} supply caches",
                                 34, TextAnchor.MiddleCenter, 54f);
             var career = Services.Save != null ? Services.Save.Data.zombieCareer : null;
-            int best = career != null ? career.Best(LastStandRules.MapId, Mode) : Run.Round;
-            UIFactory.Label(panel, (NewBest ? "NEW BEST!  " : "") + $"Best {SurvivalModes.Name(Mode)} round: {best}", 32, TextAnchor.MiddleCenter, 48f)
-                .color = NewBest ? (Color)gold : UITheme.Current.subtle;
+            if (Weekly != null)
+            {
+                bool done = ZombieWeekly.Done(career, Weekly);
+                UIFactory.Label(panel, (WeeklyPaid ? "WEEKLY CHALLENGE COMPLETE!  " : done ? "Weekly done  ·  " : $"Weekly goal: round {Weekly.GoalRound}  ·  ")
+                                       + $"best this week: round {ZombieWeekly.BestThisWeek(career, Weekly)}", 32, TextAnchor.MiddleCenter, 48f)
+                    .color = WeeklyPaid ? (Color)gold : UITheme.Current.subtle;
+            }
+            else
+            {
+                int best = career != null ? career.Best(Map.Id, Mode) : Run.Round;
+                UIFactory.Label(panel, (NewBest ? "NEW BEST!  " : "") + $"Best {SurvivalModes.Name(Mode)} round: {best}", 32, TextAnchor.MiddleCenter, 48f)
+                    .color = NewBest ? (Color)gold : UITheme.Current.subtle;
+            }
             UIFactory.Label(panel, $"+{ShardReward} Star Shards   ·   +{XpEarned} Survivor XP", 34, TextAnchor.MiddleCenter, 50f).color = gold;
             if (career != null)
             {
@@ -802,9 +863,10 @@ namespace PKR
                 first = UIFactory.Button(buttons, "PLAY AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             int round = Run.Round, kills = Run.Kills;
             bool won = Run.Won;
+            string mapName = Map.Short;
             string with = Kind == SquadKind.Online ? " with friends" : Kind == SquadKind.AISquad ? " with my squad" : "";
             UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(
-                (won ? $"I held Hollow Block through the Raid{with} ({kills} zombies down)" : $"I held Hollow Block for {round} round{(round == 1 ? "" : "s")}{with} ({kills} down)") +
+                (won ? $"I held {mapName} through the Raid{with} ({kills} zombies down)" : $"I held {mapName} for {round} round{(round == 1 ? "" : "s")}{with} ({kills} down)") +
                 " in Pixel Kingdom Rumble! " + ShareCard.Link));
             var back = UIFactory.Button(buttons, "ZOMBIES", () =>
             {

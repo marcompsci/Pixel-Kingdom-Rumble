@@ -14,7 +14,7 @@ namespace PKR
     {
         ZLGame _g;
         RectTransform _safe;
-        Image _hp, _armor, _vehicleBar, _reload, _missionBar, _arrow, _deathDim;
+        Image _hp, _armor, _vehicleBar, _reload, _missionBar, _arrow, _deathDim, _danger;
         Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText, _scrap, _perks, _powers, _squad;
         int _shownScrap = -1;
         float _scrapPulse;
@@ -102,6 +102,14 @@ namespace PKR
             var vi = vig.gameObject.AddComponent<Image>();
             vi.sprite = _g.Sprite("vignette");
             vi.raycastTarget = false;
+            // Danger: the edges flash red when you're hit and pulse when you're low on health.
+            var dg = UIFactory.Rect("Danger", _safe);
+            UIFactory.Stretch(dg);
+            dg.offsetMin = new Vector2(-300f, -300f); dg.offsetMax = new Vector2(300f, 300f);
+            _danger = dg.gameObject.AddComponent<Image>();
+            _danger.sprite = _g.Sprite("vignette");
+            _danger.color = new Color(0.9f, 0.05f, 0.05f, 0f);
+            _danger.raycastTarget = false;
             // Health / armor (top-left)
             _hp = Bar(_safe, "Health", new Vector2(30f, -24f), new Vector2(380f, 46f), new Color(0.9f, 0.25f, 0.25f), out var hpBack);
             _hpText = Txt((RectTransform)hpBack.transform, "100", 28, TextAnchor.MiddleCenter, white);
@@ -300,6 +308,13 @@ namespace PKR
             if (p == null) return;
 
             _hp.fillAmount = p.Health / (float)p.MaxHealth;
+            if (_danger != null)
+            {
+                float h01 = p.Health / (float)Mathf.Max(1, p.MaxHealth);
+                float low = h01 < 0.3f && p.Health > 0 ? (0.35f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f)) * (1f - h01 / 0.3f * 0.5f) : 0f;
+                float hit = Mathf.Clamp01(p.HurtFlash * 3f) * 0.7f;
+                _danger.color = new Color(0.9f, 0.05f, 0.05f, Mathf.Max(low, hit));
+            }
             _hpText.text = p.Health.ToString();
             _armor.fillAmount = prog.armor / (float)ZLRules.MaxArmor;
             _armor.transform.parent.gameObject.SetActive(prog.armor > 0);

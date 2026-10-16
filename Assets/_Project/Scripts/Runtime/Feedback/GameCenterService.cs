@@ -90,9 +90,12 @@ namespace PKR
             if (save.rumble != null && save.rumble.bestRating > 0) SendScore(Achievements.LeaderboardRumble, save.rumble.bestRating);
             if (save.zombieCareer != null)
             {
-                int ls = System.Math.Max(save.zombieCareer.Best(LastStandRules.MapId, SurvivalMode.Endless), save.zombieCareer.Best(LastStandRules.MapId, SurvivalMode.Hardcore));
+                foreach (var map in LastStandMap.All)
+                {
+                    int best = System.Math.Max(save.zombieCareer.Best(map.Id, SurvivalMode.Endless), save.zombieCareer.Best(map.Id, SurvivalMode.Hardcore));
+                    if (best > 0) SendScore(map.Leaderboard, best);
+                }
                 int manor = System.Math.Max(save.zombieBestRound, System.Math.Max(save.zombieCareer.Best("manor", SurvivalMode.Endless), save.zombieCareer.Best("manor", SurvivalMode.Hardcore)));
-                if (ls > 0) SendScore(Achievements.LeaderboardLastStand, ls);
                 if (manor > 0) SendScore(Achievements.LeaderboardManor, manor);
                 if (save.zombieCareer.xp > 0) SendScore(Achievements.LeaderboardSurvivorXp, save.zombieCareer.xp);
             }

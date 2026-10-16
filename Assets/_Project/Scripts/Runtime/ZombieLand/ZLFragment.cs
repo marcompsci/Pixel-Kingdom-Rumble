@@ -1,8 +1,12 @@
+using PKR.Core;
 using UnityEngine;
 
 namespace PKR
 {
-    /// <summary>Last Stand Easter egg: a graystone fragment hidden on the block. Find all three to wake the Hollow King.</summary>
+    /// <summary>
+    /// Last Stand Easter egg: one of three hidden pieces (graystone fragments on Hollow Block, brass bells on Salt Pier).
+    /// Find all three to wake the map's hidden boss.
+    /// </summary>
     public class ZLFragment : ZLMarkerBase, IZLUse
     {
         ZLLastStand _stand;
@@ -11,12 +15,16 @@ namespace PKR
         public Vector2 UsePos => transform.position;
         public float UseRange => 1.2f;
         public bool CanUse => !_taken && _stand != null && !_stand.Over;
-        public string Prompt => "A HUMMING STONE";
+        public string Prompt => _bell ? "RING THE BRASS BELL" : "A HUMMING STONE";
+        bool _bell;
 
-        public void Init(ZLGame g, ZLLastStand stand)
+        public void Init(ZLGame g, ZLLastStand stand) => Init(g, stand, LastStandMap.HollowBlock);
+
+        public void Init(ZLGame g, ZLLastStand stand, LastStandMap map)
         {
             _stand = stand;
-            Setup(g, g.Sprite("Props/fragment"), null, Color.white, 1f);
+            _bell = map == LastStandMap.SaltPier;
+            Setup(g, g.Sprite(_bell ? "Props/bell" : "Props/fragment"), null, Color.white, 1f);
         }
 
         public void Use(ZLPlayer p)

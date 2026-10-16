@@ -18,7 +18,7 @@ namespace PKR
         public Vector2 UsePos => transform.position;
         public float UseRange => 1.9f;
         public bool CanUse => !_busy && _stand != null && !_stand.Over && _stand.HasZone(Zone);
-        public string Prompt => _stand.Ls.FreeSpinLeft ? "MYSTERY BOX  FREE!" : $"MYSTERY BOX  {LastStandRules.BoxCost}";
+        public string Prompt => _stand.Ls.FreeSpinLeft ? "MYSTERY BOX  FREE!" : $"MYSTERY BOX  {_stand.BoxCost}";
         public string Zone => game.City.boxSpots[_spot].zone;
         public bool Busy => _busy;
         public int Spot => _spot;

@@ -106,7 +106,8 @@ namespace PKR.Core
     /// <summary>Encoding and decoding of every message (pure, unit-tested).</summary>
     public static class ZLNet
     {
-        public const int Version = 1;
+        /// <summary>2: the Start message carries the map.</summary>
+        public const int Version = 2;
 
         /// <summary>Guns by index (the catalog order) so snapshots carry one byte per gun.</summary>
         public static int GunIndex(string id)
@@ -150,15 +151,20 @@ namespace PKR.Core
             return r.Ok && v == Version;
         }
 
-        public static byte[] Start(SurvivalMode mode, IList<NetSlot> slots)
+        public static byte[] Start(SurvivalMode mode, IList<NetSlot> slots) => Start(mode, slots, LastStandRules.MapId);
+
+        public static byte[] Start(SurvivalMode mode, IList<NetSlot> slots, string mapId)
         {
             var w = new NetWriter();
             w.Byte((int)NetMsg.Start); w.Byte(Version); w.Byte((int)mode); w.Byte(slots.Count);
             foreach (var s in slots) { w.Byte(s.slot); w.Str(s.playerId); w.Str(s.name); w.Str(s.heroId); w.Bool(s.ai); }
+            w.Str(mapId ?? "");
             return w.ToArray();
         }
 
-        public static bool ReadStart(byte[] d, out SurvivalMode mode, out List<NetSlot> slots)
+        public static bool ReadStart(byte[] d, out SurvivalMode mode, out List<NetSlot> slots) => ReadStart(d, out mode, out slots, out _);
+
+        public static bool ReadStart(byte[] d, out SurvivalMode mode, out List<NetSlot> slots, out string mapId)
         {
             var r = new NetReader(d); r.Byte();
             int v = r.Byte();
@@ -167,6 +173,8 @@ namespace PKR.Core
             slots = new List<NetSlot>();
             for (int i = 0; i < n && r.Ok; i++)
                 slots.Add(new NetSlot { slot = r.Byte(), playerId = r.Str(), name = r.Str(), heroId = r.Str(), ai = r.Bool() });
+            mapId = r.Str();
+            if (!r.Ok) mapId = LastStandRules.MapId;
             return r.Ok && v == Version;
         }
 

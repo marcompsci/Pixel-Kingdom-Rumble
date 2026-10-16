@@ -11,7 +11,8 @@ namespace PKR.Tests
     /// the lair stays sealed and only the true relic hurts the First Turned.</summary>
     public class ZombieLandPlayModeTests
     {
-        string _backup;
+        string _backup, _careerBackup;
+        int _shardsBackup;
 
         IEnumerator Load()
         {
@@ -20,6 +21,9 @@ namespace PKR.Tests
             if (save != null)
             {
                 _backup = JsonUtility.ToJson(save.zombieLand);
+                if (save.zombieCareer == null) save.zombieCareer = new ZombieCareer();
+                _careerBackup = JsonUtility.ToJson(save.zombieCareer);   // kills earn Survivor XP; don't keep it
+                _shardsBackup = save.starShards;
                 ZLRules.NewGame(save.zombieLand, 12345);
                 save.zombieLand.introSeen = true;
             }
@@ -36,7 +40,9 @@ namespace PKR.Tests
             Time.timeScale = 1f;
             var save = Services.Save != null ? Services.Save.Data : null;
             if (save != null && _backup != null) JsonUtility.FromJsonOverwrite(_backup, save.zombieLand);
+            if (save != null && _careerBackup != null) { JsonUtility.FromJsonOverwrite(_careerBackup, save.zombieCareer); save.starShards = _shardsBackup; }
             _backup = null;
+            _careerBackup = null;
         }
 
         [UnityTest]

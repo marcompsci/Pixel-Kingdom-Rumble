@@ -62,7 +62,9 @@ namespace PKR
         ZombieLandProgress L => Loadout ?? (game != null ? game.Progress : null);
         /// <summary>The gun in hand as it really is (hollow-forged guns are stronger).</summary>
         public ZLGun Gun => L != null ? ZLShop.Effective(L, ZLCatalog.Gun(L.equipped)) : ZLCatalog.Pistol;
-        public int MaxHealth => L != null ? ZLShop.MaxHealth(L) : ZLRules.HeroHealth;
+        public int MaxHealth => Mathf.Max(1, Mathf.RoundToInt((L != null ? ZLShop.MaxHealth(L) : ZLRules.HeroHealth) * MaxHealthScale));
+        /// <summary>Last Stand mutators (Glass Cannon halves it).</summary>
+        public float MaxHealthScale { get; set; } = 1f;
         public ZLOwnedGun Ammo => L != null ? L.Gun(L.equipped) : null;
         public bool Reloading => _reload > 0f;
         public float Reload01 => Gun != null && _reload > 0f ? 1f - _reload / ReloadTime : 1f;
@@ -426,6 +428,7 @@ namespace PKR
             if (Control == ZLControl.Remote) facing = Aim;
             var target = game.AutoAim(transform.position, facing, gun != null ? gun.range : 8f);
             if (target.HasValue) Aim = (target.Value - (Vector2)transform.position).normalized;
+            else if (Control == ZLControl.AI && frame.face.sqrMagnitude > 0.01f) Aim = frame.face.normalized;   // the AI picked its target
             else if (Control != ZLControl.Remote && move.sqrMagnitude > 0.04f) Aim = move.normalized;
 
             if (frame.swap) game.SwapGun(this);

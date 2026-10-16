@@ -19,6 +19,10 @@ namespace PKR.Core
         public int raidWins, hardcoreRuns, totalKills, coopRuns;
         /// <summary>Hidden bosses beaten: "lantern_wraith" (Manor, Hardcore), "hollow_king" (Last Stand).</summary>
         public List<string> secrets = new List<string>();
+        /// <summary>Weekly challenge: the weeks finished ("W41"), this week's key and best round, weeks won.</summary>
+        public List<string> weeklyDone = new List<string>();
+        public string weeklyKey = "";
+        public int weeklyBest, weeklyWins;
 
         public int Best(string map, SurvivalMode mode)
         {
@@ -45,6 +49,8 @@ namespace PKR.Core
             if (bestKeys == null) bestKeys = new List<string>();
             if (bestRounds == null) bestRounds = new List<int>();
             if (secrets == null) secrets = new List<string>();
+            if (weeklyDone == null) weeklyDone = new List<string>();
+            if (weeklyKey == null) weeklyKey = "";
             while (bestRounds.Count < bestKeys.Count) bestRounds.Add(0);
             if (xp < 0) xp = 0;
             if (rankPaid < 1) rankPaid = 1;

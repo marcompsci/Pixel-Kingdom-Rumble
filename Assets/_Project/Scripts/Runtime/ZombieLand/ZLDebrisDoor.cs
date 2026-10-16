@@ -14,7 +14,8 @@ namespace PKR
         public Vector2 UsePos => transform.position;
         public float UseRange => Mathf.Max(Data.w, Data.h) * 0.5f + 1.6f;
         public bool CanUse => !Cleared && _stand != null && !_stand.Over;
-        public string Prompt => $"CLEAR THE DEBRIS: {Data.name}  {Data.cost}";
+        public string Prompt => $"CLEAR THE DEBRIS: {Data.name}  {Cost}";
+        public int Cost => _stand != null ? _stand.DoorCost(Data) : Data.cost;
 
         public void Init(ZLGame g, ZLLastStand stand, ZLCityData.Door d)
         {
@@ -42,7 +43,7 @@ namespace PKR
             _label.characterSize = 0.07f;
             _label.anchor = TextAnchor.MiddleCenter;
             _label.color = new Color(1f, 0.85f, 0.5f);
-            _label.text = $"{d.name}  {d.cost}";
+            _label.text = $"{d.name}  {Cost}";
             var mr = lg.GetComponent<MeshRenderer>();
             mr.sharedMaterial = UISprites.DisplayFont.material;
             mr.sortingOrder = ZLSort.Overhead;

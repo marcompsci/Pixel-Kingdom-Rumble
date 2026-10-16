@@ -32,6 +32,8 @@ namespace PKR
         public List<NetSlot> Slots { get; private set; } = new List<NetSlot>();
         public int MySlot { get; private set; }
         public SurvivalMode Mode { get; private set; }
+        /// <summary>The Last Stand map (the host picks it; guests get it in START).</summary>
+        public string MapId { get; set; } = LastStandRules.MapId;
         public bool FillWithAI { get; set; } = true;
         /// <summary>Tests: don't load the scene when the game starts.</summary>
         public bool DontLoadScene { get; set; }
@@ -155,7 +157,7 @@ namespace PKR
             {
                 var kind = ZLNet.Kind(data);
                 if (kind == NetMsg.Hello && IsHost && ZLNet.ReadHello(data, out var name, out var hero)) _hellos[from] = (name, hero);
-                else if (kind == NetMsg.Start && !IsHost && ZLNet.ReadStart(data, out var mode, out var slots)) { Begin(mode, slots); return; }
+                else if (kind == NetMsg.Start && !IsHost && ZLNet.ReadStart(data, out var mode, out var slots, out var map)) { MapId = map; Begin(mode, slots); return; }
                 else if (kind == NetMsg.Bye) Status = "A player left.";
             }
             while (Transport.TakeLeft() != null) Status = "A player left.";
@@ -180,7 +182,7 @@ namespace PKR
             }
             if (FillWithAI)
                 while (slotsOut.Count < SquadRules.MaxSquad) slotsOut.Add(new NetSlot { slot = slotsOut.Count, playerId = "", name = "AI", heroId = "", ai = true });
-            Transport.SendToAll(ZLNet.Start(Mode, slotsOut), true);
+            Transport.SendToAll(ZLNet.Start(Mode, slotsOut, MapId), true);
             Begin(Mode, slotsOut);
         }
 
@@ -195,6 +197,8 @@ namespace PKR
             GameSession.Mode = SessionMode.Zombies;
             GameSession.ZombieMode = mode;
             GameSession.ZombieSquad = SquadKind.Online;
+            GameSession.ZombieMap = LastStandMap.Get(MapId).Id;
+            GameSession.ZombieWeekly = false;
             GameSession.EventScene = SceneIds.LastStand;
             if (!DontLoadScene && Services.Scenes != null) Services.Scenes.Load(SceneIds.LastStand);
         }

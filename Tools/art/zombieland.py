@@ -855,3 +855,15 @@ def fragment():
     d.polygon([(6, 1), (10, 6), (6, 13), (2, 6)], fill=(156, 156, 172, 255), outline=INK)
     d.line([(6, 3), (6, 10)], fill=(225, 215, 255, 255))
     return im
+
+
+def bell():
+    """A brass ship's bell (12x14) with a faint sea-green glow: the Salt Pier Easter egg."""
+    im = img(12, 14)
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 2, 11, 13], fill=(90, 230, 200, 70))
+    d.rectangle([5, 1, 6, 3], fill=(120, 90, 40, 255))
+    d.polygon([(3, 3), (8, 3), (10, 11), (1, 11)], fill=(214, 170, 70, 255), outline=INK)
+    d.line([(4, 5), (3, 9)], fill=(255, 230, 150, 255))
+    d.ellipse([5, 11, 7, 13], fill=(120, 90, 40, 255), outline=INK)
+    return im

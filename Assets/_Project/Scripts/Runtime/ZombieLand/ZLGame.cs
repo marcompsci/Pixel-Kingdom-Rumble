@@ -179,7 +179,8 @@ namespace PKR
                 Puzzle = ZLPuzzle.FromSeed(1);
                 World = gameObject.AddComponent<ZLWorld>();
                 World.material = material;
-                if (!World.Build("block")) return;
+                LsMap = LastStandMap.Get(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMap : LastStandRules.MapId);
+                if (!World.Build(LsMap.File)) return;
                 Flow = new ZLFlowField(City);
                 SpawnHero();
                 Stand = gameObject.AddComponent<ZLLastStand>();
@@ -231,7 +232,9 @@ namespace PKR
         public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
 
         /// <summary>The minimap image for this map.</summary>
-        public Sprite Minimap => Sprite(IsLastStand ? "minimap_block" : "minimap");
+        public Sprite Minimap => Sprite(IsLastStand ? "minimap_" + LsMap.File : "minimap");
+        /// <summary>Last Stand: the map being played (from GameSession.ZombieMap).</summary>
+        public LastStandMap LsMap { get; private set; } = LastStandMap.HollowBlock;
 
         public Sprite ShotSprite(string kind)
         {
@@ -597,7 +600,7 @@ namespace PKR
             if (IsLastStand)
             {
                 Stand.ZombieDied(z);
-                if (!Stand.HoundRound && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value, 0.04f, 30)) SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
+                if (!Stand.HoundRound && !Stand.Mut.NoDrops && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value, 0.04f, 30)) SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
                 return;
             }
             Active?.ZombieDied(z);

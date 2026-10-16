@@ -159,10 +159,13 @@ namespace PKR.Core
         }
 
         /// <summary>Pays for a spin (free once with the Lucky First Spin kit). True if paid.</summary>
-        public bool PayForSpin()
+        public bool PayForSpin() => PayForSpin(LastStandRules.BoxCost);
+
+        /// <summary>Pays for a spin at this price (weekly mutators can change it).</summary>
+        public bool PayForSpin(int cost)
         {
             if (FreeSpinLeft) { FreeSpinLeft = false; BoxSpins++; return true; }
-            if (!Run.Spend(LastStandRules.BoxCost)) return false;
+            if (!Run.Spend(cost)) return false;
             BoxSpins++;
             return true;
         }

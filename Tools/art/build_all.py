@@ -416,6 +416,17 @@ def build_zombieland():
         save(zl.debris(i), os.path.join(props, f'debris_{i}.png'), ppu=16)
     save(zl.fragment(), os.path.join(props, 'fragment.png'), ppu=16)
     save(zl.minimap(block, zl.building_color), os.path.join(res, 'minimap_block.png'), ppu=16)
+    # Last Stand: Salt Pier
+    import zombieland_pier
+    pier = zombieland_pier.build().to_json()
+    with open(os.path.join(res, 'pier.json'), 'w', newline='\n') as f:
+        json.dump(pier, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'pier.json'))
+    for s_ in pier['stations']:
+        if s_['k'] == 'gun' and s_['id'] not in gun_cols:
+            save(zl.wall_gun(GUN_TINTS.get(s_['id'], (200, 200, 200))), os.path.join(props, 'wall_' + s_['id'] + '.png'), ppu=16)
+    save(zl.bell(), os.path.join(props, 'bell.png'), ppu=16)
+    save(zl.minimap(pier, zl.building_color), os.path.join(res, 'minimap_pier.png'), ppu=16)
 
 
 GUN_TINTS = {'street_smg': (255, 220, 100), 'riot_shotgun': (255, 200, 120), 'ranger_rifle': (240, 240, 220),

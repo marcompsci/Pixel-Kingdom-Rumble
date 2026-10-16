@@ -81,9 +81,12 @@ namespace PKR.Tests
             foreach (var h in g.Squad) { h.DebugInvulnerable = true; if (h.Control == ZLControl.AI) { ai++; Assert.IsNotNull(h.Brain); Assert.IsNotNull(h.Wallet); } }
             Assert.AreEqual(3, ai);
             Assert.Greater(SquadRules.ZombiesInRound(1, 4), LastStandRules.ZombiesInRound(1), "bigger rounds for a squad");
+            // straight into round 1, sped up (the dead walk in from the edges of the block)
+            st.DebugSkipToRound(1);
+            Time.timeScale = 3f;
             float t = 0f;
             int aiKills = 0;
-            while (aiKills == 0 && t < 40f)
+            while (aiKills == 0 && t < 90f)
             {
                 t += Time.deltaTime;
                 aiKills = 0;

@@ -35,6 +35,7 @@ namespace PKR
         float _think, _bite, _spit, _hurt, _animT, _screamed, _lunge, _lungeCool, _stuck;
         Vector2 _lastPos;
         bool _dead;
+        Color _tint = Color.white;
 
         public bool Hostile => true;
         public bool Alive => !_dead;
@@ -57,7 +58,7 @@ namespace PKR
             art.transform.localPosition = new Vector3(0f, 0.3f * scale, 0f);
             art.transform.localScale = Vector3.one * scale;
             _sr = art.AddComponent<SpriteRenderer>();
-            _sr.color = tint;
+            _sr.color = _tint = tint;
             if (g.material != null) _sr.sharedMaterial = g.material;
             _anim.idle = idle; _anim.move = move; _anim.hurt = hurt;
             _anim.fps = k == ZLFoe.Hound ? 12f : 6f;
@@ -74,11 +75,20 @@ namespace PKR
             if (_game.InstaKills(kind)) damage = Mathf.Max(damage, hp);
             hp -= damage;
             _hurt = 0.12f;
+            // Hit markers: a soft tick for your hits, a heavier one for the killing blow.
+            if (by != null && by == _game.Player) Sfx.Play(hp <= 0 ? Sfx.HitHeavy : Sfx.Hit, hp <= 0 ? 0.4f : 0.22f);
             if (_game.IsLastStand && _game.Stand != null) _game.Stand.ZombieHit(this, hp <= 0);
             _body.linearVelocity += dir * (kind == ZLFoe.Brute || kind == ZLFoe.Herald ? 0.8f : 3f);
             if (!hunting) StartHunt();
             ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material);
             if (hp <= 0) Die();
+        }
+
+        /// <summary>Recolours this zombie (bosses); the hurt flash returns to this colour.</summary>
+        public void SetTint(Color c)
+        {
+            _tint = c;
+            if (_sr != null) _sr.color = c;
         }
 
         public void StartHunt()
@@ -112,6 +122,7 @@ namespace PKR
                 _game.Explode(transform.position, 2.2f, 12, false);
             }
             ZLFx.Spawn(_game.Sprite("Props/blood"), transform.position, Color.white, 6f, 1.1f, 0f, _game.material, ZLSort.Decal + 1);
+            if ((kind == ZLFoe.Brute || kind == ZLFoe.Herald) && CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.15f, 0.25f);
             Destroy(gameObject);
         }
 
@@ -248,7 +259,8 @@ namespace PKR
             if (s != null) _sr.sprite = s;
             if (_body != null && Mathf.Abs(_body.linearVelocity.x) > 0.05f) _sr.flipX = _body.linearVelocity.x < 0f;
             _sr.sortingOrder = ZLSort.ByY(transform.position.y);
-            if (_hurt > 0f) _sr.color = Color.Lerp(_sr.color, Color.white, 0.5f);
+            // Hurt flash: a quick white pop that always fades back to the zombie's own colour.
+            _sr.color = _hurt > 0f ? Color.Lerp(_tint, Color.white, 0.65f) : _tint;
         }
     }
 }

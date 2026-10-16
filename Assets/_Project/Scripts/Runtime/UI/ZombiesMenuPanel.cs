@@ -6,9 +6,9 @@ using UnityEngine.UI;
 namespace PKR
 {
     /// <summary>
-    /// The ZOMBIES menu (main menu, all year): Survivor Rank, the mode picker (Endless / Raid / Hardcore) and the three
-    /// zombie games — Zombie Land (the open-city campaign), Last Stand: Hollow Block and Survival: The Manor — plus the
-    /// rank unlocks list. Players of other mobile zombie modes were angriest when zombies were taken away or only came
+    /// The ZOMBIES menu (main menu, all year): Survivor Rank, the mode picker (Endless / Raid / Hardcore) and the zombie
+    /// games — Zombie Land (the open-city campaign), Last Stand (Hollow Block or Salt Pier; solo, AI squad or online) and
+    /// Survival: The Manor — plus the weekly challenge and the rank unlocks list. Players of other mobile zombie modes were angriest when zombies were taken away or only came
     /// back for a limited time, so this one never leaves.
     /// </summary>
     public class ZombiesMenuPanel : MonoBehaviour
@@ -43,7 +43,7 @@ namespace PKR
             UIFactory.Clear(_root);
             var c = Career;
             var save = Services.Save != null ? Services.Save.Data : null;
-            var panel = UIFactory.Panel(_root, new Vector2(980f, 1460f));
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1640f));
             var title = UIFactory.Label(panel, "ZOMBIES", 110, TextAnchor.MiddleCenter, 140f, title: true);
             title.color = new Color32(255, 90, 70, 255);
 
@@ -84,10 +84,11 @@ namespace PKR
                          : $"Shards {zl.Shards}/{ZLCatalog.ShardsNeeded} · missions {zl.completed.Count}/{ZLCatalog.Missions.Length} · scrap {zl.scrap}";
             var zlButton = Big(panel, "ZOMBIE LAND", zlSub, new Color32(110, 60, 150, 255), () => Go(SceneIds.ZombieLand));
 
-            int lsBest = c.Best(LastStandRules.MapId, _mode);
-            string lsSub = (lsBest > 0 ? $"{SurvivalModes.Name(_mode)} best: round {lsBest}" : "NEW!  Round-based on a New Hollow city block")
-                           + " · solo, AI squad or online co-op";
-            Big(panel, "LAST STAND: HOLLOW BLOCK", lsSub, new Color32(170, 70, 40, 255), OpenSquad,
+            int lsBest = 0;
+            foreach (var m in LastStandMap.All) lsBest = Mathf.Max(lsBest, c.Best(m.Id, _mode));
+            string lsSub = (lsBest > 0 ? $"{SurvivalModes.Name(_mode)} best: round {lsBest}" : "Round-based")
+                           + $" · {LastStandMap.All.Length} maps · solo, AI squad or online co-op";
+            Big(panel, "LAST STAND", lsSub, new Color32(170, 70, 40, 255), OpenSquad,
                 Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
 
             int manorBest = c.Best("manor", _mode);
@@ -95,6 +96,14 @@ namespace PKR
             string mSub = (manorBest > 0 ? $"{SurvivalModes.Name(_mode)} best: round {manorBest}" : "Hold the manor windows")
                           + " · wall guns · crate · forge · lantern secret";
             Big(panel, "SURVIVAL: THE MANOR", mSub, new Color32(200, 70, 50, 255), () => Go(SceneIds.ZombieSurvival));
+
+            // The weekly challenge
+            var w = ZombieWeekly.Current(DateTime.UtcNow);
+            bool done = ZombieWeekly.Done(c, w);
+            string wSub = $"{LastStandMap.Get(w.MapId).Title} · {w.Set.Names()} · " +
+                          (done ? "DONE! New one Monday" : $"reach round {w.GoalRound} · {ZombieWeekly.LeftText(DateTime.UtcNow)}");
+            Big(panel, done ? "WEEKLY CHALLENGE: DONE" : "WEEKLY CHALLENGE", wSub, new Color32(130, 100, 30, 255), OpenWeekly,
+                Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
 
             var foot = UIFactory.Rect("Foot", panel);
             var fle = foot.gameObject.AddComponent<LayoutElement>();
@@ -132,7 +141,8 @@ namespace PKR
             }
             string records = $"Raid wins {c.raidWins}  ·  zombies downed {c.totalKills}";
             if (c.Has("lantern_wraith")) records += "  ·  Lantern Wraith slain";
-            if (c.Has(LastStandRules.HiddenBossSecret)) records += "  ·  Hollow King slain";
+            foreach (var m in LastStandMap.All) if (c.Has(m.HiddenSecret)) records += $"  ·  {m.HiddenBossName} slain";
+            if (c.weeklyWins > 0) records += $"  ·  weeklies won {c.weeklyWins}";
             UIFactory.Label(panel, records, 28, TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
             var back = UIFactory.Button(panel, "BACK", Build);
             UIFactory.Select(back);
@@ -177,8 +187,29 @@ namespace PKR
             var panel = UIFactory.Panel(_root, new Vector2(980f, 1460f));
             var title = UIFactory.Label(panel, "LAST STAND", 96, TextAnchor.MiddleCenter, 120f, title: true);
             title.color = new Color32(255, 120, 70, 255);
-            UIFactory.Label(panel, $"HOLLOW BLOCK  ·  {SurvivalModes.Name(_mode)}", 40, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
-            UIFactory.Label(panel, "Who's holding the block with you?", 32, TextAnchor.MiddleCenter, 54f).color = UITheme.Current.subtle;
+            var map = LastStandMap.Get(GameSession.ZombieMap);
+            // map picker
+            var maps = UIFactory.Rect("Maps", panel);
+            var mle = maps.gameObject.AddComponent<LayoutElement>();
+            mle.preferredHeight = mle.minHeight = 110f;
+            mle.flexibleHeight = 0f;
+            var row = maps.gameObject.AddComponent<HorizontalLayoutGroup>();
+            row.spacing = 18f;
+            row.childControlWidth = true; row.childControlHeight = true;
+            row.childForceExpandWidth = true; row.childForceExpandHeight = true;
+            foreach (var m in LastStandMap.All)
+            {
+                var mm = m;
+                int best = Career.Best(m.Id, _mode);
+                var b = UIFactory.Button(maps, m.Title, () => { GameSession.ZombieMap = mm.Id; OpenSquad(); }, 110f);
+                bool on = m == map;
+                UIFactory.Tint(b, on ? new Color32(m.R, m.G, m.B, 255) : new Color32(60, 56, 72, 255), on ? Color.white : new Color(1f, 1f, 1f, 0.7f));
+                if (on) UIFactory.Highlight(b, Gold);
+                var t = b.GetComponentInChildren<Text>();
+                if (t != null) { t.supportRichText = true; t.resizeTextForBestFit = false; t.fontSize = 36; t.text = $"{m.Title}\n<size=22>{(best > 0 ? "best round " + best : "not played yet")}</size>"; }
+            }
+            UIFactory.Label(panel, $"{map.Blurb}  ·  {SurvivalModes.Name(_mode)}", 28, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
+            UIFactory.Label(panel, "Who's holding the line with you?", 32, TextAnchor.MiddleCenter, 54f).color = UITheme.Current.subtle;
             var solo = Big(panel, "SOLO", "Just you and the dead", new Color32(120, 70, 50, 255), () => GoSquad(SquadKind.Solo));
             Big(panel, "AI SQUAD", "Three AI teammates: they cover you, revive you and grab better guns as the rounds climb",
                 new Color32(60, 110, 160, 255), () => GoSquad(SquadKind.AISquad));
@@ -199,11 +230,53 @@ namespace PKR
             Go(SceneIds.LastStand);
         }
 
+        // ---- the weekly challenge --------------------------------------------------------------------------
+
+        void OpenWeekly()
+        {
+            UIFactory.Clear(_root);
+            var c = Career;
+            var w = ZombieWeekly.Current(DateTime.UtcNow);
+            var map = LastStandMap.Get(w.MapId);
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1500f));
+            var title = UIFactory.Label(panel, "WEEKLY CHALLENGE", 80, TextAnchor.MiddleCenter, 110f, title: true);
+            title.color = Gold;
+            UIFactory.Label(panel, $"{map.FullTitle}  ·  {SurvivalModes.Name(w.Mode)}", 40, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
+            foreach (var m in w.Mutators)
+            {
+                var t = UIFactory.Label(panel, $"{MutatorSet.Name(m)}\n<size=26>{MutatorSet.Info(m)}</size>", 40, TextAnchor.MiddleCenter, 100f, title: true);
+                t.supportRichText = true;
+                t.color = new Color32(255, 150, 90, 255);
+            }
+            UIFactory.Label(panel, $"GOAL: reach round {w.GoalRound}", 40, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
+            bool done = ZombieWeekly.Done(c, w);
+            UIFactory.Label(panel, done ? "Done this week. You can keep playing for a better round." : $"Reward: +{w.RewardShards} Star Shards  ·  +{w.RewardXp} Survivor XP (once a week)",
+                            30, TextAnchor.MiddleCenter, 50f).color = done ? (Color)Gold : UITheme.Current.subtle;
+            int best = ZombieWeekly.BestThisWeek(c, w);
+            UIFactory.Label(panel, (best > 0 ? $"Your best this week: round {best}  ·  " : "") + "New challenge every Monday  ·  " + ZombieWeekly.LeftText(DateTime.UtcNow),
+                            28, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
+            var solo = Big(panel, "PLAY SOLO", "Weekly runs keep their own best (no leaderboard)", new Color32(130, 100, 30, 255), () => GoWeekly(SquadKind.Solo));
+            Big(panel, "WITH AI SQUAD", "Three AI teammates", new Color32(60, 110, 160, 255), () => GoWeekly(SquadKind.AISquad));
+            UIFactory.Button(panel, "BACK", Build);
+            UIFactory.Select(solo);
+        }
+
+        void GoWeekly(SquadKind kind)
+        {
+            var w = ZombieWeekly.Current(DateTime.UtcNow);
+            GameSession.ZombieSquad = kind;
+            GameSession.ZombieMap = w.MapId;
+            _mode = w.Mode;
+            Go(SceneIds.LastStand, weekly: true);
+        }
+
         void FindOnline()
         {
             Career.lastMode = (int)_mode;
             GameSession.ZombieMode = _mode;
+            GameSession.ZombieWeekly = false;
             var m = PKRMatchService.Ensure();
+            m.MapId = GameSession.ZombieMap;
             m.FindPlayers(_mode, _fillAI);
             if (_status != null) _status.text = m.Status;
         }
@@ -214,15 +287,16 @@ namespace PKR
             if (_status != null && m != null && m.State != PKRMatchService.Phase.Idle) _status.text = m.Status;
         }
 
-        void Go(string scene)
+        void Go(string scene, bool weekly = false)
         {
             if (scene != SceneIds.LastStand) GameSession.ZombieSquad = SquadKind.Solo;
+            GameSession.ZombieWeekly = weekly;
             if (!Application.CanStreamedLevelBeLoaded(scene))
             {
                 Debug.LogWarning($"[PKR] Zombie scene {scene} isn't in the build yet.");
                 return;
             }
-            Career.lastMode = (int)_mode;
+            if (!weekly) Career.lastMode = (int)_mode;
             if (Services.Save != null) Services.Save.MarkDirty();
             GameSession.Mode = SessionMode.Zombies;
             GameSession.ZombieMode = _mode;
