@@ -185,7 +185,7 @@ namespace PKR
                 if (sp.EndsWith("demo")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieSquad = SquadKind.AISquad; }
                 LsMap = LastStandMap.Get(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMap : LastStandRules.MapId);
                 if (!World.Build(LsMap.File)) return;
-                Flow = new ZLFlowField(City);
+                Flow = new ZLFlowField(City, City.w + City.h);
                 SpawnHero();
                 Stand = gameObject.AddComponent<ZLLastStand>();
                 Stand.Init(this);

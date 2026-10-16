@@ -151,8 +151,15 @@ namespace PKR
             new Vector2Int(1, 1), new Vector2Int(-1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)
         };
 
-        public ZLFlowField(ZLCityData city)
+        /// <summary>How far (tiles) the field reaches. The city uses a window around the hero; Last Stand maps are
+        /// small enough to cover whole (a short window left the dead stuck on the far side of the map).</summary>
+        readonly int _radius;
+
+        public ZLFlowField(ZLCityData city) : this(city, Radius) { }
+
+        public ZLFlowField(ZLCityData city, int radius)
         {
+            _radius = Mathf.Max(8, radius);
             _city = city;
             _dist = new int[city.w, city.h];
             _seen = new int[city.w, city.h];
@@ -171,12 +178,12 @@ namespace PKR
             {
                 var c = _q.Dequeue();
                 int d = _dist[c.x, c.y];
-                if (d >= Radius * 10) continue;
+                if (d >= _radius * 10) continue;
                 for (int i = 0; i < Dirs.Length; i++)
                 {
                     var n = c + Dirs[i];
                     if (!Inside(n) || _seen[n.x, n.y] == _stamp || _city.Blocked(n.x, n.y)) continue;
-                    if (Mathf.Abs(n.x - _origin.x) > Radius || Mathf.Abs(n.y - _origin.y) > Radius) continue;
+                    if (Mathf.Abs(n.x - _origin.x) > _radius || Mathf.Abs(n.y - _origin.y) > _radius) continue;
                     // no corner cutting
                     if (i >= 4 && (_city.Blocked(c.x + Dirs[i].x, c.y) || _city.Blocked(c.x, c.y + Dirs[i].y))) continue;
                     _seen[n.x, n.y] = _stamp;
@@ -205,7 +212,7 @@ namespace PKR
             {
                 var c = _q.Dequeue();
                 int d = _dist[c.x, c.y];
-                if (d >= Radius * 20) continue;
+                if (d >= _radius * 20) continue;
                 for (int i = 0; i < Dirs.Length; i++)
                 {
                     var n = c + Dirs[i];

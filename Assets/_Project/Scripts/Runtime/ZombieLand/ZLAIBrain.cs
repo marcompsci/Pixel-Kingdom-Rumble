@@ -94,7 +94,7 @@ namespace PKR
         {
             if (_g.City.Sees(me, to) && Vector2.Distance(me, to) < 6f) return (to - me).normalized;
             _flowT -= Time.deltaTime;
-            if (_toLeader == null) _toLeader = new ZLFlowField(_g.City);
+            if (_toLeader == null) _toLeader = _g.IsLastStand ? new ZLFlowField(_g.City, _g.City.w + _g.City.h) : new ZLFlowField(_g.City);
             if (_flowT <= 0f) { _flowT = 0.5f; _toLeader.Build(to); }
             var dir = _toLeader.Direction(me);
             return dir == Vector2.zero ? (to - me).normalized : dir;

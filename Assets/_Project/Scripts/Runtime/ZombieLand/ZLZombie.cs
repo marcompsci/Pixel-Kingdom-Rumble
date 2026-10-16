@@ -37,6 +37,8 @@ namespace PKR
         Vector2 _lastPos;
         bool _dead;
         Color _tint = Color.white;
+        float _sidestep;
+        Vector2 _sideDir;
         Vector2 _facing = Vector2.right;
         float _frozen, _leapWind, _leapT, _leapCool;
         Vector2 _leapDir;
@@ -309,10 +311,21 @@ namespace PKR
                 if (!_game.City.Walkable(pos + _wander * 0.8f)) _wander = -_wander;
             }
 
-            // Unstick: if pressing against something, slide sideways for a moment
-            if (Vector2.Distance(pos, _lastPos) < 0.01f && dir.sqrMagnitude > 0.01f) _stuck += dt; else _stuck = 0f;
+            // Unstick: pressing against something for half a second -> step sideways for a while (one frame did nothing).
+            if (_sidestep > 0f) { _sidestep -= dt; dir = _sideDir; }
+            else
+            {
+                if (Vector2.Distance(pos, _lastPos) < 0.01f && dir.sqrMagnitude > 0.01f) _stuck += dt; else _stuck = 0f;
+                if (_stuck > 0.5f)
+                {
+                    _sideDir = Vector2.Perpendicular(dir) * (Random.value < 0.5f ? 1f : -1f);
+                    if (!_game.City.Walkable(pos + _sideDir * 0.8f)) _sideDir = -_sideDir;
+                    _sidestep = 0.6f;
+                    _stuck = 0f;
+                    dir = _sideDir;
+                }
+            }
             _lastPos = pos;
-            if (_stuck > 0.5f) { dir = Vector2.Perpendicular(dir) * (Random.value < 0.5f ? 1f : -1f); _stuck = 0f; }
 
             var want = dir * sp;
             _body.linearVelocity = Vector2.MoveTowards(_body.linearVelocity, want, 30f * dt);
