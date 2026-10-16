@@ -45,6 +45,7 @@ namespace PKR
         public int CareerXp { get; private set; }
         public IReadOnlyList<ZLLoot> Loot => _loot;
         readonly List<(GameObject go, ZLPowerUp kind, float until)> _powerUps = new List<(GameObject, ZLPowerUp, float)>();
+        readonly Dictionary<GameObject, int> _powerUpIds = new Dictionary<GameObject, int>();
         int _pendingXp;
         bool _nuking;
 
@@ -625,6 +626,8 @@ namespace PKR
             sr.sortingOrder = ZLSort.Canopy - 1;
             if (material != null) sr.sharedMaterial = material;
             _powerUps.Add((go, kind, Time.time + ZLShop.PowerUpLifetime));
+            if (_powerUpIds.Count > 32) { var live = new Dictionary<GameObject, int>(); foreach (var kv in _powerUpIds) if (kv.Key != null) live[kv.Key] = kv.Value; _powerUpIds.Clear(); foreach (var kv in live) _powerUpIds[kv.Key] = kv.Value; }
+            _powerUpIds[go] = RuntimeIds.Next() & 0xffff;
             Sfx.Play(Sfx.Shard, 0.7f, 0f);
         }
 
@@ -674,7 +677,7 @@ namespace PKR
         public IEnumerable<(int id, ZLPowerUp kind, Vector2 at)> PowerUpsOnGround()
         {
             foreach (var p in _powerUps)
-                if (p.go != null) yield return (p.go.GetInstanceID() & 0xffff, p.kind, p.go.transform.position);
+                if (p.go != null) yield return (_powerUpIds.TryGetValue(p.go, out var id) ? id : 0, p.kind, p.go.transform.position);
         }
 
         /// <summary>Every ordinary zombie near the hero drops (not Heralds, bosses or nests). Pays a flat bonus.</summary>
