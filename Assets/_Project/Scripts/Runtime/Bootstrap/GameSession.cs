@@ -26,7 +26,11 @@ namespace PKR
             EventScene = null;
             ReopenEventMenu = false;
             ZombieMode = PKR.Core.SurvivalMode.Endless;
+            ZombieSquad = PKR.Core.SquadKind.Solo;
         }
+
+        /// <summary>Last Stand: alone, with three AI teammates, or online (picked on the ZOMBIES menu).</summary>
+        public static PKR.Core.SquadKind ZombieSquad { get; set; } = PKR.Core.SquadKind.Solo;
 
         /// <summary>ZOMBIES: Endless, Raid or Hardcore for Survival and Last Stand (picked on the ZOMBIES menu).</summary>
         public static PKR.Core.SurvivalMode ZombieMode { get; set; } = PKR.Core.SurvivalMode.Endless;

@@ -185,6 +185,40 @@ namespace PKR
             }
         }
 
+        /// <summary>Co-op: distances to the nearest of several heroes (no window limit; Last Stand's block is small).</summary>
+        public void Build(List<Vector2> targets)
+        {
+            _stamp++;
+            _q.Clear();
+            if (targets.Count == 0) return;
+            _origin = new Vector2Int(Mathf.FloorToInt(targets[0].x), Mathf.FloorToInt(targets[0].y));
+            foreach (var t in targets)
+            {
+                var c = new Vector2Int(Mathf.FloorToInt(t.x), Mathf.FloorToInt(t.y));
+                if (!Inside(c) || _seen[c.x, c.y] == _stamp) continue;
+                _dist[c.x, c.y] = 0;
+                _seen[c.x, c.y] = _stamp;
+                _q.Enqueue(c);
+            }
+            while (_q.Count > 0)
+            {
+                var c = _q.Dequeue();
+                int d = _dist[c.x, c.y];
+                if (d >= Radius * 20) continue;
+                for (int i = 0; i < Dirs.Length; i++)
+                {
+                    var n = c + Dirs[i];
+                    if (!Inside(n) || _city.Blocked(n.x, n.y)) continue;
+                    if (i >= 4 && (_city.Blocked(c.x + Dirs[i].x, c.y) || _city.Blocked(c.x, c.y + Dirs[i].y))) continue;
+                    int nd = d + (i >= 4 ? 14 : 10);
+                    if (_seen[n.x, n.y] == _stamp && _dist[n.x, n.y] <= nd) continue;
+                    _seen[n.x, n.y] = _stamp;
+                    _dist[n.x, n.y] = nd;
+                    _q.Enqueue(n);
+                }
+            }
+        }
+
         bool Inside(Vector2Int c) => c.x >= 0 && c.y >= 0 && c.x < _city.w && c.y < _city.h;
 
         /// <summary>Direction toward the target from p (zero if p is outside the field).</summary>

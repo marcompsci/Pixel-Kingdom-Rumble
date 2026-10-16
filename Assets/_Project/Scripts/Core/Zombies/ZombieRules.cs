@@ -406,6 +406,15 @@ namespace PKR.Core
             Points = ZombieRules.StartingPoints + Math.Max(0, bonusStartPoints);
         }
 
+        /// <summary>Online guest: the host's numbers for this run (the guest doesn't simulate the round).</summary>
+        public void Mirror(int round, int points, int kills)
+        {
+            Round = Math.Max(0, round);
+            if (points > Points) TotalEarned += points - Points;
+            Points = Math.Max(0, points);
+            Kills = Math.Max(0, kills);
+        }
+
         public int NextRound()
         {
             Round++;

@@ -16,7 +16,7 @@ namespace PKR.Core
         /// <summary>Best rounds per map and mode: "manor_Endless" -> 23.</summary>
         public List<string> bestKeys = new List<string>();
         public List<int> bestRounds = new List<int>();
-        public int raidWins, hardcoreRuns, totalKills;
+        public int raidWins, hardcoreRuns, totalKills, coopRuns;
         /// <summary>Hidden bosses beaten: "lantern_wraith" (Manor, Hardcore), "hollow_king" (Last Stand).</summary>
         public List<string> secrets = new List<string>();
 

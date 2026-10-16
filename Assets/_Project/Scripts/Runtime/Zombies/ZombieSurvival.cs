@@ -656,6 +656,7 @@ namespace PKR
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
             XpEarned = SurvivorRank.RunXp(Mode, Run.Round, Run.Kills, Run.Won);
             RanksReached = ProgressTracker.AddZombieXp(XpEarned);
+            ZombieBoards.Submit(MapId, Mode, Run.Round);
             if (Services.Save != null) Services.Save.SaveNow();
             if (Services.State != null) Services.State.SetState(GameState.Results);
             Sfx.Play(Run.Won ? Sfx.Victory : Sfx.KO, 0.9f, 0f);

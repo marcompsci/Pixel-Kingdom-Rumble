@@ -48,7 +48,7 @@ namespace PKR
             mr.sortingOrder = ZLSort.Overhead;
         }
 
-        public void Use(ZLPlayer p) => _stand.OpenDoor(this);
+        public void Use(ZLPlayer p) => _stand.OpenDoor(this, p);
 
         /// <summary>The debris is gone: no collider, no art.</summary>
         public void Clear()

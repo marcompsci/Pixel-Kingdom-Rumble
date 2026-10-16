@@ -19,9 +19,15 @@ namespace PKR
         bool _hostile;
         ZLGun _gun;
         Collider2D _ignore;
+        ZLPlayer _owner;
+        bool _cosmetic;
+
+        /// <summary>Who fired the last bullet that hit (points go to them in Last Stand co-op).</summary>
+        public static ZLPlayer LastOwner { get; private set; }
 
         public static void Fire(Vector2 from, Vector2 dir, ZLGun gun, int damage, bool hostile, Sprite sprite, Color tint,
-                                Material mat, Collider2D ignore, float speedOverride = 0f, float rangeOverride = 0f)
+                                Material mat, Collider2D ignore, float speedOverride = 0f, float rangeOverride = 0f,
+                                ZLPlayer owner = null, bool cosmetic = false)
         {
             if (_parent == null)
             {
@@ -48,6 +54,8 @@ namespace PKR
             b._hostile = hostile;
             b._gun = gun;
             b._ignore = ignore;
+            b._owner = owner;
+            b._cosmetic = cosmetic;
             b._sr.sprite = sprite;
             b._sr.color = tint;
             if (mat != null) b._sr.sharedMaterial = mat;
@@ -65,11 +73,20 @@ namespace PKR
             {
                 var col = Hits[i].collider;
                 if (col == null || col == _ignore) continue;
+                if (_cosmetic)
+                {
+                    // An online guest's own shots (and other players' shots it is shown): look only, the host does the damage.
+                    if (col.GetComponentInParent<ZLPlayer>() != null || col.isTrigger) continue;
+                    Despawn();
+                    return;
+                }
                 var target = col.GetComponentInParent<IZLHittable>();
                 if (target != null)
                 {
                     if (!target.Alive || target.Hostile == _hostile) continue; // friendly: pass through
+                    LastOwner = _owner;
                     target.Hit(_damage, _vel.normalized, _gun);
+                    LastOwner = null;
                     if (_gun != null && _gun.shot == "comet") ZLGame.Current?.Explode(Hits[i].point, 2.2f, _damage / 2, !_hostile);
                     Despawn();
                     return;

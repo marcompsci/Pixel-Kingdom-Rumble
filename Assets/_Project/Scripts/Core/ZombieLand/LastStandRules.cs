@@ -167,6 +167,9 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>A spin paid for some other way (another player's points in co-op).</summary>
+        public void CountBoxSpin() => BoxSpins++;
+
         public bool BoxShouldMove => BoxSpins > 0 && BoxSpins % LastStandRules.BoxMovesAfter == 0;
 
         /// <summary>Finds a fragment; true when that was the last one.</summary>

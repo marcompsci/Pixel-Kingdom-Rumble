@@ -21,6 +21,7 @@ namespace PKR
         public string Prompt => _stand.Ls.FreeSpinLeft ? "MYSTERY BOX  FREE!" : $"MYSTERY BOX  {LastStandRules.BoxCost}";
         public string Zone => game.City.boxSpots[_spot].zone;
         public bool Busy => _busy;
+        public int Spot => _spot;
 
         public void Init(ZLGame g, ZLLastStand stand, int spot)
         {
@@ -29,6 +30,16 @@ namespace PKR
             _open = g.Sprite("Props/box_open");
             Setup(g, _closed, "?", new Color(1f, 0.85f, 0.4f), 1.4f);
             MoveTo(spot);
+        }
+
+        /// <summary>Guest: where the host's box is and whether it's spinning.</summary>
+        public void MirrorState(int spot, bool busy)
+        {
+            if (spot != _spot && spot >= 0 && spot < game.City.boxSpots.Count) MoveTo(spot);
+            if (busy == _busy) return;
+            _busy = busy;
+            sr.sprite = busy ? _open : _closed;
+            if (label != null) label.text = busy ? "..." : "?";
         }
 
         void MoveTo(int spot)
@@ -42,12 +53,12 @@ namespace PKR
         public void Use(ZLPlayer p)
         {
             if (!CanUse) return;
-            if (!_stand.Ls.PayForSpin()) { _stand.Pay(LastStandRules.BoxCost); return; }
+            if (!_stand.PayForBox(p)) return;
             Sfx.Play(Sfx.Purchase, 0.8f, 0f);
-            StartCoroutine(Spin());
+            StartCoroutine(Spin(p));
         }
 
-        IEnumerator Spin()
+        IEnumerator Spin(ZLPlayer who)
         {
             _busy = true;
             sr.sprite = _open;
@@ -64,18 +75,20 @@ namespace PKR
                 yield return new WaitForSeconds(wait);
             }
             var run = _stand.Run;
-            var prize = ZLShop.RollBox(Random.value, game.Progress.equipped, run.SpinsSinceWonder);
+            var lo = who != null && who.Loadout != null ? who.Loadout : game.Progress;
+            var prize = ZLShop.RollBox(Random.value, lo.equipped, run.SpinsSinceWonder);
             run.CountSpin(prize.wonder);
-            _stand.GiveGun(prize);
+            if (who != null) _stand.GiveGun(who, prize); else _stand.GiveGun(prize);
             if (label != null) label.text = prize.name;
-            game.ShowToast((prize.wonder ? "THE WONDER WEAPON!  " : "") + prize.name + "!", 2.5f);
+            string whoName = who != null && who != game.Player && !string.IsNullOrEmpty(who.DisplayName) ? who.DisplayName + ": " : "";
+            game.Announce(whoName + (prize.wonder ? "THE WONDER WEAPON!  " : "") + prize.name + "!", 2.5f);
             Sfx.Play(prize.wonder ? Sfx.Relic : Sfx.Purchase, 0.9f, 0f);
             yield return new WaitForSeconds(1.2f);
             sr.sprite = _closed;
             if (label != null) label.text = "?";
             if (_stand.Ls.BoxShouldMove && game.City.boxSpots.Count > 1)
             {
-                game.ShowToast("THE BOX GOT UP AND LEFT! FIND IT AGAIN.", 3f);
+                game.Announce("THE BOX GOT UP AND LEFT! FIND IT AGAIN.", 3f);
                 ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.7f, 0.5f, 1f, 0.8f), 0.6f, 1f, 6f, game.material);
                 int next = (_spot + 1 + Random.Range(0, game.City.boxSpots.Count - 1)) % game.City.boxSpots.Count;
                 MoveTo(next);

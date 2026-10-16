@@ -86,6 +86,7 @@ namespace PKR
                 Toast($"SURVIVOR RANK {r}: {SurvivorRank.Title(r)}", $"+{shards} Star Shards{unlock}", RankColor);
             }
             Services.Save.MarkDirty();
+            ZombieBoards.SubmitXp(save.zombieCareer.xp);
             return reached;
         }
 

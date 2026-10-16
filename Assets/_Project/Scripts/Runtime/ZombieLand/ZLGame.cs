@@ -28,6 +28,14 @@ namespace PKR
         public ZLMode mode = ZLMode.Campaign;
 
         public bool IsLastStand => mode == ZLMode.LastStand;
+        /// <summary>Online Last Stand: the link to the other players (null when playing alone or with AI).</summary>
+        public ZLNetLink Net { get; set; }
+        /// <summary>This phone is a guest in someone else's online game: the host runs the zombies.</summary>
+        public bool IsGuest => Net != null && !Net.IsHost;
+        /// <summary>Every hero on the field (Zombie Land: just you; Last Stand: the squad).</summary>
+        public readonly List<ZLPlayer> Squad = new List<ZLPlayer>();
+        /// <summary>The hero landing a melee hit right now (for points).</summary>
+        public ZLPlayer MeleeAttacker { get; private set; }
         public ZLLastStand Stand { get; private set; }
         /// <summary>Power-ups running: insta-kill and double scrap/points (seconds left).</summary>
         public float InstaKillLeft { get; private set; }
@@ -63,6 +71,40 @@ namespace PKR
                 var s = Services.State;
                 return s != null && s.State == GameState.Paused;
             }
+        }
+
+        /// <summary>The flow field the dead follow: toward every standing hero.</summary>
+        void BuildFlow()
+        {
+            if (Squad.Count <= 1) { Flow.Build(TargetPos); return; }
+            _targets.Clear();
+            foreach (var h in Squad) if (h != null && h.Standing) _targets.Add(h.transform.position);
+            if (_targets.Count == 0) _targets.Add(TargetPos);
+            Flow.Build(_targets);
+        }
+        readonly List<Vector2> _targets = new List<Vector2>();
+
+        /// <summary>The standing hero closest to a point (where a zombie goes), else the local hero.</summary>
+        public ZLPlayer NearestHero(Vector2 at)
+        {
+            if (Squad.Count <= 1) return Player;
+            ZLPlayer best = null;
+            float bd = float.MaxValue;
+            foreach (var h in Squad)
+            {
+                if (h == null || !h.Standing) continue;
+                float d = ((Vector2)h.transform.position - at).sqrMagnitude;
+                if (d < bd) { bd = d; best = h; }
+            }
+            return best != null ? best : Player;
+        }
+
+        /// <summary>Where a zombie at this point should head.</summary>
+        public Vector2 TargetFor(Vector2 at)
+        {
+            if (Squad.Count <= 1) return TargetPos;
+            var h = NearestHero(at);
+            return h != null ? (Vector2)h.transform.position : TargetPos;
         }
 
         public Vector2 TargetPos => Player == null ? Vector2.zero
@@ -208,6 +250,8 @@ namespace PKR
             go.transform.position = at;
             Player = go.AddComponent<ZLPlayer>();
             Player.Init(this, def, material, roster != null && def != null ? roster.TintFor(def.id) : Color.white);
+            Player.Loadout = Progress;
+            Squad.Add(Player);
             var cam = Camera.main != null ? Camera.main.GetComponent<CameraFollowTopDown>() : null;
             if (cam != null) { cam.target = go.transform; cam.Snap(); }
         }
@@ -361,7 +405,7 @@ namespace PKR
             Progress.playSeconds += dt;
 
             _flowT -= dt;
-            if (_flowT <= 0f) { _flowT = 0.35f; Flow.Build(TargetPos); }
+            if (_flowT <= 0f) { _flowT = 0.35f; BuildFlow(); }
             if (InstaKillLeft > 0f) InstaKillLeft -= dt;
             if (DoubleScrapLeft > 0f) DoubleScrapLeft -= dt;
             UpdatePowerUps();
@@ -586,7 +630,7 @@ namespace PKR
 
         void UpdatePowerUps()
         {
-            Vector2 hero = TargetPos;
+            if (IsGuest) return;   // the host owns the power-ups
             for (int i = _powerUps.Count - 1; i >= 0; i--)
             {
                 var p = _powerUps[i];
@@ -596,7 +640,10 @@ namespace PKR
                 var sr = p.go.GetComponent<SpriteRenderer>();
                 if (sr != null) sr.enabled = left > 5f || Mathf.Repeat(Time.time, 0.3f) < 0.2f;
                 if (left <= 0f) { Destroy(p.go); _powerUps.RemoveAt(i); continue; }
-                if (Vector2.Distance(p.go.transform.position, hero) < 1.1f)
+                ZLPlayer taker = null;
+                foreach (var h in Squad)
+                    if (h != null && h.Standing && Vector2.Distance(p.go.transform.position, h.transform.position) < 1.1f) { taker = h; break; }
+                if (taker != null)
                 {
                     ApplyPowerUp(p.kind, p.go.transform.position);
                     Destroy(p.go);
@@ -614,10 +661,20 @@ namespace PKR
             {
                 case ZLPowerUp.InstaKill: InstaKillLeft = ZLShop.PowerUpSeconds; break;
                 case ZLPowerUp.DoubleScrap: DoubleScrapLeft = ZLShop.PowerUpSeconds; if (IsLastStand) label = "DOUBLE POINTS"; break;
-                case ZLPowerUp.MaxAmmo: ZLShop.MaxAmmo(Progress); Player.CancelReload(); break;
+                case ZLPowerUp.MaxAmmo:
+                    foreach (var h in Squad) if (h != null && h.Loadout != null) { ZLShop.MaxAmmo(h.Loadout); h.CancelReload(); }
+                    break;
                 case ZLPowerUp.Nuke: Nuke(at); break;
             }
             ShowToast(label + "!", 2.5f);
+            if (Net != null) Net.BroadcastToast(label + "!", 1);
+        }
+
+        /// <summary>Power-ups on the ground (for online snapshots).</summary>
+        public IEnumerable<(int id, ZLPowerUp kind, Vector2 at)> PowerUpsOnGround()
+        {
+            foreach (var p in _powerUps)
+                if (p.go != null) yield return (p.go.GetInstanceID() & 0xffff, p.kind, p.go.transform.position);
         }
 
         /// <summary>Every ordinary zombie near the hero drops (not Heralds, bosses or nests). Pays a flat bonus.</summary>
@@ -625,7 +682,7 @@ namespace PKR
         {
             _nuking = true;
             foreach (var z in _zombies.ToArray())
-                if (z != null && z.Alive && z.kind != ZLFoe.Herald && Vector2.Distance(z.transform.position, TargetPos) < ZLShop.NukeRadius)
+                if (z != null && z.Alive && z.kind != ZLFoe.Herald && (Squad.Count > 1 || Vector2.Distance(z.transform.position, TargetPos) < ZLShop.NukeRadius))
                     z.Hit(99999, Vector2.up, null);
             _nuking = false;
             _zombies.RemoveAll(z => z == null || !z.Alive);
@@ -633,6 +690,28 @@ namespace PKR
             else ZLShop.Earn(Progress, ZLShop.NukeScrap, DoubleScrap);
             ZLFx.Spawn(GlowHalo.Sprite, TargetPos, new Color(1f, 1f, 0.9f, 0.9f), 0.6f, 2f, 30f, material);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.4f, 0.4f);
+        }
+
+        /// <summary>Guest: the host's power-up timers (for the HUD).</summary>
+        public void MirrorPowerUps(bool instaKill, bool doublePoints)
+        {
+            InstaKillLeft = instaKill ? Mathf.Max(InstaKillLeft, 1f) : 0f;
+            DoubleScrapLeft = doublePoints ? Mathf.Max(DoubleScrapLeft, 1f) : 0f;
+        }
+
+        /// <summary>Last Stand co-op: another hero on the field (AI, an online player, or a guest's view of one).</summary>
+        public ZLPlayer SpawnSquadHero(string heroId, ZLControl control, Vector2 at, int slot, string name, Color ring)
+        {
+            var def = roster != null && !string.IsNullOrEmpty(heroId) ? roster.Find(heroId) : null;
+            if (def == null && roster != null && roster.heroes.Count > 0) def = roster.heroes[(slot + 1) % roster.heroes.Count];
+            var go = new GameObject("Hero_" + slot);
+            go.transform.position = at;
+            var h = go.AddComponent<ZLPlayer>();
+            h.Init(this, def, material, roster != null && def != null ? roster.TintFor(def.id) : Color.white, control);
+            h.Slot = slot;
+            h.ShowSquadMarker(ring, name);
+            Squad.Add(h);
+            return h;
         }
 
         /// <summary>Insta-kill: one hit drops anything but a Herald or a boss.</summary>
@@ -713,13 +792,14 @@ namespace PKR
 
         public void Bite(ZLZombie z, int dmg)
         {
-            if (Player == null || Player.Dead) return;
-            if (Player.Driving != null)
+            var victim = z != null ? NearestHero(z.transform.position) : Player;
+            if (victim == null || victim.Dead) return;
+            if (victim.Driving != null)
             {
-                Player.Driving.Damage(Mathf.Max(1, dmg / 2));
+                victim.Driving.Damage(Mathf.Max(1, dmg / 2));
                 return;
             }
-            Player.Hurt(dmg, z != null ? (Vector2)z.transform.position : (Vector2)(Boss != null ? Boss.transform.position : Player.transform.position));
+            victim.Hurt(dmg, z != null ? (Vector2)z.transform.position : (Vector2)(Boss != null ? Boss.transform.position : victim.transform.position));
         }
 
         public void Explode(Vector2 at, float radius, int dmg, bool fromPlayer)
@@ -734,8 +814,9 @@ namespace PKR
                     if (Vector2.Distance(c.transform.position, at) < radius) h.Hit(dmg, ((Vector2)c.transform.position - at).normalized, null);
                 }
             }
-            else if (Player != null && Player.Driving == null && Vector2.Distance(Player.transform.position, at) < radius)
-                Player.Hurt(dmg, at);
+            else
+                foreach (var h in Squad)
+                    if (h != null && h.Driving == null && Vector2.Distance(h.transform.position, at) < radius) h.Hurt(dmg, at);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.2f, 0.2f);
         }
 
@@ -746,9 +827,13 @@ namespace PKR
             if (Boss != null && Boss.Alive) yield return Boss;
         }
 
-        public void Melee(Vector2 at, Vector2 aim)
+        public void Melee(Vector2 at, Vector2 aim) => Melee(at, aim, Player);
+
+        public void Melee(Vector2 at, Vector2 aim, ZLPlayer attacker)
         {
-            Sfx.Play(Sfx.Swing, 0.7f);
+            Sfx.Play(Sfx.Swing, attacker == Player ? 0.7f : 0.35f);
+            if (IsGuest) return;   // the host lands the hits
+            MeleeAttacker = attacker;
             ZLFx.Spawn(GlowHalo.Sprite, at + aim * 0.8f, new Color(1f, 1f, 1f, 0.5f), 0.15f, 0.6f, 2f, material);
             foreach (var h in Hostiles())
             {
@@ -757,6 +842,7 @@ namespace PKR
                 if (to.magnitude < ZLRules.MeleeRange + (h is ZLNest ? 1f : 0f) && Vector2.Angle(aim, to) < 70f)
                     h.Hit(ZLRules.MeleeDamage, to.normalized, null);
             }
+            MeleeAttacker = null;
         }
 
         public Vector2? AutoAim(Vector2 from, Vector2 facing, float range)
@@ -861,16 +947,97 @@ namespace PKR
             Player.Heal(ZLRules.MedkitHeal);
         }
 
-        public void SwapGun()
+        public void SwapGun() => SwapGun(Player);
+
+        public void SwapGun(ZLPlayer who)
         {
-            var guns = Progress.guns;
+            var lo = who != null && who.Loadout != null ? who.Loadout : Progress;
+            var guns = lo.guns;
             if (guns.Count < 2) return;
-            int i = guns.FindIndex(g => g.id == Progress.equipped);
-            Progress.equipped = guns[(i + 1) % guns.Count].id;
-            Player.CancelReload();
-            var g2 = ZLCatalog.Gun(Progress.equipped);
-            ZLFloater.Show(g2 != null ? g2.name : "", Player.transform.position, Color.white, 0.8f);
+            int i = guns.FindIndex(g => g.id == lo.equipped);
+            lo.equipped = guns[(i + 1) % guns.Count].id;
+            who.CancelReload();
+            if (who != Player) return;
+            var g2 = ZLCatalog.Gun(lo.equipped);
+            ZLFloater.Show(g2 != null ? g2.name : "", who.transform.position, Color.white, 0.8f);
             Sfx.Play(Sfx.Reload, 0.5f, 0f);
+        }
+
+        /// <summary>A hero fired (noise draws the dead; online, the others see the bullets).</summary>
+        public void HeroShot(ZLPlayer who, Vector2 from, Vector2 aim, ZLGun gun)
+        {
+            MakeNoise(who.transform.position, gun.noise);
+            if (Net != null) Net.BroadcastShot(who.Slot, from, aim, gun.id);
+        }
+
+        // ---- co-op: downs and revives -------------------------------------------------------------------
+
+        /// <summary>A downed teammate within reach of this hero.</summary>
+        public ZLPlayer DownedTeammateNear(ZLPlayer me)
+        {
+            if (Squad.Count <= 1) return null;
+            foreach (var h in Squad)
+                if (h != null && h != me && h.Downed && Vector2.Distance(h.transform.position, me.transform.position) < SquadRules.ReviveRange) return h;
+            return null;
+        }
+
+        /// <summary>A hero's health hit zero.</summary>
+        public void HeroFell(ZLPlayer who)
+        {
+            if (Squad.Count <= 1) { if (who == Player) PlayerDied(); return; }
+            if (ZLShop.UseSecondChance(who.Loadout))
+            {
+                who.StandUp(1f);
+                SecondChanceBlast(who);
+                Announce($"{who.DisplayName}: SECOND CHANCE!");
+                return;
+            }
+            who.GoDown();
+            Announce(who == Player ? "YOU'RE DOWN! HANG ON FOR A REVIVE." : $"{who.DisplayName} IS DOWN! HOLD USE NEXT TO THEM.");
+            CheckSquadWiped();
+        }
+
+        public void TickDowned(ZLPlayer who, float dt)
+        {
+            who.TickBleed(dt);
+            if (who.BleedOut > 0f) return;
+            who.BleedOutNow();
+            Announce(who == Player ? "YOU BLED OUT. BACK NEXT ROUND." : $"{who.DisplayName} BLED OUT. BACK NEXT ROUND.");
+            CheckSquadWiped();
+        }
+
+        public void Revived(ZLPlayer who, ZLPlayer by)
+        {
+            who.StandUp(SquadRules.ReviveHealth);
+            Sfx.Play(Sfx.Heal, 0.8f);
+            Announce($"{by.DisplayName} REVIVED {who.DisplayName}!");
+            if (Stand != null) Stand.CountRevive(by);
+        }
+
+        void CheckSquadWiped()
+        {
+            foreach (var h in Squad) if (h != null && h.Standing) return;
+            if (IsLastStand && Stand != null && !Stand.Over)
+            {
+                RespawnPending = true;
+                Stand.GameOver();
+            }
+        }
+
+        void SecondChanceBlast(ZLPlayer who)
+        {
+            _nuking = true;
+            foreach (var z in _zombies.ToArray())
+                if (z != null && z.Alive && z.kind != ZLFoe.Herald && Vector2.Distance(z.transform.position, who.transform.position) < 4f) z.Hit(99999, Vector2.up, null);
+            _nuking = false;
+            ZLFx.Spawn(GlowHalo.Sprite, who.transform.position, new Color(0.5f, 1f, 0.6f, 0.9f), 0.6f, 1f, 9f, material);
+        }
+
+        /// <summary>A toast here and, online, on everyone's phone.</summary>
+        public void Announce(string text, float seconds = 3f)
+        {
+            ShowToast(text, seconds);
+            if (Net != null && Net.IsHost) Net.BroadcastToast(text, 0);
         }
 
         // ---- vehicles ------------------------------------------------------------------------------------
@@ -1028,17 +1195,11 @@ namespace PKR
         public void PlayerDied()
         {
             if (RespawnPending) return;
-            bool second = IsLastStand ? Stand.UseSecondChance() : ZLShop.UseSecondChance(Progress);
-            if (second)
+            if (ZLShop.UseSecondChance(Player.Loadout ?? Progress))
             {
-                if (IsLastStand) Progress.perks.Remove(ZLShop.PerkKey(ZLPerk.SecondChance));
                 Player.Revive(Player.transform.position);
                 ShowToast("SECOND CHANCE!", 2.5f);
-                _nuking = true;
-                foreach (var z in _zombies.ToArray())
-                    if (z != null && z.Alive && z.kind != ZLFoe.Herald && Vector2.Distance(z.transform.position, Player.transform.position) < 4f) z.Hit(99999, Vector2.up, null);
-                _nuking = false;
-                ZLFx.Spawn(GlowHalo.Sprite, Player.transform.position, new Color(0.5f, 1f, 0.6f, 0.9f), 0.6f, 1f, 9f, material);
+                SecondChanceBlast(Player);
                 return;
             }
             if (IsLastStand)

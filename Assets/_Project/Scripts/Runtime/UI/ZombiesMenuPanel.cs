@@ -86,8 +86,8 @@ namespace PKR
 
             int lsBest = c.Best(LastStandRules.MapId, _mode);
             string lsSub = (lsBest > 0 ? $"{SurvivalModes.Name(_mode)} best: round {lsBest}" : "NEW!  Round-based on a New Hollow city block")
-                           + " · doors · perks · box · hound rounds";
-            Big(panel, "LAST STAND: HOLLOW BLOCK", lsSub, new Color32(170, 70, 40, 255), () => Go(SceneIds.LastStand),
+                           + " · solo, AI squad or online co-op";
+            Big(panel, "LAST STAND: HOLLOW BLOCK", lsSub, new Color32(170, 70, 40, 255), OpenSquad,
                 Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
 
             int manorBest = c.Best("manor", _mode);
@@ -166,8 +166,57 @@ namespace PKR
             return b;
         }
 
+        // ---- Last Stand: who's with you ------------------------------------------------------------------
+
+        Text _status;
+        bool _fillAI = true;
+
+        void OpenSquad()
+        {
+            UIFactory.Clear(_root);
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1460f));
+            var title = UIFactory.Label(panel, "LAST STAND", 96, TextAnchor.MiddleCenter, 120f, title: true);
+            title.color = new Color32(255, 120, 70, 255);
+            UIFactory.Label(panel, $"HOLLOW BLOCK  ·  {SurvivalModes.Name(_mode)}", 40, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
+            UIFactory.Label(panel, "Who's holding the block with you?", 32, TextAnchor.MiddleCenter, 54f).color = UITheme.Current.subtle;
+            var solo = Big(panel, "SOLO", "Just you and the dead", new Color32(120, 70, 50, 255), () => GoSquad(SquadKind.Solo));
+            Big(panel, "AI SQUAD", "Three AI teammates: they cover you, revive you and grab better guns as the rounds climb",
+                new Color32(60, 110, 160, 255), () => GoSquad(SquadKind.AISquad));
+            bool online = PKRMatchService.Supported;
+            Big(panel, "ONLINE CO-OP", online ? "Invite friends or find players on Game Center (2-4)" : "Needs an iPhone signed in to Game Center",
+                new Color32(70, 140, 90, 255), FindOnline, online);
+            var fill = UIFactory.Button(panel, _fillAI ? "EMPTY SEATS: AI TEAMMATES" : "EMPTY SEATS: LEAVE EMPTY", () => { _fillAI = !_fillAI; OpenSquad(); }, 90f);
+            fill.GetComponentInChildren<Text>().fontSize = 30;
+            _status = UIFactory.Label(panel, "", 30, TextAnchor.MiddleCenter, 60f);
+            _status.color = new Color32(255, 214, 90, 255);
+            UIFactory.Button(panel, "BACK", () => { var m = PKRMatchService.Instance; if (m != null && m.State != PKRMatchService.Phase.InGame) m.Leave(); Build(); });
+            UIFactory.Select(solo);
+        }
+
+        void GoSquad(SquadKind kind)
+        {
+            GameSession.ZombieSquad = kind;
+            Go(SceneIds.LastStand);
+        }
+
+        void FindOnline()
+        {
+            Career.lastMode = (int)_mode;
+            GameSession.ZombieMode = _mode;
+            var m = PKRMatchService.Ensure();
+            m.FindPlayers(_mode, _fillAI);
+            if (_status != null) _status.text = m.Status;
+        }
+
+        void Update()
+        {
+            var m = PKRMatchService.Instance;
+            if (_status != null && m != null && m.State != PKRMatchService.Phase.Idle) _status.text = m.Status;
+        }
+
         void Go(string scene)
         {
+            if (scene != SceneIds.LastStand) GameSession.ZombieSquad = SquadKind.Solo;
             if (!Application.CanStreamedLevelBeLoaded(scene))
             {
                 Debug.LogWarning($"[PKR] Zombie scene {scene} isn't in the build yet.");

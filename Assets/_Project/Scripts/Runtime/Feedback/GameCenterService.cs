@@ -23,6 +23,9 @@ namespace PKR
 #endif
 
         bool _synced;
+
+        /// <summary>Signed in to Game Center (online co-op needs it).</summary>
+        public static bool SignedIn { get; private set; }
         float _nextPoll;
 
         public static bool Available
@@ -71,6 +74,7 @@ namespace PKR
             if (state == 2) { _synced = true; return; } // declined or unavailable: try again next launch
             if (state != 1) return;
             _synced = true;
+            SignedIn = true;
             SyncAll();
 #endif
         }
@@ -84,6 +88,20 @@ namespace PKR
             int total = MissionBoard.TotalScore(save);
             if (total > 0) SendScore(Achievements.LeaderboardContracts, total);
             if (save.rumble != null && save.rumble.bestRating > 0) SendScore(Achievements.LeaderboardRumble, save.rumble.bestRating);
+            if (save.zombieCareer != null)
+            {
+                int ls = System.Math.Max(save.zombieCareer.Best(LastStandRules.MapId, SurvivalMode.Endless), save.zombieCareer.Best(LastStandRules.MapId, SurvivalMode.Hardcore));
+                int manor = System.Math.Max(save.zombieBestRound, System.Math.Max(save.zombieCareer.Best("manor", SurvivalMode.Endless), save.zombieCareer.Best("manor", SurvivalMode.Hardcore)));
+                if (ls > 0) SendScore(Achievements.LeaderboardLastStand, ls);
+                if (manor > 0) SendScore(Achievements.LeaderboardManor, manor);
+                if (save.zombieCareer.xp > 0) SendScore(Achievements.LeaderboardSurvivorXp, save.zombieCareer.xp);
+            }
+        }
+
+        /// <summary>Posts a score to any leaderboard (Game Center keeps each player's best).</summary>
+        public static void SubmitScore(string board, long score)
+        {
+            if (score > 0) SendScore(board, score);
         }
 
         /// <summary>Posts the Rumble Rating (Game Center keeps each player's best).</summary>

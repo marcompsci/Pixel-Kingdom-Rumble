@@ -18,6 +18,12 @@ namespace PKR
         /// <summary>Set by missions: the Herald or a mission spawn (not despawned when far away).</summary>
         public bool pinned;
         public string missionTag;
+        /// <summary>Online guest: only mirrors the host (no thinking, no biting); NetId matches the host's zombie.</summary>
+        public bool Puppet { get; private set; }
+        public int NetId { get; set; }
+        /// <summary>The hero who hit this zombie last (Last Stand points go to them).</summary>
+        public ZLPlayer LastHitBy { get; private set; }
+        Vector2 _netTarget;
 
         ZLGame _game;
         Rigidbody2D _body;
@@ -62,7 +68,9 @@ namespace PKR
 
         public void Hit(int damage, Vector2 dir, ZLGun gun)
         {
-            if (_dead) return;
+            if (_dead || Puppet) return;
+            var by = ZLBullet.LastOwner != null ? ZLBullet.LastOwner : _game.MeleeAttacker;
+            if (by != null) LastHitBy = by;
             if (_game.InstaKills(kind)) damage = Mathf.Max(damage, hp);
             hp -= damage;
             _hurt = 0.12f;
@@ -116,14 +124,53 @@ namespace PKR
             Destroy(gameObject);
         }
 
+        /// <summary>Guest's phone: this zombie only shows where the host's zombie is.</summary>
+        public void MakePuppet(int netId)
+        {
+            Puppet = true;
+            NetId = netId;
+            hunting = true;
+            _netTarget = transform.position;
+            if (_body != null) { _body.bodyType = RigidbodyType2D.Kinematic; _body.linearVelocity = Vector2.zero; }
+        }
+
+        public void SetNet(Vector2 pos, float health01)
+        {
+            if ((pos - (Vector2)transform.position).sqrMagnitude > 0.0004f && _sr != null && Mathf.Abs(pos.x - transform.position.x) > 0.01f)
+                _sr.flipX = pos.x < transform.position.x;
+            _netTarget = pos;
+            int newHp = Mathf.Max(1, Mathf.RoundToInt(maxHp * health01));
+            if (newHp < hp) _hurt = 0.12f;
+            hp = newHp;
+        }
+
+        /// <summary>Guest: the host says this zombie is gone (blood where it fell).</summary>
+        public void PuppetDie()
+        {
+            if (_dead) return;
+            _dead = true;
+            ZLFx.Spawn(_game.Sprite("Props/blood"), transform.position, Color.white, 6f, 1.1f, 0f, _game.material, ZLSort.Decal + 1);
+            Destroy(gameObject);
+        }
+
+        void Update()
+        {
+            if (!Puppet || _dead) return;
+            Vector2 p = transform.position;
+            float k = 1f - Mathf.Exp(-12f * Time.deltaTime);
+            var next = (_netTarget - p).sqrMagnitude > 25f ? _netTarget : Vector2.Lerp(p, _netTarget, k);
+            if (_body != null) _body.MovePosition(next); else transform.position = next;
+            _hurt -= Time.deltaTime;
+        }
+
         void FixedUpdate()
         {
-            if (_dead || _game == null) return;
+            if (_dead || _game == null || Puppet) return;
             if (_game.Paused) { _body.linearVelocity = Vector2.zero; return; }
             float dt = Time.fixedDeltaTime;
             _bite -= dt; _spit -= dt; _hurt -= dt; _lungeCool -= dt; _think -= dt;
             Vector2 pos = _body.position;
-            Vector2 target = _game.TargetPos;
+            Vector2 target = _game.TargetFor(pos);
             float dist = Vector2.Distance(pos, target);
 
             // Senses
@@ -196,7 +243,7 @@ namespace PKR
         {
             if (_sr == null) return;
             _animT += Time.deltaTime;
-            bool moving = _body != null && _body.linearVelocity.sqrMagnitude > 0.05f;
+            bool moving = Puppet ? ((Vector2)transform.position - _netTarget).sqrMagnitude > 0.0004f : _body != null && _body.linearVelocity.sqrMagnitude > 0.05f;
             var s = _anim.Pick(moving, _hurt > 0f, _animT);
             if (s != null) _sr.sprite = s;
             if (_body != null && Mathf.Abs(_body.linearVelocity.x) > 0.05f) _sr.flipX = _body.linearVelocity.x < 0f;

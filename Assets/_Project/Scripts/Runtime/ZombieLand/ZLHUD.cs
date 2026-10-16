@@ -15,7 +15,7 @@ namespace PKR
         ZLGame _g;
         RectTransform _safe;
         Image _hp, _armor, _vehicleBar, _reload, _missionBar, _arrow, _deathDim;
-        Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText, _scrap, _perks, _powers;
+        Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText, _scrap, _perks, _powers, _squad;
         int _shownScrap = -1;
         float _scrapPulse;
         RectTransform _arrowRt, _mapInner, _playerDot, _missionGroup, _vehicleGroup;
@@ -178,6 +178,10 @@ namespace PKR
             _perks = Txt(pk, "", 24, TextAnchor.MiddleLeft, new Color(0.6f, 0.9f, 1f), false);
             var pw = Box(_safe, "Powers", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -232f), new Vector2(900f, 44f));
             _powers = Txt(pw, "", 34, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.35f));
+            // Co-op: the squad (names, health, points)
+            var sq = Box(_safe, "Squad", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -440f), new Vector2(520f, 150f));
+            _squad = Txt(sq, "", 26, TextAnchor.UpperLeft, Color.white, false);
+            _squad.supportRichText = true;
 
             // Vehicle health
             _vehicleGroup = Box(_safe, "Vehicle", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-190f, 90f), new Vector2(380f, 60f));
@@ -461,7 +465,27 @@ namespace PKR
             _ammo.text = ammo != null ? $"{ammo.mag} / {ammo.reserve}" : "";
             _ammo.color = ammo != null && ammo.mag + ammo.reserve == 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
             _reload.fillAmount = p.Reloading ? p.Reload01 : 0f;
-            _prompt.text = st.Over ? "" : p.Nearby != null ? "USE: " + p.Nearby.Prompt : "";
+            if (st.Over) _prompt.text = "";
+            else if (p.Downed) _prompt.text = $"YOU'RE DOWN  {Mathf.CeilToInt(p.BleedOut)}s  ·  A TEAMMATE CAN REVIVE YOU";
+            else if (p.Out) _prompt.text = "OUT UNTIL THE NEXT ROUND";
+            else if (p.ReviveTarget != null)
+                _prompt.text = $"HOLD USE: REVIVE {p.ReviveTarget.DisplayName}  {Mathf.RoundToInt(100f * p.ReviveTarget.ReviveProgress / SquadRules.ReviveSeconds)}%";
+            else _prompt.text = p.Nearby != null ? "USE: " + p.Nearby.Prompt : "";
+            // the squad
+            if (_g.Squad.Count > 1)
+            {
+                var sb = new System.Text.StringBuilder();
+                foreach (var h in _g.Squad)
+                {
+                    if (h == null || h == p) continue;
+                    string col = ColorUtility.ToHtmlStringRGB(h.Downed ? new Color(1f, 0.4f, 0.4f) : h.Out ? new Color(0.6f, 0.6f, 0.6f) : Color.white);
+                    string state = h.Downed ? $"DOWN {Mathf.CeilToInt(h.BleedOut)}s" : h.Out ? "OUT" : $"{h.Health} HP";
+                    int pts = h.Wallet != null ? h.Wallet.Points : 0;
+                    sb.Append($"<color=#{col}>{h.DisplayName}  {state}  ·  {pts}</color>\n");
+                }
+                _squad.text = sb.ToString();
+            }
+            else _squad.text = "";
             _toast.text = _g.ToastLeft > 0f ? _g.Toast : "";
             var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
             _deathDim.enabled = st.Over && !st.Run.Won;

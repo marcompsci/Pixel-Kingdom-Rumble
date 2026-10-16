@@ -22,6 +22,10 @@ namespace PKR.Core
         public const string LeaderboardContracts = "pkr.lb.contracts";
         /// <summary>Rumble Rating (Arena Clash / Versus / Daily Rumble). Best score, high to low.</summary>
         public const string LeaderboardRumble = "pkr.lb.rumble";
+        /// <summary>Zombie leaderboards (best round reached in Endless or Hardcore; Survivor Rank XP). High to low.</summary>
+        public const string LeaderboardLastStand = "pkr.lb.laststand";
+        public const string LeaderboardManor = "pkr.lb.manor";
+        public const string LeaderboardSurvivorXp = "pkr.lb.survivor_xp";
 
         public const string FirstSteps = "pkr.ach.first_steps";
         public const string Warden = "pkr.ach.warden";

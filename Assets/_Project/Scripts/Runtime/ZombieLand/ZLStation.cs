@@ -66,9 +66,9 @@ namespace PKR
         {
             switch (Data.k)
             {
-                case "gun": if (_gun != null) _stand.UseWallGun(_gun, Data.cost); break;
-                case "perk": _stand.BuyPerk(_perk); break;
-                default: _stand.UseForge(); break;
+                case "gun": if (_gun != null) _stand.UseWallGun(p, _gun, Data.cost); break;
+                case "perk": _stand.BuyPerk(p, _perk); break;
+                default: _stand.UseForge(p); break;
             }
         }
     }
