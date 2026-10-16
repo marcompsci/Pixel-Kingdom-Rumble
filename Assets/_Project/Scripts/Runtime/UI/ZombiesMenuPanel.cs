@@ -43,7 +43,7 @@ namespace PKR
             UIFactory.Clear(_root);
             var c = Career;
             var save = Services.Save != null ? Services.Save.Data : null;
-            var panel = UIFactory.Panel(_root, new Vector2(980f, 1760f));
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1460f));
             var title = UIFactory.Label(panel, "ZOMBIES", 110, TextAnchor.MiddleCenter, 140f, title: true);
             title.color = new Color32(255, 90, 70, 255);
 
@@ -59,7 +59,9 @@ namespace PKR
 
             // Mode picker
             var modes = UIFactory.Rect("Modes", panel);
-            modes.gameObject.AddComponent<LayoutElement>().preferredHeight = 96f;
+            var mle = modes.gameObject.AddComponent<LayoutElement>();
+            mle.preferredHeight = mle.minHeight = 96f;
+            mle.flexibleHeight = 0f;
             var row = modes.gameObject.AddComponent<HorizontalLayoutGroup>();
             row.spacing = 18f;
             row.childControlWidth = true; row.childControlHeight = true;
@@ -95,7 +97,9 @@ namespace PKR
             Big(panel, "SURVIVAL: THE MANOR", mSub, new Color32(200, 70, 50, 255), () => Go(SceneIds.ZombieSurvival));
 
             var foot = UIFactory.Rect("Foot", panel);
-            foot.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var fle = foot.gameObject.AddComponent<LayoutElement>();
+            fle.preferredHeight = fle.minHeight = UIFactory.RowHeight;
+            fle.flexibleHeight = 0f;
             var fr = foot.gameObject.AddComponent<HorizontalLayoutGroup>();
             fr.spacing = 24f;
             fr.childControlWidth = true; fr.childControlHeight = true;
