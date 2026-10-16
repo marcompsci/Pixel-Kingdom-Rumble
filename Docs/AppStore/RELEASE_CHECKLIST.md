@@ -3,8 +3,8 @@
 Nothing here submits the app. Omari presses **Submit for Review** himself when every box he cares about is ticked.
 
 ## 1. Build
-- [ ] Mac Unity check green (compile, EditMode, PlayMode) on the commit being shipped.
-- [ ] TestFlight build uploaded and VALID in App Store Connect (`Logs/testflight_request` + `Logs/check_request`).
+- [x] Mac Unity check green on a527cff (16 Oct): compile 0 errors, EditMode 307/307, PlayMode 131 passed / 0 failed / 2 skipped (balance labs).
+- [ ] TestFlight: 20261016.1338 uploaded 16 Oct (before the pathing / AI-ammo fixes). 20261016.1521 (a527cff, all fixes) is archived in Builds/ but not uploaded yet: Xcode Organizer > Distribute App > App Store Connect.
 - [ ] Installed on Omari's iPhone from TestFlight; launches, no crash in the first 5 minutes.
 - [ ] Version / build number in App Store Connect matches the TestFlight build picked for review.
 
