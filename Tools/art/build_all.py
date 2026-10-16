@@ -392,6 +392,7 @@ def build_zombieland():
             save(zl.first_turned(i, kind), os.path.join(props, f'boss_{kind}_{i}.png'), ppu=16)
     save(zl.herald_crown(), os.path.join(props, 'crown.png'), ppu=16)
     save(zl.minimap(city, zl.building_color), os.path.join(res, 'minimap.png'), ppu=16)
+    save(zl.vignette(), os.path.join(res, 'vignette.png'), ppu=100, filt=1)
 
 
 def build_fx():

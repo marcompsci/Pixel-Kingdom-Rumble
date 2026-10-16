@@ -713,3 +713,16 @@ def building_color(style):
         c = ROOF_STYLES[style][0]
         return tuple(int(v * 0.85) for v in c)
     return (200, 180, 120)
+
+
+def vignette(size=256):
+    """Dark, slightly red-tinted screen edges (alpha only toward the corners) for the city at dusk."""
+    im = img(size, size)
+    p = im.load()
+    c = size / 2
+    for y in range(size):
+        for x in range(size):
+            d = math.hypot((x - c) / c, (y - c) / c)
+            a = max(0.0, min(1.0, (d - 0.55) / 0.6))
+            p[x, y] = (24, 6, 10, int(210 * a * a))
+    return im

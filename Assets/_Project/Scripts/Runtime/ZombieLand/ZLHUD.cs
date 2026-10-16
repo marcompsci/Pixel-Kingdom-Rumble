@@ -93,6 +93,13 @@ namespace PKR
         void Build()
         {
             var white = Color.white;
+            // Dusk over New Hollow: darkened screen edges under the HUD.
+            var vig = UIFactory.Rect("Vignette", _safe);
+            UIFactory.Stretch(vig);
+            vig.offsetMin = new Vector2(-300f, -300f); vig.offsetMax = new Vector2(300f, 300f);
+            var vi = vig.gameObject.AddComponent<Image>();
+            vi.sprite = _g.Sprite("vignette");
+            vi.raycastTarget = false;
             // Health / armor (top-left)
             _hp = Bar(_safe, "Health", new Vector2(30f, -24f), new Vector2(380f, 46f), new Color(0.9f, 0.25f, 0.25f), out var hpBack);
             _hpText = Txt((RectTransform)hpBack.transform, "100", 28, TextAnchor.MiddleCenter, white);

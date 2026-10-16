@@ -68,7 +68,7 @@ namespace PKR
         public IReadOnlyList<ZLMissionMarker> Markers => _markers;
         public IReadOnlyList<ZLVehicle> Vehicles => _vehicles;
 
-        float _flowT, _spawnT, _houndT, _saveT, _discoverT;
+        float _flowT, _spawnT, _houndT, _saveT, _discoverT, _groanT;
         int _houndPacks;
         bool _warned;
 
@@ -308,6 +308,13 @@ namespace PKR
 
             if (!Progress.bossDefeated)
             {
+                _groanT -= dt;
+                if (_groanT <= 0f)
+                {
+                    _groanT = UnityEngine.Random.Range(3f, 7f);
+                    foreach (var z in _zombies)
+                        if (z != null && Vector2.Distance(z.transform.position, TargetPos) < 9f) { Sfx.Play(Sfx.Groan, 0.35f, 0.15f); break; }
+                }
                 Ecosystem(dt);
                 Hounds(dt);
             }
