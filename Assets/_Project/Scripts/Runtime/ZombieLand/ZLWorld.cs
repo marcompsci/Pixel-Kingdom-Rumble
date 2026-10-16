@@ -104,15 +104,8 @@ namespace PKR
                     i++;
                 }
             tm.SetTiles(positions, tiles);
-            // the sea and the land beyond the fence
-            var outside = new GameObject("Outside").AddComponent<SpriteRenderer>();
-            outside.transform.SetParent(_root, false);
-            outside.sprite = Sprite("Tiles/zl_w0");
-            outside.drawMode = SpriteDrawMode.Tiled;
-            outside.size = new Vector2(c.w + 80, c.h + 80);
-            outside.transform.position = new Vector3(c.w * 0.5f, c.h * 0.5f, 0f);
-            outside.sortingOrder = ZLSort.Ground - 1;
-            if (material != null) outside.sharedMaterial = material;
+            // Beyond the map: the camera's clear colour is set to the sea (a tiled sprite that size would be a huge mesh).
+            if (Camera.main != null) Camera.main.backgroundColor = new Color32(44, 92, 150, 255);
         }
 
         // ---- colliders -----------------------------------------------------------------------------------
@@ -246,7 +239,7 @@ namespace PKR
             tm.text = text;
             tm.font = UISprites.DisplayFont;
             tm.fontSize = 48;
-            tm.characterSize = 0.06f;
+            tm.characterSize = 0.075f;
             tm.anchor = TextAnchor.MiddleCenter;
             tm.color = new Color(1f, 0.92f, 0.6f, 0.95f);
             var mr = go.GetComponent<MeshRenderer>();

@@ -28,7 +28,7 @@ namespace PKR
                 label = go.AddComponent<TextMesh>();
                 label.font = UISprites.DisplayFont;
                 label.fontSize = 40;
-                label.characterSize = 0.045f / scale;
+                label.characterSize = 0.07f / scale;
                 label.anchor = TextAnchor.MiddleCenter;
                 label.color = labelColor;
                 label.text = text;

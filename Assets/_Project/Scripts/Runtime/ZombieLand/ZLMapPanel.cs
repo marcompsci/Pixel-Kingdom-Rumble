@@ -21,6 +21,7 @@ namespace PKR
         string _tab = "map";
         float _prevScale = 1f;
         int _newGameTaps;
+        TouchControlsUI _touch;
 
         public void Open()
         {
@@ -34,6 +35,8 @@ namespace PKR
             }
             _canvas.enabled = true;
             IsOpen = true;
+            _touch = Object.FindAnyObjectByType<TouchControlsUI>();
+            if (_touch != null) _touch.gameObject.SetActive(false);
             _prevScale = Time.timeScale > 0f ? Time.timeScale : 1f;
             Time.timeScale = 0f;
             _newGameTaps = 0;
@@ -44,6 +47,7 @@ namespace PKR
         {
             IsOpen = false;
             if (_canvas != null) _canvas.enabled = false;
+            if (_touch != null) _touch.gameObject.SetActive(true);
             Time.timeScale = _prevScale;
         }
 
@@ -119,9 +123,10 @@ namespace PKR
                 rt.sizeDelta = new Vector2(300f, 30f);
                 var t = rt.gameObject.AddComponent<Text>();
                 t.font = UISprites.DisplayFont;
-                t.fontSize = 22;
+                t.fontSize = 17;
                 t.alignment = TextAnchor.MiddleCenter;
                 t.text = dist.name.ToUpperInvariant() + "\n" + new string('*', dist.threat);
+                if (d.id == "harbor") rt.anchoredPosition += new Vector2(20f, -40f);
                 t.color = new Color(1f, 1f, 1f, 0.85f);
                 t.raycastTarget = false;
                 rt.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(2f, -2f);

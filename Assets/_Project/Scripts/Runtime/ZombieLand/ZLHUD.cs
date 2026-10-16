@@ -142,7 +142,8 @@ namespace PKR
             _arrow.raycastTarget = false;
 
             // Minimap (top-right) + MAP
-            var mini = Box(_safe, "Minimap", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(MiniSize, MiniSize));
+            // (top-left, under health: the top-right belongs to pause and the touch FIRE/USE buttons)
+            var mini = Box(_safe, "Minimap", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -110f), new Vector2(MiniSize, MiniSize));
             var frame = mini.gameObject.AddComponent<Image>();
             UISprites.ApplyPanelSprite(frame);
             frame.color = UITheme.Current.panelEdge;
@@ -165,10 +166,10 @@ namespace PKR
             var pd = _playerDot.gameObject.AddComponent<Image>();
             pd.sprite = _g.Sprite("Props/pk_arrow");
             pd.color = Color.white;
-            var mapBtn = SmallButton(_safe, "MAP", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f - MiniSize - 10f), new Vector2(MiniSize, 76f), OpenMap);
+            SmallButton(_safe, "MAP", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f + MiniSize + 12f, -110f), new Vector2(150f, 76f), OpenMap);
 
             // Vehicle health
-            _vehicleGroup = Box(_safe, "Vehicle", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -112f), new Vector2(380f, 60f));
+            _vehicleGroup = Box(_safe, "Vehicle", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-190f, 90f), new Vector2(380f, 60f));
             _vehicleBar = Bar(_vehicleGroup, "VehBar", new Vector2(0f, -26f), new Vector2(380f, 30f), new Color(1f, 0.7f, 0.3f), out _);
             var vt = Box(_vehicleGroup, "VehName", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(380f, 24f));
             _vehicleText = Txt(vt, "", 22, TextAnchor.MiddleLeft, white);
