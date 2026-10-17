@@ -3,7 +3,7 @@
 External TestFlight approval lets people outside the team install the beta. It is **not** App Store approval: the App
 Store submission is reviewed separately, later, against the full guidelines.
 
-## 1. Beta app description (App Store Connect > TestFlight > Test Information; currently set, 298 characters)
+## 1. Beta app description (App Store Connect > TestFlight > Test Information; saved 17 Oct from `Docs/AppStore/beta-description.txt`)
 
 Keep it short, saying what the game is and what to focus on. Suggested text:
 
@@ -13,7 +13,7 @@ Keep it short, saying what the game is and what to focus on. Suggested text:
 
 ## 2. What to Test
 
-Saved for build 20261016.1842 from `Docs/AppStore/whats-to-test.txt`. Update it for every build (see the release
+Saved for builds 20261016.1842 and 20261016.2133 from `Docs/AppStore/whats-to-test.txt`. Update it for every build (see the release
 checklist, step 8).
 
 ## 3. Contacts and links
@@ -38,8 +38,8 @@ Answered by the build itself (`ITSAppUsesNonExemptEncryption = NO`), so no quest
 
 | Group | Type | Public link | Status (17 Oct) |
 |---|---|---|---|
-| PKR Team | internal | — | build 20261016.1842 in internal testing |
-| Public Testers | external | **on** | build not yet submitted for beta review |
+| PKR Team | internal | — | internal testing |
+| Public Testers | external | **on** | build 20261016.2133 added; beta review refused until the pending account agreement is accepted (`BETA_CONTRACT_MISSING`) |
 | Friends & Family | external | off | — |
 
 Steps:

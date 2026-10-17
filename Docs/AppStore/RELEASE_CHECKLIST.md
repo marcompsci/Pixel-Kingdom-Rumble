@@ -7,7 +7,7 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [x] Mac Unity check green on f59e47a (16 Oct, after onboarding, Rail Yard, chapter 3, daily orders, the LOCKER): EditMode 321/321, PlayMode 140 passed / 0 failed / 2 skipped.
 - [x] TestFlight: 20261016.1842 (f59e47a + docs: Rail Yard, chapter 3, daily orders, LOCKER, friends boards) uploaded 16 Oct through Xcode Organizer ("Uploaded to Apple"; usual missing-dSYM warning for UnityRuntime). Apple processes it before it shows in TestFlight. Older: 1338 uploaded, 1521 never uploaded (superseded).
 - [ ] Installed on Omari's iPhone from TestFlight; launches, no crash in the first 5 minutes.
-- [x] Version 1.0 uses build 20261016.1842 (set 16 Oct).
+- [x] Version 1.0 uses build 20261016.2133 (17 Oct: privacy manifests, iPad landscape fix, compliance gate passed, uploaded with the API key).
 
 ## 2. Play it by hand (nobody has yet)
 - [ ] Last Stand, Hollow Block, solo: reach round 10 (the Butcher). Note anything unfair or boring.
@@ -40,7 +40,11 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [ ] App Privacy: still "Data Not Collected" (Game Center is Apple's; no analytics, no ads).
 - [x] Review notes updated for ZOMBIES (Last Stand, Zombie Land, daily orders, LOCKER, BOARDS; online co-op optional) and the zombie leaderboards (16 Oct).
 - [x] App Review contact: Omari Bell, rodlonbell16@gmail.com, +1 559 408 9014 (same as Crossfall and Retro Hoops).
-- [ ] Shadow Contracts IAP review screenshot attached.
+- [x] Shadow Contracts IAP: review screenshot attached, $3.99 base price, all territories; state Ready to Submit (17 Oct). Add it to the version when submitting.
+
+## 4b. Compliance gate
+- See `Docs/apple-compliance-report.md` (result CONDITIONAL) and `Docs/testflight-release-checklist.md` (run before every TestFlight build).
+- [ ] Accept the pending App Store Connect agreement (Apple refused beta review with BETA_CONTRACT_MISSING), then submit 20261016.2133 for TestFlight review.
 
 ## 5. Before pressing submit
 - [ ] Everything in sections 1-4 ticked, or knowingly skipped.

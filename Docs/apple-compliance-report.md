@@ -7,9 +7,12 @@ has `Docs/`, so a second `docs/` folder would collide there.
 
 ## Release-readiness result: **CONDITIONAL**
 
-- **External TestFlight:** CONDITIONAL. Every automated gate passes, the build is processed and all beta metadata is
-  complete. What's left is manual: submit the build for TestFlight App Review, and check the purchase on a device
-  (see F1).
+- **External TestFlight:** CONDITIONAL. Build **20261016.2133** passed every automated gate, then uploaded and
+  processed. It contains all the fixes below, is attached to version 1.0, and is in the external group "Public
+  Testers" with What to Test, beta description and beta review notes set. Submitting it for TestFlight App Review was
+  attempted on 17 Oct (Omari approved) and refused by Apple: `ENTITY_UNPROCESSABLE.BETA_CONTRACT_MISSING`. That
+  means the account has an agreement waiting. Omari has to sign in to App Store Connect (Business > Agreements, or the
+  banner on the home page), accept it as the Account Holder, and submit again.
 - **App Store submission:** CONDITIONAL. The two former blockers (F1 IAP price, F3 iPad) are fixed. What's left is
   manual: the co-op test (F6), the App Privacy check, and Omari pressing Submit. Approval is never guaranteed.
 
@@ -51,6 +54,7 @@ Severity: BLOCKER / HIGH / MEDIUM / LOW. "Verified by" names the check that show
 | F15 | 4.8 Login Services; 5.1.1(v) account deletion | — | Not applicable | The game has no accounts or third-party sign-in. | — | — | Code review |
 | F16 | App Transport Security | Info.plist | INFO (OK) | No ATS exceptions. | The gate fails on `NSAllowsArbitraryLoads`. | — | compliance_check |
 | F17 | 2.5.x software requirements | Plugins | INFO (OK) | Public APIs only (GameKit, StoreKit, UIKit). The iPad share sheet is anchored, so it doesn't crash on iPad. | — | — | Code review |
+| F19 | Account agreements (App Store Connect) | App Store Connect account | **BLOCKER** for external TestFlight | Apple refuses beta review: `BETA_CONTRACT_MISSING`. | The Account Holder accepts the pending agreement in App Store Connect; only Omari can do this. Then run `asc_fix` `beta_submit` (or press Submit for Review on the build's TestFlight page). | **No** (needs Omari) | `asc_fix` 17 Oct 21:53 |
 | F18 | Current guidelines | — | Note | A public change tracker shows Apple revised the App Review Guidelines on 17 Oct 2026. I couldn't load Apple's own page from this session, so the newest wording wasn't read directly. | Omari: skim "What's new" on the guidelines page before submitting. | — | — |
 
 Not applicable here: 1.3 Kids Category (not in it), 4.7 hosted mini-apps or streaming, 5.4 VPN, Supabase/Firebase rules, backend authorization.
@@ -74,6 +78,6 @@ Not run (manual): online co-op on two devices, real sandbox purchase/restore/Ask
 1. ~~IAP price and availability (F1); typo IAP (F2); iPad (F3)~~: done 17 Oct with Omari's approval.
 2. Play the new build on a real iPad in landscape (the simulator looked right; a real device hasn't been tried).
 3. Test online co-op on two iPhones (F6).
-4. Submit build 20261016.1842 (or newer) for **TestFlight App Review** (external group), then turn on or share the public link.
+4. Accept the pending App Store Connect agreement (F19), then submit build 20261016.2133 for **TestFlight App Review**. It's already in "Public Testers", whose public link is on.
 5. Check App Privacy in App Store Connect still says "Data Not Collected" (the API can't read it).
 6. Before the App Store: add the IAP to the version submission, then press Submit for Review.
