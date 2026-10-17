@@ -535,6 +535,7 @@ namespace PKR
             int paid = _g.DoubleScrap ? pts * 2 : pts;
             Wallet(by).KillFor(paid);
             by.Kills++;
+            if (by == _g.Player && !_guest && by.Loadout != null) _g.CountMasteryKill(by.Loadout.equipped);
             if (by == _g.Player && !_guest)
             {
                 ZLFloater.Show("+" + paid, z.transform.position, new Color(1f, 0.85f, 0.35f), 0.75f);
@@ -670,15 +671,20 @@ namespace PKR
         {
             var lo = p.Loadout;
             var held = ZLCatalog.Gun(lo.equipped);
-            if (!ZLShop.CanForge(lo, held)) { if (p == _g.Player) _g.ShowToast(held != null && held.isRelic ? "NOT THAT ONE" : "ALREADY FORGED", 1.5f); return; }
-            int cost = p == _g.Player ? ForgeCost : LastStandRules.ForgeCost;
+            int tier = ZLShop.NextForgeTier(lo, held);
+            if (tier == 0) { if (p == _g.Player) _g.ShowToast(held != null && held.isRelic ? "NOT THAT ONE" : "FULLY UPGRADED", 1.5f); return; }
+            bool local = p == _g.Player;
+            int cost = tier == 1 ? (local ? ForgeCost : LastStandRules.ForgeCost) : (local ? OverchargeCost : ZLShop.OverchargeCostLastStand);
             if (!Pay(p, cost)) return;
-            ZLShop.Forge(lo, held.id, 0);
+            if (tier == 1) ZLShop.Forge(lo, held.id, 0); else ZLShop.Overcharge(lo, held.id, 0);
             p.CancelReload();
-            if (p == _g.Player) { Sfx.Play(Sfx.Special, 0.9f, 0f); _g.ShowToast("HOLLOW-FORGED " + held.name + "!", 2.5f); }
+            if (local) { Sfx.Play(Sfx.Special, 0.9f, 0f); _g.ShowToast((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!", 2.5f); }
         }
 
         public int ForgeCost => LastStandRules.ForgePrice(SurvivorRank.Has(_g.CareerXp, "kit_forge"));
+
+        /// <summary>The second trip through the forge (Forge Friend takes 40% off this too).</summary>
+        public int OverchargeCost => SurvivorRank.Has(_g.CareerXp, "kit_forge") ? Mathf.RoundToInt(ZLShop.OverchargeCostLastStand * 0.6f) : ZLShop.OverchargeCostLastStand;
 
         /// <summary>Pays for a box spin (the local hero's Lucky First Spin is free).</summary>
         public bool PayForBox(ZLPlayer p)
@@ -765,7 +771,8 @@ namespace PKR
                     hp = h.Health, maxHp = h.MaxHealth, points = Wallet(h).Points, kills = h.Kills,
                     mag = ammo != null ? ammo.mag : 0, reserve = ammo != null ? ammo.reserve : 0,
                     gunIndex = ZLNet.GunIndex(lo != null ? lo.equipped : ""), perkMask = lo != null ? ZLNet.PerkMask(lo.perks) : 0,
-                    downed = h.Downed, out_ = h.Out, forged = lo != null && ZLShop.IsForged(lo, lo.equipped)
+                    downed = h.Downed, out_ = h.Out, forged = lo != null && ZLShop.IsForged(lo, lo.equipped),
+                    overcharged = lo != null && ZLShop.IsOvercharged(lo, lo.equipped)
                 });
             }
             foreach (var z in _g.Zombies)
@@ -883,6 +890,7 @@ namespace PKR
             gun.mag = m.mag;
             gun.reserve = m.reserve;
             if (m.forged && !lo.forged.Contains(gid)) lo.forged.Add(gid);
+            if (m.overcharged && !lo.overcharged.Contains(gid)) lo.overcharged.Add(gid);
             lo.perks.Clear();
             lo.perks.AddRange(ZLNet.PerksFromMask(m.perkMask));
         }
@@ -984,10 +992,11 @@ namespace PKR
                 .color = news.Count > 0 ? (Color)gold : UITheme.Current.subtle;
             if (career != null)
             {
-                int rank = SurvivorRank.RankFor(career.xp);
+                int rank = ZombiePrestige.Rank(career);
+                string pre = career.prestige > 0 ? $"P{career.prestige}  ·  " : "";
                 var worn = ZombieCosmetics.Worn(career, CosmeticSlot.Title, ZombieDailyTracker.Snapshot());
-                UIFactory.Label(panel, (worn != null ? worn.Name + "  ·  " : "") + (RanksReached.Count > 0 ? $"RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
-                                                              : $"SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(SurvivorRank.Progress01(career.xp) * 100f)}% to the next"),
+                UIFactory.Label(panel, (worn != null ? worn.Name + "  ·  " : "") + (RanksReached.Count > 0 ? $"{pre}RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
+                                                              : $"{pre}SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(ZombiePrestige.Progress01(career) * 100f)}% to the next"),
                                 28, TextAnchor.MiddleCenter, 44f).color = RanksReached.Count > 0 ? (Color)gold : UITheme.Current.subtle;
             }
             var buttons = UIFactory.Rect("Buttons", panel);

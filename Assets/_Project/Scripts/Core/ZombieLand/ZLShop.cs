@@ -127,10 +127,52 @@ namespace PKR.Core
         /// <summary>Whether the forge will take this gun (not relics, not twice).</summary>
         public static bool CanForge(ZombieLandProgress p, ZLGun g) => g != null && !g.isRelic && !IsForged(p, g.id);
 
-        /// <summary>The gun as the hero holds it: forged guns hit twice as hard and carry half again as much ammo.</summary>
+        // ---- overcharge: the forge's second tier ---------------------------------------------------------
+        /// <summary>Zombie Land safehouse price and Last Stand price for a second trip through the forge.</summary>
+        public const int OverchargeCost = 9000, OverchargeCostLastStand = 15000;
+
+        public static bool IsOvercharged(ZombieLandProgress p, string gunId) => p != null && p.overcharged.Contains(gunId);
+
+        /// <summary>Only a forged gun can be overcharged (once).</summary>
+        public static bool CanOvercharge(ZombieLandProgress p, ZLGun g) => g != null && !g.isRelic && IsForged(p, g.id) && !IsOvercharged(p, g.id);
+
+        /// <summary>What the forge does to the held gun next: 1 forge, 2 overcharge, 0 nothing left (or not allowed).</summary>
+        public static int NextForgeTier(ZombieLandProgress p, ZLGun g) => CanForge(p, g) ? 1 : CanOvercharge(p, g) ? 2 : 0;
+
+        /// <summary>Overcharges a forged gun the hero owns and fills it. False if not allowed or too poor.</summary>
+        public static bool Overcharge(ZombieLandProgress p, string gunId, int cost)
+        {
+            var g = ZLCatalog.Gun(gunId);
+            var owned = p != null ? p.Gun(gunId) : null;
+            if (owned == null || !CanOvercharge(p, g) || !Spend(p, cost)) return false;
+            p.overcharged.Add(gunId);
+            var e = Effective(p, g);
+            owned.mag = e.magazine;
+            owned.reserve = e.maxReserve;
+            return true;
+        }
+
+        /// <summary>
+        /// The gun as the hero holds it: forged guns hit twice as hard and carry half again as much ammo; overcharged ones
+        /// hit half as hard again, fire 15% faster, hold a quarter more and every bullet goes through one more of the dead.
+        /// </summary>
         public static ZLGun Effective(ZombieLandProgress p, ZLGun g)
         {
             if (g == null || !IsForged(p, g.id)) return g;
+            if (IsOvercharged(p, g.id))
+            {
+                if (OverchargedCache.TryGetValue(g.id, out var oc)) return oc;
+                var o = Effective(new ZombieLandProgress { forged = { g.id } }, g).Clone();
+                o.overcharged = true;
+                o.name = "OVERCHARGED " + g.name;
+                o.damage = (int)Math.Round(o.damage * 1.5f);
+                o.magazine = (int)Math.Round(o.magazine * 1.25f);
+                o.maxReserve = (int)Math.Round(o.maxReserve * 1.25f);
+                o.shotsPerSecond = o.shotsPerSecond * 1.15f;
+                o.pierce = 1;
+                OverchargedCache[g.id] = o;
+                return o;
+            }
             if (ForgedCache.TryGetValue(g.id, out var cached)) return cached;
             var f = g.Clone();
             f.forged = true;
@@ -145,6 +187,7 @@ namespace PKR.Core
 
         /// <summary>Forged copies are the same every time, so they're made once (no garbage every frame).</summary>
         static readonly Dictionary<string, ZLGun> ForgedCache = new Dictionary<string, ZLGun>();
+        static readonly Dictionary<string, ZLGun> OverchargedCache = new Dictionary<string, ZLGun>();
 
         /// <summary>Forges a gun the hero owns and fills it. False if not allowed or too poor.</summary>
         public static bool Forge(ZombieLandProgress p, string gunId, int cost)

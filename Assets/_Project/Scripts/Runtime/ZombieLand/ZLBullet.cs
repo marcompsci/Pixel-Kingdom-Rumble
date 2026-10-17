@@ -21,6 +21,8 @@ namespace PKR
         Collider2D _ignore;
         ZLPlayer _owner;
         bool _cosmetic;
+        int _pierce;
+        IZLHittable _lastHit;
 
         /// <summary>Who fired the last bullet that hit (points go to them in Last Stand co-op).</summary>
         public static ZLPlayer LastOwner { get; private set; }
@@ -58,6 +60,8 @@ namespace PKR
             b._ignore = ignore;
             b._owner = owner;
             b._cosmetic = cosmetic;
+            b._pierce = gun != null ? gun.pierce : 0;
+            b._lastHit = null;
             b._sr.sprite = sprite;
             b._sr.color = tint;
             if (mat != null) b._sr.sharedMaterial = mat;
@@ -86,12 +90,14 @@ namespace PKR
                 if (target != null)
                 {
                     if (!target.Alive || target.Hostile == _hostile) continue; // friendly: pass through
+                    if (target == _lastHit) continue;                           // already went through this one
                     LastOwner = _owner;
                     Striking = true;
                     target.Hit(_damage, _vel.normalized, _gun);
                     Striking = false;
                     LastOwner = null;
                     if (_gun != null && _gun.shot == "comet") Burst(Hits[i].point);
+                    if (_pierce > 0 && !(target is ZLBoss)) { _pierce--; _lastHit = target; continue; }   // overcharged: on to the next
                     Despawn();
                     return;
                 }

@@ -33,6 +33,11 @@ namespace PKR.Core
         public int revives, bossKills;
         /// <summary>Equipped cosmetics (ZombieCosmetics ids; "" = none).</summary>
         public string tracer = "", title = "";
+        /// <summary>Prestige level (0-10), lifetime XP when it last went up, the highest rank paid since then.</summary>
+        public int prestige, prestigeBase, seasonPaid = 1;
+        /// <summary>Weapon mastery: kills per gun id (parallel lists; JsonUtility has no dictionaries).</summary>
+        public List<string> gunKillIds = new List<string>();
+        public List<int> gunKills = new List<int>();
 
         public int Best(string map, SurvivalMode mode)
         {
@@ -68,6 +73,14 @@ namespace PKR.Core
             while (bestRounds.Count < bestKeys.Count) bestRounds.Add(0);
             if (xp < 0) xp = 0;
             if (rankPaid < 1) rankPaid = 1;
+            if (gunKillIds == null) gunKillIds = new List<string>();
+            if (gunKills == null) gunKills = new List<int>();
+            while (gunKills.Count < gunKillIds.Count) gunKills.Add(0);
+            while (gunKills.Count > gunKillIds.Count) gunKills.RemoveAt(gunKills.Count - 1);
+            prestige = Math.Max(0, Math.Min(ZombiePrestige.Max, prestige));
+            if (prestige == 0) prestigeBase = 0;
+            prestigeBase = Math.Max(0, Math.Min(xp, prestigeBase));
+            if (seasonPaid < 1) seasonPaid = 1;
         }
     }
 
@@ -189,6 +202,7 @@ namespace PKR.Core
                 c.rankPaid++;
                 reached.Add(c.rankPaid);
             }
+            reached.AddRange(ZombiePrestige.SeasonRanksReached(c));   // after a prestige, the climb pays again
             return reached;
         }
     }

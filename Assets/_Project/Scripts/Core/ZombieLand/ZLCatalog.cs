@@ -107,6 +107,10 @@ namespace PKR.Core
         public bool bossDrop;
         /// <summary>Hollow-forged at the upgrade forge (a copy made by ZLShop.Effective).</summary>
         public bool forged;
+        /// <summary>Forged a second time: OVERCHARGED (a copy made by ZLShop.Effective).</summary>
+        public bool overcharged;
+        /// <summary>Each bullet goes on through this many of the dead (overcharged guns).</summary>
+        public int pierce;
 
         public ZLGun Clone() => (ZLGun)MemberwiseClone();
     }

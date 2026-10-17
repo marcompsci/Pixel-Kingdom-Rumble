@@ -60,7 +60,10 @@ namespace PKR
                              : $"{ZLShop.PerkName(_perk)}  {LastStandRules.PerkCost(_perk)}  ·  {ZLShop.PerkInfo(_perk)}";
                     default:
                         var held = ZLCatalog.Gun(game.Progress.equipped);
-                        return ZLShop.CanForge(game.Progress, held) ? $"FORGE {held.name}  {_stand.ForgeCost}" : "THIS GUN IS ALREADY FORGED";
+                        int tier = ZLShop.NextForgeTier(game.Progress, held);
+                        return tier == 1 ? $"FORGE {held.name}  {_stand.ForgeCost}"
+                             : tier == 2 ? $"OVERCHARGE {held.name}  {_stand.OverchargeCost}  ·  more damage, fire rate, bullets pierce"
+                             : held != null && held.isRelic ? "RELICS CAN'T BE FORGED" : "FULLY UPGRADED";
                 }
             }
         }

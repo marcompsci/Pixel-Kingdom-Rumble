@@ -81,7 +81,7 @@ namespace PKR.Core
         public int slot;
         public float x, y, aimX, aimY;
         public int hp, maxHp, points, kills, mag, reserve, gunIndex, perkMask;
-        public bool downed, out_, forged;
+        public bool downed, out_, forged, overcharged;
     }
 
     public struct NetZombie
@@ -336,7 +336,7 @@ namespace PKR.Core
                 w.Byte(m.slot); w.Pos(m.x); w.Pos(m.y); w.Unit(m.aimX); w.Unit(m.aimY);
                 w.UShort(m.hp); w.UShort(m.maxHp); w.Int(m.points); w.UShort(m.kills);
                 w.UShort(m.mag); w.UShort(m.reserve); w.Byte(m.gunIndex); w.Byte(m.perkMask);
-                w.Byte((m.downed ? 1 : 0) | (m.out_ ? 2 : 0) | (m.forged ? 4 : 0));
+                w.Byte((m.downed ? 1 : 0) | (m.out_ ? 2 : 0) | (m.forged ? 4 : 0) | (m.overcharged ? 8 : 0));
             }
             int zn = Math.Min(MaxSnapshotZombies, s.zombies.Count);
             w.Byte(zn);
@@ -368,7 +368,7 @@ namespace PKR.Core
                     points = r.Int(), kills = r.UShort(), mag = r.UShort(), reserve = r.UShort(), gunIndex = r.Byte(), perkMask = r.Byte()
                 };
                 int mf = r.Byte();
-                m.downed = (mf & 1) != 0; m.out_ = (mf & 2) != 0; m.forged = (mf & 4) != 0;
+                m.downed = (mf & 1) != 0; m.out_ = (mf & 2) != 0; m.forged = (mf & 4) != 0; m.overcharged = (mf & 8) != 0;
                 s.members.Add(m);
             }
             int zc = r.Byte();

@@ -90,6 +90,21 @@ namespace PKR
             return reached;
         }
 
+        /// <summary>PRESTIGE (from rank 30): the ranks start again; pays Star Shards. False if not allowed yet.</summary>
+        public static bool Prestige()
+        {
+            var save = Save;
+            if (save == null) return false;
+            if (save.zombieCareer == null) save.zombieCareer = new ZombieCareer();
+            var c = save.zombieCareer;
+            int shards = ZombiePrestige.Prestige(c);
+            if (shards <= 0) return false;
+            Economy.Grant(save, shards);
+            Toast($"PRESTIGE {c.prestige}!", $"+{shards} Star Shards  ·  Survivor Rank starts again from 1", RankColor);
+            if (Services.Save != null) Services.Save.SaveNow();
+            return true;
+        }
+
         static void Toast(string title, string detail, Color color)
         {
             EventBus<ProgressToast>.Raise(new ProgressToast { title = title, detail = detail, color = color });

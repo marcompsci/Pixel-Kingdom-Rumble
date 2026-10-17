@@ -156,11 +156,16 @@ namespace PKR
                 if (prize.wonder) Sfx.Play(Sfx.Relic, 1f, 0f);
             });
             var held = ZLCatalog.Gun(p.equipped);
-            bool canForge = ZLShop.CanForge(p, held);
-            string fsub = held == null ? "Hold a gun" : held.isRelic ? "Relics can't be forged" : !canForge ? "Already forged" : $"{held.name}: x2 damage, more ammo · {forge}";
-            Item(r3, "UPGRADE FORGE", fsub, canForge && p.scrap >= forge, new Color32(140, 90, 200, 255), () =>
+            int tier = ZLShop.NextForgeTier(p, held);
+            int over = Price(ZLShop.OverchargeCost);
+            int price = tier == 2 ? over : forge;
+            string fsub = held == null ? "Hold a gun" : held.isRelic ? "Relics can't be forged" : tier == 0 ? "Fully upgraded"
+                        : tier == 1 ? $"{held.name}: x2 damage, more ammo · {forge}" : $"OVERCHARGE {held.name}: harder, faster, bullets pierce · {over}";
+            Item(r3, tier == 2 ? "OVERCHARGE" : "UPGRADE FORGE", fsub, tier > 0 && p.scrap >= price, new Color32(140, 90, 200, 255), () =>
             {
-                if (held != null && ZLShop.Forge(p, held.id, forge)) { _g.Player.CancelReload(); Bought("HOLLOW-FORGED " + held.name + "!"); Sfx.Play(Sfx.Special, 0.9f, 0f); }
+                if (held == null) return;
+                bool ok = tier == 1 ? ZLShop.Forge(p, held.id, forge) : ZLShop.Overcharge(p, held.id, over);
+                if (ok) { _g.Player.CancelReload(); Bought((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!"); Sfx.Play(Sfx.Special, 0.9f, 0f); }
             });
 
             var msg = UIFactory.Label(panel, _message, 34, TextAnchor.MiddleCenter, 56f, title: true);

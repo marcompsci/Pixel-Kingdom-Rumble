@@ -7,7 +7,7 @@ namespace PKR.Core
     /// <summary>What the unlock rules look at (filled from the save).</summary>
     public struct CosmeticStats
     {
-        public int kills, rank, bestRound, bestStreak, weeklyWins, revives, bossKills;
+        public int kills, rank, bestRound, bestStreak, weeklyWins, revives, bossKills, prestige, golds;
         public List<string> secrets;
         public bool chapter1, chapter2, chapter3;
 
@@ -24,6 +24,8 @@ namespace PKR.Core
                 s.weeklyWins = c.weeklyWins;
                 s.revives = c.revives;
                 s.bossKills = c.bossKills;
+                s.prestige = c.prestige;
+                s.golds = WeaponMastery.Golds(c);
                 s.secrets.AddRange(c.secrets);
             }
             if (zl != null) { s.chapter1 = zl.bossDefeated; s.chapter2 = zl.chapter2Done; s.chapter3 = zl.chapter3Done; }
@@ -58,6 +60,8 @@ namespace PKR.Core
             new Cosmetic { Id = "tr_neon", Name = "NEON TRACERS", Slot = CosmeticSlot.Tracer, R = 255, G = 90, B = 230, HowTo = "Finish 3 weekly challenges", Rule = s => s.weeklyWins >= 3 },
             new Cosmetic { Id = "tr_gold", Name = "GOLD TRACERS", Slot = CosmeticSlot.Tracer, R = 255, G = 210, B = 70, HowTo = "Beat every Last Stand hidden boss",
                            Rule = s => { foreach (var m in LastStandMap.All) if (!s.Has(m.HiddenSecret)) return false; return true; } },
+            new Cosmetic { Id = "tr_prism", Name = "PRISM TRACERS", Slot = CosmeticSlot.Tracer, R = 120, G = 255, B = 240, HowTo = "Reach prestige 3", Rule = s => s.prestige >= 3 },
+            new Cosmetic { Id = "tr_obsidian", Name = "OBSIDIAN TRACERS", Slot = CosmeticSlot.Tracer, R = 150, G = 110, B = 255, HowTo = "Gold finish on six guns", Rule = s => s.golds >= WeaponMastery.ObsidianGolds },
             new Cosmetic { Id = "tr_void", Name = "VOID TRACERS", Slot = CosmeticSlot.Tracer, R = 150, G = 90, B = 255, HowTo = "Seal the Sublevel (Zombie Land chapter 3)", Rule = s => s.chapter3 },
             // titles
             new Cosmetic { Id = "ti_survivor", Name = "SURVIVOR", Slot = CosmeticSlot.Title, HowTo = "Reach Survivor Rank 10", Rule = s => s.rank >= 10 },
@@ -69,6 +73,10 @@ namespace PKR.Core
             new Cosmetic { Id = "ti_curatorsbane", Name = "CURATOR'S BANE", Slot = CosmeticSlot.Title, HowTo = "Beat the Curator (Zombie Land chapter 3)", Rule = s => s.chapter3 },
             new Cosmetic { Id = "ti_onthelock", Name = "ON THE CLOCK", Slot = CosmeticSlot.Title, HowTo = "Keep a 7-day daily orders streak", Rule = s => s.bestStreak >= 7 },
             new Cosmetic { Id = "ti_undertaker", Name = "UNDERTAKER", Slot = CosmeticSlot.Title, HowTo = "Kill 2,500 zombies", Rule = s => s.kills >= 2500 },
+            new Cosmetic { Id = "ti_reborn", Name = "REBORN", Slot = CosmeticSlot.Title, HowTo = "Prestige once", Rule = s => s.prestige >= 1 },
+            new Cosmetic { Id = "ti_ascendant", Name = "ASCENDANT", Slot = CosmeticSlot.Title, HowTo = "Reach prestige 5", Rule = s => s.prestige >= 5 },
+            new Cosmetic { Id = "ti_eternal", Name = "ETERNAL", Slot = CosmeticSlot.Title, HowTo = "Reach prestige 10", Rule = s => s.prestige >= ZombiePrestige.Max },
+            new Cosmetic { Id = "ti_armorer", Name = "ARMORER", Slot = CosmeticSlot.Title, HowTo = "Gold finish on three guns", Rule = s => s.golds >= 3 },
         };
 
         public static Cosmetic Get(string id)

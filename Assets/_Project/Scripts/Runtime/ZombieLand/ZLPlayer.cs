@@ -482,6 +482,12 @@ namespace PKR
             int pellets = Mathf.Max(1, gun.pellets);
             bool cosmetic = game.IsGuest;
             Color32 shotCol = Control == ZLControl.Local && Tracer.HasValue && !gun.wonder ? Tracer.Value : new Color32(gun.r, gun.g, gun.b, 255);
+            if (Control == ZLControl.Local && !Tracer.HasValue && !gun.wonder)
+            {
+                // a gold or obsidian finish colours this gun's bullets (looks only)
+                var fin = game.FinishOf(gun.id);
+                if (WeaponMastery.TintsBullets(fin)) { var fc = WeaponMastery.Color(fin); shotCol = new Color32(fc.r, fc.g, fc.b, 255); }
+            }
             for (int i = 0; i < pellets; i++)
             {
                 float spread = gun.spreadDegrees * (pellets > 1 ? (i / (float)(pellets - 1) - 0.5f) : (Random.value - 0.5f));

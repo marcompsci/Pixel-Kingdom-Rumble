@@ -442,8 +442,9 @@ namespace PKR
             // Gun
             var gun = p.Gun;
             var ammo = p.Ammo;
-            _gun.text = gun != null ? gun.name + (gun.isRelic ? "  (RELIC)" : "") : "";
-            _gun.color = gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : new Color(1f, 0.9f, 0.6f);
+            var fin = gun != null ? _g.FinishOf(gun.id) : WeaponFinish.None;
+            _gun.text = gun != null ? WeaponMastery.Stars(fin) + gun.name + (gun.isRelic ? "  (RELIC)" : "") : "";
+            _gun.color = gun != null && gun.overcharged ? new Color(1f, 0.55f, 0.85f) : gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : fin >= WeaponFinish.Silver ? FinishColor(fin) : new Color(1f, 0.9f, 0.6f);
             _ammo.text = ammo != null ? $"{ammo.mag} / {ammo.reserve}" : "";
             _ammo.color = ammo != null && ammo.mag + ammo.reserve == 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
             _reload.fillAmount = p.Reloading ? p.Reload01 : 0f;
@@ -510,8 +511,9 @@ namespace PKR
 
             var gun = p.Gun;
             var ammo = p.Ammo;
-            _gun.text = gun != null ? gun.name : "";
-            _gun.color = gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : new Color(1f, 0.9f, 0.6f);
+            var fin = gun != null ? _g.FinishOf(gun.id) : WeaponFinish.None;
+            _gun.text = gun != null ? WeaponMastery.Stars(fin) + gun.name : "";
+            _gun.color = gun != null && gun.overcharged ? new Color(1f, 0.55f, 0.85f) : gun != null && gun.forged ? new Color(0.85f, 0.7f, 1f) : gun != null && gun.wonder ? new Color(0.6f, 0.9f, 1f) : fin >= WeaponFinish.Silver ? FinishColor(fin) : new Color(1f, 0.9f, 0.6f);
             _ammo.text = ammo != null ? $"{ammo.mag} / {ammo.reserve}" : "";
             _ammo.color = ammo != null && ammo.mag + ammo.reserve == 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
             _reload.fillAmount = p.Reloading ? p.Reload01 : 0f;
@@ -546,6 +548,12 @@ namespace PKR
             var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
             _deathDim.enabled = st.Over && !st.Run.Won;
             _death.enabled = false;
+        }
+
+        static Color FinishColor(WeaponFinish f)
+        {
+            var c = WeaponMastery.Color(f);
+            return new Color32(c.r, c.g, c.b, 255);
         }
 
         void UpdateCues()

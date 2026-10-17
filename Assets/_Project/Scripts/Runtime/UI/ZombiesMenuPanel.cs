@@ -49,13 +49,15 @@ namespace PKR
             title.color = new Color32(255, 90, 70, 255);
 
             // Survivor Rank
-            int rank = SurvivorRank.RankFor(c.xp);
-            int pct = Mathf.RoundToInt(SurvivorRank.Progress01(c.xp) * 100f);
-            var rankLabel = UIFactory.Label(panel, $"SURVIVOR RANK {rank}  ·  {SurvivorRank.Title(rank)}", 44, TextAnchor.MiddleCenter, 64f, title: true);
-            rankLabel.color = rank >= SurvivorRank.MaxRank ? Gold : UITheme.Current.title;
-            Bar(panel, SurvivorRank.Progress01(c.xp));
-            var next = SurvivorRank.Next(rank);
-            string nextText = next.rank > 0 ? $"{pct}% to rank {rank + 1}  ·  rank {next.rank}: {next.name}" : "Max rank. The dead fear you.";
+            int rank = ZombiePrestige.Rank(c);
+            int pct = Mathf.RoundToInt(ZombiePrestige.Progress01(c) * 100f);
+            var rankLabel = UIFactory.Label(panel, ZombiePrestige.Label(c), 44, TextAnchor.MiddleCenter, 64f, title: true);
+            rankLabel.color = rank >= SurvivorRank.MaxRank || c.prestige > 0 ? Gold : UITheme.Current.title;
+            Bar(panel, ZombiePrestige.Progress01(c));
+            var next = c.prestige > 0 ? default : SurvivorRank.Next(rank);
+            string nextText = rank >= SurvivorRank.MaxRank
+                ? (ZombiePrestige.CanPrestige(c) ? "Max rank. PRESTIGE is open in RANK & UNLOCKS." : "Max rank. The dead fear you.")
+                : next.rank > 0 ? $"{pct}% to rank {rank + 1}  ·  rank {next.rank}: {next.name}" : $"{pct}% to rank {rank + 1}";
             UIFactory.Label(panel, nextText, 30, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
             int day = ZombieDailyTracker.Today;
             int dDone = ZombieDaily.DoneCount(c, day);
@@ -194,7 +196,16 @@ namespace PKR
             UIFactory.Label(panel, $"{ZombieCosmetics.UnlockedCount(st)}/{ZombieCosmetics.All.Length} earned  ·  earned by playing, never sold  ·  looks only",
                             28, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
             Button first = null;
-            foreach (var slot in new[] { CosmeticSlot.Tracer, CosmeticSlot.Title })
+            var tabs = Row(panel, 96f);
+            string[] tabNames = { "TRACERS", "TITLES", "ARMORY" };
+            for (int i = 0; i < tabNames.Length; i++)
+            {
+                int ti = i;
+                var tb = UIFactory.Button(tabs, tabNames[i], () => { _lockerTab = ti; OpenLocker(); }, 96f);
+                if (i == _lockerTab) UIFactory.Highlight(tb, Gold);
+            }
+            if (_lockerTab == 2) { Armory(panel); return; }
+            foreach (var slot in new[] { _lockerTab == 0 ? CosmeticSlot.Tracer : CosmeticSlot.Title })
             {
                 UIFactory.Label(panel, slot == CosmeticSlot.Tracer ? "TRACERS (your bullets' colour)" : "TITLES (shown with your rank)", 34, TextAnchor.MiddleCenter, 56f, title: true)
                     .color = UITheme.Current.title;
@@ -222,6 +233,31 @@ namespace PKR
             }
             var back = UIFactory.Button(panel, "BACK", Build);
             UIFactory.Select(first != null ? first : back);
+        }
+
+        int _lockerTab;
+        bool _prestigeArmed;
+
+        /// <summary>LOCKER > ARMORY: kills with each gun and the finish it has earned (looks only).</summary>
+        void Armory(RectTransform panel)
+        {
+            var c = Career;
+            UIFactory.Label(panel, $"Kills with a gun earn BRONZE ({WeaponMastery.Steps[0]}), SILVER ({WeaponMastery.Steps[1]}) and GOLD ({WeaponMastery.Steps[2]}). " +
+                                   $"Gold on {WeaponMastery.ObsidianGolds} guns turns them OBSIDIAN. Gold colours that gun's bullets.", 26, TextAnchor.MiddleCenter, 80f)
+                .color = UITheme.Current.subtle;
+            foreach (var g in WeaponMastery.Guns())
+            {
+                int k = WeaponMastery.Kills(c, g.id);
+                var f = WeaponMastery.FinishFor(c, g.id);
+                int goal = WeaponMastery.NextGoal(k);
+                var col = WeaponMastery.Color(f);
+                string state = f == WeaponFinish.None ? $"{k}/{goal} kills to BRONZE" : goal > 0 ? $"{WeaponMastery.Name(f)}  ·  {k}/{goal} to the next" : $"{WeaponMastery.Name(f)}  ·  {k} kills";
+                var t = UIFactory.Label(panel, $"{WeaponMastery.Stars(f)}{g.name}\n<size=24>{state}</size>", 32, TextAnchor.MiddleLeft, 74f);
+                t.supportRichText = true;
+                t.color = f == WeaponFinish.None ? new Color(1f, 1f, 1f, 0.6f) : (Color)new Color32(col.r, col.g, col.b, 255);
+            }
+            var back = UIFactory.Button(panel, "BACK", Build);
+            UIFactory.Select(back);
         }
 
         // ---- leaderboards and achievements (Game Center) ----------------------------------------------------
@@ -291,17 +327,37 @@ namespace PKR
             UIFactory.Clear(_root);
             _boardLabels.Clear();
             var c = Career;
-            int rank = SurvivorRank.RankFor(c.xp);
-            var panel = UIFactory.Panel(_root, new Vector2(980f, 1760f));
-            var title = UIFactory.Label(panel, "SURVIVOR RANK", 80, TextAnchor.MiddleCenter, 110f, title: true);
+            int rank = ZombiePrestige.Rank(c);
+            int lifetime = SurvivorRank.RankFor(c.xp);   // unlocks follow lifetime XP, so a prestige never takes them away
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1780f));
+            var title = UIFactory.Label(panel, "SURVIVOR RANK", 80, TextAnchor.MiddleCenter, 100f, title: true);
             title.color = new Color32(255, 90, 70, 255);
-            UIFactory.Label(panel, $"RANK {rank}  ·  {SurvivorRank.Title(rank)}  ·  {c.xp} XP", 38, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.title;
+            string pre = c.prestige > 0 ? $"PRESTIGE {c.prestige}  ·  " : "";
+            UIFactory.Label(panel, $"{pre}RANK {rank}  ·  {SurvivorRank.Title(rank)}  ·  {c.xp} XP", 38, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.title;
+            if (c.prestige < ZombiePrestige.Max)
+            {
+                bool can = ZombiePrestige.CanPrestige(c);
+                string label = !can ? $"PRESTIGE {c.prestige + 1}: REACH RANK {SurvivorRank.MaxRank}"
+                             : _prestigeArmed ? "TAP AGAIN TO PRESTIGE" : $"PRESTIGE {c.prestige + 1}  (+{ZombiePrestige.Reward(c.prestige + 1)} STAR SHARDS)";
+                var pb = UIFactory.Button(panel, label, () =>
+                {
+                    if (!_prestigeArmed) { _prestigeArmed = true; OpenUnlocks(); return; }
+                    _prestigeArmed = false;
+                    ProgressTracker.Prestige();
+                    OpenUnlocks();
+                }, 96f, can);
+                UIFactory.Tint(pb, can ? new Color32(150, 40, 60, 255) : new Color32(55, 50, 64, 255), can ? Color.white : new Color(1f, 1f, 1f, 0.55f));
+                if (can) UIFactory.Highlight(pb, Gold);
+                var pt = pb.GetComponentInChildren<Text>();
+                if (pt != null) { pt.resizeTextForBestFit = true; pt.resizeTextMinSize = 22; pt.resizeTextMaxSize = 36; }
+                UIFactory.Label(panel, ZombiePrestige.Info, 24, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.subtle;
+            }
             UIFactory.Label(panel, "Every zombie mode earns XP. Every rank pays Star Shards. Nothing here is for sale.", 28,
                             TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             foreach (var u in SurvivorRank.Unlocks)
             {
-                bool have = rank >= u.rank;
-                var t = UIFactory.Label(panel, $"{(have ? "UNLOCKED" : "RANK " + u.rank)}  {u.name}\n<size=24>{u.info}</size>", 32, TextAnchor.MiddleLeft, 88f);
+                bool have = lifetime >= u.rank;
+                var t = UIFactory.Label(panel, $"{(have ? "UNLOCKED" : "RANK " + u.rank)}  {u.name}\n<size=24>{u.info}</size>", 30, TextAnchor.MiddleLeft, 68f);
                 t.supportRichText = true;
                 t.color = have ? (Color)Gold : new Color(1f, 1f, 1f, 0.55f);
             }

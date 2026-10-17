@@ -845,6 +845,7 @@ namespace PKR
                 return;
             }
             Active?.ZombieDied(z);
+            if (z.LastHitBy == null || z.LastHitBy == Player) CountMasteryKill(Progress.equipped);
             int scrap = ZLShop.Earn(Progress, ZLShop.ScrapForKill(z.kind), DoubleScrap);
             if (scrap >= 100) ZLFloater.Show($"+{scrap}", z.transform.position, new Color(1f, 0.85f, 0.35f), 0.9f);
             AddXp(SurvivorRank.ZLKillXp);
@@ -1338,6 +1339,37 @@ namespace PKR
             foreach (var c in Cues) if (c.label == label && Vector2.Distance(c.at, at) < 3f) return;
             if (Cues.Count >= 4) Cues.RemoveAt(0);
             Cues.Add((at, label, now + 2f));
+        }
+
+        // ---- weapon mastery ---------------------------------------------------------------------------------
+
+        ZombieCareer Career => Services.Save != null ? Services.Save.Data.zombieCareer : null;
+
+        /// <summary>The finish this player's gun has earned (looks only).</summary>
+        public WeaponFinish FinishOf(string gunId)
+        {
+            if (gunId == _finishGun) return _finish;
+            _finishGun = gunId;
+            _finish = WeaponMastery.FinishFor(Career, gunId);
+            return _finish;
+        }
+        string _finishGun;
+        WeaponFinish _finish;
+
+        /// <summary>A kill by the local hero with the gun in hand counts toward that gun's finish.</summary>
+        public void CountMasteryKill(string gunId)
+        {
+            var c = Career;
+            if (c == null) return;
+            var up = WeaponMastery.AddKills(c, gunId, 1);
+            if (gunId == _finishGun) _finishGun = null;   // refresh the cached finish
+            if (up == WeaponFinish.None) return;
+            var g = ZLCatalog.Gun(gunId);
+            var col = WeaponMastery.Color(up);
+            ZLFloater.Show(WeaponMastery.Name(up) + " FINISH", (Vector2)Player.transform.position + Vector2.up * 1.2f, new Color32(col.r, col.g, col.b, 255), 1.1f);
+            ShowToast($"{WeaponMastery.Name(up)} FINISH: {(g != null ? g.name : gunId)}", 3f);
+            Sfx.Play(Sfx.Purchase, 0.8f, 0f);
+            if (Services.Save != null) Services.Save.MarkDirty();
         }
 
         // ---- splitters and the Kindler ----------------------------------------------------------------------

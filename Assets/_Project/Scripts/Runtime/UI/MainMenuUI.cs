@@ -131,11 +131,12 @@ namespace PKR
             if (zt != null)
             {
                 var career = save != null ? save.zombieCareer : null;
-                int zr = career != null ? SurvivorRank.RankFor(career.xp) : 1;
+                int zr = ZombiePrestige.Rank(career);
+                string pz = career != null && career.prestige > 0 ? $"P{career.prestige} " : "";
                 zt.supportRichText = true;
                 zt.resizeTextForBestFit = false;
                 zt.fontSize = 52;
-                zt.text = $"ZOMBIES\n<size=26>Zombie Land · Last Stand · Survival  ·  Rank {zr}</size>";
+                zt.text = $"ZOMBIES\n<size=26>Zombie Land · Last Stand · Survival  ·  {pz}Rank {zr}</size>";
             }
             var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest),
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));

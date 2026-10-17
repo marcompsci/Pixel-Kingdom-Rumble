@@ -243,9 +243,10 @@ namespace PKR
                 UIFactory.Label(panel, $"+{_game.ShardReward} Star Shards   ·   +{_game.XpEarned} Survivor XP", 38, TextAnchor.MiddleCenter, 56f).color = Gold;
             if (career != null)
             {
-                int rank = SurvivorRank.RankFor(career.xp);
-                string rk = _game.RanksReached.Count > 0 ? $"RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
-                          : $"SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(SurvivorRank.Progress01(career.xp) * 100f)}% to the next";
+                int rank = ZombiePrestige.Rank(career);
+                string pre = career.prestige > 0 ? $"P{career.prestige}  ·  " : "";
+                string rk = _game.RanksReached.Count > 0 ? $"{pre}RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
+                          : $"{pre}SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(ZombiePrestige.Progress01(career) * 100f)}% to the next";
                 UIFactory.Label(panel, rk, 32, TextAnchor.MiddleCenter, 50f).color = _game.RanksReached.Count > 0 ? (Color)Gold : UITheme.Current.subtle;
             }
 

@@ -50,6 +50,8 @@ namespace PKR.Core
         public List<string> perks = new List<string>();
         /// <summary>Guns hollow-forged at the upgrade forge.</summary>
         public List<string> forged = new List<string>();
+        /// <summary>Forged guns taken through the forge a second time (OVERCHARGED).</summary>
+        public List<string> overcharged = new List<string>();
         /// <summary>Mystery box spins since the wonder weapon, and kills since the last power-up (the pity timers).</summary>
         public int spinsSinceWonder, killsSinceDrop;
 
@@ -66,6 +68,7 @@ namespace PKR.Core
             if (rewards == null) rewards = new List<string>();
             if (perks == null) perks = new List<string>();
             if (forged == null) forged = new List<string>();
+            if (overcharged == null) overcharged = new List<string>();
             if (checkpoint == null) checkpoint = "";
             if (equipped == null) equipped = "";
             if (zone == null) zone = "";
@@ -302,7 +305,7 @@ namespace PKR.Core
             p.seed = seed == 0 ? 1 : seed;
             p.completed.Clear(); p.leads.Clear(); p.safehouses.Clear(); p.guns.Clear(); p.nestsCleared.Clear();
             p.taken.Clear(); p.lairsSearched.Clear(); p.rewards.Clear();
-            p.perks.Clear(); p.forged.Clear();
+            p.perks.Clear(); p.forged.Clear(); p.overcharged.Clear();
             p.scrap = 0; p.scrapEarned = 0; p.spinsSinceWonder = 0; p.killsSinceDrop = 0;
             p.leads.AddRange(ZLCatalog.StartingLeads);
             p.checkpoint = "";
