@@ -7,7 +7,7 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [x] Mac Unity check green on f59e47a (16 Oct, after onboarding, Rail Yard, chapter 3, daily orders, the LOCKER): EditMode 321/321, PlayMode 140 passed / 0 failed / 2 skipped.
 - [x] TestFlight: 20261016.1842 (f59e47a + docs: Rail Yard, chapter 3, daily orders, LOCKER, friends boards) uploaded 16 Oct through Xcode Organizer ("Uploaded to Apple"; usual missing-dSYM warning for UnityRuntime). Apple processes it before it shows in TestFlight. Older: 1338 uploaded, 1521 never uploaded (superseded).
 - [ ] Installed on Omari's iPhone from TestFlight; launches, no crash in the first 5 minutes.
-- [ ] Version / build number in App Store Connect matches the TestFlight build picked for review.
+- [x] Version 1.0 uses build 20261016.1842 (set 16 Oct).
 
 ## 2. Play it by hand (nobody has yet)
 - [ ] Last Stand, Hollow Block, solo: reach round 10 (the Butcher). Note anything unfair or boring.
@@ -29,17 +29,17 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [x] `pkr.lb.laststand`, `pkr.lb.manor`, `pkr.lb.survivor_xp` created with en-US names (16 Oct).
 - [x] `pkr.lb.pier` "Last Stand: Salt Pier" created (16 Oct).
 - [x] `pkr.lb.rail` "Last Stand: Rail Yard" and the 11 zombie achievements (pkr.ach.z_*, 350 points, badges uploaded) created (17 Oct). 21 achievements, 630 points in all.
-- [ ] Add the new leaderboards AND achievements to the version's Game Center section before submitting (they ship with the version).
+- [x] Game Center turned on for version 1.0 (16 Oct). All 7 leaderboards and 21 achievements are in Prepare for Submission, so they go to review with the version.
 - [ ] Multiplayer compatibility: the app's own bundle only (Game Center > Multiplayer Compatibility, nothing to add).
 
 ## 4. Store page (App Store Connect > 1.0)
 - [x] Subtitle, promotional text, keywords and description from Docs/AppStore/LISTING.md (saved in ASC 16 Oct).
-- [ ] Screenshots (6.9"): lead with the zombie shots from Tools/sim_trailer.command (Logs/trailer/shot_*.png) in the order in LISTING.md.
+- [x] Screenshots (16 Oct, from the iPhone 17 Pro Max simulator): 10 for 6.9" and the same 10 resized for 6.3": Rail Yard, Salt Pier, Hollow Block, the Sublevel, Blackwater, ZOMBIES menu, Sunspire Heights, Rooftop Run, First Light contract, Shadow Contracts board. Files in Docs/AppStore/screenshots/; re-upload with Tools/asc_screenshots.py (Logs/asc_request).
 - [ ] App preview: the 15-30 s zombie clip (landscape 1920x886 or the size ASC asks for), poster frame from Last Stand.
-- [ ] Age rating: re-answer the questionnaire for the zombie modes (cartoon / fantasy violence, frequent). It was set to 9+ before zombies led the game.
+- [x] Age rating re-answered (16 Oct): cartoon or fantasy violence FREQUENT/INTENSE, guns or other weapons FREQUENT/INTENSE, horror or fear themes INFREQUENT/MILD, everything else unchanged (none). App Store rating now 12+ (was 9+).
 - [ ] App Privacy: still "Data Not Collected" (Game Center is Apple's; no analytics, no ads).
-- [ ] Review notes: add (couldn't save on 16 Oct: ASC requires the App Review contact name/email/phone first) "ZOMBIES is the first main-menu button; Last Stand > SOLO starts a run; online co-op needs a second Game Center account".
-- [ ] Phone number for App Review contact (Omari).
+- [x] Review notes updated for ZOMBIES (Last Stand, Zombie Land, daily orders, LOCKER, BOARDS; online co-op optional) and the zombie leaderboards (16 Oct).
+- [x] App Review contact: Omari Bell, rodlonbell16@gmail.com, +1 559 408 9014 (same as Crossfall and Retro Hoops).
 - [ ] Shadow Contracts IAP review screenshot attached.
 
 ## 5. Before pressing submit
