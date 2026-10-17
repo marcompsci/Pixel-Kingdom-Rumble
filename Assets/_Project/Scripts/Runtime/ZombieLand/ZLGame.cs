@@ -182,6 +182,7 @@ namespace PKR
                 // Screenshot / trailer runs: EV_LastStand@pierplay, @demo (an AI squad plays itself), @pierdemo
                 string sp = BootLoader.ShotPanel ?? "";
                 if (sp.StartsWith("pier")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.SaltPier.Id; }
+                if (sp.StartsWith("rail")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.RailYard.Id; }
                 if (sp.EndsWith("demo")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieSquad = SquadKind.AISquad; }
                 LsMap = LastStandMap.Get(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMap : LastStandRules.MapId);
                 if (!World.Build(LsMap.File)) return;
@@ -195,7 +196,8 @@ namespace PKR
                 Coach.Init(this);
                 Flow.Build(TargetPos);
                 string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over")
-                                ?? BootLoader.TakeShotPanel("pierplay") ?? BootLoader.TakeShotPanel("demo") ?? BootLoader.TakeShotPanel("pierdemo");
+                                ?? BootLoader.TakeShotPanel("pierplay") ?? BootLoader.TakeShotPanel("demo") ?? BootLoader.TakeShotPanel("pierdemo")
+                                ?? BootLoader.TakeShotPanel("raildemo");
                 if (lsShot != null) StartCoroutine(Stand.ShotSetup(lsShot));
                 return;
             }
@@ -204,6 +206,14 @@ namespace PKR
             if (Progress.seed == 0) ZLRules.NewGame(Progress, Mathf.Abs(Environment.TickCount) % 100000 + 1);
             Puzzle = ZLPuzzle.FromSeed(Progress.seed);
 
+            // Screenshot run EV_ZombieLand@labs: start in the chapter 3 sublevel.
+            if (BootLoader.ShotPanel == "labs")
+            {
+                Progress.introSeen = Progress.bossDefeated = Progress.chapter2Begun = Progress.chapter2Done = true;
+                ZLRules.BeginChapter3(Progress);
+                Progress.zone = ZLCatalog.LabsMap;
+                Progress.arriveAt = "";
+            }
             // Chapter 3: the sublevel is its own map, reached by the freight lift.
             if (Progress.InLabs && !Progress.chapter3Begun) Progress.zone = "";
             World = gameObject.AddComponent<ZLWorld>();
@@ -232,7 +242,8 @@ namespace PKR
             Flow.Build(TargetPos);
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
-                          ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop") ?? BootLoader.TakeShotPanel("isle");
+                          ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop") ?? BootLoader.TakeShotPanel("isle")
+                          ?? BootLoader.TakeShotPanel("labs");
             if (shot != null)
             {
                 Progress.introSeen = true;
@@ -1615,6 +1626,28 @@ namespace PKR
                 panel.Open(_safehouses.Count > 0 ? _safehouses[0] : null);
             }
             else if (shot == "boss") DebugSpawnBoss(TargetPos + Vector2.up * 5f);
+            else if (shot == "labs")
+            {
+                // Chapter 3: the sublevel's power wing, the AI hero with the Singularity against riot guards and leapers
+                Vector2 at = City.SiteOf("power") + new Vector2(2f, 3f);
+                if (!City.Walkable(at)) at = City.SiteOf("power");
+                Player.transform.position = at;
+                Player.Body.position = at;
+                Player.DebugInvulnerable = true;
+                Player.Loadout = Progress;
+                Player.BecomeAI(new ZLAIBrain(this, 0));
+                var touch = FindAnyObjectByType<TouchControlsUI>();
+                if (touch != null) touch.gameObject.SetActive(false);
+                ZLRules.GiveGun(Progress, ZLCatalog.Singularity, ZLCatalog.Singularity.magazine + ZLCatalog.Singularity.maxReserve);
+                Progress.equipped = ZLCatalog.Singularity.id;
+                var kinds = new[] { ZLFoe.Riot, ZLFoe.Leaper, ZLFoe.Shambler, ZLFoe.Runner, ZLFoe.Leaper, ZLFoe.Shambler };
+                for (int i = 0; i < kinds.Length; i++)
+                {
+                    Vector2 zp = at + new Vector2(5f + i % 3, -2f + i);
+                    if (City.Walkable(zp)) SpawnZombie(kinds[i], zp, 5, true);
+                }
+                ShowToast(ZLCatalog.Chapter3Name + "  ·  KEYCARDS 0/" + ZLCatalog.KeycardsNeeded, 10f);
+            }
             else if (shot == "isle")
             {
                 // Chapter 2 on a fresh screenshot install: across the causeway, in the Blackwater village street

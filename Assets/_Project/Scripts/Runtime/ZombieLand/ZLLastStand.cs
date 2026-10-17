@@ -1016,7 +1016,7 @@ namespace PKR
                 DebugSkipToRound(9);
                 yield return null;
                 yield return null;   // round 9 starts (the AI kit their guns)...
-                GiveGun(_g.Player, ZLCatalog.RimeCannon);   // ...then the wonders come out
+                GiveGun(_g.Player, Map == LastStandMap.RailYard ? ZLCatalog.Singularity : ZLCatalog.RimeCannon);   // ...then the wonders come out
                 var second = HeroInSlot(1);
                 if (second != null) GiveGun(second, ZLCatalog.StormCoil);
                 yield break;
