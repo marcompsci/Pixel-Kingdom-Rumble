@@ -165,7 +165,7 @@ namespace PKR
             {
                 if (held == null) return;
                 bool ok = tier == 1 ? ZLShop.Forge(p, held.id, forge) : ZLShop.Overcharge(p, held.id, over);
-                if (ok) { _g.Player.CancelReload(); Bought((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!"); Sfx.Play(Sfx.Special, 0.9f, 0f); }
+                if (ok) { _g.Player.CancelReload(); Bought((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!"); Sfx.Play(tier == 1 ? Sfx.Special : Sfx.Overcharge, 0.9f, 0f); }
             });
 
             var msg = UIFactory.Label(panel, _message, 34, TextAnchor.MiddleCenter, 56f, title: true);

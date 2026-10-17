@@ -447,6 +447,93 @@ def music_world4():
                                       echo=0.4, arp_vol=0.07)), 0.45)
 
 
+# ---- the zombie update (October 2026): more music and the new dead's sounds -----------------------------------
+def sfx_zombies2():
+    # split: a wet tear, then two quick slaps (a splitter falling into halves)
+    d = 0.35
+    tear = bp(noise(d), 400, 2500) * env(int(SR * d), 0.002, 0.3, 0, 0.03) * 1.2
+    slap = lambda: mixdown(click(0.005), lp(noise(0.06), 900) * env(int(SR * 0.06), 0.001, 0.05, 0, 0.005))
+    save("split", np.concatenate([tear, slap(), np.zeros(int(SR * 0.05)), slap() * 0.8]), 0.5)
+    # dig: gravelly scraping going under (a burrower diving)
+    d = 0.6
+    save("dig", lp(noise(d), 600) * (0.6 + 0.4 * square(14, d, 0.5)) * env(int(SR * d), 0.02, 0.5, 0, 0.08) * 1.4, 0.5)
+    # emerge: the street bursting up, a low thump and a spray of grit
+    d = 0.45
+    save("emerge", mixdown(sine(sweep(120, 38, d, 0.5), d) * env(int(SR * d), 0.001, 0.4, 0, 0.03),
+                           bp(noise(d), 900, 5000) * env(int(SR * d), 0.001, 0.25, 0, 0.03) * 0.8), 0.6)
+    # kindle: a warm whoosh and a rising chime (the Kindler takes hold)
+    d = 0.5
+    save("kindle", mixdown(bp(noise(d), 500, 3000) * env(int(SR * d), 0.05, 0.4, 0, 0.05) * 0.7,
+                           tri(sweep(330, 880, d, 0.7), d) * env(int(SR * d), 0.01, 0.45, 0, 0.04) * 0.6), 0.5)
+    # howl: a hound's rising-falling howl (formant-ish band-pass on a saw)
+    d = 1.1
+    f = np.concatenate([sweep(300, 620, d * 0.45), sweep(620, 420, d * 0.55)])
+    save("howl", bp(saw(f, d), 400, 1800) * env(len(f), 0.08, 0.9, 0.4, 0.2) * 1.4, 0.45)
+    # two more groans, so a crowd doesn't repeat one voice
+    for i, (f0, f1, lo, hi) in enumerate(((120, 85, 300, 1300), (80, 60, 200, 900))):
+        d = 0.8 + 0.25 * i
+        buzz = saw(sweep(f0, f1, d) * (1 + 0.05 * sine(4 + 3 * i, d)), d)
+        save(f"groan_{i + 1}", bp(buzz, lo, hi) * env(int(SR * d), 0.06, 0.5, 0.4, 0.25) * 1.6, 0.45)
+    # overcharge: the forge's second tier, an electric rising whine and a clank
+    d = 0.7
+    save("overcharge", mixdown(square(sweep(200, 1400, d, 0.6), d, 0.3) * env(int(SR * d), 0.01, 0.6, 0, 0.05) * 0.4,
+                               np.concatenate([np.zeros(int(SR * (d - 0.08))), click(0.008) * 1.5, lp(noise(0.07), 2000) * 0.6])), 0.5)
+    # prestige: a short major fanfare
+    notes = (392.0, 523.3, 659.3, 784.0, 1046.5)
+    parts = [square(f, 0.12, 0.25) * env(int(SR * 0.12), 0.002, 0.1, 0.3, 0.02) for f in notes[:-1]]
+    parts.append(square(notes[-1], 0.6, 0.25) * env(int(SR * 0.6), 0.002, 0.2, 0.5, 0.2))
+    save("prestige", np.concatenate(parts), 0.45)
+
+
+def music_zombies2():
+    def beat(b): return [None if x == '.' else x for x in b]
+    # Zombie Land roaming: D minor, a lonely triangle lead over a walking bass, room to breathe
+    zl = P("D5 - - - F5 - - - E5 - D5 - C5 - - - A4 - - - C5 - D5 - - - - - - - . . "
+           "F5 - - - A5 - - - G5 - F5 - E5 - - - C5 - - - D5 - E5 - D5 - - - - - . . ")
+    zl_bass = P("D2 . A2 . D3 . A2 . A#1 . F2 . A#2 . F2 . C2 . G2 . C3 . G2 . A1 . E2 . A2 . E2 .")
+    zl_ch = [("D4", "F4", "A4"), ("A#3", "D4", "F4"), ("C4", "E4", "G4"), ("A3", "C#4", "E4")]
+    save("music_zl_city", song(section(112, 8, zl, zl_bass, zl_ch, beat(B_HALF), None, 0.5, 'tri', echo=0.45, arp_vol=0.05, vib=0.02),
+                               section(112, 8, zl, zl_bass, zl_ch, beat(B_TICK), P("A3 - - - - - - - G3 - - - F3 - - - "), 0.25,
+                                       'square', echo=0.35, arp_vol=0.05)), 0.45)
+    # Salt Pier: A minor, a swaying shanty feel (long-short phrasing) on a saw lead
+    pr = P("A4 - - C5 E5 - - D5 C5 - - B4 A4 - - - G4 - - A4 B4 - - C5 D5 - - - E5 - - - "
+           "E5 - - F5 G5 - - F5 E5 - - D5 C5 - - - B4 - - C5 D5 - - B4 A4 - - - - - - - ")
+    pr_bass = P("A1 . . E2 . . A1 . . E2 . . G1 . . D2 . . F1 . . C2 . . E1 . . B1 . . E2 .")
+    pr_ch = [("A3", "C4", "E4"), ("G3", "B3", "D4"), ("F3", "A3", "C4"), ("E3", "G#3", "B3")]
+    save("music_ls_pier", song(section(124, 8, pr, pr_bass, pr_ch, beat(B_POP), None, 0.25, 'saw', echo=0.3, arp_vol=0.05),
+                               section(124, 4, pr, pr_bass, pr_ch, beat(B_FILL), None, 0.25, 'saw', echo=0.25)), 0.45)
+    # Rail Yard: E minor, a chugging train beat and a whistle-like lead
+    rl = P("E5 - - - - - G5 - F#5 - E5 - D5 - - - B4 - - - - - D5 - E5 - - - - - - - "
+           "G5 - - - - - A5 - B5 - A5 - G5 - - - F#5 - - - E5 - D5 - E5 - - - - - - - ")
+    rl_bass = P("E2 E2 E3 E2 E2 E2 E3 E2 C2 C2 C3 C2 D2 D2 D3 D2")
+    rl_ch = [("E4", "G4", "B4"), ("C4", "E4", "G4"), ("D4", "F#4", "A4"), ("B3", "D#4", "F#4")]
+    chug = "k h h s h h k h k h h s h h s h".split()
+    save("music_ls_rail", song(section(158, 8, rl, rl_bass, rl_ch, beat(chug), None, 0.25, 'square', echo=0.2, arp_vol=0.04),
+                               section(158, 4, rl, rl_bass, rl_ch, beat(B_DRIVE), P("B3 - - - - - - - A3 - - - G3 - - - "), 0.125)), 0.45)
+    # Gravemoor Park: G minor, a slow music-box lead with a hollow echo
+    gv = P("G5 - - - D5 - - - A#4 - - - A4 - - - G4 - - - A4 - A#4 - D5 - - - - - - - "
+           "D#5 - - - D5 - - - C5 - - - A#4 - - - A4 - - - F#4 - - - G4 - - - - - - - ")
+    gv_bass = P("G1 . . . D2 . . . D#2 . . . D2 . . .")
+    gv_ch = [("G4", "A#4", "D5"), ("D#4", "G4", "A#4"), ("C4", "D#4", "G4"), ("D4", "F#4", "A4")]
+    save("music_ls_gardens", song(section(92, 8, gv, gv_bass, gv_ch, beat(B_TICK), None, 0.5, 'tri', echo=0.6, arp_vol=0.07, vib=0.03),
+                                  section(92, 8, gv, gv_bass, gv_ch, beat(B_HALF), P("D4 - - - - - - - C4 - - - A#3 - - - "), 0.5,
+                                          'tri', echo=0.5, arp_vol=0.06, vib=0.03)), 0.45)
+    # Cold Harbor airfield: F minor, military snare rolls under a brass-like square lead
+    af = P("F4 - - - C5 - - - G#4 - G4 - F4 - - - C5 - - - D#5 - - - F5 - - - - - - - "
+           "G#5 - - - G5 - - - F5 - D#5 - C5 - - - D#5 - - - C5 - G#4 - F4 - - - - - - - ")
+    af_bass = P("F2 . F2 F2 . F2 . . C#2 . C#2 C#2 . C#2 . . D#2 . D#2 D#2 . D#2 . . C2 . C2 C2 . C2 . .")
+    af_ch = [("F4", "G#4", "C5"), ("C#4", "F4", "G#4"), ("D#4", "G4", "A#4"), ("C4", "E4", "G4")]
+    march = "k . s s . s k . k . s s s s s s".split()
+    save("music_airfield", song(section(140, 8, af, af_bass, af_ch, beat(march), None, 0.5, 'square', echo=0.2, arp_vol=0.04),
+                                section(140, 4, af, af_bass, af_ch, beat(B_FILL), P("C4 - - - - - - - A#3 - - - G#3 - - - "), 0.25)), 0.45)
+    # Zombie bosses: C# minor, fast and relentless
+    zb = P("C#5 C#5 . C#5 E5 . C#5 . G#5 - F#5 - E5 - D#5 - C#5 C#5 . C#5 E5 . G#5 . A5 - G#5 - F#5 - E5 - ")
+    zb_bass = P("C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 A1 A2 A1 A2 B1 B2 B1 B2")
+    zb_ch = [("C#5", "E5", "G#5"), ("A4", "C#5", "E5"), ("B4", "D#5", "F#5"), ("G#4", "C5", "D#5")]
+    save("music_zombie_boss", song(section(172, 8, zb, zb_bass, zb_ch, beat(B_DRIVE), None, 0.125, 'saw', echo=0.15),
+                                   section(172, 4, zb, zb_bass, zb_ch, beat(B_FILL), P("G#4 - - - - - - - F#4 - - - E4 - - - "), 0.125, 'saw')), 0.45)
+
+
 if __name__ == "__main__":
     import sys
     only = sys.argv[1:] or ['sfx', 'music']
@@ -454,4 +541,5 @@ if __name__ == "__main__":
     if 'music' in only: music()
     if 'events' in only: sfx_events(); music_events()
     if 'world4' in only: music_world4()
+    if 'zombies2' in only: sfx_zombies2(); music_zombies2()
     print("audio written to", os.path.abspath(OUT))

@@ -678,7 +678,7 @@ namespace PKR
             if (!Pay(p, cost)) return;
             if (tier == 1) ZLShop.Forge(lo, held.id, 0); else ZLShop.Overcharge(lo, held.id, 0);
             p.CancelReload();
-            if (local) { Sfx.Play(Sfx.Special, 0.9f, 0f); _g.ShowToast((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!", 2.5f); }
+            if (local) { Sfx.Play(tier == 1 ? Sfx.Special : Sfx.Overcharge, 0.9f, 0f); _g.ShowToast((tier == 1 ? "HOLLOW-FORGED " : "OVERCHARGED ") + held.name + "!", 2.5f); }
         }
 
         public int ForgeCost => LastStandRules.ForgePrice(SurvivorRank.Has(_g.CareerXp, "kit_forge"));

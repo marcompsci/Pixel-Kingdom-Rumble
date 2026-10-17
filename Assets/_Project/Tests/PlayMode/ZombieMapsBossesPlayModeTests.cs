@@ -139,6 +139,10 @@ namespace PKR.Tests
             var lanterns = Object.FindObjectsByType<ZLFragment>(FindObjectsSortMode.None);
             Assert.AreEqual(LastStandRules.Fragments, lanterns.Length, "three mourning lanterns");
             foreach (var l in lanterns) Assert.AreEqual("LIGHT THE MOURNING LANTERN", l.Prompt);
+            float mt = 0f;
+            while (g.MusicNow == null && mt < 2f) { mt += Time.unscaledDeltaTime; yield return null; }
+            Assert.AreEqual(Sfx.MusicGardens, g.MusicNow, "Gravemoor has its own music");
+            Assert.IsNotNull(Sfx.Clip(Sfx.MusicGardens), "the music file is in Resources/Audio");
 
             st.DebugFindAllFragments();
             Assert.IsTrue(st.Ls.HiddenBossSummoned, "the lanterns wake the Briar Queen");
@@ -146,6 +150,9 @@ namespace PKR.Tests
             float t = 0f;
             while (st.HollowKing == null && t < 20f) { t += Time.deltaTime; g.Player.DebugInvulnerable = true; yield return null; }
             Assert.IsNotNull(st.HollowKing, "the Briar Queen comes");
+            mt = 0f;
+            while (g.MusicNow != Sfx.MusicZombieBoss && mt < 2f) { mt += Time.unscaledDeltaTime; yield return null; }
+            Assert.AreEqual(Sfx.MusicZombieBoss, g.MusicNow, "boss music while she's up");
             st.HollowKing.Hit(999999, Vector2.up, null);
             yield return null;
             Assert.IsTrue(st.Ls.HiddenBossBeaten);

@@ -46,6 +46,7 @@ namespace PKR
         float _frozen, _leapWind, _leapT, _leapCool;
         Vector2 _leapDir;
         SpriteRenderer _shield;
+        Vector3? _artBase;
         /// <summary>Frozen by the Rime Cannon (crawls, takes extra damage).</summary>
         public bool Frozen => _frozen > 0f;
         public bool Leaping => _leapT > 0f;
@@ -129,7 +130,7 @@ namespace PKR
             if (_game.IsLastStand && _game.Stand != null) _game.Stand.ZombieHit(this, hp <= 0);
             _body.linearVelocity += dir * (kind == ZLFoe.Brute || kind == ZLFoe.Herald ? 0.8f : 3f);
             if (!hunting) StartHunt();
-            ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material, ZLSort.Canopy - 2, true);
+            ZLFx.HitSpray(_game.Sprite("Props/blood"), (Vector2)transform.position + Vector2.up * 0.3f, dir, _game.material, hp <= 0 ? 5 : 3);
             if (hp <= 0) Die();
         }
 
@@ -144,6 +145,7 @@ namespace PKR
             _leapT = _leapWind = 0f;
             _prey = null;
             ZLFloater.Show("KINDLED", transform.position + Vector3.up * 0.8f, new Color(1f, 0.75f, 0.35f), 0.9f);
+            Sfx.Play(Sfx.Kindle, 0.8f);
             ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(1f, 0.65f, 0.25f, 0.85f), 0.5f, 1f, 4f, _game.material);
         }
 
@@ -177,7 +179,11 @@ namespace PKR
         {
             if (hunting) return;
             hunting = true;
-            if (kind == ZLFoe.Hound) _game.SoundCue(transform.position, "HOUND");
+            if (kind == ZLFoe.Hound)
+            {
+                _game.SoundCue(transform.position, "HOUND");
+                if (Random.value < 0.35f) Sfx.Play(Sfx.Howl, 0.35f, 0.1f);
+            }
             if (kind == ZLFoe.Screamer && _screamed <= 0f)
             {
                 _screamed = 1f;
@@ -207,6 +213,8 @@ namespace PKR
                 _game.Explode(transform.position, 2.2f, 12, false);
             }
             ZLFx.Decal(_game.Sprite("Props/blood"), transform.position, _game.material);
+            if (_sr != null && _sr.sprite != null && kind != ZLFoe.Bloater && kind != ZLFoe.Splitter)
+                ZLFx.Corpse(_sr.sprite, transform.position, _sr.flipX, _tint, _sr.transform.localScale.x, _game.material);
             if ((kind == ZLFoe.Brute || kind == ZLFoe.Herald) && CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.15f, 0.25f);
             Destroy(gameObject);
         }
@@ -433,6 +441,7 @@ namespace PKR
             }
             _mound.enabled = true;
             ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.55f, 0.45f, 0.3f, 0.8f), 0.4f, 0.8f, 2f, _game.material);
+            if (!Puppet) Sfx.Play(Sfx.Dig, 0.5f);
         }
 
         /// <summary>Bursts up out of the street (biting if the hero is right there).</summary>
@@ -444,6 +453,8 @@ namespace PKR
             if (_sr != null) _sr.enabled = true;
             if (_mound != null) _mound.enabled = false;
             ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.6f, 0.5f, 0.35f, 0.85f), 0.45f, 1f, 3f, _game.material);
+            Sfx.Play(Sfx.Emerge, 0.7f);
+            if (CameraFollowTopDown.Main != null && Vector2.Distance(transform.position, _game.TargetPos) < 6f) CameraFollowTopDown.Main.Shake(0.12f, 0.15f);
             if (!attack) return;
             Vector2 pos = transform.position;
             if (Vector2.Distance(pos, _game.TargetFor(pos)) < _col.radius + 0.9f && _bite <= 0f)
@@ -526,7 +537,17 @@ namespace PKR
                 _shield.sortingOrder = _sr.sortingOrder + (_facing.y < -0.3f ? 1 : _facing.y > 0.3f ? -1 : 1);
             }
             if (_leapWind > 0f && _sr != null) _sr.transform.localScale = new Vector3(_sr.transform.localScale.x, Mathf.Abs(_sr.transform.localScale.x) * 0.8f, 1f);
-            else if (_sr != null) _sr.transform.localScale = new Vector3(_sr.transform.localScale.x, Mathf.Abs(_sr.transform.localScale.x), 1f);
+            else if (_sr != null) _sr.transform.localScale = new Vector3(_sr.transform.localScale.x, Mathf.Abs(_sr.transform.localScale.x) * (_hurt > 0f ? 0.88f : 1f), 1f);
+            // a shuffling walk: a small bob and a lean the way it's going (none with Reduced motion)
+            if (_sr != null && _artBase.HasValue)
+            {
+                bool calm = SettingsService.ReducedMotion;
+                float bob = moving && !calm ? Mathf.Abs(Mathf.Sin(_animT * (kind == ZLFoe.Hound || kind == ZLFoe.Runner || kind == ZLFoe.SplitterHalf ? 14f : 8f))) * 0.05f : 0f;
+                float lean = moving && !calm && _body != null ? Mathf.Clamp(-_body.linearVelocity.x * 2.5f, -8f, 8f) : 0f;
+                _sr.transform.localPosition = _artBase.Value + new Vector3(0f, bob, 0f);
+                _sr.transform.localRotation = Quaternion.Euler(0f, 0f, lean);
+            }
+            else if (_sr != null) _artBase = _sr.transform.localPosition;
         }
     }
 }

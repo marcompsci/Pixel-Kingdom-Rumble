@@ -730,6 +730,7 @@ namespace PKR
             float dt = Time.deltaTime;
             if (ToastLeft > 0f) ToastLeft -= Time.unscaledDeltaTime;
             if (CoachLeft > 0f) CoachLeft -= Time.unscaledDeltaTime;
+            UpdateMusic();
             if (Paused) return;
             Progress.playSeconds += dt;
 
@@ -759,7 +760,7 @@ namespace PKR
                 {
                     _groanT = UnityEngine.Random.Range(3f, 7f);
                     foreach (var z in _zombies)
-                        if (z != null && Vector2.Distance(z.transform.position, TargetPos) < 9f) { Sfx.Play(Sfx.Groan, 0.35f, 0.15f); break; }
+                        if (z != null && Vector2.Distance(z.transform.position, TargetPos) < 9f) { Sfx.Play(Sfx.AnyGroan, 0.35f, 0.15f); break; }
                 }
                 Ecosystem(dt);
                 Hounds(dt);
@@ -1437,6 +1438,29 @@ namespace PKR
             Cues.Add((at, label, now + 2f));
         }
 
+        // ---- music --------------------------------------------------------------------------------------------
+
+        float _musicT;
+        string _music;
+
+        /// <summary>The map's own loop, and the boss theme while a boss is up (checked twice a second).</summary>
+        void UpdateMusic()
+        {
+            _musicT -= Time.unscaledDeltaTime;
+            if (_musicT > 0f || Services.Audio == null) return;
+            _musicT = 0.5f;
+            bool boss = Boss != null || IsLastStand && Stand != null && !Stand.Over && (Stand.Butcher != null || Stand.HollowKing != null);
+            string want = boss ? Sfx.MusicZombieBoss
+                        : IsLastStand ? Sfx.LastStandMusic(LsMap.File)
+                        : Progress.InAirfield ? Sfx.MusicAirfield : Progress.InLabs ? Sfx.MusicSurvival : Sfx.MusicZLCity;
+            if (want == _music) return;
+            _music = want;
+            Services.Audio.PlayMusic(Sfx.Clip(want));
+        }
+
+        /// <summary>Tests: the loop chosen for this map right now.</summary>
+        public string MusicNow => _music;
+
         // ---- weapon mastery ---------------------------------------------------------------------------------
 
         ZombieCareer Career => Services.Save != null ? Services.Save.Data.zombieCareer : null;
@@ -1483,6 +1507,7 @@ namespace PKR
                 if (half != null && half.Body != null) half.Body.linearVelocity = (p - at).normalized * 3f;
             }
             ZLFloater.Show("SPLIT!", at + Vector2.up * 0.6f, new Color(0.9f, 0.75f, 1f), 0.8f);
+            Sfx.Play(Sfx.Split, 0.7f);
         }
 
         /// <summary>The nearest of the dead a kindled zombie can go after (alive, hostile, not itself).</summary>

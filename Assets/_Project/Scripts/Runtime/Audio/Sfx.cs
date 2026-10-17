@@ -14,11 +14,20 @@ namespace PKR
             Takedown = "takedown", Spring = "spring", Crate = "crate", Click = "ui_click", Secret = "secret", KO = "ko",
             Victory = "victory", Purchase = "purchase", Special = "special", Jetpack = "jetpack", AirJump = "air_jump",
             Shoot = "shoot", Reload = "reload", Groan = "groan", RoundStart = "round_start", PowerUp = "powerup", Board = "board",
-            Burst = "burst";
+            Burst = "burst", Split = "split", Dig = "dig", Emerge = "emerge", Kindle = "kindle", Howl = "howl",
+            Overcharge = "overcharge", Prestige = "prestige";
+        /// <summary>The dead's groans: picked at random so a crowd doesn't repeat one voice.</summary>
+        public static readonly string[] Groans = { "groan", "groan_1", "groan_2" };
+        public static string AnyGroan => Groans[UnityEngine.Random.Range(0, Groans.Length)];
         public const string MusicStory = "music_story", MusicStealth = "music_stealth", MusicVersus = "music_versus",
             MusicTitle = "music_title", MusicFrost = "music_frost", MusicRealms = "music_realms", MusicBoss = "music_boss",
             MusicHoliday = "music_holiday", MusicHaunted = "music_haunted", MusicSurvival = "music_survival",
-            MusicAstral = "music_astral";
+            MusicAstral = "music_astral", MusicZLCity = "music_zl_city", MusicPier = "music_ls_pier", MusicRail = "music_ls_rail",
+            MusicGardens = "music_ls_gardens", MusicAirfield = "music_airfield", MusicZombieBoss = "music_zombie_boss";
+
+        /// <summary>Each Last Stand map's own loop (Hollow Block keeps the survival theme).</summary>
+        public static string LastStandMusic(string mapFile) => mapFile == "pier" ? MusicPier : mapFile == "rail" ? MusicRail
+                                                             : mapFile == "gardens" ? MusicGardens : MusicSurvival;
         public const int BarkCount = 4;
 
         /// <summary>Each hero's battle shout: one of the four bark clips and a pitch, fixed per hero id.</summary>

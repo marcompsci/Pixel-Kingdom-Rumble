@@ -101,6 +101,7 @@ namespace PKR
             if (shards <= 0) return false;
             Economy.Grant(save, shards);
             Toast($"PRESTIGE {c.prestige}!", $"+{shards} Star Shards  ·  Survivor Rank starts again from 1", RankColor);
+            Sfx.Play(Sfx.Prestige, 0.9f, 0f);
             if (Services.Save != null) Services.Save.SaveNow();
             return true;
         }
