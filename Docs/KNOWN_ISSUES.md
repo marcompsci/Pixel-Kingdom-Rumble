@@ -77,3 +77,17 @@ compiling and tests; **no human has played it yet**, and nothing has run on an i
 - The upload warned that the UnityRuntime dSYM is missing, so crash reports for engine code won't be symbolicated. The game's own code is unaffected.
 - Audio is synthesized placeholder chiptune; volumes were set by ear in code, not on a phone.
 - First-time tips are remembered per save; resetting the save shows them again.
+
+## Zombie update 2 (2026-10-17): co-op, performance, accessibility, content
+
+- **Online co-op is still untested on two real phones.** The new parts (ping, interpolation, ordering, drop and
+  rejoin, lobby roster, version check) are covered by in-memory tests only. GameKit only re-invites a dropped player
+  in two-player matches; in 3-4 player matches a dropped player stays with the AI until the run ends.
+- **Frame rate on a device is not measured yet.** The game now logs a `[PKR Perf]` line every 30 s (fps, 95th
+  percentile frame, missed frames, tier, thermal state); read it from a device log to get real numbers.
+- Colour-vision palettes cover danger, health, status and squad colours; the art itself (sprites, tiles) is unchanged.
+- Weapon mastery only counts kills on the host and in solo play; guests in online co-op don't earn finishes yet.
+- Splitter and burrower use tinted existing zombie sprites (no new animation frames yet).
+- The new leaderboard (`pkr.lb.gravemoor`) and four achievements only work once they exist in App Store Connect
+  (Tools/asc_fix.py gc_leaderboard / gc_achievement) and are added to the version's Game Center section.
+- New music and sounds are synthesized placeholders; volumes were set by numbers, not by ear on a phone.

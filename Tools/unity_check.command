@@ -24,6 +24,7 @@ if [ -f Logs/upload_request ]; then rm -f Logs/upload_request; PKR_UPLOAD_ONLY=1
 if [ -f Logs/release_gate_request ]; then rm -f Logs/release_gate_request; PKR_ARCHIVE_ONLY=1 exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/testflight_request ]; then rm -f Logs/testflight_request; exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/ios_request ]; then rm -f Logs/ios_request; exec bash Tools/ios_build.command; fi
+if [ -f Logs/perf_request ]; then rm -f Logs/perf_request; exec bash Tools/device_perf.command; fi
 PROJ="$(pwd)"
 OUT="$PROJ/Logs/check"
 mkdir -p "$OUT"

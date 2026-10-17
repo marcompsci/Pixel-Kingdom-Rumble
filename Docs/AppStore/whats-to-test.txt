@@ -1,12 +1,21 @@
 Thanks for testing Pixel Kingdom Rumble! This build leads with ZOMBIES (the first main-menu button).
 
+New in this build:
+- GRAVEMOOR PARK, a fourth Last Stand map, and ZOMBIE LAND CHAPTER 4: COLD HARBOR (after the Curator).
+- New dead: SPLITTERS (fall into two halves) and BURROWERS (tunnel under the street; step away when you see "!").
+- THE KINDLER, a new wonder weapon in the mystery box: the zombie it hits fights the others for a while.
+- OVERCHARGE (take a forged gun through the forge again), weapon finishes (LOCKER > ARMORY) and PRESTIGE at rank 30.
+- Online co-op: a lobby list, START NOW, a connection readout, and dropped players get their hero back.
+- Settings > DISPLAY & ACCESS: graphics (Auto / High / Battery saver), Show FPS, colour vision, reduced motion,
+  left-handed controls, bigger touch targets, sound cues on screen.
+- New music for each zombie map and for boss fights.
+
 Please try:
-1. ZOMBIES > LAST STAND > SOLO on each map (Hollow Block, Salt Pier, Rail Yard). How far do you get? Anything unfair or confusing?
-2. LAST STAND > AI SQUAD: do the AI teammates help, revive you and stay out of doorways?
-3. ZOMBIE LAND: the open-city campaign. Missions, driving, safehouses, the map.
-4. DAILY ORDERS, LOCKER and BOARDS at the bottom of the ZOMBIES menu.
-5. If you have a friend on TestFlight: LAST STAND > ONLINE CO-OP (needs two iPhones signed in to Game Center).
-6. Story Quest, Arena Clash and Versus from the main menu.
+1. ZOMBIES > LAST STAND on Gravemoor Park. Light the three lanterns. Too hard? Too easy?
+2. ZOMBIE LAND: if you've finished chapter 3, take the road by the rail depot to Cold Harbor.
+3. With a friend on TestFlight: ONLINE CO-OP. Does it feel smooth? What happens if one of you loses signal?
+4. Settings > DISPLAY & ACCESS: anything that doesn't do what it says?
+5. Long sessions: does the phone get hot or the game slow down? (Show FPS helps.)
 
 Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge).
 Feedback: take a screenshot in the game and tap "Share Beta Feedback", or email rodlonbell16@gmail.com.
