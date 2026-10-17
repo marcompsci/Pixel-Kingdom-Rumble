@@ -194,6 +194,7 @@ namespace PKR
                 Ready = true;
                 Coach = gameObject.AddComponent<ZLCoach>();
                 Coach.Init(this);
+                if (BootLoader.ShotPanel != null) Coach.enabled = false;
                 Flow.Build(TargetPos);
                 string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over")
                                 ?? BootLoader.TakeShotPanel("pierplay") ?? BootLoader.TakeShotPanel("demo") ?? BootLoader.TakeShotPanel("pierdemo")
@@ -240,6 +241,7 @@ namespace PKR
             Ready = true;
             Coach = gameObject.AddComponent<ZLCoach>();
             Coach.Init(this);
+            if (BootLoader.ShotPanel != null) Coach.enabled = false;   // no first-time tips over App Store shots
             Flow.Build(TargetPos);
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
@@ -1649,7 +1651,7 @@ namespace PKR
                     Vector2 zp = at + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (7f + (i % 3));
                     if (!City.Walkable(zp)) continue;
                     var z = SpawnZombie(kinds[i % kinds.Length], zp, 5, true);
-                    if (z != null) { z.maxHp *= 8; z.hp = z.maxHp; }
+                    if (z != null) { z.maxHp *= 8; z.hp = z.maxHp; z.speed *= 0.35f; }
                 }
                 ShowToast(ZLCatalog.Chapter3Name + "  ·  KEYCARDS 0/" + ZLCatalog.KeycardsNeeded, 10f);
             }
