@@ -86,8 +86,18 @@ cat > Builds/ExportOptions.plist <<PLIST
 </dict>
 </plist>
 PLIST
+# Sign in with the team's App Store Connect API key when there is one (outside the repo, like Neon Getaway's
+# builds); it works while the Mac is locked, unlike the Apple ID in Xcode ("Failed to Use Accounts").
+ASC_KEY_FILE="$(ls "$PROJ"/../.appstoreconnect/AuthKey_*.p8 2>/dev/null | head -n 1)"
+ASC_AUTH=()
+if [ -n "$ASC_KEY_FILE" ]; then
+  ASC_KEY_ID="$(basename "$ASC_KEY_FILE" .p8 | sed 's/AuthKey_//')"
+  ASC_AUTH=(-authenticationKeyPath "$ASC_KEY_FILE" -authenticationKeyID "$ASC_KEY_ID"
+            -authenticationKeyIssuerID "${ASC_ISSUER:-e68f3170-f3b3-42c1-a66a-c33b1455907e}")
+  say "      signing in with App Store Connect API key $ASC_KEY_ID"
+fi
 xcodebuild -exportArchive -archivePath "$ARCHIVE" -exportOptionsPlist Builds/ExportOptions.plist \
-  -exportPath Builds/TestFlightExport -allowProvisioningUpdates > "$OUT/upload.log" 2>&1
+  -exportPath Builds/TestFlightExport -allowProvisioningUpdates "${ASC_AUTH[@]}" > "$OUT/upload.log" 2>&1
 if grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded " "$OUT/upload.log" && ! grep -q "EXPORT FAILED" "$OUT/upload.log"; then
   say "      UPLOADED build $PKR_BUILD_NUMBER. Apple is processing it; it appears in TestFlight in about 5-30 minutes."
 else
