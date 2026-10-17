@@ -20,6 +20,10 @@ BADGES = [
     ('z_weekly', (130, 100, 30), 'W'),
     ('z_streak7', (200, 90, 40), '7'),
     ('z_medic', (60, 130, 80), 'cross'),
+    ('z_briar_queen', (60, 110, 60), 'rose'),
+    ('z_chapter4', (90, 100, 130), 'IV'),
+    ('z_prestige', (150, 40, 60), 'P'),
+    ('z_gold', (150, 110, 30), 'star'),
 ]
 
 
@@ -47,6 +51,14 @@ def badge(kind, col):
         d.ellipse([29, 27, 35, 33], fill=gold)
         for a, b in (((32, 20), (32, 40)), ((22, 30), (42, 30)), ((25, 23), (39, 37)), ((39, 23), (25, 37))):
             d.line([a, b], fill=gold)
+    elif kind == 'rose':
+        d.ellipse([24, 18, 40, 34], fill=(200, 50, 70))
+        d.ellipse([28, 22, 36, 30], fill=(240, 110, 130))
+        d.line([(32, 34), (32, 46)], fill=(90, 170, 80), width=2)
+        d.polygon([(32, 40), (38, 37), (34, 43)], fill=(90, 170, 80))
+    elif kind == 'star':
+        d.polygon([(32, 16), (36, 27), (47, 27), (38, 34), (42, 45), (32, 38), (22, 45), (26, 34), (17, 27), (28, 27)], fill=gold)
+        d.polygon([(32, 21), (34, 28), (40, 28), (35, 32), (37, 39), (32, 35), (27, 39), (29, 32), (24, 28), (30, 28)], fill=white)
     elif kind == 'cross':
         d.rectangle([28, 18, 36, 42], fill=white)
         d.rectangle([20, 26, 44, 34], fill=white)

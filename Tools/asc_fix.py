@@ -228,7 +228,110 @@ def beta_text(a):
         say("Beta App Review notes", "saved" if st < 300 else f"FAIL {st} {r}", f"({len(notes)} characters)")
 
 
-ACTIONS = {"beta_text": beta_text, "beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+# ---- Game Center: leaderboards and achievements (created only if missing; nothing is released or submitted) ----------
+
+def _gc_detail():
+    d = A.get(f"/apps/{A.APP_ID}/gameCenterDetail").get("data")
+    if not d:
+        raise RuntimeError("Game Center isn't set up for the app")
+    return d["id"]
+
+
+def _all(url):
+    out = []
+    while url:
+        j = A.get(url)
+        out += j.get("data") or []
+        url = (j.get("links") or {}).get("next")
+    return out
+
+
+def gc_info(_):
+    gid = _gc_detail()
+    for lb in _all(f"/gameCenterDetails/{gid}/gameCenterLeaderboards?limit=200"):
+        say("LEADERBOARD", lb["attributes"].get("vendorIdentifier"), lb["attributes"].get("referenceName"), lb["attributes"].get("archived"))
+    for ac in _all(f"/gameCenterDetails/{gid}/gameCenterAchievements?limit=200"):
+        a = ac["attributes"]
+        say("ACHIEVEMENT", a.get("vendorIdentifier"), a.get("referenceName"), a.get("points"), a.get("archived"))
+    say("Game Center versions:", str(_show(f"/gameCenterDetails/{gid}/gameCenterAppVersions"))[:600])
+
+
+def gc_leaderboard(a):
+    """{"do":"gc_leaderboard","vendor":"pkr.lb.gravemoor","ref":"Last Stand: Gravemoor","name":"...","suffix":" rounds","suffix_one":" round"}"""
+    gid = _gc_detail()
+    have = {x["attributes"].get("vendorIdentifier"): x for x in _all(f"/gameCenterDetails/{gid}/gameCenterLeaderboards?limit=200")}
+    lb = have.get(a["vendor"])
+    if lb is None:
+        st, r = A.call("POST", "/gameCenterLeaderboards", {"data": {"type": "gameCenterLeaderboards", "attributes": {
+            "referenceName": a["ref"], "vendorIdentifier": a["vendor"], "defaultFormatter": "INTEGER",
+            "submissionType": "BEST_SCORE", "scoreSortType": "DESC"},
+            "relationships": {"gameCenterDetail": {"data": {"type": "gameCenterDetails", "id": gid}}}}})
+        if st >= 300:
+            say("Leaderboard", a["vendor"], f"FAIL {st} {r}"); return
+        lb = r["data"]
+        say("Leaderboard", a["vendor"], "created", lb["id"])
+    else:
+        say("Leaderboard", a["vendor"], "already exists", lb["id"])
+    locs = _all(f"/gameCenterLeaderboards/{lb['id']}/localizations?limit=50")
+    if not any(l["attributes"].get("locale") == "en-US" for l in locs):
+        st, r = A.call("POST", "/gameCenterLeaderboardLocalizations", {"data": {"type": "gameCenterLeaderboardLocalizations", "attributes": {
+            "locale": "en-US", "name": a["name"], "formatterSuffix": a.get("suffix", ""), "formatterSuffixSingular": a.get("suffix_one", "")},
+            "relationships": {"gameCenterLeaderboard": {"data": {"type": "gameCenterLeaderboards", "id": lb["id"]}}}}})
+        say("   en-US", "saved" if st < 300 else f"FAIL {st} {r}")
+    else:
+        say("   en-US already there")
+
+
+def _upload(kind, rel_name, rel_type, rel_id, path):
+    data = open(os.path.join(A.ROOT, path), "rb").read()
+    st, r = A.call("POST", "/" + kind, {"data": {"type": kind, "attributes": {"fileName": os.path.basename(path), "fileSize": len(data)},
+                                                "relationships": {rel_name: {"data": {"type": rel_type, "id": rel_id}}}}})
+    if st >= 300:
+        return f"reserve FAIL {st} {r}"
+    obj = r["data"]
+    for op in obj["attributes"]["uploadOperations"]:
+        hdr = {x["name"]: x["value"] for x in op.get("requestHeaders", [])}
+        pst, perr = A.call(op["method"], op["url"], raw=data[op["offset"]:op["offset"] + op["length"]], headers=hdr)
+        if pst >= 300:
+            return f"upload FAIL {pst} {perr}"
+    st, r = A.call("PATCH", f"/{kind}/{obj['id']}", {"data": {"type": kind, "id": obj["id"], "attributes": {"uploaded": True}}})
+    return "uploaded" if st < 300 else f"commit FAIL {st} {r}"
+
+
+def gc_achievement(a):
+    """{"do":"gc_achievement","vendor":"pkr.ach.z_chapter4","ref":"...","points":40,"name":"...","before":"...","after":"...","image":"Docs/..png"}"""
+    gid = _gc_detail()
+    have = {x["attributes"].get("vendorIdentifier"): x for x in _all(f"/gameCenterDetails/{gid}/gameCenterAchievements?limit=200")}
+    ac = have.get(a["vendor"])
+    if ac is None:
+        st, r = A.call("POST", "/gameCenterAchievements", {"data": {"type": "gameCenterAchievements", "attributes": {
+            "referenceName": a["ref"], "vendorIdentifier": a["vendor"], "points": int(a["points"]),
+            "showBeforeEarned": True, "repeatable": False},
+            "relationships": {"gameCenterDetail": {"data": {"type": "gameCenterDetails", "id": gid}}}}})
+        if st >= 300:
+            say("Achievement", a["vendor"], f"FAIL {st} {r}"); return
+        ac = r["data"]
+        say("Achievement", a["vendor"], "created", ac["id"])
+    else:
+        say("Achievement", a["vendor"], "already exists", ac["id"])
+    locs = _all(f"/gameCenterAchievements/{ac['id']}/localizations?limit=50")
+    loc = next((l for l in locs if l["attributes"].get("locale") == "en-US"), None)
+    if loc is None:
+        st, r = A.call("POST", "/gameCenterAchievementLocalizations", {"data": {"type": "gameCenterAchievementLocalizations", "attributes": {
+            "locale": "en-US", "name": a["name"], "beforeEarnedDescription": a["before"], "afterEarnedDescription": a["after"]},
+            "relationships": {"gameCenterAchievement": {"data": {"type": "gameCenterAchievements", "id": ac["id"]}}}}})
+        if st >= 300:
+            say("   en-US", f"FAIL {st} {r}"); return
+        loc = r["data"]
+        say("   en-US saved")
+    img = A.get(f"/gameCenterAchievementLocalizations/{loc['id']}/gameCenterAchievementImage").get("data")
+    if img:
+        say("   image already there", (img["attributes"].get("assetDeliveryState") or {}).get("state"))
+    elif a.get("image"):
+        say("   image", _upload("gameCenterAchievementImages", "gameCenterAchievementLocalization", "gameCenterAchievementLocalizations", loc["id"], a["image"]))
+
+
+ACTIONS = {"gc_info": gc_info, "gc_leaderboard": gc_leaderboard, "gc_achievement": gc_achievement, "beta_text": beta_text, "beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
