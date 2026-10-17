@@ -83,8 +83,10 @@ compiling and tests; **no human has played it yet**, and nothing has run on an i
 - **Online co-op is still untested on two real phones.** The new parts (ping, interpolation, ordering, drop and
   rejoin, lobby roster, version check) are covered by in-memory tests only. GameKit only re-invites a dropped player
   in two-player matches; in 3-4 player matches a dropped player stays with the AI until the run ends.
-- **Frame rate on a device is not measured yet.** The game now logs a `[PKR Perf]` line every 30 s (fps, 95th
-  percentile frame, missed frames, tier, thermal state); read it from a device log to get real numbers.
+- **Frame rate measured on one phone only.** iPhone 17 Pro, 17 Oct, build from 8a59d87, a self-playing Last Stand round
+  (Hollow Block, AI squad) for 2.5 min: 60.0 fps, 95th percentile frame 17.2 ms, worst 23 ms, at most 1% of frames
+  missed, thermal "fair", tier stayed High. Main menu: 60 fps. Older iPhones are not measured; run Logs/perf_request
+  (Tools/device_perf.command) on one to check.
 - Colour-vision palettes cover danger, health, status and squad colours; the art itself (sprites, tiles) is unchanged.
 - Weapon mastery only counts kills on the host and in solo play; guests in online co-op don't earn finishes yet.
 - Splitter and burrower use tinted existing zombie sprites (no new animation frames yet).

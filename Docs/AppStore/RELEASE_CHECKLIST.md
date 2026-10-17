@@ -22,6 +22,11 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [ ] Chapter 3: the freight lift under the Graystone lab, the 3 keycards, the Curator (riot guards at half, leapers at a quarter), the lift back up.
 - [ ] Riot zombies (flank them) and leapers (watch the red crouch) read clearly on a phone screen.
 - [ ] Rime Cannon and Storm Coil both come out of the box.
+- [ ] Gravemoor Park (lanterns, the Briar Queen drops the Kindler), Zombie Land chapter 4 (the service road, 3 clearances, the Marshal).
+- [ ] Splitters and burrowers read clearly; the Kindler; overcharge at the forge; LOCKER > ARMORY; prestige at rank 30.
+- [ ] Settings > DISPLAY & ACCESS: every option does what it says (left-handed controls, bigger touch targets, colour vision, reduced motion, sound cues, graphics modes, Show FPS).
+- [x] Frame rate on iPhone 17 Pro (17 Oct, Tools/device_perf.command): 60 fps, p95 17.2 ms, 0-1% missed frames in a self-playing Last Stand round.
+- [ ] A long session by hand, and an older iPhone if one is around: no heat warnings or stutter.
 - [ ] Online co-op with **two phones on two Game Center accounts**: invite, lobby, a few rounds, one player leaves (their hero turns AI), host leaves (guests see the end). Not tested yet: the store text promises it, so test before release or soften the text.
 - [ ] Touch controls: FIRE / USE reachable, revive by holding USE.
 
@@ -30,6 +35,7 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [x] `pkr.lb.pier` "Last Stand: Salt Pier" created (16 Oct).
 - [x] `pkr.lb.rail` "Last Stand: Rail Yard" and the 11 zombie achievements (pkr.ach.z_*, 350 points, badges uploaded) created (17 Oct). 21 achievements, 630 points in all.
 - [x] Game Center turned on for version 1.0 (16 Oct). All 7 leaderboards and 21 achievements are in Prepare for Submission, so they go to review with the version.
+- [x] Zombie update 2 (17 Oct, through the API with Tools/asc_fix.py): `pkr.lb.gravemoor` "Last Stand: Gravemoor Park" and 4 achievements (Thornless 40, Wheels Up 40, Born Again 30, Golden Gun 20; en-US text and badges). Now 8 leaderboards, 25 achievements, 760 points. Check they show in version 1.0's Game Center section before submitting.
 - [ ] Multiplayer compatibility: the app's own bundle only (Game Center > Multiplayer Compatibility, nothing to add).
 
 ## 4. Store page (App Store Connect > 1.0)
