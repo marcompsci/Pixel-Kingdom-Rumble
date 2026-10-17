@@ -29,7 +29,22 @@ def iaps():
     return A.get(f"/apps/{A.APP_ID}/inAppPurchasesV2?limit=50").get("data") or []
 
 
+def _show(url):
+    st, j = A.call("GET", url)
+    if st != 200:
+        return f"HTTP {st} {(j or {}).get('error', '')[:160]}"
+    d = (j or {}).get("data")
+    if isinstance(d, list):
+        return [x.get("attributes") for x in d]
+    return d.get("attributes") if d else None
+
+
 def iap_info(_):
+    for p in iaps():
+        say("IAP", p["id"], json.dumps(p["attributes"])[:400])
+        for rel in ("inAppPurchaseLocalizations", "iapPriceSchedule", "inAppPurchaseAvailability", "appStoreReviewScreenshot", "content"):
+            say("   ", rel, str(_show(f"{V2}/inAppPurchases/{p['id']}/{rel}"))[:500])
+    return
     for p in iaps():
         pid = p["id"]
         loc = A.get(f"{V2}/inAppPurchases/{pid}/inAppPurchaseLocalizations").get("data") or []
