@@ -1,0 +1,26 @@
+{
+ "APP_IPHONE_67": [
+  "Docs/AppStore/screenshots/6.9/01_last_stand_rail_yard.png",
+  "Docs/AppStore/screenshots/6.9/02_last_stand_salt_pier.png",
+  "Docs/AppStore/screenshots/6.9/03_last_stand_hollow_block.png",
+  "Docs/AppStore/screenshots/6.9/04_zombie_land_sublevel.png",
+  "Docs/AppStore/screenshots/6.9/05_zombie_land_blackwater.png",
+  "Docs/AppStore/screenshots/6.9/06_zombies_menu.png",
+  "Docs/AppStore/screenshots/6.9/07_sunspire_heights.png",
+  "Docs/AppStore/screenshots/6.9/08_rooftop_run.png",
+  "Docs/AppStore/screenshots/6.9/09_first_light_contract.png",
+  "Docs/AppStore/screenshots/6.9/10_shadow_contracts_board.png"
+ ],
+ "APP_IPHONE_61": [
+  "Docs/AppStore/screenshots/6.3/01_last_stand_rail_yard.png",
+  "Docs/AppStore/screenshots/6.3/02_last_stand_salt_pier.png",
+  "Docs/AppStore/screenshots/6.3/03_last_stand_hollow_block.png",
+  "Docs/AppStore/screenshots/6.3/04_zombie_land_sublevel.png",
+  "Docs/AppStore/screenshots/6.3/05_zombie_land_blackwater.png",
+  "Docs/AppStore/screenshots/6.3/06_zombies_menu.png",
+  "Docs/AppStore/screenshots/6.3/07_sunspire_heights.png",
+  "Docs/AppStore/screenshots/6.3/08_rooftop_run.png",
+  "Docs/AppStore/screenshots/6.3/09_first_light_contract.png",
+  "Docs/AppStore/screenshots/6.3/10_shadow_contracts_board.png"
+ ]
+}
