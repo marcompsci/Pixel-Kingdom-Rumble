@@ -2,11 +2,11 @@
 
 App: Pixel Kingdom Rumble (Apple ID 6821419588), version 1.0, manual release.
 
-## Current listing: zombies lead (saved in App Store Connect 2026-10-16)
+## Current listing: zombies lead (first saved in App Store Connect 2026-10-16; updated 2026-10-17 for the Rail Yard, chapter 3, daily orders and the LOCKER)
 
 **Subtitle (30 max):** Zombies, stealth and brawls
 
-**Promotional text (170 max):** ZOMBIES, all year: Last Stand on two maps with friends or an AI squad, a new weekly challenge, and Zombie Land Chapter 2 on Blackwater Isle.
+**Promotional text (170 max):** ZOMBIES, all year: Last Stand on three maps with friends or an AI squad, daily orders, a weekly challenge and Zombie Land Chapter 3: The Sublevel.
 
 **Keywords (100 max):** zombies,survival,co-op,rounds,shooter,pixel,retro,platformer,stealth,arcade,brawler,heist,8-bit
 
@@ -16,12 +16,13 @@ Hold the line against the dead, sneak across rooftops and brawl with an original
 
 ZOMBIES, ALL YEAR
 Zombies sit at the top of the main menu and never leave.
-- LAST STAND: round-based survival on two maps, Hollow Block and Salt Pier. Earn points for every hit and kill, buy wall guns, clear debris to open more of the map, drink perks, spin the mystery box for one of two wonder weapons and hollow-forge your favourite gun.
+- LAST STAND: round-based survival on three maps: Hollow Block, Salt Pier and the Rail Yard. Earn points for every hit and kill, buy wall guns, clear debris to open more of the map, drink perks, spin the mystery box for one of two wonder weapons and hollow-forge your favourite gun.
 - PLAY TOGETHER: up to four players online through Game Center, or bring an AI squad that covers you, revives you and grabs better guns as the rounds climb.
 - ENDLESS, RAID OR HARDCORE: chase your best round, win a 10-round Raid, or take on tougher dead for bigger rewards.
-- WEEKLY CHALLENGE: a new map, mode and pair of mutators every Monday, with a reward for reaching the goal.
-- SECRETS: every map hides an Easter egg that wakes a hidden boss.
-- ZOMBIE LAND: an open quarantined city to explore by car, bike or on foot. Fourteen missions, ten Graystone shards and a mystery to solve before you face the First Turned. Then cross the causeway for Chapter 2 on Blackwater Isle.
+- DAILY ORDERS AND WEEKLY CHALLENGE: three new orders every day (keep a streak going) and a new map, mode and pair of mutators every Monday.
+- SECRETS AND BOSSES: every map hides an Easter egg that wakes a hidden boss, and bosses change as they're hurt.
+- THE LOCKER: earn tracer colours and titles for what you've done. Nothing is for sale.
+- ZOMBIE LAND: an open quarantined city to explore by car, bike or on foot. Fourteen missions, ten Graystone shards and a mystery to solve before you face the First Turned. Then cross the causeway for Chapter 2 on Blackwater Isle, and ride the freight lift down to Chapter 3: The Sublevel.
 - SURVIVOR RANK: one career across every zombie mode, with rewards at every rank. Nothing is for sale.
 
 STORY QUEST
@@ -40,7 +41,7 @@ MADE FOR TOUCH
 A floating stick and big buttons you can move and resize. High contrast mode, screen shake toggle, haptics and an Assist mode.
 
 GAME CENTER
-Achievements and leaderboards, including your best Last Stand rounds and Survivor Rank.
+Achievements and leaderboards for every Last Stand map and your Survivor Rank, against your friends or everyone.
 
 No ads. No accounts. Your progress stays on your device.
 
@@ -115,3 +116,9 @@ secret_seeker 20, warden 40, first_contract 20, ghost 50, relic_hunter 40, ciphe
 Zombie leaderboards (created 2026-10-16): `pkr.lb.laststand` "Last Stand: Hollow Block" (suffix round/rounds),
 `pkr.lb.manor` "Survival: The Manor" (round/rounds), `pkr.lb.survivor_xp` "Survivor Rank XP" (suffix XP).
 All classic, integer, best score, high to low, en-US. `pkr.lb.pier` "Last Stand: Salt Pier" (round/rounds) created the same day.
+
+Zombie update (created 2026-10-17 through App Store Connect): leaderboard `pkr.lb.rail` "Last Stand: Rail Yard" (round/rounds).
+Zombie achievements (all visible, not repeatable, 512 px badges, art in Docs/AppStore/achievements): z_round10 20, z_round20 40,
+z_hollow_king 40, z_tide_mother 40, z_iron_widow 40, z_chapter1 30, z_chapter2 30, z_chapter3 40, z_weekly 20, z_streak7 30,
+z_medic 20 (350 points; 630 total of Game Center's 1000). The App Store Connect badges were drawn in the browser from the same
+design as Tools/art/achievement_badges.py (same shields and colours; the numerals use a plain bold font).

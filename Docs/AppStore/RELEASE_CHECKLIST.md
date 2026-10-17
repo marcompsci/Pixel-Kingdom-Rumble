@@ -4,6 +4,7 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 
 ## 1. Build
 - [x] Mac Unity check green on a527cff (16 Oct): compile 0 errors, EditMode 307/307, PlayMode 131 passed / 0 failed / 2 skipped (balance labs).
+- [x] Mac Unity check green on f59e47a (16 Oct, after onboarding, Rail Yard, chapter 3, daily orders, the LOCKER): EditMode 321/321, PlayMode 140 passed / 0 failed / 2 skipped.
 - [ ] TestFlight: 20261016.1338 uploaded 16 Oct (before the pathing / AI-ammo fixes). 20261016.1521 (a527cff, all fixes) is archived in Builds/ but not uploaded yet: Xcode Organizer > Distribute App > App Store Connect.
 - [ ] Installed on Omari's iPhone from TestFlight; launches, no crash in the first 5 minutes.
 - [ ] Version / build number in App Store Connect matches the TestFlight build picked for review.
@@ -12,7 +13,13 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 - [ ] Last Stand, Hollow Block, solo: reach round 10 (the Butcher). Note anything unfair or boring.
 - [ ] Last Stand, Salt Pier, AI squad: do teammates help, revive, and not block doorways?
 - [ ] Weekly challenge: the mutators feel different; the reward pays once.
+- [ ] Last Stand, Rail Yard: throw the three signal levers, beat the Iron Widow, get the Singularity. Is it fun or just big?
+- [ ] Daily orders: finish all three on a real day; the streak shows 1 the next morning and 0 after a missed day.
+- [ ] The LOCKER: a tracer changes your bullet colour; a title shows on the ZOMBIES menu and the end-of-run card.
+- [ ] BOARDS page on iPhone: FRIENDS / EVERYONE open Game Center; the friends rank line appears (needs a Game Center friend with a score; iOS asks for friends access the first time).
+- [ ] First-time tips and the rookie warm-up read well on a phone; the HUD size slider and strong aim assist work.
 - [ ] Zombie Land chapter 1 to the First Turned (or use a save that is close), then the causeway, the 4 sigils and Mother Brine.
+- [ ] Chapter 3: the freight lift under the Graystone lab, the 3 keycards, the Curator (riot guards at half, leapers at a quarter), the lift back up.
 - [ ] Riot zombies (flank them) and leapers (watch the red crouch) read clearly on a phone screen.
 - [ ] Rime Cannon and Storm Coil both come out of the box.
 - [ ] Online co-op with **two phones on two Game Center accounts**: invite, lobby, a few rounds, one player leaves (their hero turns AI), host leaves (guests see the end). Not tested yet: the store text promises it, so test before release or soften the text.
@@ -21,7 +28,8 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 ## 3. Game Center (App Store Connect > Game Center)
 - [x] `pkr.lb.laststand`, `pkr.lb.manor`, `pkr.lb.survivor_xp` created with en-US names (16 Oct).
 - [x] `pkr.lb.pier` "Last Stand: Salt Pier" created (16 Oct).
-- [ ] Add the new leaderboards to the version's Game Center section before submitting (they ship with the version).
+- [x] `pkr.lb.rail` "Last Stand: Rail Yard" and the 11 zombie achievements (pkr.ach.z_*, 350 points, badges uploaded) created (17 Oct). 21 achievements, 630 points in all.
+- [ ] Add the new leaderboards AND achievements to the version's Game Center section before submitting (they ship with the version).
 - [ ] Multiplayer compatibility: the app's own bundle only (Game Center > Multiplayer Compatibility, nothing to add).
 
 ## 4. Store page (App Store Connect > 1.0)
