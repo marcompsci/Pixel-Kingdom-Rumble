@@ -60,6 +60,11 @@ namespace PKR.Core
         public const float DefaultControlOpacity = 0.65f;
         /// <summary>Assist mode: +2 max health in Story and Contracts, and guards take longer to notice the hero.</summary>
         public bool assistMode;
+        /// <summary>Zombie modes: a wider, longer auto-aim.</summary>
+        public bool strongAimAssist;
+        /// <summary>Zombie modes: HUD size (0.85..1.3).</summary>
+        public float hudScale = 1f;
+        public const float MinHudScale = 0.85f, MaxHudScale = 1.3f;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>
@@ -95,6 +100,7 @@ namespace PKR.Core
             }
             version = CurrentVersion;
             controlOpacity = float.IsNaN(controlOpacity) ? DefaultControlOpacity : Math.Max(0.2f, Math.Min(1f, controlOpacity));
+            hudScale = float.IsNaN(hudScale) || hudScale <= 0f ? 1f : Math.Max(MinHudScale, Math.Min(MaxHudScale, hudScale));
             musicVolume = Clamp01(musicVolume);
             sfxVolume = Clamp01(sfxVolume);
             if (controlLayout == null) controlLayout = DefaultLayout();

@@ -15,6 +15,8 @@ namespace PKR
         ZLGame _g;
         RectTransform _safe;
         Image _hp, _armor, _vehicleBar, _reload, _missionBar, _arrow, _deathDim, _danger;
+        RectTransform _coachBox;
+        Text _coach;
         Text _hpText, _shards, _hounds, _mission, _objective, _gun, _ammo, _prompt, _toast, _med, _death, _vehicleText, _scrap, _perks, _powers, _squad;
         int _shownScrap = -1;
         float _scrapPulse;
@@ -29,6 +31,10 @@ namespace PKR
         {
             _g = ZLGame.Current;
             _safe = UIFactory.CreateCanvas(transform, "ZLHUDCanvas", 20, landscape: true, out _);
+            // HUD size (Settings): a smaller reference resolution draws everything bigger.
+            var scaler = _safe.GetComponentInParent<CanvasScaler>();
+            float hud = Services.Settings != null ? Services.Settings.Data.hudScale : 1f;
+            if (scaler != null && hud > 0f) scaler.referenceResolution = new Vector2(1920f, 1080f) / hud;
             Build();
         }
 
@@ -215,6 +221,14 @@ namespace PKR
             var tt = Box(_safe, "Toast", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(1400f, 60f));
             _toast = Txt(tt, "", 34, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.8f));
 
+            // First-time coaching tip (ZLCoach): a banner under the round counter
+            _coachBox = Box(_safe, "Coach", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1100f, 110f));
+            var cbg = _coachBox.gameObject.AddComponent<Image>();
+            cbg.color = new Color(0.05f, 0.04f, 0.1f, 0.82f);
+            cbg.raycastTarget = false;
+            _coach = Txt(_coachBox, "", 32, TextAnchor.MiddleCenter, new Color(1f, 0.88f, 0.45f));
+            _coachBox.gameObject.SetActive(false);
+
             // Death
             var dd = UIFactory.Rect("Death", _safe);
             UIFactory.Stretch(dd);
@@ -308,6 +322,12 @@ namespace PKR
             if (p == null) return;
 
             _hp.fillAmount = p.Health / (float)p.MaxHealth;
+            if (_coachBox != null)
+            {
+                bool on = _g.CoachLeft > 0f && !string.IsNullOrEmpty(_g.CoachTip);
+                if (_coachBox.gameObject.activeSelf != on) _coachBox.gameObject.SetActive(on);
+                if (on) { _coach.text = "TIP  ·  " + _g.CoachTip; var cc = _coach.color; cc.a = Mathf.Clamp01(_g.CoachLeft * 2f); _coach.color = cc; }
+            }
             if (_danger != null)
             {
                 float h01 = p.Health / (float)Mathf.Max(1, p.MaxHealth);

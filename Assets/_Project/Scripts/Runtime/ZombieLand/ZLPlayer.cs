@@ -426,7 +426,8 @@ namespace PKR
             var gun = Gun;
             Vector2 facing = frame.face.sqrMagnitude > 0.01f ? frame.face.normalized : move.sqrMagnitude > 0.04f ? move.normalized : Aim;
             if (Control == ZLControl.Remote) facing = Aim;
-            var target = game.AutoAim(transform.position, facing, gun != null ? gun.range : 8f);
+            bool strongAim = Control == ZLControl.Local && Services.Settings != null && Services.Settings.Data.strongAimAssist;
+            var target = game.AutoAim(transform.position, facing, (gun != null ? gun.range : 8f) + ZombieAssist.AimRangeBonus(strongAim), ZombieAssist.AimCone(strongAim));
             if (target.HasValue) Aim = (target.Value - (Vector2)transform.position).normalized;
             else if (Control == ZLControl.AI && frame.face.sqrMagnitude > 0.01f) Aim = frame.face.normalized;   // the AI picked its target
             else if (Control != ZLControl.Remote && move.sqrMagnitude > 0.04f) Aim = move.normalized;

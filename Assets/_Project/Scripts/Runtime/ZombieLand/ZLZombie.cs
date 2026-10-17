@@ -264,6 +264,8 @@ namespace PKR
                 {
                     _leapWind = ZLRules.LeapWindup;
                     _facing = (target - pos).normalized;
+                    // The tell is a shape as well as a colour (readable for colour-blind players): a "!" overhead.
+                    ZLFloater.Show("!", pos + Vector2.up * 1.1f, new Color(1f, 0.95f, 0.4f), 1.5f);
                     return;
                 }
             }

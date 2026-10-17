@@ -17,6 +17,8 @@ namespace PKR.Core
         public List<string> bestKeys = new List<string>();
         public List<int> bestRounds = new List<int>();
         public int raidWins, hardcoreRuns, totalKills, coopRuns;
+        /// <summary>Last Stand runs finished (the first few get the rookie warm-up).</summary>
+        public int lastStandRuns;
         /// <summary>Hidden bosses beaten: "lantern_wraith" (Manor, Hardcore), "hollow_king" (Last Stand).</summary>
         public List<string> secrets = new List<string>();
         /// <summary>Weekly challenge: the weeks finished ("W41"), this week's key and best round, weeks won.</summary>

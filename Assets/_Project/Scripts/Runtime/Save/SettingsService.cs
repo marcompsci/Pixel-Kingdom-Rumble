@@ -62,6 +62,8 @@ namespace PKR
         public void SetHaptics(bool on) { Data.hapticsEnabled = on; Commit(); }
         public void SetHighContrast(bool on) { Data.highContrastUI = on; Commit(); }
         public void SetAssistMode(bool on) { Data.assistMode = on; Commit(); }
+        public void SetStrongAimAssist(bool on) { Data.strongAimAssist = on; Commit(); }
+        public void SetHudScale(float v) { Data.hudScale = Mathf.Clamp(v, SettingsData.MinHudScale, SettingsData.MaxHudScale); Commit(); }
         public void SetScreenShake(bool on) { Data.screenShakeEnabled = on; Commit(); }
         public void ResetControlLayout() { Data.ResetLayout(); Commit(); }
         public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }

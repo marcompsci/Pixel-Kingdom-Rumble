@@ -191,6 +191,8 @@ namespace PKR
                 Stand.Init(this);
                 if (Services.State != null) Services.State.SetState(GameState.Playing);
                 Ready = true;
+                Coach = gameObject.AddComponent<ZLCoach>();
+                Coach.Init(this);
                 Flow.Build(TargetPos);
                 string lsShot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("box") ?? BootLoader.TakeShotPanel("over")
                                 ?? BootLoader.TakeShotPanel("pierplay") ?? BootLoader.TakeShotPanel("demo") ?? BootLoader.TakeShotPanel("pierdemo");
@@ -218,6 +220,8 @@ namespace PKR
             SetupIsleBridge();
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             Ready = true;
+            Coach = gameObject.AddComponent<ZLCoach>();
+            Coach.Init(this);
             Flow.Build(TargetPos);
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
@@ -498,6 +502,7 @@ namespace PKR
             if (!Ready || Player == null) return;
             float dt = Time.deltaTime;
             if (ToastLeft > 0f) ToastLeft -= Time.unscaledDeltaTime;
+            if (CoachLeft > 0f) CoachLeft -= Time.unscaledDeltaTime;
             if (Paused) return;
             Progress.playSeconds += dt;
 
@@ -644,6 +649,12 @@ namespace PKR
             }
             z.Init(this, kind, threat, idle, move, hurt, tint, scale);
             if (kind == ZLFoe.Riot) z.AddShield(Sprite("Props/riot_shield"));
+            if (!IsLastStand && Services.Settings != null && Services.Settings.Data.assistMode)
+            {
+                // Assist mode: slower, softer dead in Zombie Land (Last Stand scales its own spawns)
+                z.maxHp = z.hp = Mathf.Max(1, Mathf.RoundToInt(z.hp * ZombieAssist.HealthScale(true, false)));
+                z.speed *= ZombieAssist.SpeedScale(true, false);
+            }
             if (kind == ZLFoe.Herald)
             {
                 var crown = new GameObject("Crown").AddComponent<SpriteRenderer>();
@@ -955,7 +966,10 @@ namespace PKR
             MeleeAttacker = null;
         }
 
-        public Vector2? AutoAim(Vector2 from, Vector2 facing, float range)
+        public Vector2? AutoAim(Vector2 from, Vector2 facing, float range) => AutoAim(from, facing, range, 75f);
+
+        /// <summary>Auto-aim within a cone (degrees either side of facing; anything within 3.5 tiles counts).</summary>
+        public Vector2? AutoAim(Vector2 from, Vector2 facing, float range, float cone)
         {
             Vector2? best = null;
             float bestScore = float.MaxValue;
@@ -968,7 +982,7 @@ namespace PKR
                 float d = to.magnitude;
                 if (d > range) continue;
                 float ang = Vector2.Angle(facing, to);
-                if (ang > 75f && d > 3.5f) continue;
+                if (ang > cone && d > 3.5f) continue;
                 if (!City.Sees(from, p)) continue;
                 float score = d + ang * 0.03f;
                 if (score < bestScore) { bestScore = score; best = p; }
@@ -1353,6 +1367,17 @@ namespace PKR
         }
 
         // ---- UI helpers --------------------------------------------------------------------------------
+
+        /// <summary>First-time coaching tip (ZLCoach) shown in its own banner, apart from toasts.</summary>
+        public string CoachTip { get; private set; }
+        public float CoachLeft { get; private set; }
+        public ZLCoach Coach { get; private set; }
+
+        public void ShowCoach(string text)
+        {
+            CoachTip = text;
+            CoachLeft = ZombieTips.Show;
+        }
 
         public void ShowToast(string text, float seconds = 4f)
         {

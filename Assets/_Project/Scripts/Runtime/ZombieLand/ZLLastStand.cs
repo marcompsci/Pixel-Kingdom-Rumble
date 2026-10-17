@@ -47,6 +47,10 @@ namespace PKR
         public MutatorSet Mut { get; private set; } = MutatorSet.None;
         public bool WeeklyPaid { get; private set; }
         public int BoxCost => Mut.BoxCost(LastStandRules.BoxCost);
+        /// <summary>Assist mode (Settings) and the rookie warm-up (a player's first Last Stand runs).</summary>
+        public bool Assist => Services.Settings != null && Services.Settings.Data.assistMode;
+        public bool RookieRound => ZombieAssist.Rookie(_lsRuns, Run.Round);
+        int _lsRuns;
         public int DoorCost(ZLCityData.Door d) => Mut.DoorCost(d.cost);
 
         ZLGame _g;
@@ -70,6 +74,8 @@ namespace PKR
         {
             _g = g;
             int xp = g.CareerXp;
+            var careerNow = Services.Save != null ? Services.Save.Data.zombieCareer : null;
+            _lsRuns = careerNow != null ? careerNow.lastStandRuns : 0;
             if (GameSession.Mode == SessionMode.Zombies && GameSession.ZombieWeekly && GameSession.ZombieSquad != SquadKind.Online)
             {
                 Weekly = ZombieWeekly.Current(System.DateTime.UtcNow);
@@ -381,7 +387,8 @@ namespace PKR
             }
             var kind = HoundRound ? ZLFoe.Hound : LastStandRules.Pick(Run.Round, Random.value);
             if (Spawn(kind) != null) _toSpawn--;
-            _spawnT = LastStandRules.SpawnInterval(Run.Round, Mode) * (HoundRound ? 0.7f : 1f) / Mathf.Sqrt(n);
+            _spawnT = LastStandRules.SpawnInterval(Run.Round, Mode) * (HoundRound ? 0.7f : 1f) / Mathf.Sqrt(n)
+                      * ZombieAssist.SpawnScale(Assist, RookieRound);
         }
 
         /// <summary>A spawn in an open zone, out of every hero's view if possible.</summary>
@@ -418,8 +425,8 @@ namespace PKR
             var z = _g.SpawnZombie(kind, p, 1, true);
             z.pinned = true;
             z.NetId = ++_nextNetId & 0xffff;
-            z.maxHp = z.hp = Mut.Health(LastStandRules.Health(kind, Run.Round, Mode));
-            z.speed = LastStandRules.Speed(kind, Run.Round, Mode) * Mut.ZombieSpeed * Random.Range(0.9f, 1.1f);
+            z.maxHp = z.hp = Mathf.Max(1, Mathf.RoundToInt(Mut.Health(LastStandRules.Health(kind, Run.Round, Mode)) * ZombieAssist.HealthScale(Assist, RookieRound)));
+            z.speed = LastStandRules.Speed(kind, Run.Round, Mode) * Mut.ZombieSpeed * ZombieAssist.SpeedScale(Assist, RookieRound) * Random.Range(0.9f, 1.1f);
             _alive.Add(z);
             return z;
         }
@@ -810,6 +817,7 @@ namespace PKR
                 if (Run.Won) c.raidWins++;
                 if (Mode == SurvivalMode.Hardcore) c.hardcoreRuns++;
                 if (Kind != SquadKind.Solo) c.coopRuns++;
+                c.lastStandRuns++;
                 ShardReward = SurvivalModes.Shards(Mode, Run.Round, Run.Kills, Run.Won);
                 Economy.Grant(save.Data, ShardReward);
                 save.SaveNow();
