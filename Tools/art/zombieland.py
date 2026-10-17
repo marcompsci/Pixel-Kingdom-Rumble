@@ -878,3 +878,14 @@ def riot_shield():
     d.line([(3, 2), (3, 4)], fill=(235, 245, 255, 255))
     d.point([(6, 11), (4, 13)], fill=(110, 120, 130, 255))
     return im
+
+
+def lever():
+    """A railway signal lever (12x14) with a faint amber glow: the Rail Yard Easter egg."""
+    im = img(12, 14)
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 2, 11, 13], fill=(255, 190, 60, 70))
+    d.rectangle([3, 10, 8, 13], fill=(70, 70, 78, 255), outline=INK)
+    d.line([(5, 10), (8, 2)], fill=(180, 40, 36, 255), width=2)
+    d.ellipse([7, 0, 10, 3], fill=(230, 230, 220, 255), outline=INK)
+    return im

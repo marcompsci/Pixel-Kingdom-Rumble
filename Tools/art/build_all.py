@@ -428,6 +428,21 @@ def build_zombieland():
     save(zl.bell(), os.path.join(props, 'bell.png'), ppu=16)
     save(zl.riot_shield(), os.path.join(props, 'riot_shield.png'), ppu=16)
     save(zl.minimap(pier, zl.building_color), os.path.join(res, 'minimap_pier.png'), ppu=16)
+    # Last Stand: Rail Yard
+    import zombieland_rail
+    rail = zombieland_rail.build().to_json()
+    with open(os.path.join(res, 'rail.json'), 'w', newline='\n') as f:
+        json.dump(rail, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'rail.json'))
+    save(zl.lever(), os.path.join(props, 'lever.png'), ppu=16)
+    save(zl.minimap(rail, zl.building_color), os.path.join(res, 'minimap_rail.png'), ppu=16)
+    # Zombie Land chapter 3: the Larkin sublevel
+    import zombieland_labs
+    labs = zombieland_labs.build().to_json()
+    with open(os.path.join(res, 'labs.json'), 'w', newline='\n') as f:
+        json.dump(labs, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'labs.json'))
+    save(zl.minimap(labs, zl.building_color), os.path.join(res, 'minimap_labs.png'), ppu=16)
 
 
 GUN_TINTS = {'street_smg': (255, 220, 100), 'riot_shotgun': (255, 200, 120), 'ranger_rifle': (240, 240, 220),

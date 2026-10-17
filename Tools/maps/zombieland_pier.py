@@ -25,6 +25,7 @@ zb.W, zb.H = W, H   # the Block helpers read these
 
 class Pier(zb.Block):
     def __init__(self):
+        zb.W, zb.H = W, H
         super().__init__()
         self.g = [['w'] * W for _ in range(H)]
         self.rng = random.Random(1313)

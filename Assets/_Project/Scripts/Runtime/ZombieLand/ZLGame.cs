@@ -204,12 +204,16 @@ namespace PKR
             if (Progress.seed == 0) ZLRules.NewGame(Progress, Mathf.Abs(Environment.TickCount) % 100000 + 1);
             Puzzle = ZLPuzzle.FromSeed(Progress.seed);
 
+            // Chapter 3: the sublevel is its own map, reached by the freight lift.
+            if (Progress.InLabs && !Progress.chapter3Begun) Progress.zone = "";
             World = gameObject.AddComponent<ZLWorld>();
             World.material = material;
-            if (!World.Build()) return;
+            if (!World.Build(Progress.InLabs ? ZLCatalog.LabsMap : "city")) return;
             Flow = new ZLFlowField(City);
 
             SpawnHero();
+            Progress.arriveAt = "";
+            SpawnLift();
             SpawnVehicles();
             SpawnSafehouses();
             SpawnLoot();
@@ -237,7 +241,11 @@ namespace PKR
                 Story("", ZLCatalog.Intro, "zl_city", null);
             }
             else if (Progress.bossDefeated && !Progress.chapter2Begun && shot == null) StartChapter2();
-            else ShowToast(Progress.InChapter2 ? $"{ZLCatalog.Chapter2Name}  ·  SIGILS {Progress.Sigils}/{ZLCatalog.SigilsNeeded}. CROSS THE CAUSEWAY."
+            else if (Progress.chapter2Done && !Progress.chapter3Begun && shot == null) StartChapter3();
+            else if (Progress.InLabs) ShowToast(Progress.InChapter3 ? $"{ZLCatalog.Chapter3Name}  ·  KEYCARDS {Progress.Keycards}/{ZLCatalog.KeycardsNeeded}."
+                                                : "THE SUBLEVEL IS QUIET. THE LIFT GOES BACK UP.");
+            else ShowToast(Progress.InChapter3 ? $"{ZLCatalog.Chapter3Name}: TAKE THE FREIGHT LIFT UNDER THE GRAYSTONE LAB."
+                         : Progress.InChapter2 ? $"{ZLCatalog.Chapter2Name}  ·  SIGILS {Progress.Sigils}/{ZLCatalog.SigilsNeeded}. CROSS THE CAUSEWAY."
                          : Progress.bossDefeated ? "ZOMBIE LAND IS CLEAR. ROAM FREE." : $"SHARDS {Progress.Shards}/{ZLCatalog.ShardsNeeded}. KEEP GOING.");
         }
 
@@ -318,15 +326,103 @@ namespace PKR
             FlushXp();
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
-            Story("", ZLCatalog.Chapter2Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter2Reward} STAR SHARDS. BLACKWATER IS CLEAR."));
+            Story("", ZLCatalog.Chapter2Ending, "dawn", () =>
+            {
+                ShowToast($"+{ZLRules.Chapter2Reward} STAR SHARDS. BLACKWATER IS CLEAR.");
+                StartChapter3();
+            });
         }
 
         bool OnIsle => City != null && City.DistrictAt(TargetPos) == "isle";
 
+        // ---- chapter 3: the Sublevel ---------------------------------------------------------------------
+
+        void SpawnLift()
+        {
+            if (IsLastStand) return;
+            bool city = !Progress.InLabs;
+            string key = city ? ZLCatalog.LabLift : "lift";
+            if (!City.sites.Exists(x => x.key == key)) return;
+            var go = new GameObject("FreightLift");
+            go.transform.position = City.SiteOf(key);
+            var lift = go.AddComponent<ZLLift>();
+            lift.Init(this, city);
+            _uses.Add(lift);
+        }
+
+        /// <summary>Chapter 3 begins once Blackwater is clear: Dr. Hale finds the lab's freight lift.</summary>
+        public void StartChapter3()
+        {
+            if (!ZLRules.BeginChapter3(Progress)) return;
+            Save(true);
+            Story("DR. HALE", ZLCatalog.Chapter3Intro, "zl_city", () => ShowToast(ZLCatalog.Chapter3Name + ": TAKE THE FREIGHT LIFT UNDER THE GRAYSTONE LAB."));
+        }
+
+        /// <summary>The freight lift: save, swap the map, reload Zombie Land on the other side.</summary>
+        public void RideLift(bool down)
+        {
+            if (!ZLRules.LiftOpen(Progress) || Boss != null) return;
+            Progress.zone = down ? ZLCatalog.LabsMap : "";
+            Progress.arriveAt = down ? "lift" : ZLCatalog.LabLift;
+            if (down) Progress.checkpoint = "safe_labs";
+            else if (Progress.checkpoint == "safe_labs") Progress.checkpoint = "";
+            Save(true);
+            Sfx.Play(Sfx.Click, 0.9f, 0f);
+            LiftRides++;
+            if (Services.Scenes != null) Services.Scenes.ReloadCurrent();
+            else UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+
+        /// <summary>How many times the lift was ridden this scene (tests).</summary>
+        public int LiftRides { get; private set; }
+
+        /// <summary>The Curator's vault at the bottom of the sublevel: three keycards open it.</summary>
+        public void TryVault(Vector2 door)
+        {
+            if (Boss != null || !Progress.InChapter3) return;
+            if (!ZLRules.VaultOpen(Progress))
+            {
+                ShowToast($"THE VAULT: SEALED. SECURITY KEYCARDS {Progress.Keycards}/{ZLCatalog.KeycardsNeeded}.");
+                Sfx.Play(Sfx.Click, 0.7f, 0f);
+                return;
+            }
+            Story(ZLCatalog.Chapter3BossName, ZLCatalog.Chapter3BossIntro, "zl_boss", () =>
+            {
+                Vector2 at = door + Vector2.down * 4f;
+                if (!City.Walkable(at)) at = door + Vector2.left * 4f;
+                if (!City.Walkable(at)) at = door;
+                var go = new GameObject("TheCurator");
+                go.transform.position = at;
+                Boss = go.AddComponent<ZLBoss>();
+                Boss.Init(this, Frames("boss_idle", 2), Frames("boss_walk", 4), Frames("boss_attack", 2));
+                Boss.MakeCurator();
+                ShowToast(ZLCatalog.Chapter3BossName + "!");
+            });
+        }
+
+        void Chapter3BossDefeated(ZLBoss boss)
+        {
+            Progress.chapter3Done = true;
+            foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
+            _zombies.Clear();
+            foreach (var n in _nests.ToArray()) if (n != null) Destroy(n.gameObject);
+            _nests.Clear();
+            Destroy(boss.gameObject, 0.1f);
+            Boss = null;
+            if (Services.Save != null) Services.Save.Data.starShards += ZLRules.Chapter3Reward;
+            ZLRules.GiveGun(Progress, ZLCatalog.Singularity, ZLCatalog.Singularity.magazine * 3);
+            ProgressTracker.AddXp(800);
+            AddXp(SurvivorRank.ZLBossXp);
+            FlushXp();
+            Sfx.Play(Sfx.Victory, 1f);
+            Save(true);
+            Story("", ZLCatalog.Chapter3Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter3Reward} STAR SHARDS AND THE SINGULARITY. THE SUBLEVEL IS SEALED."));
+        }
+
         public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
 
         /// <summary>The minimap image for this map.</summary>
-        public Sprite Minimap => Sprite(IsLastStand ? "minimap_" + LsMap.File : "minimap");
+        public Sprite Minimap => Sprite(IsLastStand ? "minimap_" + LsMap.File : Progress != null && Progress.InLabs ? "minimap_" + ZLCatalog.LabsMap : "minimap");
         /// <summary>Last Stand: the map being played (from GameSession.ZombieMap).</summary>
         public LastStandMap LsMap { get; private set; } = LastStandMap.HollowBlock;
 
@@ -357,6 +453,8 @@ namespace PKR
         Vector2 RespawnPoint()
         {
             if (IsLastStand) return new Vector2(City.start.x, City.start.y);
+            if (!string.IsNullOrEmpty(Progress.arriveAt) && City.sites.Exists(x => x.key == Progress.arriveAt))
+                return City.SiteOf(Progress.arriveAt) + Vector2.up * 1.5f;
             foreach (var s in City.safehouses)
                 if (s.id == Progress.checkpoint) return new Vector2(s.x + 1f, s.y);
             return new Vector2(City.start.x, City.start.y);
@@ -452,13 +550,16 @@ namespace PKR
 
         void SpawnNests()
         {
-            if (Progress.chapter2Done) return;
+            if (Progress.chapter3Done) return;
             var frames = new[] { Sprite("Props/nest_0"), Sprite("Props/nest_1") };
             foreach (var n in City.nests)
             {
                 if (Progress.nestsCleared.Contains(n.id)) continue;
                 // the mainland's nests die with the First Turned; Blackwater's wake with chapter 2
-                if (n.district == "isle" ? !Progress.bossDefeated : Progress.bossDefeated) continue;
+                bool awake = n.district == ZLCatalog.LabsMap ? Progress.InChapter3
+                           : n.district == "isle" ? Progress.bossDefeated && !Progress.chapter2Done
+                           : !Progress.bossDefeated;
+                if (!awake) continue;
                 if (!_nestIds.Add(n.id)) continue;
                 var go = new GameObject("Nest_" + n.id);
                 go.transform.position = new Vector2(n.x, n.y);
@@ -525,7 +626,7 @@ namespace PKR
             _discoverT -= dt;
             if (_discoverT <= 0f) { _discoverT = 0.5f; Discover(); }
 
-            if (!Progress.bossDefeated || Progress.InChapter2 && OnIsle)
+            if (!Progress.bossDefeated || Progress.InChapter2 && OnIsle || Progress.InChapter3 && Progress.InLabs)
             {
                 _groanT -= dt;
                 if (_groanT <= 0f)
@@ -933,6 +1034,38 @@ namespace PKR
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.2f, 0.2f);
         }
 
+        /// <summary>The Singularity Cannon: the dead nearby are dragged to the orb, then it bursts.</summary>
+        public void Singularity(Vector2 at, int damage, ZLPlayer owner)
+        {
+            if (IsGuest) return;
+            StartCoroutine(SingularityRoutine(at, damage, owner));
+        }
+
+        IEnumerator SingularityRoutine(Vector2 at, int damage, ZLPlayer owner)
+        {
+            ZLFx.Spawn(GlowHalo.Sprite, at, new Color(0.55f, 0.3f, 1f, 0.85f), ZLCatalog.PullSeconds + 0.1f, ZLCatalog.PullBurstRadius, -4f, material);
+            float t = 0f;
+            while (t < ZLCatalog.PullSeconds)
+            {
+                t += Time.deltaTime;
+                foreach (var z in _zombies)
+                {
+                    if (z == null || !z.Alive || z.Body == null || z.kind == ZLFoe.Herald) continue;
+                    Vector2 d = at - (Vector2)z.transform.position;
+                    if (d.magnitude > ZLCatalog.Singularity.pull || d.magnitude < 0.2f) continue;
+                    // move it directly (its own steering would cancel a velocity), never through a wall
+                    Vector2 next = z.Body.position + d.normalized * Mathf.Min(d.magnitude, 7f * Time.deltaTime);
+                    if (City.Walkable(next)) { z.Body.position = next; z.transform.position = next; }
+                }
+                yield return null;
+            }
+            var prevOwner = MeleeAttacker;
+            MeleeAttacker = owner;   // points for the burst go to whoever fired
+            Explode(at, ZLCatalog.PullBurstRadius, damage, true);
+            MeleeAttacker = prevOwner;
+            if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.3f, 0.3f);
+        }
+
         /// <summary>The Rime Cannon's frost burst: every zombie near the hit freezes.</summary>
         public void FreezeAround(Vector2 at, float seconds)
         {
@@ -1214,7 +1347,10 @@ namespace PKR
             AddXp(spec.required ? SurvivorRank.ZLStoryMissionXp : SurvivorRank.ZLMissionXp);
             int got = ZLShop.Earn(Progress, spec.required ? ZLShop.StoryMissionScrap : ZLShop.BonusMissionScrap, false);
             var lines = new List<string> { spec.done + $"  (+{got} scrap)" };
-            if (spec.required && spec.chapter == 2)
+            if (spec.required && spec.chapter == 3)
+                lines.Add($"SECURITY KEYCARDS: {Progress.Keycards}/{ZLCatalog.KeycardsNeeded}" +
+                          (Progress.Keycards >= ZLCatalog.KeycardsNeeded ? ". The Curator's vault will open now." : ""));
+            else if (spec.required && spec.chapter == 2)
                 lines.Add($"SEA-GLASS SIGILS: {Progress.Sigils}/{ZLCatalog.SigilsNeeded}" +
                           (Progress.Sigils >= ZLCatalog.SigilsNeeded ? ". The tide gate under the penitentiary will open now." : ""));
             else if (spec.required)
@@ -1251,6 +1387,7 @@ namespace PKR
         public void TryLair(string lairId, Vector2 door)
         {
             if (lairId == ZLCatalog.TideGate) { TryTideGate(door); return; }
+            if (lairId == ZLCatalog.Vault) { TryVault(door); return; }
             var lair = ZLCatalog.Lair(lairId);
             if (Boss != null || Progress.bossDefeated) return;
             if (Progress.Shards < ZLCatalog.ShardsNeeded)
@@ -1291,6 +1428,7 @@ namespace PKR
 
         public void BossDefeated(ZLBoss boss)
         {
+            if (boss != null && boss.Curator) { Chapter3BossDefeated(boss); return; }
             if (boss != null && boss.Brine) { Chapter2BossDefeated(boss); return; }
             Progress.bossDefeated = true;
             foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);

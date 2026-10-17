@@ -91,7 +91,7 @@ namespace PKR
                     target.Hit(_damage, _vel.normalized, _gun);
                     Striking = false;
                     LastOwner = null;
-                    if (_gun != null && _gun.shot == "comet") ZLGame.Current?.Explode(Hits[i].point, 2.2f, _damage / 2, !_hostile);
+                    if (_gun != null && _gun.shot == "comet") Burst(Hits[i].point);
                     Despawn();
                     return;
                 }
@@ -106,13 +106,22 @@ namespace PKR
                     return;
                 }
                 // a wall
-                if (_gun != null && _gun.shot == "comet") ZLGame.Current?.Explode(Hits[i].point, 2.2f, _damage / 2, !_hostile);
+                if (_gun != null && _gun.shot == "comet") Burst(Hits[i].point);
                 Despawn();
                 return;
             }
             transform.position = p + _vel * dt;
             _life -= dt;
             if (_life <= 0f) Despawn();
+        }
+
+        /// <summary>Comet shots burst where they land; the Singularity first drags the dead in.</summary>
+        void Burst(Vector2 at)
+        {
+            var g = ZLGame.Current;
+            if (g == null) return;
+            if (_gun != null && _gun.pull > 0f && !_hostile) g.Singularity(at, _damage, _owner);
+            else g.Explode(at, 2.2f, _damage / 2, !_hostile);
         }
 
         void Despawn()

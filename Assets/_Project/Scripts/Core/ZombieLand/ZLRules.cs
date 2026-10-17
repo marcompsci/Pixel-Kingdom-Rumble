@@ -38,6 +38,10 @@ namespace PKR.Core
         public bool introSeen;
         /// <summary>Chapter 2 (Blackwater Isle): begun after the First Turned falls; done when Mother Brine falls.</summary>
         public bool chapter2Begun, chapter2Done;
+        /// <summary>Chapter 3 (the Larkin sublevel): begun after Mother Brine; done when the Curator falls.</summary>
+        public bool chapter3Begun, chapter3Done;
+        /// <summary>Which map the hero is on: "" = the city, "labs" = the sublevel. arriveAt = a site to appear at next load.</summary>
+        public string zone = "", arriveAt = "";
         /// <summary>Bonus rewards unlocked (motorcycles, medkits, assault_rifle, riot_shotgun).</summary>
         public List<string> rewards = new List<string>();
         /// <summary>SCRAP to spend at safehouse supply crates, and all scrap ever earned.</summary>
@@ -64,6 +68,9 @@ namespace PKR.Core
             if (forged == null) forged = new List<string>();
             if (checkpoint == null) checkpoint = "";
             if (equipped == null) equipped = "";
+            if (zone == null) zone = "";
+            if (arriveAt == null) arriveAt = "";
+            if (zone != "" && zone != ZLCatalog.LabsMap) zone = "";
             if (scrap < 0) scrap = 0;
         }
 
@@ -97,6 +104,24 @@ namespace PKR.Core
                 return n;
             }
         }
+
+        /// <summary>Chapter 3: security keycards (one per required sublevel mission).</summary>
+        public int Keycards
+        {
+            get
+            {
+                int n = 0;
+                foreach (var id in completed)
+                {
+                    var m = ZLCatalog.Mission(id);
+                    if (m != null && m.required && m.chapter == 3) n++;
+                }
+                return n;
+            }
+        }
+
+        public bool InChapter3 => chapter2Done && chapter3Begun && !chapter3Done;
+        public bool InLabs => zone == ZLCatalog.LabsMap;
 
         /// <summary>Chapter 2 is under way: the First Turned is dead and Mother Brine isn't yet.</summary>
         public bool InChapter2 => bossDefeated && chapter2Begun && !chapter2Done;
@@ -257,6 +282,8 @@ namespace PKR.Core
             p.medkits = 1; p.armor = 0; p.deaths = 0; p.kills = 0; p.playSeconds = 0f;
             p.bossDefeated = false; p.introSeen = false;
             p.chapter2Begun = false; p.chapter2Done = false;
+            p.chapter3Begun = false; p.chapter3Done = false;
+            p.zone = ""; p.arriveAt = "";
         }
 
         // ---- chapter 2 ---------------------------------------------------------------------------------
@@ -274,6 +301,25 @@ namespace PKR.Core
             foreach (var id in ZLCatalog.Chapter2StartingLeads) if (!p.leads.Contains(id)) p.leads.Add(id);
             return true;
         }
+
+        public const int Chapter3Reward = 2500;
+        /// <summary>The Curator's health (every weapon hurts it).</summary>
+        public const int Chapter3BossHealth = 3200;
+
+        /// <summary>Opens chapter 3 once Mother Brine is dead: the freight lift works and the first lead is known.</summary>
+        public static bool BeginChapter3(ZombieLandProgress p)
+        {
+            if (p == null || !p.chapter2Done || p.chapter3Begun) return false;
+            p.chapter3Begun = true;
+            foreach (var id in ZLCatalog.Chapter3StartingLeads) if (!p.leads.Contains(id)) p.leads.Add(id);
+            return true;
+        }
+
+        /// <summary>The freight lift runs once chapter 3 has begun.</summary>
+        public static bool LiftOpen(ZombieLandProgress p) => p != null && p.chapter3Begun;
+
+        /// <summary>The director's vault opens for the Curator when you carry every keycard.</summary>
+        public static bool VaultOpen(ZombieLandProgress p) => p != null && p.InChapter3 && p.Keycards >= ZLCatalog.KeycardsNeeded;
 
         /// <summary>The tide gate opens for Mother Brine when you carry every sigil.</summary>
         public static bool TideGateOpen(ZombieLandProgress p) => p != null && p.InChapter2 && p.Sigils >= ZLCatalog.SigilsNeeded;

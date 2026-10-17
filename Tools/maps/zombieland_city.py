@@ -133,6 +133,9 @@ class City:
         self.place_pickups()
         self.place_nests()
         self.isle()
+        # chapter 3: the freight lift down to the Larkin sublevel, beside Larkin Labs
+        lx, ly = self.near_free(131, 138, allowed=('s', 'g', 'y', 'p', 'i', 'l'))
+        self.site('lab_lift', lx, ly)
         self.border()
         return self
 

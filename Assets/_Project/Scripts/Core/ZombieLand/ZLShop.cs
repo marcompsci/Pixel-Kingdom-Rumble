@@ -174,7 +174,7 @@ namespace PKR.Core
             var list = new List<(ZLGun, float)>();
             foreach (var g in ZLCatalog.Guns)
             {
-                if (g.isRelic || g.id == ZLCatalog.Pistol.id) continue;
+                if (g.isRelic || g.bossDrop || g.id == ZLCatalog.Pistol.id) continue;
                 list.Add((g, g.wonder ? 0.6f : g.id == "thumper" ? 0.7f : 1f));
             }
             return list;

@@ -27,6 +27,7 @@ namespace PKR.Core
         public const string LeaderboardManor = "pkr.lb.manor";
         public const string LeaderboardSurvivorXp = "pkr.lb.survivor_xp";
         public const string LeaderboardPier = "pkr.lb.pier";
+        public const string LeaderboardRail = "pkr.lb.rail";
 
         public const string FirstSteps = "pkr.ach.first_steps";
         public const string Warden = "pkr.ach.warden";

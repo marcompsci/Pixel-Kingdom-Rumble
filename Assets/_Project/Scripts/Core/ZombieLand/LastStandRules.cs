@@ -101,6 +101,16 @@ namespace PKR.Core
 
         public const int BoxCost = 950, ForgeCost = 5000, PerkLimit = 4;
 
+        /// <summary>Last Stand boss phases: 1 above half health, 2 (enraged, calls runners) to a quarter, 3 (the horde).</summary>
+        public static int BossPhase(float health01) => health01 <= 0.25f ? 3 : health01 <= 0.5f ? 2 : 1;
+
+        /// <summary>Speed multiplier for a boss in this phase.</summary>
+        public static float BossPhaseSpeed(int phase) => phase >= 3 ? 1.45f : phase == 2 ? 1.25f : 1f;
+
+        /// <summary>The dead a boss calls when it enters a phase (kind, count).</summary>
+        public static (ZLFoe kind, int count) BossSummons(int phase, bool hidden) =>
+            phase == 2 ? (hidden ? ZLFoe.Leaper : ZLFoe.Runner, 4) : phase >= 3 ? (hidden ? ZLFoe.Riot : ZLFoe.Shambler, hidden ? 3 : 6) : (ZLFoe.Shambler, 0);
+
         /// <summary>An AI teammate with no ammo at all scrounges three magazines after this long.</summary>
         public const float AIResupplySeconds = 4f;
 

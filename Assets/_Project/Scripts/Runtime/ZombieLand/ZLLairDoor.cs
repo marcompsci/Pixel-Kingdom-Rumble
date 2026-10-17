@@ -11,8 +11,9 @@ namespace PKR
         public Vector2 UsePos => transform.position;
         public float UseRange => 2.2f;
         bool TideGate => lairId == ZLCatalog.TideGate;
-        public bool CanUse => game.Boss == null && (TideGate ? game.Progress.InChapter2 : !game.Progress.bossDefeated);
-        public string Prompt => TideGate ? "THE TIDE GATE" : "SEARCH " + ZLCatalog.Lair(lairId).name.ToUpperInvariant();
+        bool Vault => lairId == ZLCatalog.Vault;
+        public bool CanUse => game.Boss == null && (Vault ? game.Progress.InChapter3 : TideGate ? game.Progress.InChapter2 : !game.Progress.bossDefeated);
+        public string Prompt => Vault ? "THE CURATOR'S VAULT" : TideGate ? "THE TIDE GATE" : "SEARCH " + ZLCatalog.Lair(lairId).name.ToUpperInvariant();
 
         public void Init(ZLGame g, string id)
         {
@@ -26,6 +27,13 @@ namespace PKR
         {
             base.Update();
             if (label == null) return;
+            if (Vault)
+            {
+                var p = game.Progress;
+                label.text = !p.InChapter3 ? "" : p.Keycards >= ZLCatalog.KeycardsNeeded ? "VAULT" : $"KEYCARDS {p.Keycards}/{ZLCatalog.KeycardsNeeded}";
+                if (sr != null) sr.enabled = p.InChapter3;
+                return;
+            }
             if (TideGate)
             {
                 var p = game.Progress;

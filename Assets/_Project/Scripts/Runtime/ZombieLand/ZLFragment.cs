@@ -15,16 +15,16 @@ namespace PKR
         public Vector2 UsePos => transform.position;
         public float UseRange => 1.2f;
         public bool CanUse => !_taken && _stand != null && !_stand.Over;
-        public string Prompt => _bell ? "RING THE BRASS BELL" : "A HUMMING STONE";
-        bool _bell;
+        public string Prompt => _prompt;
+        string _prompt = "A HUMMING STONE";
 
         public void Init(ZLGame g, ZLLastStand stand) => Init(g, stand, LastStandMap.HollowBlock);
 
         public void Init(ZLGame g, ZLLastStand stand, LastStandMap map)
         {
             _stand = stand;
-            _bell = map == LastStandMap.SaltPier;
-            Setup(g, g.Sprite(_bell ? "Props/bell" : "Props/fragment"), null, Color.white, 1f);
+            _prompt = map.EggPrompt;
+            Setup(g, g.Sprite("Props/" + map.EggSprite), null, Color.white, 1f);
         }
 
         public void Use(ZLPlayer p)

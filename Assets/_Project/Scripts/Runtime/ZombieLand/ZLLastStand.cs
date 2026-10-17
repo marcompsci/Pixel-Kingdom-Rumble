@@ -259,6 +259,7 @@ namespace PKR
                 return;
             }
             SpawnTick(dt);
+            BossPhases();
             _alive.RemoveAll(z => z == null || !z.Alive);
             if (_toSpawn <= 0 && !_bossPending && !_kingPending && _alive.Count == 0) EndRound();
         }
@@ -296,6 +297,44 @@ namespace PKR
             _g.Announce(head, 3.5f);
             if (HoundRound && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
         }
+
+        readonly Dictionary<ZLZombie, int> _bossPhase = new Dictionary<ZLZombie, int>();
+        readonly Dictionary<ZLZombie, float> _bossBaseSpeed = new Dictionary<ZLZombie, float>();
+
+        /// <summary>Bosses change as they're hurt: enraged at half health (faster, calls runners), the horde at a quarter.</summary>
+        void BossPhases()
+        {
+            CheckBoss(Butcher, false);
+            CheckBoss(HollowKing, true);
+        }
+
+        void CheckBoss(ZLZombie b, bool hidden)
+        {
+            if (b == null || !b.Alive) return;
+            if (!_bossBaseSpeed.ContainsKey(b)) _bossBaseSpeed[b] = b.speed;
+            _bossPhase.TryGetValue(b, out int was);
+            if (was == 0) was = 1;
+            int now = LastStandRules.BossPhase(b.hp / (float)Mathf.Max(1, b.maxHp));
+            if (now <= was) return;
+            _bossPhase[b] = now;
+            b.speed = _bossBaseSpeed[b] * LastStandRules.BossPhaseSpeed(now);
+            string name = hidden ? Map.HiddenBossName : Map.BossName;
+            _g.Announce(now == 2 ? name + " IS ENRAGED!" : name + " CALLS THE HORDE!", 2.5f);
+            if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.25f, 0.4f);
+            if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+            var (kind, count) = LastStandRules.BossSummons(now, hidden);
+            for (int i = 0; i < count; i++)
+            {
+                var z = Spawn(kind);
+                if (z == null) continue;
+                Vector2 at = (Vector2)b.transform.position + Random.insideUnitCircle.normalized * 2.5f;
+                if (!_g.City.Walkable(at)) continue;   // stays at its spawn point and walks in
+                z.transform.position = at;
+                if (z.Body != null) z.Body.position = at;
+            }
+        }
+
+        public int BossPhaseOf(ZLZombie b) => b != null && _bossPhase.TryGetValue(b, out int p) ? p : 1;
 
         readonly Dictionary<ZLPlayer, float> _aiDry = new Dictionary<ZLPlayer, float>();
 
@@ -450,7 +489,7 @@ namespace PKR
             z.maxHp = z.hp = Mut.Health(SquadRules.BossHealth(LastStandRules.BossHealth(Run.Round, Mode, true), SquadSize));
             z.speed = 3.1f * SurvivalModes.SpeedScale(Mode) * Mut.ZombieSpeed;
             z.transform.localScale = Vector3.one * 1.5f;
-            z.SetTint(Map == LastStandMap.SaltPier ? new Color(0.55f, 0.95f, 0.85f) : new Color(0.75f, 0.65f, 1f));
+            z.SetTint(new Color32(Map.HR, Map.HG, Map.HB, 255));
             HollowKing = z;
             _g.Announce(Map.HiddenBossName + "!", 3.5f);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.4f, 0.8f);
@@ -629,11 +668,11 @@ namespace PKR
             _g.UnregisterUse(f);
             if (!last)
             {
-                _g.Announce($"{Map.EggName} {(Map == LastStandMap.SaltPier ? "RINGS" : "HUMS")}... ({Ls.FragmentsFound}/{LastStandRules.Fragments})", 3f);
+                _g.Announce($"{Map.EggName} {Map.EggFound}... ({Ls.FragmentsFound}/{LastStandRules.Fragments})", 3f);
                 return;
             }
             Ls.HiddenBossSummoned = true;
-            _g.Announce(Map == LastStandMap.SaltPier ? "THE BELLS TOLL. SOMETHING RISES FROM THE WATER." : "THE FRAGMENTS SING. SOMETHING UNDER THE BLOCK IS AWAKE.", 4f);
+            _g.Announce(Map.EggAll, 4f);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.3f, 0.8f);
         }
 
@@ -642,6 +681,12 @@ namespace PKR
             Ls.HiddenBossBeaten = true;
             foreach (var h in _g.Squad) if (h != null) Wallet(h).Earn(3000);
             RecordHollowKing();
+            var drop = string.IsNullOrEmpty(Map.HiddenDrop) ? null : ZLCatalog.Gun(Map.HiddenDrop);
+            if (drop != null)
+            {
+                foreach (var h in _g.Squad) if (h != null && h.Loadout != null) GiveGun(h, drop);
+                _g.ShowToast($"{Map.HiddenBossName} DROPS THE {drop.name}!", 4f);
+            }
             _g.Announce($"{Map.HiddenBossName} IS DEAD!  +{SurvivalModes.HiddenBossShards} STAR SHARDS  ·  5TH PERK SLOT", 4.5f);
             Sfx.Play(Sfx.Victory, 1f, 0f);
         }

@@ -278,7 +278,8 @@ namespace PKR
             foreach (var l in g.City.lairs)
             {
                 var id = l.id;
-                Dot(new Vector2(l.x, l.y), g.Sprite("Props/pk_lair"), size * 1.3f, () => !g.Progress.bossDefeated,
+                Dot(new Vector2(l.x, l.y), g.Sprite("Props/pk_lair"), size * 1.3f,
+                    () => id == ZLCatalog.Vault ? g.Progress.InChapter3 : id == ZLCatalog.TideGate ? g.Progress.InChapter2 : !g.Progress.bossDefeated,
                     () => g.Progress.lairsSearched.Contains(id) || !g.Puzzle.LairsLeft(g.Progress.completed).Contains(id) ? new Color(0.5f, 0.5f, 0.5f, 0.6f) : Color.white);
             }
             // Scout's Eye (Survivor Rank): guns and ammo lying about show on the map
@@ -366,7 +367,7 @@ namespace PKR
                 return;
             }
 
-            _shards.text = prog.InChapter2 ? $"SEA-GLASS SIGILS {prog.Sigils}/{ZLCatalog.SigilsNeeded}" : prog.chapter2Done ? "ZOMBIE LAND & BLACKWATER CLEARED" : prog.bossDefeated ? "ZOMBIE LAND CLEARED" : $"GRAYSTONE SHARDS {prog.Shards}/{ZLCatalog.ShardsNeeded}";
+            _shards.text = prog.InChapter3 ? $"SECURITY KEYCARDS {prog.Keycards}/{ZLCatalog.KeycardsNeeded}" : prog.chapter3Done ? "THE CITY, BLACKWATER & THE SUBLEVEL CLEARED" : prog.InChapter2 ? $"SEA-GLASS SIGILS {prog.Sigils}/{ZLCatalog.SigilsNeeded}" : prog.chapter2Done ? "ZOMBIE LAND & BLACKWATER CLEARED" : prog.bossDefeated ? "ZOMBIE LAND CLEARED" : $"GRAYSTONE SHARDS {prog.Shards}/{ZLCatalog.ShardsNeeded}";
             if (prog.bossDefeated) _hounds.text = "";
             else if (_g.Boss != null) { _hounds.text = $"{_g.Boss.BossName} {Mathf.CeilToInt(_g.Boss.Health01 * 100f)}%"; _hounds.color = new Color(1f, 0.4f, 0.5f); }
             else if (_g.InSafehouse) { _hounds.text = "SAFEHOUSE: THE HOUNDS CAN'T SMELL YOU"; _hounds.color = new Color(0.6f, 1f, 0.7f); }

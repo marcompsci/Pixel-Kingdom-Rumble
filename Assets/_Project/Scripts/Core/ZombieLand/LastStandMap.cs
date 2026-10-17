@@ -10,6 +10,12 @@ namespace PKR.Core
     public sealed class LastStandMap
     {
         public string Id, File, Title, Short, Blurb, BossName, HiddenBossName, HiddenSecret, EggName, Leaderboard;
+        /// <summary>The Easter egg piece's sprite (Props/...), its prompt, what finding one says and what finding all three says.</summary>
+        public string EggSprite = "fragment", EggPrompt = "A HUMMING STONE", EggFound = "HUMS", EggAll = "THE FRAGMENTS SING. SOMETHING UNDER THE BLOCK IS AWAKE.";
+        /// <summary>A wonder weapon the hidden boss drops for the whole squad ("" = none).</summary>
+        public string HiddenDrop = "";
+        /// <summary>The hidden boss's colour (r, g, b, 0..255).</summary>
+        public byte HR = 190, HG = 165, HB = 255;
         /// <summary>Menu colour (r, g, b).</summary>
         public byte R, G, B;
 
@@ -30,10 +36,23 @@ namespace PKR.Core
             Blurb = "Docks, a container maze, the fish market and a lighthouse out on the water",
             BossName = "THE DROWNED FOREMAN", HiddenBossName = "THE TIDE MOTHER",
             HiddenSecret = "tide_mother", EggName = "BRASS BELL",
+            EggSprite = "bell", EggPrompt = "RING THE BRASS BELL", EggFound = "RINGS", EggAll = "THE BELLS TOLL. SOMETHING RISES FROM THE WATER.",
+            HR = 140, HG = 240, HB = 215,
             Leaderboard = Achievements.LeaderboardPier, R = 40, G = 110, B = 150,
         };
 
-        public static readonly LastStandMap[] All = { HollowBlock, SaltPier };
+        public static readonly LastStandMap RailYard = new LastStandMap
+        {
+            Id = "rail_yard", File = "rail", Title = "RAIL YARD", Short = "the Rail Yard",
+            Blurb = "A freight yard: the platform, the switchyard, the roundhouse and the signal tower",
+            BossName = "THE CONDUCTOR", HiddenBossName = "THE IRON WIDOW",
+            HiddenSecret = "iron_widow", EggName = "SIGNAL LEVER",
+            EggSprite = "lever", EggPrompt = "THROW THE SIGNAL LEVER", EggFound = "CLANKS", EggAll = "EVERY SIGNAL TURNS RED. A WHISTLE SCREAMS DOWN THE LINE.",
+            HiddenDrop = "singularity", HR = 255, HG = 150, HB = 90,
+            Leaderboard = Achievements.LeaderboardRail, R = 120, G = 80, B = 50,
+        };
+
+        public static readonly LastStandMap[] All = { HollowBlock, SaltPier, RailYard };
 
         /// <summary>The map with this id (Hollow Block if unknown or empty).</summary>
         public static LastStandMap Get(string id)

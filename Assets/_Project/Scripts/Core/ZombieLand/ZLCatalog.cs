@@ -96,6 +96,10 @@ namespace PKR.Core
         public bool wonder;
         /// <summary>Freezes what it hits for this many seconds (the Rime Cannon); frozen zombies crawl and take extra damage.</summary>
         public float freeze;
+        /// <summary>Pulls the dead toward where it lands for a moment before it bursts (the Singularity Cannon).</summary>
+        public float pull;
+        /// <summary>Never in the mystery box: only a boss drops it.</summary>
+        public bool bossDrop;
         /// <summary>Hollow-forged at the upgrade forge (a copy made by ZLShop.Effective).</summary>
         public bool forged;
 
@@ -131,6 +135,7 @@ namespace PKR.Core
             new ZLDistrict { id = "university", name = "College Hill", threat = 4, blurb = "Larkin Labs and the stadium. Where it started." },
             new ZLDistrict { id = "industrial", name = "Ironside", threat = 4, blurb = "Warehouses, the rail depot and the waterworks." },
             new ZLDistrict { id = "isle", name = "Blackwater Isle", threat = 5, blurb = "The fishing village, the cannery and the old prison. Chapter 2." },
+            new ZLDistrict { id = "labs", name = "The Larkin Sublevel", threat = 5, blurb = "Sealed research floors under Larkin Labs. Chapter 3." },
         };
 
         public static ZLDistrict District(string id)
@@ -219,6 +224,20 @@ namespace PKR.Core
             shot = "lance", wonder = true, freeze = 3f
         };
 
+        /// <summary>
+        /// The third wonder weapon, dropped by bosses (THE CURATOR in Zombie Land, THE IRON WIDOW on the Rail Yard):
+        /// a slow dark orb that drags the dead in, then bursts.
+        /// </summary>
+        public static readonly ZLGun Singularity = new ZLGun
+        {
+            id = "singularity", name = "SINGULARITY CANNON", damage = 40, magazine = 3, maxReserve = 18, pellets = 1,
+            shotsPerSecond = 0.8f, reloadSeconds = 2.4f, speed = 9f, range = 11f, noise = 0.6f, r = 190, g = 120, b = 255,
+            shot = "comet", wonder = true, pull = 4f, bossDrop = true
+        };
+
+        /// <summary>How long the Singularity pulls before it bursts, and the burst radius.</summary>
+        public const float PullSeconds = 0.6f, PullBurstRadius = 3.2f;
+
         /// <summary>Radius of the Rime Cannon's frost burst, and how much harder frozen zombies are hit.</summary>
         public const float FreezeRadius = 1.8f, FrozenDamageScale = 1.5f, FrozenSpeedScale = 0.25f;
 
@@ -239,6 +258,7 @@ namespace PKR.Core
                         shotsPerSecond = 0.9f, reloadSeconds = 1.6f, speed = 12f, range = 11f, noise = 1f, r = 255, g = 140, b = 60, shot = "comet" },
             StormCoil,
             RimeCannon,
+            Singularity,
         };
 
 
@@ -353,6 +373,7 @@ namespace PKR.Core
         {
             foreach (var m in Missions) if (m.id == id) return m;
             foreach (var m in Chapter2Missions) if (m.id == id) return m;
+            foreach (var m in Chapter3Missions) if (m.id == id) return m;
             return null;
         }
 
@@ -403,6 +424,56 @@ namespace PKR.Core
         {
             "The four sigils burn cold. Under the prison, the tide gate grinds open.",
             "MOTHER BRINE rises out of the black water, wearing the warden's keys.",
+        };
+
+        // ---- chapter 3: the Larkin sublevel ------------------------------------------------------------
+
+        public const string Chapter3Name = "CHAPTER 3: THE SUBLEVEL";
+        public const string Chapter3BossName = "THE CURATOR";
+        public const int KeycardsNeeded = 3;
+        /// <summary>The boss door in labs.json, and the freight lift sites (city.json "lab_lift", labs.json "lift").</summary>
+        public const string Vault = "curator_vault", LabLift = "lab_lift", LabsMap = "labs";
+
+        public static readonly ZLMissionSpec[] Chapter3Missions =
+        {
+            new ZLMissionSpec { id = "c3_power", name = "EMERGENCY POWER", district = "labs", giver = "DR. HALE", type = ZLMissionType.PowerUp, required = true, count = 3, chapter = 3,
+                briefing = "The sublevel runs on three emergency generators. Start them and the doors down here will listen to us again.",
+                done = "The lights stutter on, floor by floor. In the generator room's lockbox: a red security keycard.",
+                reveals = new[] { "c3_samples", "c3_armory" } },
+            new ZLMissionSpec { id = "c3_samples", name = "SPECIMEN B", district = "labs", giver = "DR. HALE", type = ZLMissionType.Retrieve, required = true, count = 3, chapter = 3,
+                briefing = "Three sealed sample cases from the first stone are loose in specimen storage. Get them before something eats them.",
+                done = "\"These were cut from the stone the night it fell. Someone kept them.\" Clipped to the last case, a blue keycard.",
+                reveals = new[] { "c3_seal" } },
+            new ZLMissionSpec { id = "c3_seal", name = "QUARANTINE DOORS", district = "labs", giver = "SGT. OKAFOR", type = ZLMissionType.HoldOut, required = true, seconds = 60f, chapter = 3,
+                briefing = "Okafor is sealing the quarantine wing by hand. Hold the dead off her for one minute.",
+                done = "The doors slam shut. Okafor hands you the last keycard: \"Director's vault. Whatever's in there signed the orders.\"",
+                reveals = new string[0] },
+            new ZLMissionSpec { id = "c3_armory", name = "THE ARMORY", district = "labs", giver = "SGT. OKAFOR", type = ZLMissionType.HuntHerald, chapter = 3,
+                briefing = "Something wearing a guard's armor is camped in the sublevel armory. Clear it and the racks are yours.",
+                done = "The armory is ours. On the rack, a Thumper Launcher with a full belt of shells.",
+                reward = "thumper" },
+        };
+
+        public static readonly string[] Chapter3StartingLeads = { "c3_power" };
+
+        public static readonly string[] Chapter3Intro =
+        {
+            "DR. HALE (radio): \"Blackwater's quiet. But Larkin Labs kept a piece of the first stone.\"",
+            "\"There's a freight lift beside the labs on College Hill. It goes down to the sublevel the army sealed.\"",
+            "Find three keycards and open the director's vault. End this where it started.",
+        };
+
+        public static readonly string[] Chapter3BossIntro =
+        {
+            "The vault door rolls back. Rows of glass. One of them is empty.",
+            "THE CURATOR, once the lab's director, steps out wearing the stone like a heart.",
+        };
+
+        public static readonly string[] Chapter3Ending =
+        {
+            "The Curator falls, and the last piece of the stone goes dark.",
+            "Under its case you find the Singularity Cannon, the weapon it was building to keep the dead in line.",
+            "CHAPTER 3 COMPLETE. New Hollow is yours.",
         };
 
         public static readonly string[] Chapter2Ending =
