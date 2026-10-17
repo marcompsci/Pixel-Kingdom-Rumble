@@ -889,3 +889,28 @@ def lever():
     d.line([(5, 10), (8, 2)], fill=(180, 40, 36, 255), width=2)
     d.ellipse([7, 0, 10, 3], fill=(230, 230, 220, 255), outline=INK)
     return im
+
+
+def grave():
+    """A weathered headstone (12x14) seen from above at an angle: Gravemoor Park's Chapel Hill."""
+    im = img(12, 14)
+    d = ImageDraw.Draw(im)
+    d.ellipse([1, 10, 10, 13], fill=(40, 50, 36, 120))                      # its shadow on the grass
+    d.rounded_rectangle([2, 1, 9, 11], radius=3, fill=(150, 150, 156, 255), outline=INK)
+    d.line([(4, 4), (7, 4)], fill=(96, 96, 104, 255))
+    d.line([(4, 6), (7, 6)], fill=(96, 96, 104, 255))
+    d.point([(3, 9), (8, 3)], fill=(110, 140, 90, 255))                     # moss
+    return im
+
+
+def lantern():
+    """A mourning lantern (12x14) with a faint green glow: the Gravemoor Park Easter egg."""
+    im = img(12, 14)
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 2, 11, 13], fill=(120, 230, 120, 70))
+    d.rectangle([5, 0, 6, 2], fill=(60, 60, 66, 255))
+    d.polygon([(3, 3), (8, 3), (9, 10), (2, 10)], fill=(46, 46, 54, 255), outline=INK)
+    d.rectangle([4, 5, 7, 9], fill=(170, 255, 150, 255))
+    d.point([(5, 6)], fill=(240, 255, 230, 255))
+    d.rectangle([2, 10, 9, 12], fill=(60, 60, 66, 255), outline=INK)
+    return im

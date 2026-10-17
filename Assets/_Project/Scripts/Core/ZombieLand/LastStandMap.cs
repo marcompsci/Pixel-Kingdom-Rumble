@@ -52,7 +52,19 @@ namespace PKR.Core
             Leaderboard = Achievements.LeaderboardRail, R = 120, G = 80, B = 50,
         };
 
-        public static readonly LastStandMap[] All = { HollowBlock, SaltPier, RailYard };
+        public static readonly LastStandMap Gravemoor = new LastStandMap
+        {
+            Id = "gravemoor", File = "gardens", Title = "GRAVEMOOR", Short = "Gravemoor Park",
+            Blurb = "An old city park: the gatehouse, the rose garden, the boathouse pond and the graves on Chapel Hill",
+            BossName = "THE GROUNDSKEEPER", HiddenBossName = "THE BRIAR QUEEN",
+            HiddenSecret = "briar_queen", EggName = "MOURNING LANTERN",
+            EggSprite = "lantern", EggPrompt = "LIGHT THE MOURNING LANTERN", EggFound = "FLICKERS GREEN",
+            EggAll = "THE LANTERNS BURN GREEN. EVERY ROSE IN THE PARK TURNS TO FACE YOU.",
+            HiddenDrop = "kindler", HR = 120, HG = 215, HB = 110,
+            Leaderboard = Achievements.LeaderboardGravemoor, R = 60, G = 110, B = 60,
+        };
+
+        public static readonly LastStandMap[] All = { HollowBlock, SaltPier, RailYard, Gravemoor };
 
         /// <summary>The map with this id (Hollow Block if unknown or empty).</summary>
         public static LastStandMap Get(string id)

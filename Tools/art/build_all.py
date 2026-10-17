@@ -436,6 +436,15 @@ def build_zombieland():
     written.append(os.path.join(res, 'rail.json'))
     save(zl.lever(), os.path.join(props, 'lever.png'), ppu=16)
     save(zl.minimap(rail, zl.building_color), os.path.join(res, 'minimap_rail.png'), ppu=16)
+    # Last Stand: Gravemoor Park
+    import zombieland_gardens
+    gardens = zombieland_gardens.build().to_json()
+    with open(os.path.join(res, 'gardens.json'), 'w', newline='\n') as f:
+        json.dump(gardens, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'gardens.json'))
+    save(zl.grave(), os.path.join(props, 'grave.png'), ppu=16)
+    save(zl.lantern(), os.path.join(props, 'lantern.png'), ppu=16)
+    save(zl.minimap(gardens, zl.building_color), os.path.join(res, 'minimap_gardens.png'), ppu=16)
     # Zombie Land chapter 3: the Larkin sublevel
     import zombieland_labs
     labs = zombieland_labs.build().to_json()

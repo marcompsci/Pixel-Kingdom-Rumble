@@ -10,7 +10,7 @@ namespace PKR.Tests
         [Test]
         public void Maps_HaveUniqueIdsFilesAndBoards()
         {
-            Assert.AreEqual(3, LastStandMap.All.Length);
+            Assert.AreEqual(4, LastStandMap.All.Length);
             for (int i = 0; i < LastStandMap.All.Length; i++)
                 for (int j = i + 1; j < LastStandMap.All.Length; j++)
                 {

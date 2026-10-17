@@ -28,6 +28,7 @@ namespace PKR.Core
         public const string LeaderboardSurvivorXp = "pkr.lb.survivor_xp";
         public const string LeaderboardPier = "pkr.lb.pier";
         public const string LeaderboardRail = "pkr.lb.rail";
+        public const string LeaderboardGravemoor = "pkr.lb.gravemoor";
 
         public const string FirstSteps = "pkr.ach.first_steps";
         public const string Warden = "pkr.ach.warden";
@@ -46,6 +47,7 @@ namespace PKR.Core
         public const string ZHollowKing = "pkr.ach.z_hollow_king";
         public const string ZTideMother = "pkr.ach.z_tide_mother";
         public const string ZIronWidow = "pkr.ach.z_iron_widow";
+        public const string ZBriarQueen = "pkr.ach.z_briar_queen";
         public const string ZChapter1 = "pkr.ach.z_chapter1";
         public const string ZChapter2 = "pkr.ach.z_chapter2";
         public const string ZChapter3 = "pkr.ach.z_chapter3";
@@ -71,6 +73,7 @@ namespace PKR.Core
             (ZHollowKing, "Crownbreaker", 40, "Defeat the Hollow King on Hollow Block."),
             (ZTideMother, "Low Tide", 40, "Defeat the Tide Mother on Salt Pier."),
             (ZIronWidow, "End of the Line", 40, "Defeat the Iron Widow on the Rail Yard."),
+            (ZBriarQueen, "Thornless", 40, "Defeat the Briar Queen in Gravemoor Park."),
             (ZChapter1, "Patient Zero", 30, "Defeat the First Turned in Zombie Land."),
             (ZChapter2, "Blackwater", 30, "Defeat Mother Brine in Zombie Land chapter 2."),
             (ZChapter3, "Sublevel Sealed", 40, "Defeat the Curator in Zombie Land chapter 3."),
@@ -94,6 +97,7 @@ namespace PKR.Core
                 if (c.Has(LastStandRules.HiddenBossSecret)) list.Add(ZHollowKing);
                 if (c.Has(LastStandMap.SaltPier.HiddenSecret)) list.Add(ZTideMother);
                 if (c.Has(LastStandMap.RailYard.HiddenSecret)) list.Add(ZIronWidow);
+                if (c.Has(LastStandMap.Gravemoor.HiddenSecret)) list.Add(ZBriarQueen);
                 if (c.weeklyWins > 0) list.Add(ZWeekly);
                 if (c.bestStreak >= 7) list.Add(ZStreak);
                 if (c.revives >= 25) list.Add(ZMedic);

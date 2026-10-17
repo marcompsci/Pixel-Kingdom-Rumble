@@ -407,21 +407,16 @@ namespace PKR
         void OpenSquad()
         {
             UIFactory.Clear(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(980f, 1460f));
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1600f));
             var title = UIFactory.Label(panel, "LAST STAND", 96, TextAnchor.MiddleCenter, 120f, title: true);
             title.color = new Color32(255, 120, 70, 255);
             var map = LastStandMap.Get(GameSession.ZombieMap);
-            // map picker
-            var maps = UIFactory.Rect("Maps", panel);
-            var mle = maps.gameObject.AddComponent<LayoutElement>();
-            mle.preferredHeight = mle.minHeight = 110f;
-            mle.flexibleHeight = 0f;
-            var row = maps.gameObject.AddComponent<HorizontalLayoutGroup>();
-            row.spacing = 18f;
-            row.childControlWidth = true; row.childControlHeight = true;
-            row.childForceExpandWidth = true; row.childForceExpandHeight = true;
+            // map picker: two maps a row
+            RectTransform maps = null;
+            int mi = 0;
             foreach (var m in LastStandMap.All)
             {
+                if (mi++ % 2 == 0) maps = Row(panel, 110f);
                 var mm = m;
                 int best = Career.Best(m.Id, _mode);
                 var b = UIFactory.Button(maps, m.Title, () => { GameSession.ZombieMap = mm.Id; OpenSquad(); }, 110f);

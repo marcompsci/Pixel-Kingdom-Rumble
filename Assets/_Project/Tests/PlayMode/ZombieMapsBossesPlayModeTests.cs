@@ -126,6 +126,35 @@ namespace PKR.Tests
         }
 
         [UnityTest]
+        public IEnumerator Gravemoor_Loads_LanternsWakeTheBriarQueen_SheDropsTheKindler()
+        {
+            yield return LoadLastStand(LastStandMap.Gravemoor.Id);
+            var g = ZLGame.Current;
+            var st = g.Stand;
+            Assert.AreEqual(LastStandMap.Gravemoor.Id, st.Map.Id);
+            Assert.AreEqual(64, g.City.w);
+            Assert.AreEqual(52, g.City.h);
+            Assert.IsNotNull(g.Minimap, "the Gravemoor minimap");
+            Assert.IsTrue(g.City.Walkable(g.Player.transform.position), "the hero starts on open ground");
+            var lanterns = Object.FindObjectsByType<ZLFragment>(FindObjectsSortMode.None);
+            Assert.AreEqual(LastStandRules.Fragments, lanterns.Length, "three mourning lanterns");
+            foreach (var l in lanterns) Assert.AreEqual("LIGHT THE MOURNING LANTERN", l.Prompt);
+
+            st.DebugFindAllFragments();
+            Assert.IsTrue(st.Ls.HiddenBossSummoned, "the lanterns wake the Briar Queen");
+            st.DebugSkipToRound(10);
+            float t = 0f;
+            while (st.HollowKing == null && t < 20f) { t += Time.deltaTime; g.Player.DebugInvulnerable = true; yield return null; }
+            Assert.IsNotNull(st.HollowKing, "the Briar Queen comes");
+            st.HollowKing.Hit(999999, Vector2.up, null);
+            yield return null;
+            Assert.IsTrue(st.Ls.HiddenBossBeaten);
+            Assert.IsTrue(Services.Save.Data.zombieCareer.Has(LastStandMap.Gravemoor.HiddenSecret));
+            Assert.IsNotNull(g.Player.Loadout.Gun(ZLCatalog.Kindler.id), "she drops the Kindler for the squad");
+            yield return Calm();
+        }
+
+        [UnityTest]
         public IEnumerator Bosses_EnrageAtHalf_AndCallTheHordeAtAQuarter()
         {
             yield return LoadLastStand(LastStandRules.MapId);

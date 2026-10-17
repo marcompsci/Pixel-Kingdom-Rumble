@@ -183,6 +183,7 @@ namespace PKR
                 string sp = BootLoader.ShotPanel ?? "";
                 if (sp.StartsWith("pier")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.SaltPier.Id; }
                 if (sp.StartsWith("rail")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.RailYard.Id; }
+                if (sp.StartsWith("grave")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieMap = LastStandMap.Gravemoor.Id; }
                 if (sp.EndsWith("demo")) { GameSession.Mode = SessionMode.Zombies; GameSession.ZombieSquad = SquadKind.AISquad; }
                 LsMap = LastStandMap.Get(GameSession.Mode == SessionMode.Zombies ? GameSession.ZombieMap : LastStandRules.MapId);
                 if (!World.Build(LsMap.File)) return;

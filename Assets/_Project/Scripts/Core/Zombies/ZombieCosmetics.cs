@@ -69,6 +69,7 @@ namespace PKR.Core
             new Cosmetic { Id = "ti_crownbreaker", Name = "CROWNBREAKER", Slot = CosmeticSlot.Title, HowTo = "Beat the Hollow King", Rule = s => s.Has(LastStandRules.HiddenBossSecret) },
             new Cosmetic { Id = "ti_tidebreaker", Name = "TIDEBREAKER", Slot = CosmeticSlot.Title, HowTo = "Beat the Tide Mother", Rule = s => s.Has(LastStandMap.SaltPier.HiddenSecret) },
             new Cosmetic { Id = "ti_widowmaker", Name = "WIDOWMAKER", Slot = CosmeticSlot.Title, HowTo = "Beat the Iron Widow", Rule = s => s.Has(LastStandMap.RailYard.HiddenSecret) },
+            new Cosmetic { Id = "ti_thornless", Name = "THORNLESS", Slot = CosmeticSlot.Title, HowTo = "Beat the Briar Queen", Rule = s => s.Has(LastStandMap.Gravemoor.HiddenSecret) },
             new Cosmetic { Id = "ti_cityclear", Name = "CITY SWEEPER", Slot = CosmeticSlot.Title, HowTo = "Beat the First Turned (Zombie Land)", Rule = s => s.chapter1 },
             new Cosmetic { Id = "ti_curatorsbane", Name = "CURATOR'S BANE", Slot = CosmeticSlot.Title, HowTo = "Beat the Curator (Zombie Land chapter 3)", Rule = s => s.chapter3 },
             new Cosmetic { Id = "ti_onthelock", Name = "ON THE CLOCK", Slot = CosmeticSlot.Title, HowTo = "Keep a 7-day daily orders streak", Rule = s => s.bestStreak >= 7 },
