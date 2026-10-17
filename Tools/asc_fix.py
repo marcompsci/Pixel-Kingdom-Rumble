@@ -195,7 +195,20 @@ def beta_submit(a):
         say("  external state:", bd["attributes"].get("externalBuildState"))
 
 
-ACTIONS = {"beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def version_build(a):
+    """Attaches a processed build to the version in Prepare for Submission (does not submit it)."""
+    b = A.get(f"/builds?filter[app]={A.APP_ID}&filter[version]={a['build']}&limit=1").get("data") or []
+    if not b or b[0]["attributes"].get("processingState") != "VALID":
+        say("FAIL build not found or not processed", a["build"]); return
+    vers = A.get(f"/apps/{A.APP_ID}/appStoreVersions?limit=10").get("data") or []
+    v = next((x for x in vers if x["attributes"]["appStoreState"] == "PREPARE_FOR_SUBMISSION"), None)
+    if not v:
+        say("FAIL no version in Prepare for Submission"); return
+    st, r = A.call("PATCH", f"/appStoreVersions/{v['id']}/relationships/build", {"data": {"type": "builds", "id": b[0]["id"]}})
+    say("Version", v["attributes"]["versionString"], "now uses build", a["build"], st if st < 300 else f"FAIL {st} {r}")
+
+
+ACTIONS = {"version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():

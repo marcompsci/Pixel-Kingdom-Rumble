@@ -59,7 +59,8 @@ fi
 say "      OK: $ARCHIVE"
 else
 ARCHIVE="Builds/PixelKingdomRumble.xcarchive"
-say "Upload only: $ARCHIVE ($(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCHIVE/Info.plist" 2>/dev/null))"
+PKR_BUILD_NUMBER="$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCHIVE/Info.plist" 2>/dev/null)"
+say "Upload only: $ARCHIVE ($PKR_BUILD_NUMBER)"
 fi
 
 APPDIR="$(ls -d "$ARCHIVE"/Products/Applications/*.app 2>/dev/null | head -1)"
