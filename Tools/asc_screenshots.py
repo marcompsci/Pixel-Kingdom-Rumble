@@ -63,9 +63,11 @@ TOKEN = token()
 
 
 def call(method, url, body=None, raw=None, headers=None):
+    h = {}
     if not url.startswith("http"):
         url = API + url
-    h = {"Authorization": "Bearer " + TOKEN}
+    if url.startswith(API):
+        h["Authorization"] = "Bearer " + TOKEN   # the upload URLs are pre-signed and refuse other auth
     data = None
     if body is not None:
         data = json.dumps(body).encode(); h["Content-Type"] = "application/json"
@@ -125,7 +127,7 @@ def main():
                 part = data[op["offset"]:op["offset"] + op["length"]]
                 pst, _ = call(op["method"], op["url"], raw=part, headers=hdr)
                 if pst >= 300:
-                    say("  upload part failed", name, pst); ok = False
+                    say("  upload part failed", name, pst, _); ok = False
             st, r = call("PATCH", f"/appScreenshots/{shot['id']}", {"data": {"type": "appScreenshots", "id": shot["id"],
                          "attributes": {"uploaded": True, "sourceFileChecksum": hashlib.md5(data).hexdigest()}}})
             say("  uploaded", name, st)
