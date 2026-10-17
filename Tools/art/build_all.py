@@ -452,6 +452,13 @@ def build_zombieland():
         json.dump(labs, f, separators=(',', ':'))
     written.append(os.path.join(res, 'labs.json'))
     save(zl.minimap(labs, zl.building_color), os.path.join(res, 'minimap_labs.png'), ppu=16)
+    # Zombie Land chapter 4: Cold Harbor airfield
+    import zombieland_airfield
+    air = zombieland_airfield.build().to_json()
+    with open(os.path.join(res, 'airfield.json'), 'w', newline='\n') as f:
+        json.dump(air, f, separators=(',', ':'))
+    written.append(os.path.join(res, 'airfield.json'))
+    save(zl.minimap(air, zl.building_color), os.path.join(res, 'minimap_airfield.png'), ppu=16)
 
 
 GUN_TINTS = {'street_smg': (255, 220, 100), 'riot_shotgun': (255, 200, 120), 'ranger_rifle': (240, 240, 220),

@@ -28,7 +28,16 @@ namespace PKR
         public bool Brine { get; private set; }
         /// <summary>Chapter 3's THE CURATOR: any weapon hurts it; it calls riot guards, then leapers, and hurls the stone's rot faster.</summary>
         public bool Curator { get; private set; }
-        public string BossName => Curator ? ZLCatalog.Chapter3BossName : Brine ? ZLCatalog.Chapter2BossName : ZLCatalog.BossName;
+        /// <summary>Chapter 4's THE MARSHAL: any weapon hurts him; he calls burrowers, then splitters, and bites hardest.</summary>
+        public bool Marshal { get; private set; }
+        public string BossName => Marshal ? ZLCatalog.Chapter4BossName : Curator ? ZLCatalog.Chapter3BossName : Brine ? ZLCatalog.Chapter2BossName : ZLCatalog.BossName;
+
+        public void MakeMarshal()
+        {
+            Marshal = true;
+            maxHp = hp = ZLRules.Chapter4BossHealth;
+            transform.localScale = Vector3.one * 1.3f;
+        }
 
         public void MakeCurator()
         {
@@ -68,7 +77,7 @@ namespace PKR
         public void Hit(int damage, Vector2 dir, ZLGun gun)
         {
             if (_dead) return;
-            int real = Brine || Curator ? damage : ZLRules.BossDamage(gun, damage, _game.Puzzle.TrueRelic);
+            int real = Brine || Curator || Marshal ? damage : ZLRules.BossDamage(gun, damage, _game.Puzzle.TrueRelic);
             if (real <= 0)
             {
                 if (_immuneNote <= 0f)
@@ -85,15 +94,19 @@ namespace PKR
             if (phase != _phase)
             {
                 _phase = phase;
-                string line = Curator ? (phase == 2 ? "IT CALLS ITS GUARDS" : "THE STONE BURNS BRIGHTER")
+                string line = Marshal ? (phase == 2 ? "HE CALLS UP THE GROUND CREW" : "HE CALLS EVERYONE HE HAS LEFT")
+                            : Curator ? (phase == 2 ? "IT CALLS ITS GUARDS" : "THE STONE BURNS BRIGHTER")
                             : Brine ? (phase == 2 ? "THE TIDE ANSWERS HER" : "SHE THRASHES") : phase == 2 ? "HE HOWLS FOR HIS HOUNDS" : "HE'S ENRAGED";
                 ZLFloater.Show(line, (Vector2)transform.position + Vector2.up * 2.6f, new Color(1f, 0.4f, 0.4f), 1.5f);
                 if (phase == 2)
                 {
-                    if (Curator) for (int i = 0; i < 3; i++) _game.SpawnZombie(ZLFoe.Riot, (Vector2)transform.position + Random.insideUnitCircle.normalized * 4f, 5, true);
+                    if (Marshal) for (int i = 0; i < 3; i++) _game.SpawnZombie(ZLFoe.Burrower, (Vector2)transform.position + Random.insideUnitCircle.normalized * 5f, 6, true);
+                    else if (Curator) for (int i = 0; i < 3; i++) _game.SpawnZombie(ZLFoe.Riot, (Vector2)transform.position + Random.insideUnitCircle.normalized * 4f, 5, true);
                     else if (Brine) for (int i = 0; i < 4; i++) _game.SpawnZombie(ZLFoe.Leaper, (Vector2)transform.position + Random.insideUnitCircle.normalized * 4f, 5, true);
                     else _game.SpawnHoundPack(4, transform.position);
                 }
+                else if (phase == 3 && Marshal)
+                    for (int i = 0; i < 3; i++) _game.SpawnZombie(ZLFoe.Splitter, (Vector2)transform.position + Random.insideUnitCircle.normalized * 4f, 6, true);
                 else if (phase == 3 && Curator)
                     for (int i = 0; i < 4; i++) _game.SpawnZombie(ZLFoe.Leaper, (Vector2)transform.position + Random.insideUnitCircle.normalized * 4f, 6, true);
                 if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
@@ -177,7 +190,7 @@ namespace PKR
             if (clip != null && clip.Length > 0) _sr.sprite = clip[(int)(_t * 6f) % clip.Length];
             if (Mathf.Abs(_body.linearVelocity.x) > 0.1f) _sr.flipX = _body.linearVelocity.x < 0f;
             _sr.sortingOrder = ZLSort.ByY(transform.position.y);
-            var baseCol = Curator ? new Color(0.85f, 1f, 0.7f) : Brine ? new Color(0.55f, 0.9f, 0.8f) : Color.white;
+            var baseCol = Marshal ? new Color(0.8f, 0.85f, 0.95f) : Curator ? new Color(0.85f, 1f, 0.7f) : Brine ? new Color(0.55f, 0.9f, 0.8f) : Color.white;
             _sr.color = _hurt > 0f ? new Color(1f, 0.6f, 0.6f) : _phase == 3 ? Color.Lerp(baseCol, new Color(1f, 0.7f, 0.7f), 0.4f) : baseCol;
         }
     }

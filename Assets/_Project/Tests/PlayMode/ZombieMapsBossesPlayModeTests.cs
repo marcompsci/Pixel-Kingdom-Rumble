@@ -214,7 +214,8 @@ namespace PKR.Tests
             Assert.IsTrue(p.InChapter3);
             Assert.IsFalse(p.InLabs);
             Assert.IsTrue(p.leads.Contains("c3_power"));
-            var lift = Object.FindAnyObjectByType<ZLLift>();
+            ZLLift lift = null;
+            foreach (var l in Object.FindObjectsByType<ZLLift>(FindObjectsSortMode.None)) if (l.Which == ZLLift.Kind.LiftDown) lift = l;
             Assert.IsNotNull(lift, "the freight lift under the lab");
             Assert.IsTrue(lift.CanUse);
 
@@ -264,6 +265,67 @@ namespace PKR.Tests
             Assert.IsFalse(p.InChapter3);
             Assert.GreaterOrEqual(Services.Save.Data.starShards, shards + ZLRules.Chapter3Reward);
             Assert.IsNotNull(p.Gun(ZLCatalog.Singularity.id), "the Curator's Singularity is yours");
+            yield return Calm();
+        }
+
+        [UnityTest]
+        public IEnumerator Chapter4_RoadToColdHarbor_ClearancesOpenTheHangar_TheMarshalEndsIt()
+        {
+            // a save that has just sealed the sublevel
+            yield return LoadZombieLand(p => { p.bossDefeated = p.chapter2Begun = p.chapter2Done = p.chapter3Begun = p.chapter3Done = true; });
+            var g = ZLGame.Current;
+            var p = g.Progress;
+            Assert.IsTrue(p.chapter4Begun, "chapter 4 starts");
+            Assert.IsTrue(p.InChapter4);
+            Assert.IsTrue(p.leads.Contains("c4_lights"));
+            ZLLift road = null;
+            foreach (var l in Object.FindObjectsByType<ZLLift>(FindObjectsSortMode.None)) if (l.Which == ZLLift.Kind.RoadOut) road = l;
+            Assert.IsNotNull(road, "the service road by the rail depot");
+            Assert.IsTrue(road.CanUse);
+
+            var old = g;
+            road.Use(g.Player);
+            Assert.IsTrue(p.InAirfield);
+            float w = 0f;
+            while ((ZLGame.Current == old || ZLGame.Current == null) && w < 10f) { w += Time.unscaledDeltaTime; yield return null; }
+            Assert.AreNotSame(old, ZLGame.Current, "the scene reloaded");
+            yield return WaitForZombieLand();
+            g = ZLGame.Current;
+            p = g.Progress;
+            Assert.IsTrue(p.InAirfield, "still at the airfield after the reload");
+            Assert.AreEqual(76, g.City.w);
+            Assert.AreEqual(56, g.City.h);
+            Assert.Less(Vector2.Distance(g.Player.transform.position, g.City.SiteOf("road")), 4f, "you arrive at the end of the road");
+            Assert.AreEqual("safe_air", p.checkpoint);
+            Assert.IsNotNull(g.Minimap, "the airfield minimap");
+            Assert.IsNotNull(g.DebugStartMission("c4_lights"), "an airfield mission has a marker");
+            g.AbandonMission();
+
+            var hangar = g.City.lairs.Find(l => l.id == ZLCatalog.Hangar);
+            Assert.IsNotNull(hangar);
+            Vector2 hp0 = new Vector2(hangar.x, hangar.y);
+            g.TryLair(ZLCatalog.Hangar, hp0);
+            Assert.IsNull(g.Boss, "locked down without the clearances");
+
+            foreach (var m in ZLCatalog.Chapter4Missions) if (m.required) ZLRules.Complete(p, m.id);
+            Assert.AreEqual(ZLCatalog.ClearancesNeeded, p.Clearances);
+            g.Player.transform.position = hp0;
+            g.Player.Body.position = hp0;
+            g.TryLair(ZLCatalog.Hangar, hp0);
+            Assert.IsNotNull(g.Boss, "the Marshal comes out");
+            Assert.IsTrue(g.Boss.Marshal);
+            Assert.AreEqual(ZLCatalog.Chapter4BossName, g.Boss.BossName);
+            Assert.AreEqual(ZLRules.Chapter4BossHealth, g.Boss.maxHp);
+            int hp = g.Boss.hp;
+            g.Boss.Hit(30, Vector2.up, ZLCatalog.Pistol);
+            Assert.AreEqual(hp - 30, g.Boss.hp, "any gun hurts him");
+            int shards = Services.Save.Data.starShards;
+            g.Boss.Hit(999999, Vector2.up, ZLCatalog.Pistol);
+            yield return null;
+            Assert.IsTrue(p.chapter4Done);
+            Assert.IsFalse(p.InChapter4);
+            Assert.GreaterOrEqual(Services.Save.Data.starShards, shards + ZLRules.Chapter4Reward);
+            Assert.IsNotNull(p.Gun(ZLCatalog.Kindler.id), "the Marshal's Kindler is yours");
             yield return Calm();
         }
     }

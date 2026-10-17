@@ -9,7 +9,7 @@ namespace PKR.Core
     {
         public int kills, rank, bestRound, bestStreak, weeklyWins, revives, bossKills, prestige, golds;
         public List<string> secrets;
-        public bool chapter1, chapter2, chapter3;
+        public bool chapter1, chapter2, chapter3, chapter4;
 
         public static CosmeticStats From(ZombieCareer c, ZombieLandProgress zl)
         {
@@ -28,7 +28,7 @@ namespace PKR.Core
                 s.golds = WeaponMastery.Golds(c);
                 s.secrets.AddRange(c.secrets);
             }
-            if (zl != null) { s.chapter1 = zl.bossDefeated; s.chapter2 = zl.chapter2Done; s.chapter3 = zl.chapter3Done; }
+            if (zl != null) { s.chapter1 = zl.bossDefeated; s.chapter2 = zl.chapter2Done; s.chapter3 = zl.chapter3Done; s.chapter4 = zl.chapter4Done; }
             return s;
         }
 
@@ -72,6 +72,7 @@ namespace PKR.Core
             new Cosmetic { Id = "ti_thornless", Name = "THORNLESS", Slot = CosmeticSlot.Title, HowTo = "Beat the Briar Queen", Rule = s => s.Has(LastStandMap.Gravemoor.HiddenSecret) },
             new Cosmetic { Id = "ti_cityclear", Name = "CITY SWEEPER", Slot = CosmeticSlot.Title, HowTo = "Beat the First Turned (Zombie Land)", Rule = s => s.chapter1 },
             new Cosmetic { Id = "ti_curatorsbane", Name = "CURATOR'S BANE", Slot = CosmeticSlot.Title, HowTo = "Beat the Curator (Zombie Land chapter 3)", Rule = s => s.chapter3 },
+            new Cosmetic { Id = "ti_wheelsup", Name = "WHEELS UP", Slot = CosmeticSlot.Title, HowTo = "Beat the Marshal (Zombie Land chapter 4)", Rule = s => s.chapter4 },
             new Cosmetic { Id = "ti_onthelock", Name = "ON THE CLOCK", Slot = CosmeticSlot.Title, HowTo = "Keep a 7-day daily orders streak", Rule = s => s.bestStreak >= 7 },
             new Cosmetic { Id = "ti_undertaker", Name = "UNDERTAKER", Slot = CosmeticSlot.Title, HowTo = "Kill 2,500 zombies", Rule = s => s.kills >= 2500 },
             new Cosmetic { Id = "ti_reborn", Name = "REBORN", Slot = CosmeticSlot.Title, HowTo = "Prestige once", Rule = s => s.prestige >= 1 },

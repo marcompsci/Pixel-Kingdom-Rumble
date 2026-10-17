@@ -51,6 +51,9 @@ namespace PKR.Core
         public const string ZChapter1 = "pkr.ach.z_chapter1";
         public const string ZChapter2 = "pkr.ach.z_chapter2";
         public const string ZChapter3 = "pkr.ach.z_chapter3";
+        public const string ZChapter4 = "pkr.ach.z_chapter4";
+        public const string ZPrestige = "pkr.ach.z_prestige";
+        public const string ZGoldFinish = "pkr.ach.z_gold";
         public const string ZWeekly = "pkr.ach.z_weekly";
         public const string ZStreak = "pkr.ach.z_streak7";
         public const string ZMedic = "pkr.ach.z_medic";
@@ -77,6 +80,9 @@ namespace PKR.Core
             (ZChapter1, "Patient Zero", 30, "Defeat the First Turned in Zombie Land."),
             (ZChapter2, "Blackwater", 30, "Defeat Mother Brine in Zombie Land chapter 2."),
             (ZChapter3, "Sublevel Sealed", 40, "Defeat the Curator in Zombie Land chapter 3."),
+            (ZChapter4, "Wheels Up", 40, "Defeat the Marshal in Zombie Land chapter 4."),
+            (ZPrestige, "Born Again", 30, "Prestige for the first time."),
+            (ZGoldFinish, "Golden Gun", 20, "Earn a gold finish on any gun."),
             (ZWeekly, "Weekly Warrior", 20, "Finish a weekly challenge."),
             (ZStreak, "Orders Received", 30, "Finish every daily order 7 days in a row."),
             (ZMedic, "No One Left Behind", 20, "Revive teammates 25 times."),
@@ -101,12 +107,15 @@ namespace PKR.Core
                 if (c.weeklyWins > 0) list.Add(ZWeekly);
                 if (c.bestStreak >= 7) list.Add(ZStreak);
                 if (c.revives >= 25) list.Add(ZMedic);
+                if (c.prestige >= 1) list.Add(ZPrestige);
+                if (WeaponMastery.Golds(c) >= 1) list.Add(ZGoldFinish);
             }
             if (zl != null)
             {
                 if (zl.bossDefeated) list.Add(ZChapter1);
                 if (zl.chapter2Done) list.Add(ZChapter2);
                 if (zl.chapter3Done) list.Add(ZChapter3);
+                if (zl.chapter4Done) list.Add(ZChapter4);
             }
             return list;
         }

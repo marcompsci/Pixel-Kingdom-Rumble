@@ -40,7 +40,9 @@ namespace PKR.Core
         public bool chapter2Begun, chapter2Done;
         /// <summary>Chapter 3 (the Larkin sublevel): begun after Mother Brine; done when the Curator falls.</summary>
         public bool chapter3Begun, chapter3Done;
-        /// <summary>Which map the hero is on: "" = the city, "labs" = the sublevel. arriveAt = a site to appear at next load.</summary>
+        /// <summary>Chapter 4 (Cold Harbor airfield): begun after the Curator; done when the Marshal falls.</summary>
+        public bool chapter4Begun, chapter4Done;
+        /// <summary>Which map the hero is on: "" = the city, "labs" = the sublevel, "airfield" = Cold Harbor. arriveAt = a site to appear at next load.</summary>
         public string zone = "", arriveAt = "";
         /// <summary>Bonus rewards unlocked (motorcycles, medkits, assault_rifle, riot_shotgun).</summary>
         public List<string> rewards = new List<string>();
@@ -73,7 +75,7 @@ namespace PKR.Core
             if (equipped == null) equipped = "";
             if (zone == null) zone = "";
             if (arriveAt == null) arriveAt = "";
-            if (zone != "" && zone != ZLCatalog.LabsMap) zone = "";
+            if (zone != "" && zone != ZLCatalog.LabsMap && zone != ZLCatalog.AirfieldMap) zone = "";
             if (scrap < 0) scrap = 0;
         }
 
@@ -125,6 +127,26 @@ namespace PKR.Core
 
         public bool InChapter3 => chapter2Done && chapter3Begun && !chapter3Done;
         public bool InLabs => zone == ZLCatalog.LabsMap;
+
+        /// <summary>Chapter 4: runway clearances (one per required airfield mission).</summary>
+        public int Clearances
+        {
+            get
+            {
+                int n = 0;
+                foreach (var id in completed)
+                {
+                    var m = ZLCatalog.Mission(id);
+                    if (m != null && m.required && m.chapter == 4) n++;
+                }
+                return n;
+            }
+        }
+
+        public bool InChapter4 => chapter3Done && chapter4Begun && !chapter4Done;
+        public bool InAirfield => zone == ZLCatalog.AirfieldMap;
+        /// <summary>On a map of its own (the sublevel or the airfield), not the city.</summary>
+        public bool OffCity => zone != "";
 
         /// <summary>Chapter 2 is under way: the First Turned is dead and Mother Brine isn't yet.</summary>
         public bool InChapter2 => bossDefeated && chapter2Begun && !chapter2Done;
@@ -315,6 +337,7 @@ namespace PKR.Core
             p.bossDefeated = false; p.introSeen = false;
             p.chapter2Begun = false; p.chapter2Done = false;
             p.chapter3Begun = false; p.chapter3Done = false;
+            p.chapter4Begun = false; p.chapter4Done = false;
             p.zone = ""; p.arriveAt = "";
         }
 
@@ -346,6 +369,25 @@ namespace PKR.Core
             foreach (var id in ZLCatalog.Chapter3StartingLeads) if (!p.leads.Contains(id)) p.leads.Add(id);
             return true;
         }
+
+        public const int Chapter4Reward = 3000;
+        /// <summary>The Marshal's health (every weapon hurts him).</summary>
+        public const int Chapter4BossHealth = 4200;
+
+        /// <summary>Opens chapter 4 once the Curator is dead: the airfield road is open and the first lead is known.</summary>
+        public static bool BeginChapter4(ZombieLandProgress p)
+        {
+            if (p == null || !p.chapter3Done || p.chapter4Begun) return false;
+            p.chapter4Begun = true;
+            foreach (var id in ZLCatalog.Chapter4StartingLeads) if (!p.leads.Contains(id)) p.leads.Add(id);
+            return true;
+        }
+
+        /// <summary>The airfield road is open once chapter 4 has begun.</summary>
+        public static bool RoadOpen(ZombieLandProgress p) => p != null && p.chapter4Begun;
+
+        /// <summary>The Marshal's hangar opens when every runway clearance is in.</summary>
+        public static bool HangarOpen(ZombieLandProgress p) => p != null && p.InChapter4 && p.Clearances >= ZLCatalog.ClearancesNeeded;
 
         /// <summary>The freight lift runs once chapter 3 has begun.</summary>
         public static bool LiftOpen(ZombieLandProgress p) => p != null && p.chapter3Begun;

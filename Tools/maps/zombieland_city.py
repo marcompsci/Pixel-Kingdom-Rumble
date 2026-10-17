@@ -136,6 +136,9 @@ class City:
         # chapter 3: the freight lift down to the Larkin sublevel, beside Larkin Labs
         lx, ly = self.near_free(131, 138, allowed=('s', 'g', 'y', 'p', 'i', 'l'))
         self.site('lab_lift', lx, ly)
+        # chapter 4: the old service road to Cold Harbor airfield, beside the rail depot
+        ax, ay = self.near_free(150, 66, allowed=('s', 'g', 'y', 'p', 'i', 'l', 'r'))
+        self.site('air_road', ax, ay)
         self.border()
         return self
 

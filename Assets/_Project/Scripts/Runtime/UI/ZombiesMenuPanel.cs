@@ -87,8 +87,9 @@ namespace PKR
 
             // The games
             var zl = save != null ? save.zombieLand : null;
-            string zlSub = zl == null || zl.seed == 0 ? "A city of the dead · 23 missions in 3 chapters · drive anything · hunt the First Turned"
-                         : zl.chapter3Done ? "All three chapters cleared! Roam free, or start a new mystery."
+            string zlSub = zl == null || zl.seed == 0 ? "A city of the dead · 27 missions in 4 chapters · drive anything · hunt the First Turned"
+                         : zl.chapter4Done ? "All four chapters cleared! Roam free, or start a new mystery."
+                         : zl.chapter3Done ? $"CHAPTER 4: COLD HARBOR · clearances {zl.Clearances}/{ZLCatalog.ClearancesNeeded} · take the road by the rail depot"
                          : zl.chapter2Done ? $"CHAPTER 3: THE SUBLEVEL · keycards {zl.Keycards}/{ZLCatalog.KeycardsNeeded} · take the lab's freight lift"
                          : zl.bossDefeated ? $"CHAPTER 2: BLACKWATER · sigils {zl.Sigils}/{ZLCatalog.SigilsNeeded} · cross the causeway"
                          : $"Shards {zl.Shards}/{ZLCatalog.ShardsNeeded} · missions {zl.completed.Count}/{ZLCatalog.Missions.Length} · scrap {zl.scrap}";

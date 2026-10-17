@@ -145,6 +145,7 @@ namespace PKR.Core
             new ZLDistrict { id = "industrial", name = "Ironside", threat = 4, blurb = "Warehouses, the rail depot and the waterworks." },
             new ZLDistrict { id = "isle", name = "Blackwater Isle", threat = 5, blurb = "The fishing village, the cannery and the old prison. Chapter 2." },
             new ZLDistrict { id = "labs", name = "The Larkin Sublevel", threat = 5, blurb = "Sealed research floors under Larkin Labs. Chapter 3." },
+            new ZLDistrict { id = "airfield", name = "Cold Harbor Airfield", threat = 5, blurb = "The army airfield north of the rail depot. Chapter 4." },
         };
 
         public static ZLDistrict District(string id)
@@ -402,6 +403,7 @@ namespace PKR.Core
             foreach (var m in Missions) if (m.id == id) return m;
             foreach (var m in Chapter2Missions) if (m.id == id) return m;
             foreach (var m in Chapter3Missions) if (m.id == id) return m;
+            foreach (var m in Chapter4Missions) if (m.id == id) return m;
             return null;
         }
 
@@ -502,6 +504,56 @@ namespace PKR.Core
             "The Curator falls, and the last piece of the stone goes dark.",
             "Under its case you find the Singularity Cannon, the weapon it was building to keep the dead in line.",
             "CHAPTER 3 COMPLETE. New Hollow is yours.",
+        };
+
+        // ---- chapter 4: Cold Harbor airfield ---------------------------------------------------------------
+
+        public const string Chapter4Name = "CHAPTER 4: COLD HARBOR";
+        public const string Chapter4BossName = "THE MARSHAL";
+        public const int ClearancesNeeded = 3;
+        /// <summary>The boss door in airfield.json, the road sites (city.json "air_road", airfield.json "road") and the map.</summary>
+        public const string Hangar = "marshal_hangar", AirRoad = "air_road", AirfieldMap = "airfield";
+
+        public static readonly ZLMissionSpec[] Chapter4Missions =
+        {
+            new ZLMissionSpec { id = "c4_lights", name = "RUNWAY LIGHTS", district = "airfield", giver = "DR. HALE", type = ZLMissionType.PowerUp, required = true, count = 3, chapter = 4,
+                briefing = "Three generators run the runway lights. Get them going so the relief flight can find us.",
+                done = "The runway lights march off into the dark, two by two. First clearance logged.",
+                reveals = new[] { "c4_fuel", "c4_pilot" } },
+            new ZLMissionSpec { id = "c4_fuel", name = "AVGAS", district = "airfield", giver = "SGT. OKAFOR", type = ZLMissionType.Retrieve, required = true, count = 3, chapter = 4,
+                briefing = "The fuel depot was looted, but three cans of aviation fuel are still out there. Bring them in.",
+                done = "\"That's enough to get one plane off the ground.\" Second clearance logged.",
+                reveals = new[] { "c4_tower" } },
+            new ZLMissionSpec { id = "c4_tower", name = "CONTROL TOWER", district = "airfield", giver = "DR. HALE", type = ZLMissionType.Signal, required = true, seconds = 60f, chapter = 4,
+                briefing = "Hale needs a minute on the tower radio to call the relief flight in. Hold the tower.",
+                done = "\"Relief flight, this is Cold Harbor. We're here.\" A voice answers. Last clearance logged.",
+                reveals = new string[0] },
+            new ZLMissionSpec { id = "c4_pilot", name = "THE LAST PILOT", district = "airfield", giver = "CAPT. REYES", type = ZLMissionType.Rescue, chapter = 4,
+                briefing = "A pilot is holed up in the crew barracks. Get her to the safehouse by the gate.",
+                done = "Reyes checks her sidearm and grins. \"I'll fly whatever you've got.\" She leaves you the barracks' Patrol LMG.",
+                reward = "patrol_lmg" },
+        };
+
+        public static readonly string[] Chapter4StartingLeads = { "c4_lights" };
+
+        public static readonly string[] Chapter4Intro =
+        {
+            "DR. HALE (radio): \"The sublevel's sealed. But the army had a plan for the stones: fly them out.\"",
+            "\"There's an airfield past the rail depot, Cold Harbor. Take the old service road north.\"",
+            "Get the runway ready: lights, fuel, the tower radio. Then we deal with whoever runs that base now.",
+        };
+
+        public static readonly string[] Chapter4BossIntro =
+        {
+            "The hangar doors grind open. A crate stamped with the Graystone mark sits under the wing of a cargo plane.",
+            "THE MARSHAL, the base commander who signed every order, still guards it. He was the last to turn.",
+        };
+
+        public static readonly string[] Chapter4Ending =
+        {
+            "The Marshal falls across the crate, and the last shard inside goes dark.",
+            "At dawn the relief flight lands on the lit runway. Reyes waves you aboard; you wave her off. Someone has to stay.",
+            "CHAPTER 4 COMPLETE. Cold Harbor is open, and New Hollow can call for help.",
         };
 
         public static readonly string[] Chapter2Ending =

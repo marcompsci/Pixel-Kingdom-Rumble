@@ -216,16 +216,26 @@ namespace PKR
                 Progress.zone = ZLCatalog.LabsMap;
                 Progress.arriveAt = "";
             }
+            // Screenshot run EV_ZombieLand@airfield: start at Cold Harbor (chapter 4).
+            else if (BootLoader.ShotPanel == "airfield")
+            {
+                Progress.introSeen = Progress.bossDefeated = Progress.chapter2Begun = Progress.chapter2Done = true;
+                Progress.chapter3Begun = Progress.chapter3Done = true;
+                ZLRules.BeginChapter4(Progress);
+                Progress.zone = ZLCatalog.AirfieldMap;
+                Progress.arriveAt = "";
+            }
             else if (BootLoader.ShotPanel != null) { Progress.zone = ""; Progress.arriveAt = ""; }   // other shots are in the city
-            // Chapter 3: the sublevel is its own map, reached by the freight lift.
+            // Chapters 3 and 4: the sublevel and the airfield are maps of their own (the freight lift, the service road).
             if (Progress.InLabs && !Progress.chapter3Begun) Progress.zone = "";
+            if (Progress.InAirfield && !Progress.chapter4Begun) Progress.zone = "";
             World = gameObject.AddComponent<ZLWorld>();
             World.material = material;
-            if (!World.Build(Progress.InLabs ? ZLCatalog.LabsMap : "city")) return;
+            if (!World.Build(Progress.OffCity ? Progress.zone : "city")) return;
             Flow = new ZLFlowField(City);
             // each map has its own safehouses: a checkpoint from the other map falls back to this one's first
             if (!City.safehouses.Exists(x => x.id == Progress.checkpoint))
-                Progress.checkpoint = Progress.InLabs && City.safehouses.Count > 0 ? City.safehouses[0].id : Progress.InLabs ? Progress.checkpoint : "";
+                Progress.checkpoint = Progress.OffCity && City.safehouses.Count > 0 ? City.safehouses[0].id : Progress.OffCity ? Progress.checkpoint : "";
 
             SpawnHero();
             Progress.arriveAt = "";
@@ -247,7 +257,7 @@ namespace PKR
             // Screenshot runs: EV_ZombieLand@play / @drive / @map / @boss skip the intro and set up a view.
             string shot = BootLoader.TakeShotPanel("play") ?? BootLoader.TakeShotPanel("drive") ?? BootLoader.TakeShotPanel("map")
                           ?? BootLoader.TakeShotPanel("boss") ?? BootLoader.TakeShotPanel("shop") ?? BootLoader.TakeShotPanel("isle")
-                          ?? BootLoader.TakeShotPanel("labs");
+                          ?? BootLoader.TakeShotPanel("labs") ?? BootLoader.TakeShotPanel("airfield");
             if (shot != null)
             {
                 Progress.introSeen = true;
@@ -260,9 +270,13 @@ namespace PKR
             }
             else if (Progress.bossDefeated && !Progress.chapter2Begun && shot == null) StartChapter2();
             else if (Progress.chapter2Done && !Progress.chapter3Begun && shot == null) StartChapter3();
+            else if (Progress.chapter3Done && !Progress.chapter4Begun && shot == null) StartChapter4();
+            else if (Progress.InAirfield) ShowToast(Progress.InChapter4 ? $"{ZLCatalog.Chapter4Name}  ·  CLEARANCES {Progress.Clearances}/{ZLCatalog.ClearancesNeeded}."
+                                                    : "COLD HARBOR IS QUIET. THE ROAD LEADS BACK TO THE CITY.");
             else if (Progress.InLabs) ShowToast(Progress.InChapter3 ? $"{ZLCatalog.Chapter3Name}  ·  KEYCARDS {Progress.Keycards}/{ZLCatalog.KeycardsNeeded}."
                                                 : "THE SUBLEVEL IS QUIET. THE LIFT GOES BACK UP.");
-            else ShowToast(Progress.InChapter3 ? $"{ZLCatalog.Chapter3Name}: TAKE THE FREIGHT LIFT UNDER THE GRAYSTONE LAB."
+            else ShowToast(Progress.InChapter4 ? $"{ZLCatalog.Chapter4Name}: TAKE THE SERVICE ROAD BY THE RAIL DEPOT."
+                         : Progress.InChapter3 ? $"{ZLCatalog.Chapter3Name}: TAKE THE FREIGHT LIFT UNDER THE GRAYSTONE LAB."
                          : Progress.InChapter2 ? $"{ZLCatalog.Chapter2Name}  ·  SIGILS {Progress.Sigils}/{ZLCatalog.SigilsNeeded}. CROSS THE CAUSEWAY."
                          : Progress.bossDefeated ? "ZOMBIE LAND IS CLEAR. ROAM FREE." : $"SHARDS {Progress.Shards}/{ZLCatalog.ShardsNeeded}. KEEP GOING.");
         }
@@ -361,13 +375,19 @@ namespace PKR
         void SpawnLift()
         {
             if (IsLastStand) return;
-            bool city = !Progress.InLabs;
-            string key = city ? ZLCatalog.LabLift : "lift";
+            if (Progress.InAirfield) { SpawnTransit("road", ZLLift.Kind.RoadBack); return; }
+            if (Progress.InLabs) { SpawnTransit("lift", ZLLift.Kind.LiftUp); return; }
+            SpawnTransit(ZLCatalog.LabLift, ZLLift.Kind.LiftDown);
+            SpawnTransit(ZLCatalog.AirRoad, ZLLift.Kind.RoadOut);
+        }
+
+        void SpawnTransit(string key, ZLLift.Kind kind)
+        {
             if (!City.sites.Exists(x => x.key == key)) return;
-            var go = new GameObject("FreightLift");
+            var go = new GameObject(kind == ZLLift.Kind.RoadOut || kind == ZLLift.Kind.RoadBack ? "ServiceRoad" : "FreightLift");
             go.transform.position = City.SiteOf(key);
             var lift = go.AddComponent<ZLLift>();
-            lift.Init(this, city);
+            lift.Init(this, kind);
             _uses.Add(lift);
         }
 
@@ -393,6 +413,76 @@ namespace PKR
             LiftRides++;
             if (Services.Scenes != null) Services.Scenes.ReloadCurrent();
             else UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+
+        /// <summary>Chapter 4: the service road to Cold Harbor and back (save, swap the map, reload).</summary>
+        public void TakeRoad(bool outbound)
+        {
+            if (!ZLRules.RoadOpen(Progress) || Boss != null) return;
+            Progress.zone = outbound ? ZLCatalog.AirfieldMap : "";
+            Progress.arriveAt = outbound ? "road" : ZLCatalog.AirRoad;
+            if (outbound) Progress.checkpoint = "safe_air";
+            else if (Progress.checkpoint == "safe_air") Progress.checkpoint = "";
+            Save(true);
+            Ready = false;
+            Sfx.Play(Sfx.Click, 0.9f, 0f);
+            LiftRides++;
+            if (Services.Scenes != null) Services.Scenes.ReloadCurrent();
+            else UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+
+        /// <summary>Chapter 4 begins once the Curator falls: Dr. Hale points at Cold Harbor airfield.</summary>
+        public void StartChapter4()
+        {
+            if (!ZLRules.BeginChapter4(Progress)) return;
+            Save(true);
+            Story("DR. HALE", ZLCatalog.Chapter4Intro, "zl_city", () => ShowToast(ZLCatalog.Chapter4Name + ": TAKE THE SERVICE ROAD BY THE RAIL DEPOT."));
+        }
+
+        /// <summary>Hangar 3 at Cold Harbor: three runway clearances open it, and the Marshal is inside.</summary>
+        public void TryHangar(Vector2 door)
+        {
+            if (Boss != null || !Progress.InChapter4) return;
+            if (!ZLRules.HangarOpen(Progress))
+            {
+                ShowToast($"HANGAR 3: LOCKED DOWN. RUNWAY CLEARANCES {Progress.Clearances}/{ZLCatalog.ClearancesNeeded}.");
+                Sfx.Play(Sfx.Click, 0.7f, 0f);
+                return;
+            }
+            Story(ZLCatalog.Chapter4BossName, ZLCatalog.Chapter4BossIntro, "zl_boss", () =>
+            {
+                Vector2 at = door + Vector2.down * 4f;
+                if (!City.Walkable(at)) at = door + Vector2.left * 4f;
+                if (!City.Walkable(at)) at = door;
+                var go = new GameObject("TheMarshal");
+                go.transform.position = at;
+                Boss = go.AddComponent<ZLBoss>();
+                Boss.Init(this, Frames("boss_idle", 2), Frames("boss_walk", 4), Frames("boss_attack", 2));
+                Boss.MakeMarshal();
+                ShowToast(ZLCatalog.Chapter4BossName + "!");
+            });
+        }
+
+        void Chapter4BossDefeated(ZLBoss boss)
+        {
+            Progress.chapter4Done = true;
+            foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
+            _zombies.Clear();
+            foreach (var n in _nests.ToArray()) if (n != null) Destroy(n.gameObject);
+            _nests.Clear();
+            Destroy(boss.gameObject, 0.1f);
+            Boss = null;
+            if (Services.Save != null) Services.Save.Data.starShards += ZLRules.Chapter4Reward;
+            ZLRules.GiveGun(Progress, ZLCatalog.Kindler, ZLCatalog.Kindler.magazine * 3);
+            ProgressTracker.AddXp(900);
+            AddXp(SurvivorRank.ZLBossXp);
+            FlushXp();
+            var won = ZombieDailyTracker.BossKilled();
+            won.AddRange(ZombieDailyTracker.AfterProgress(_bossBefore));
+            TellDaily(won);
+            Sfx.Play(Sfx.Victory, 1f);
+            Save(true);
+            Story("", ZLCatalog.Chapter4Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter4Reward} STAR SHARDS AND THE KINDLER. COLD HARBOR IS OPEN."));
         }
 
         /// <summary>How many times the lift was ridden this scene (tests).</summary>
@@ -441,13 +531,17 @@ namespace PKR
             TellDaily(won);
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
-            Story("", ZLCatalog.Chapter3Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter3Reward} STAR SHARDS AND THE SINGULARITY. THE SUBLEVEL IS SEALED."));
+            Story("", ZLCatalog.Chapter3Ending, "dawn", () =>
+            {
+                ShowToast($"+{ZLRules.Chapter3Reward} STAR SHARDS AND THE SINGULARITY. THE SUBLEVEL IS SEALED.");
+                StartChapter4();
+            });
         }
 
         public Sprite Sprite(string path) => World != null ? World.Sprite(path) : null;
 
         /// <summary>The minimap image for this map.</summary>
-        public Sprite Minimap => Sprite(IsLastStand ? "minimap_" + LsMap.File : Progress != null && Progress.InLabs ? "minimap_" + ZLCatalog.LabsMap : "minimap");
+        public Sprite Minimap => Sprite(IsLastStand ? "minimap_" + LsMap.File : Progress != null && Progress.OffCity ? "minimap_" + Progress.zone : "minimap");
         /// <summary>Last Stand: the map being played (from GameSession.ZombieMap).</summary>
         public LastStandMap LsMap { get; private set; } = LastStandMap.HollowBlock;
 
@@ -587,7 +681,8 @@ namespace PKR
             {
                 if (Progress.nestsCleared.Contains(n.id)) continue;
                 // the mainland's nests die with the First Turned; Blackwater's wake with chapter 2
-                bool awake = n.district == ZLCatalog.LabsMap ? Progress.InChapter3
+                bool awake = n.district == ZLCatalog.AirfieldMap ? Progress.InChapter4
+                           : n.district == ZLCatalog.LabsMap ? Progress.InChapter3
                            : n.district == "isle" ? Progress.bossDefeated && !Progress.chapter2Done
                            : !Progress.bossDefeated;
                 if (!awake) continue;
@@ -657,7 +752,7 @@ namespace PKR
             _discoverT -= dt;
             if (_discoverT <= 0f) { _discoverT = 0.5f; Discover(); }
 
-            if (!Progress.bossDefeated || Progress.InChapter2 && OnIsle || Progress.InChapter3 && Progress.InLabs)
+            if (!Progress.bossDefeated || Progress.InChapter2 && OnIsle || Progress.InChapter3 && Progress.InLabs || Progress.InChapter4 && Progress.InAirfield)
             {
                 _groanT -= dt;
                 if (_groanT <= 0f)
@@ -1516,6 +1611,7 @@ namespace PKR
         {
             if (lairId == ZLCatalog.TideGate) { TryTideGate(door); return; }
             if (lairId == ZLCatalog.Vault) { TryVault(door); return; }
+            if (lairId == ZLCatalog.Hangar) { TryHangar(door); return; }
             var lair = ZLCatalog.Lair(lairId);
             if (Boss != null || Progress.bossDefeated) return;
             if (Progress.Shards < ZLCatalog.ShardsNeeded)
@@ -1559,6 +1655,7 @@ namespace PKR
         public void BossDefeated(ZLBoss boss)
         {
             _bossBefore = ZombieDailyTracker.Snapshot();
+            if (boss != null && boss.Marshal) { Chapter4BossDefeated(boss); return; }
             if (boss != null && boss.Curator) { Chapter3BossDefeated(boss); return; }
             if (boss != null && boss.Brine) { Chapter2BossDefeated(boss); return; }
             Progress.bossDefeated = true;

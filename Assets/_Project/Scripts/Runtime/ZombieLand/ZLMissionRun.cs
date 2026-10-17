@@ -61,7 +61,7 @@ namespace PKR
             {
                 switch (Spec.type)
                 {
-                    case ZLMissionType.Signal: return $"{(Spec.id == "c2_beacon" ? "HOLD THE LAMP ROOM" : "HOLD THE MAST")}: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
+                    case ZLMissionType.Signal: return $"{(Spec.id == "c2_beacon" ? "HOLD THE LAMP ROOM" : Spec.id == "c4_tower" ? "HOLD THE TOWER" : "HOLD THE MAST")}: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
                     case ZLMissionType.HoldOut: return $"HOLD THE ZONE: {Mathf.CeilToInt(Spec.seconds - _timer)}s";
                     case ZLMissionType.Retrieve: return $"FIND THEM: {_count}/{Spec.count}";
                     case ZLMissionType.PowerUp: return $"START THE GENERATORS: {_count}/{Spec.count}";

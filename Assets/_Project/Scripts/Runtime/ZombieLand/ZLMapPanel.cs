@@ -147,8 +147,9 @@ namespace PKR
             var sb = new StringBuilder();
             sb.AppendLine($"<color=#FFD966>GRAYSTONE SHARDS {p.Shards}/{ZLCatalog.ShardsNeeded}</color>" +
                           (p.chapter2Begun ? $"   <color=#7FE8D0>SEA-GLASS SIGILS {p.Sigils}/{ZLCatalog.SigilsNeeded}</color>" : "") +
-                          (p.chapter3Begun ? $"   <color=#B8FF9A>KEYCARDS {p.Keycards}/{ZLCatalog.KeycardsNeeded}</color>" : ""));
-            sb.AppendLine($"Missions done {p.completed.Count}/{ZLCatalog.Missions.Length + (p.chapter2Begun ? ZLCatalog.Chapter2Missions.Length : 0) + (p.chapter3Begun ? ZLCatalog.Chapter3Missions.Length : 0)}    Kills {p.kills}    Deaths {p.deaths}");
+                          (p.chapter3Begun ? $"   <color=#B8FF9A>KEYCARDS {p.Keycards}/{ZLCatalog.KeycardsNeeded}</color>" : "") +
+                          (p.chapter4Begun ? $"   <color=#FFC680>CLEARANCES {p.Clearances}/{ZLCatalog.ClearancesNeeded}</color>" : ""));
+            sb.AppendLine($"Missions done {p.completed.Count}/{ZLCatalog.Missions.Length + (p.chapter2Begun ? ZLCatalog.Chapter2Missions.Length : 0) + (p.chapter3Begun ? ZLCatalog.Chapter3Missions.Length : 0) + (p.chapter4Begun ? ZLCatalog.Chapter4Missions.Length : 0)}    Kills {p.kills}    Deaths {p.deaths}");
             sb.AppendLine();
             sb.AppendLine("<color=#FFD966>O</color> Story mission (gives a shard)");
             sb.AppendLine("<color=#80D8FF>O</color> Bonus mission (gives a reward)");
