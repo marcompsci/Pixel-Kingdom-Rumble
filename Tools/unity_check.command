@@ -15,6 +15,7 @@ pause_end() { [ -z "$PKR_NO_PAUSE" ] && read -r -p "Press Return to close." _; }
 if [ -f Logs/balance_request ]; then exec bash Tools/balance_lab.command; fi
 if [ -f Logs/zombie_balance_request ]; then exec bash Tools/zombie_balance_lab.command; fi
 if [ -f Logs/trailer_request ]; then rm -f Logs/trailer_request; exec bash Tools/sim_trailer.command; fi
+if [ -f Logs/push_request ]; then rm -f Logs/push_request; PKR_NO_PAUSE=1 exec bash Tools/push_to_github.command; fi
 if [ -f Logs/asc_audit_request ]; then rm -f Logs/asc_audit_request; exec /usr/bin/python3 Tools/asc_audit.py; fi
 if [ -f Logs/asc_fix_request ]; then rm -f Logs/asc_fix_request; exec /usr/bin/python3 Tools/asc_fix.py Logs/asc_fix.json; fi
 if [ -f Logs/asc_request ]; then rm -f Logs/asc_request; exec /usr/bin/python3 Tools/asc_screenshots.py; fi
