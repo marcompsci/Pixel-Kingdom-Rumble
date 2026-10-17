@@ -52,10 +52,9 @@ namespace PKR.EditorTools
             plist.root.SetString("NSPhotoLibraryAddUsageDescription", "Save your Pixel Kingdom Rumble photos and result cards.");
             // Friends-only leaderboards (the LOCKER's "you vs your friends") ask for Game Center friends access.
             plist.root.SetString("NSGKFriendListUsageDescription", "See where you rank against your Game Center friends on the zombie leaderboards.");
-            // iPad: the game rotates freely (OrientationController), so declare all four orientations for iPad.
+            // iPad: the whole game runs in landscape (OrientationController), so iPad declares only the landscape sides.
             var ipad = plist.root.CreateArray("UISupportedInterfaceOrientations~ipad");
-            foreach (var o in new[] { "UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown",
-                                      "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight" })
+            foreach (var o in new[] { "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight" })
                 ipad.AddString(o);
             plist.WriteToFile(plistPath);
 

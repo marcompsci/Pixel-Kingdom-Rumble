@@ -20,10 +20,10 @@ namespace PKR
             Current = mode;
             if (DeviceIdiom.IsPad)
             {
-                // iPad: every screen works in any orientation (menus fit by aspect, the HUD matches width or height),
-                // so never force a rotation. Forcing one makes iPadOS show the game in a small window instead.
-                Screen.autorotateToPortrait = true;
-                Screen.autorotateToPortraitUpsideDown = true;
+                // iPad: the whole game is landscape (menus fit any shape by aspect). Never force a rotation per screen:
+                // on iPadOS that shows the game in a small window instead of turning it. Either landscape side works.
+                Screen.autorotateToPortrait = false;
+                Screen.autorotateToPortraitUpsideDown = false;
                 Screen.autorotateToLandscapeLeft = true;
                 Screen.autorotateToLandscapeRight = true;
                 Screen.orientation = ScreenOrientation.AutoRotation;

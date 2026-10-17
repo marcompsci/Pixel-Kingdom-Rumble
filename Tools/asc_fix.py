@@ -169,7 +169,33 @@ def iap_availability(a):
     say("IAP availability", a["product"], f"{len(terr)} territories + new ones", "saved" if st < 300 else f"FAIL {st} {r}")
 
 
-ACTIONS = {"iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def beta_submit(a):
+    """Adds a processed build to an external TestFlight group and submits it for TestFlight (beta) App Review.
+    Beta review only: this never submits the app to the App Store."""
+    b = A.get(f"/builds?filter[app]={A.APP_ID}&filter[version]={a['build']}&limit=1").get("data") or []
+    if not b:
+        say("FAIL no build", a["build"]); return
+    b = b[0]
+    if b["attributes"].get("processingState") != "VALID":
+        say("FAIL build not processed yet", b["attributes"].get("processingState")); return
+    groups = A.get(f"/apps/{A.APP_ID}/betaGroups?limit=50").get("data") or []
+    g = next((x for x in groups if x["attributes"].get("name") == a["group"]), None)
+    if not g or g["attributes"].get("isInternalGroup"):
+        say("FAIL no external group named", a["group"]); return
+    st, r = A.call("POST", f"/betaGroups/{g['id']}/relationships/builds", {"data": [{"type": "builds", "id": b["id"]}]})
+    say("Build", a["build"], "added to", a["group"], st if st < 300 else f"FAIL {st} {r}")
+    st, r = A.call("POST", "/betaAppReviewSubmissions", {"data": {"type": "betaAppReviewSubmissions",
+                   "relationships": {"build": {"data": {"type": "builds", "id": b["id"]}}}}})
+    if st < 300:
+        say("Submitted for TestFlight App Review:", r["data"]["attributes"].get("betaReviewState"))
+    else:
+        say("Beta review submission", f"FAIL {st} {r}")
+    bd = A.get(f"/builds/{b['id']}/buildBetaDetail").get("data")
+    if bd:
+        say("  external state:", bd["attributes"].get("externalBuildState"))
+
+
+ACTIONS = {"beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
