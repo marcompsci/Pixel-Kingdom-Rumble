@@ -880,7 +880,7 @@ namespace PKR
                 var p = _powerUps[i];
                 if (p.go == null) { _powerUps.RemoveAt(i); continue; }
                 float left = p.until - Time.time;
-                p.go.transform.localScale = Vector3.one * (1.1f + Mathf.Sin(Time.time * 5f) * 0.1f);
+                p.go.transform.localScale = Vector3.one * (SettingsService.ReducedMotion ? 1.1f : 1.1f + Mathf.Sin(Time.time * 5f) * 0.1f);
                 var sr = p.go.GetComponent<SpriteRenderer>();
                 if (sr != null) sr.enabled = left > 5f || Mathf.Repeat(Time.time, 0.3f) < 0.2f;
                 if (left <= 0f) { Destroy(p.go); _powerUps.RemoveAt(i); continue; }
@@ -932,7 +932,9 @@ namespace PKR
             _zombies.RemoveAll(z => z == null || !z.Alive);
             if (IsLastStand) Stand.Nuked();
             else ZLShop.Earn(Progress, ZLShop.NukeScrap, DoubleScrap);
-            ZLFx.Spawn(GlowHalo.Sprite, TargetPos, new Color(1f, 1f, 0.9f, 0.9f), 0.6f, 2f, 30f, material);
+            // the nuke's white-out: a soft glow instead with Reduced motion
+            if (SettingsService.ReducedMotion) ZLFx.Spawn(GlowHalo.Sprite, TargetPos, new Color(1f, 1f, 0.9f, 0.45f), 0.6f, 2f, 6f, material);
+            else ZLFx.Spawn(GlowHalo.Sprite, TargetPos, new Color(1f, 1f, 0.9f, 0.9f), 0.6f, 2f, 30f, material);
             if (CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.4f, 0.4f);
         }
 
@@ -1321,6 +1323,20 @@ namespace PKR
         }
 
         /// <summary>A toast here and, online, on everyone's phone.</summary>
+        /// <summary>Visual sound cues (Settings): what made a noise, and where, for the HUD's edge markers.</summary>
+        public readonly List<(Vector2 at, string label, float until)> Cues = new List<(Vector2, string, float)>();
+
+        /// <summary>A sound worth seeing (a scream, a leaper winding up, hounds): shown at the screen edge when on.</summary>
+        public void SoundCue(Vector2 at, string label)
+        {
+            if (Services.Settings == null || !Services.Settings.Data.soundCues) return;
+            float now = Time.time;
+            Cues.RemoveAll(c => c.until < now);
+            foreach (var c in Cues) if (c.label == label && Vector2.Distance(c.at, at) < 3f) return;
+            if (Cues.Count >= 4) Cues.RemoveAt(0);
+            Cues.Add((at, label, now + 2f));
+        }
+
         public void Announce(string text, float seconds = 3f)
         {
             ShowToast(text, seconds);

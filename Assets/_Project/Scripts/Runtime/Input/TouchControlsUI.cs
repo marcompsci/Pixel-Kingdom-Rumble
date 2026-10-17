@@ -49,8 +49,8 @@ namespace PKR
         {
             xMin = Mathf.Clamp01(xMin); xMax = Mathf.Clamp(xMax, xMin + 0.1f, 1f);
             float mid = (xMin + xMax) * 0.5f;
-            if (_leftHalf != null) { _leftHalf.anchorMin = new Vector2(xMin, 0f); _leftHalf.anchorMax = new Vector2(mid, 1f); }
-            if (_rightHalf != null) { _rightHalf.anchorMin = new Vector2(mid, 0f); _rightHalf.anchorMax = new Vector2(xMax, 1f); }
+            _regionMin = xMin; _regionMax = xMax;
+            ApplyHalves();
             _layoutScale = Mathf.Clamp(scale, 0.4f, 1.5f);
             IsSplit = xMin > 0.001f || xMax < 0.999f;
             if (_tag != null)
@@ -62,6 +62,27 @@ namespace PKR
                 rt.anchoredPosition = Vector2.zero;
             }
             ApplyLayout();
+        }
+
+        float _regionMin, _regionMax = 1f;
+
+        static bool LeftHanded => Services.Settings != null && Services.Settings.Data.leftHanded;
+
+        /// <summary>Stick half and button half; Left-handed swaps them (and mirrors positions inside each).</summary>
+        void ApplyHalves()
+        {
+            float mid = (_regionMin + _regionMax) * 0.5f;
+            bool lh = LeftHanded;
+            if (_leftHalf != null)
+            {
+                _leftHalf.anchorMin = new Vector2(lh ? mid : _regionMin, 0f);
+                _leftHalf.anchorMax = new Vector2(lh ? _regionMax : mid, 1f);
+            }
+            if (_rightHalf != null)
+            {
+                _rightHalf.anchorMin = new Vector2(lh ? _regionMin : mid, 0f);
+                _rightHalf.anchorMax = new Vector2(lh ? mid : _regionMax, 1f);
+            }
         }
 
         public Vector2 StickValue => Joystick != null && Visible ? Joystick.Value : Vector2.zero;
@@ -224,9 +245,12 @@ namespace PKR
         public void ApplyLayout()
         {
             var data = Services.Settings != null ? Services.Settings.Data : new SettingsData();
+            ApplyHalves();
+            float pad = Accessibility.HitPad(data.bigTouchTargets);
+            foreach (var b in _buttons.Values) b.SetHitPad(pad);
             foreach (var p in data.controlLayout)
             {
-                var pos = new Vector2(p.x, p.y);
+                var pos = new Vector2(Accessibility.MirrorX(p.x, data.leftHanded), p.y);
                 float scale = p.scale * _layoutScale;
                 if (p.controlId == ControlIds.Joystick)
                 {
@@ -254,7 +278,7 @@ namespace PKR
             if (settings == null) return;
             var p = settings.Data.GetPlacement(id);
             if (p == null) return;
-            p.x = normalized.x;
+            p.x = Accessibility.MirrorX(normalized.x, settings.Data.leftHanded);   // saved as right-handed
             p.y = normalized.y;
             settings.Commit();
         }

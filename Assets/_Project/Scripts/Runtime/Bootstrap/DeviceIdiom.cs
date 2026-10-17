@@ -10,6 +10,7 @@ namespace PKR
         [DllImport("__Internal")] static extern bool PKR_IsPadIdiom();
         [DllImport("__Internal")] static extern int PKR_ThermalState();
         [DllImport("__Internal")] static extern bool PKR_LowPowerMode();
+        [DllImport("__Internal")] static extern bool PKR_ReduceMotion();
 #endif
         static bool? _pad;
 
@@ -42,6 +43,19 @@ namespace PKR
         }
 
         public static PKR.Core.ThermalState? FakeThermal;
+
+        /// <summary>iOS Reduce Motion (Settings > Accessibility > Motion).</summary>
+        public static bool SystemReduceMotion
+        {
+            get
+            {
+#if UNITY_IOS && !UNITY_EDITOR
+                return PKR_ReduceMotion();
+#else
+                return false;
+#endif
+            }
+        }
 
         public static bool LowPowerMode
         {

@@ -17,6 +17,13 @@ namespace PKR
         {
             Data = JsonFileStore.TryRead<SettingsData>(FileName) ?? new SettingsData();
             Data.Sanitize();
+            if (!Data.reducedMotionChecked)
+            {
+                // follow iOS Reduce Motion the first time; the in-game toggle decides after that
+                Data.reducedMotion = DeviceIdiom.SystemReduceMotion;
+                Data.reducedMotionChecked = true;
+                _dirty = true;
+            }
         }
 
         const float SaveDelay = 0.5f;
@@ -67,6 +74,24 @@ namespace PKR
         public void SetScreenShake(bool on) { Data.screenShakeEnabled = on; Commit(); }
         public void SetGraphicsMode(GraphicsMode m) { Data.graphicsMode = (int)m; Commit(); }
         public void SetShowFps(bool on) { Data.showFps = on; Commit(); }
+        public void SetColorAssist(ColorAssist m) { Data.colorAssist = (int)m; Commit(); }
+        public void SetReducedMotion(bool on) { Data.reducedMotion = on; Data.reducedMotionChecked = true; Commit(); }
+        public void SetLeftHanded(bool on) { Data.leftHanded = on; Commit(); }
+        public void SetBigTouchTargets(bool on) { Data.bigTouchTargets = on; Commit(); }
+        public void SetSoundCues(bool on) { Data.soundCues = on; Commit(); }
+
+        public ColorAssist ColorMode => (ColorAssist)Data.colorAssist;
+
+        /// <summary>A colour for something that carries meaning, in the player's palette.</summary>
+        public static Color RoleColor(ColorRole role, float alpha = 1f)
+        {
+            var mode = Services.Settings != null ? (ColorAssist)Services.Settings.Data.colorAssist : ColorAssist.Off;
+            var c = Accessibility.Color(role, mode);
+            return new Color(c.r / 255f, c.g / 255f, c.b / 255f, alpha);
+        }
+
+        public static bool ReducedMotion => Services.Settings != null && Services.Settings.Data.reducedMotion;
+        public static float ShakeScale => Services.Settings == null ? 1f : Accessibility.ShakeScale(Services.Settings.Data.screenShakeEnabled, Services.Settings.Data.reducedMotion);
         public void ResetControlLayout() { Data.ResetLayout(); Commit(); }
         public void SetFloatingJoystick(bool on) { Data.floatingJoystick = on; Commit(); }
         public void SetDpadMode(bool on) { Data.dpadMode = on; Commit(); }

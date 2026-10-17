@@ -64,10 +64,8 @@ namespace PKR
         Vector2 _lastKillAt;
         RectTransform _overRoot;
 
-        static readonly Color[] SlotColors =
-        {
-            new Color(1f, 0.85f, 0.3f), new Color(0.35f, 0.85f, 1f), new Color(1f, 0.45f, 0.75f), new Color(0.5f, 1f, 0.5f)
-        };
+        /// <summary>Each seat's colour (ring, name, scoreboard), from the player's colour-vision palette.</summary>
+        static Color SlotColor(int slot) => SettingsService.RoleColor(Accessibility.SquadRole(slot));
         static readonly string[] AINames = { "", "DOC", "MAGS", "TANK" };
 
         public void Init(ZLGame g)
@@ -159,7 +157,7 @@ namespace PKR
 
         public ZLPlayer AddHero(int slot, string name, string heroId, ZLControl control)
         {
-            var h = _g.SpawnSquadHero(heroId, control, StartSpot(slot), slot, name, SlotColors[slot % SlotColors.Length]);
+            var h = _g.SpawnSquadHero(heroId, control, StartSpot(slot), slot, name, SlotColor(slot));
             h.Loadout = NewLoadout();
             h.Wallet = new SurvivalRun(Mode, 0);
             h.MaxHealthScale = Mut.HeroHealth;
@@ -173,7 +171,7 @@ namespace PKR
         {
             Kind = SquadKind.AISquad;
             _g.Player.Slot = 0;
-            _g.Player.ShowSquadMarker(SlotColors[0], "YOU");
+            _g.Player.ShowSquadMarker(SlotColor(0), "YOU");
             string mine = GameSession.SelectedCharacterId;
             int added = 0;
             if (_g.roster != null)
@@ -197,7 +195,7 @@ namespace PKR
             _g.Net = link;
             _g.Player.Slot = mySlot;
             _g.Player.transform.position = StartSpot(mySlot);
-            _g.Player.ShowSquadMarker(SlotColors[mySlot % SlotColors.Length], "YOU");
+            _g.Player.ShowSquadMarker(SlotColor(mySlot), "YOU");
             foreach (var s in slots)
             {
                 if (s.slot == mySlot) continue;
@@ -854,7 +852,7 @@ namespace PKR
             gone.Clear();
             foreach (var kv in _puVisuals) if (!_seen.Contains(kv.Key)) gone.Add(kv.Key);
             foreach (int id in gone) { if (_puVisuals[id] != null) Destroy(_puVisuals[id]); _puVisuals.Remove(id); }
-            foreach (var kv in _puVisuals) if (kv.Value != null) kv.Value.transform.localScale = Vector3.one * (1.1f + Mathf.Sin(Time.time * 5f) * 0.1f);
+            foreach (var kv in _puVisuals) if (kv.Value != null) kv.Value.transform.localScale = Vector3.one * (SettingsService.ReducedMotion ? 1.1f : 1.1f + Mathf.Sin(Time.time * 5f) * 0.1f);
             // doors and the box
             for (int i = 0; i < _doors.Count; i++)
                 if ((s.doorMask & (1 << i)) != 0 && _doors[i] != null && !_doors[i].Cleared) { _openZones.Add(_doors[i].Data.opens); ClearDoor(_doors[i]); }
@@ -944,7 +942,7 @@ namespace PKR
                 {
                     if (h == null) continue;
                     var row = UIFactory.Label(panel, $"{h.DisplayName}   {h.Kills} kills   {Wallet(h).TotalEarned} pts   {RevivesBy(h)} revives", 30, TextAnchor.MiddleCenter, 40f);
-                    row.color = SlotColors[h.Slot % SlotColors.Length];
+                    row.color = SlotColor(h.Slot);
                 }
             }
             else

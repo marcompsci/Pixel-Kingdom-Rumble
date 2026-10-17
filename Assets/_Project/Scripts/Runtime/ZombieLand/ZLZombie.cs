@@ -139,11 +139,13 @@ namespace PKR
         {
             if (hunting) return;
             hunting = true;
+            if (kind == ZLFoe.Hound) _game.SoundCue(transform.position, "HOUND");
             if (kind == ZLFoe.Screamer && _screamed <= 0f)
             {
                 _screamed = 1f;
                 ZLFloater.Show("SCREAM!", transform.position, new Color(0.9f, 0.6f, 1f), 1.3f);
                 Sfx.Play(Sfx.Spotted, 0.9f);
+                _game.SoundCue(transform.position, "SCREAM");
                 _game.CallHorde(transform.position);
             }
         }
@@ -265,7 +267,8 @@ namespace PKR
                     _leapWind = ZLRules.LeapWindup;
                     _facing = (target - pos).normalized;
                     // The tell is a shape as well as a colour (readable for colour-blind players): a "!" overhead.
-                    ZLFloater.Show("!", pos + Vector2.up * 1.1f, new Color(1f, 0.95f, 0.4f), 1.5f);
+                    ZLFloater.Show("!", pos + Vector2.up * 1.1f, new Color(1f, 0.95f, 0.4f), 1.5f, true);
+                    _game.SoundCue(pos, "LEAPER");
                     return;
                 }
             }

@@ -31,7 +31,14 @@ namespace PKR
             return pos;
         }
 
-        public void Shake(float amp, float time) { _shakeAmp = Mathf.Max(_shakeAmp, amp); _shake = Mathf.Max(_shake, time); }
+        /// <summary>Respects Screen shake and Reduced motion (Settings).</summary>
+        public void Shake(float amp, float time)
+        {
+            amp *= SettingsService.ShakeScale;
+            if (amp <= 0f) return;
+            _shakeAmp = Mathf.Max(_shakeAmp, amp);
+            _shake = Mathf.Max(_shake, time);
+        }
 
         public void Snap()
         {

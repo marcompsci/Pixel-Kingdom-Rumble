@@ -18,3 +18,9 @@ extern "C" bool PKR_LowPowerMode()
 {
     return [NSProcessInfo processInfo].isLowPowerModeEnabled;
 }
+
+// Settings > Accessibility > Motion > Reduce Motion: the game's own Reduced motion starts from it on first launch.
+extern "C" bool PKR_ReduceMotion()
+{
+    return UIAccessibilityIsReduceMotionEnabled();
+}

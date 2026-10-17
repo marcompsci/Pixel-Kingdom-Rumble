@@ -24,6 +24,8 @@ namespace PKR
         readonly List<(RectTransform rt, Image img, System.Func<bool> show, System.Func<Color> color)> _dots =
             new List<(RectTransform, Image, System.Func<bool>, System.Func<Color>)>();
         ZLMapPanel _map;
+        readonly Text[] _cues = new Text[4];
+        readonly RectTransform[] _cueRts = new RectTransform[4];
         const float MapPx = 4f;      // minimap pixels per tile
         const float MiniSize = 230f;
 
@@ -197,6 +199,14 @@ namespace PKR
             _squad = Txt(sq, "", 26, TextAnchor.UpperLeft, Color.white, false);
             _squad.supportRichText = true;
 
+            // Visual sound cues (Settings > Accessibility): a label at the screen edge toward the noise
+            for (int i = 0; i < _cues.Length; i++)
+            {
+                _cueRts[i] = Box(_safe, "Cue" + i, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(260f, 60f));
+                _cues[i] = Txt(_cueRts[i], "", 30, TextAnchor.MiddleCenter, Color.white);
+                _cues[i].enabled = false;
+            }
+
             // Vehicle health
             _vehicleGroup = Box(_safe, "Vehicle", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-190f, 90f), new Vector2(380f, 60f));
             _vehicleBar = Bar(_vehicleGroup, "VehBar", new Vector2(0f, -26f), new Vector2(380f, 30f), new Color(1f, 0.7f, 0.3f), out _);
@@ -323,6 +333,8 @@ namespace PKR
             if (p == null) return;
 
             _hp.fillAmount = p.Health / (float)p.MaxHealth;
+            _hp.color = SettingsService.RoleColor(ColorRole.Health);
+            UpdateCues();
             if (_coachBox != null)
             {
                 bool on = _g.CoachLeft > 0f && !string.IsNullOrEmpty(_g.CoachTip);
@@ -332,9 +344,11 @@ namespace PKR
             if (_danger != null)
             {
                 float h01 = p.Health / (float)Mathf.Max(1, p.MaxHealth);
-                float low = h01 < 0.3f && p.Health > 0 ? (0.35f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f)) * (1f - h01 / 0.3f * 0.5f) : 0f;
-                float hit = Mathf.Clamp01(p.HurtFlash * 3f) * 0.7f;
-                _danger.color = new Color(0.9f, 0.05f, 0.05f, Mathf.Max(low, hit));
+                bool calm = SettingsService.ReducedMotion;
+                float pulse = calm ? 0.45f : 0.35f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f);   // steady with Reduced motion
+                float low = h01 < 0.3f && p.Health > 0 ? pulse * (1f - h01 / 0.3f * 0.5f) : 0f;
+                float hit = Mathf.Clamp01(p.HurtFlash * 3f) * 0.7f * Accessibility.FlashScale(calm);
+                _danger.color = SettingsService.RoleColor(ColorRole.Danger, Mathf.Max(low, hit));
             }
             _hpText.text = p.Health.ToString();
             _armor.fillAmount = prog.armor / (float)ZLRules.MaxArmor;
@@ -514,13 +528,13 @@ namespace PKR
                 if (_g.Net != null && !string.IsNullOrEmpty(_g.Net.StatusLine))
                 {
                     var q = _g.Net.Quality;
-                    string nc = q == NetQuality.Good ? "8CE68C" : q == NetQuality.Laggy ? "FFD25A" : "FF6464";
+                    string nc = ColorUtility.ToHtmlStringRGB(SettingsService.RoleColor(q == NetQuality.Good ? ColorRole.Good : q == NetQuality.Laggy ? ColorRole.Warning : ColorRole.Danger));
                     sb.Append($"<color=#{nc}>{_g.Net.StatusLine}</color>\n");
                 }
                 foreach (var h in _g.Squad)
                 {
                     if (h == null || h == p) continue;
-                    string col = ColorUtility.ToHtmlStringRGB(h.Downed ? new Color(1f, 0.4f, 0.4f) : h.Out ? new Color(0.6f, 0.6f, 0.6f) : Color.white);
+                    string col = ColorUtility.ToHtmlStringRGB(h.Downed ? SettingsService.RoleColor(ColorRole.Danger) : h.Out ? new Color(0.6f, 0.6f, 0.6f) : Color.white);
                     string state = h.Downed ? $"DOWN {Mathf.CeilToInt(h.BleedOut)}s" : h.Out ? "OUT" : $"{h.Health} HP";
                     int pts = h.Wallet != null ? h.Wallet.Points : 0;
                     sb.Append($"<color=#{col}>{h.DisplayName}  {state}  ·  {pts}</color>\n");
@@ -532,6 +546,43 @@ namespace PKR
             var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
             _deathDim.enabled = st.Over && !st.Run.Won;
             _death.enabled = false;
+        }
+
+        void UpdateCues()
+        {
+            var cam = Camera.main;
+            float now = Time.time;
+            int shown = 0;
+            if (cam != null)
+            {
+                foreach (var c in _g.Cues)
+                {
+                    if (c.until < now || shown >= _cues.Length) continue;
+                    Vector2 vp = cam.WorldToViewportPoint(c.at);
+                    bool onScreen = vp.x > 0.05f && vp.x < 0.95f && vp.y > 0.08f && vp.y < 0.92f;
+                    var t = _cues[shown];
+                    var rt = _cueRts[shown];
+                    var size = _safe.rect.size;
+                    if (onScreen)
+                    {
+                        rt.anchoredPosition = new Vector2((vp.x - 0.5f) * size.x, (vp.y - 0.5f) * size.y + 70f);
+                        t.text = c.label;
+                    }
+                    else
+                    {
+                        Vector2 dir = (vp - new Vector2(0.5f, 0.5f)).normalized;
+                        rt.anchoredPosition = new Vector2(dir.x * size.x * 0.40f, dir.y * size.y * 0.36f);
+                        // an arrow made of text, so it stays a shape (not only a colour)
+                        string arrow = Mathf.Abs(dir.x) > Mathf.Abs(dir.y) ? (dir.x > 0 ? "  >>" : "<<  ") : (dir.y > 0 ? "\n^^" : "\nvv");
+                        t.text = dir.x < 0 && Mathf.Abs(dir.x) > Mathf.Abs(dir.y) ? arrow + c.label : c.label + arrow;
+                    }
+                    var col = SettingsService.RoleColor(ColorRole.Warning, Mathf.Clamp01((c.until - now) * 2f));
+                    t.color = col;
+                    t.enabled = true;
+                    shown++;
+                }
+            }
+            for (int i = shown; i < _cues.Length; i++) if (_cues[i] != null) _cues[i].enabled = false;
         }
 
         Vector2? NearestLead()

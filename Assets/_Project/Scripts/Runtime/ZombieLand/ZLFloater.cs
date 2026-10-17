@@ -16,9 +16,10 @@ namespace PKR
         /// <summary>Most labels floating at once (each is a text mesh; a busy round on a slow phone keeps fewer).</summary>
         public static int MaxAlive(PerfTier t) => t == PerfTier.High ? 30 : t == PerfTier.Medium ? 16 : 8;
 
-        public static void Show(string text, Vector2 pos, Color c, float size = 1f)
+        /// <param name="essential">A gameplay tell (a leaper's "!"): always shown, whatever the cap.</param>
+        public static void Show(string text, Vector2 pos, Color c, float size = 1f, bool essential = false)
         {
-            if (_alive >= MaxAlive(PerfMonitor.Tier)) return;
+            if (!essential && _alive >= MaxAlive(PerfMonitor.Tier)) return;
             _alive++;
             var go = new GameObject("Floater");
             go.transform.position = pos + new Vector2(0f, 0.6f);

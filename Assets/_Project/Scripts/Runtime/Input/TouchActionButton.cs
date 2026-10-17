@@ -45,6 +45,31 @@ namespace PKR
             rt.localScale = Vector3.one * scale;
         }
 
+        Image _hitPad;
+
+        /// <summary>
+        /// Bigger touch targets (Settings > Accessibility): an invisible pad around the art that also counts as a press
+        /// (pointer events bubble up to this button). 1 = the art only.
+        /// </summary>
+        public void SetHitPad(float factor)
+        {
+            if (factor <= 1.001f) { if (_hitPad != null) _hitPad.gameObject.SetActive(false); return; }
+            if (_hitPad == null)
+            {
+                var go = new GameObject("HitPad", typeof(RectTransform));
+                var rt = (RectTransform)go.transform;
+                rt.SetParent(transform, false);
+                rt.SetAsFirstSibling();
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                _hitPad = go.AddComponent<Image>();
+                _hitPad.color = new Color(1f, 1f, 1f, 0f);   // invisible but still hit-tested
+                _hitPad.raycastTarget = true;
+            }
+            _hitPad.gameObject.SetActive(true);
+            var self = (RectTransform)transform;
+            _hitPad.rectTransform.sizeDelta = self.rect.size * factor;
+        }
+
         public void ApplyTheme(TouchTheme.Palette p)
         {
             bool art = normalSprite != null;

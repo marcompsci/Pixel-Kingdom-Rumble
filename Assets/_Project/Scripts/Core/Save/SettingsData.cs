@@ -69,6 +69,14 @@ namespace PKR.Core
         public int graphicsMode = (int)GraphicsMode.Auto;
         /// <summary>A small frame-rate readout in the corner.</summary>
         public bool showFps;
+        /// <summary>Accessibility: colour palette (ColorAssist), less motion, mirrored controls, bigger hit areas, sound cues on screen.</summary>
+        public int colorAssist = (int)ColorAssist.Off;
+        public bool reducedMotion;
+        /// <summary>The first launch copies iOS's own Reduce Motion setting once; after that the player's choice wins.</summary>
+        public bool reducedMotionChecked;
+        public bool leftHanded;
+        public bool bigTouchTargets;
+        public bool soundCues;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>
@@ -105,6 +113,7 @@ namespace PKR.Core
             version = CurrentVersion;
             controlOpacity = float.IsNaN(controlOpacity) ? DefaultControlOpacity : Math.Max(0.2f, Math.Min(1f, controlOpacity));
             hudScale = float.IsNaN(hudScale) || hudScale <= 0f ? 1f : Math.Max(MinHudScale, Math.Min(MaxHudScale, hudScale));
+            if (colorAssist < 0 || colorAssist > (int)ColorAssist.BlueYellow) colorAssist = (int)ColorAssist.Off;
             if (graphicsMode < 0 || graphicsMode > (int)GraphicsMode.BatterySaver) graphicsMode = (int)GraphicsMode.Auto;
             musicVolume = Clamp01(musicVolume);
             sfxVolume = Clamp01(sfxVolume);

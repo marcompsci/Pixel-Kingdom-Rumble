@@ -72,7 +72,7 @@ namespace PKR
         public void Shake(float amplitude, float duration)
         {
             var s = Services.Settings?.Data;
-            if (s != null && !s.screenShakeEnabled) return;
+            if (s != null && (!s.screenShakeEnabled || s.reducedMotion)) return;
             _shakeAmplitude = Mathf.Max(_shakeAmplitude * (_shakeTime > 0f ? 1f : 0f), amplitude);
             _shakeDuration = Mathf.Max(duration, 0.01f);
             _shakeTime = _shakeDuration;
