@@ -47,6 +47,7 @@ namespace PKR
             Services.Settings.Load();
             Services.Save.Load();
             Services.Audio.ApplySettings(Services.Settings.Data);
+            _root.AddComponent<PerfMonitor>();   // after settings: it reads Settings > Graphics
         }
 
         /// <summary>

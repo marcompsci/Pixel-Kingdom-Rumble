@@ -91,7 +91,7 @@ namespace PKR
                 if (through < damage)
                 {
                     // CLANK: the shield takes it
-                    ZLFx.Spawn(GlowHalo.Sprite, (Vector2)transform.position + _facing * 0.45f + Vector2.up * 0.3f, new Color(0.8f, 0.9f, 1f, 0.9f), 0.15f, 0.3f, 1.2f, _game.material);
+                    ZLFx.Spawn(GlowHalo.Sprite, (Vector2)transform.position + _facing * 0.45f + Vector2.up * 0.3f, new Color(0.8f, 0.9f, 1f, 0.9f), 0.15f, 0.3f, 1.2f, _game.material, ZLSort.Canopy - 2, true);
                     if (by != null && by == _game.Player && Random.value < 0.35f) ZLFloater.Show("SHIELD", transform.position + Vector3.up * 0.9f, new Color(0.7f, 0.85f, 1f), 0.6f);
                     damage = through;
                 }
@@ -106,7 +106,7 @@ namespace PKR
             if (_game.IsLastStand && _game.Stand != null) _game.Stand.ZombieHit(this, hp <= 0);
             _body.linearVelocity += dir * (kind == ZLFoe.Brute || kind == ZLFoe.Herald ? 0.8f : 3f);
             if (!hunting) StartHunt();
-            ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material);
+            ZLFx.Spawn(_game.Sprite("Props/blood"), (Vector2)transform.position + Random.insideUnitCircle * 0.2f, Color.white, 0.6f, 0.5f, 0.6f, _game.material, ZLSort.Canopy - 2, true);
             if (hp <= 0) Die();
         }
 
@@ -165,7 +165,7 @@ namespace PKR
                 ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.55f, 0.85f, 0.35f, 0.7f), 1.2f, 2.5f, 2f, _game.material);
                 _game.Explode(transform.position, 2.2f, 12, false);
             }
-            ZLFx.Spawn(_game.Sprite("Props/blood"), transform.position, Color.white, 6f, 1.1f, 0f, _game.material, ZLSort.Decal + 1);
+            ZLFx.Decal(_game.Sprite("Props/blood"), transform.position, _game.material);
             if ((kind == ZLFoe.Brute || kind == ZLFoe.Herald) && CameraFollowTopDown.Main != null) CameraFollowTopDown.Main.Shake(0.15f, 0.25f);
             Destroy(gameObject);
         }
@@ -205,7 +205,7 @@ namespace PKR
         {
             if (_dead) return;
             _dead = true;
-            ZLFx.Spawn(_game.Sprite("Props/blood"), transform.position, Color.white, 6f, 1.1f, 0f, _game.material, ZLSort.Decal + 1);
+            ZLFx.Decal(_game.Sprite("Props/blood"), transform.position, _game.material);
             Destroy(gameObject);
         }
 

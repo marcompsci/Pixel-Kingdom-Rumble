@@ -11,8 +11,15 @@ namespace PKR
         TextMesh _tm;
         Color _c;
 
+        static int _alive;
+
+        /// <summary>Most labels floating at once (each is a text mesh; a busy round on a slow phone keeps fewer).</summary>
+        public static int MaxAlive(PerfTier t) => t == PerfTier.High ? 30 : t == PerfTier.Medium ? 16 : 8;
+
         public static void Show(string text, Vector2 pos, Color c, float size = 1f)
         {
+            if (_alive >= MaxAlive(PerfMonitor.Tier)) return;
+            _alive++;
             var go = new GameObject("Floater");
             go.transform.position = pos + new Vector2(0f, 0.6f);
             var f = go.AddComponent<ZLFloater>();
@@ -28,6 +35,8 @@ namespace PKR
             mr.sharedMaterial = UISprites.DisplayFont.material;
             mr.sortingOrder = ZLSort.Overhead;
         }
+
+        void OnDestroy() => _alive = Mathf.Max(0, _alive - 1);
 
         void Update()
         {

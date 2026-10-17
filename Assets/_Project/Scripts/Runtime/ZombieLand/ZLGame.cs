@@ -1118,7 +1118,7 @@ namespace PKR
             Sfx.Play(Sfx.Swing, attacker == Player ? 0.7f : 0.35f);
             if (IsGuest) return;   // the host lands the hits
             MeleeAttacker = attacker;
-            ZLFx.Spawn(GlowHalo.Sprite, at + aim * 0.8f, new Color(1f, 1f, 1f, 0.5f), 0.15f, 0.6f, 2f, material);
+            ZLFx.Spawn(GlowHalo.Sprite, at + aim * 0.8f, new Color(1f, 1f, 1f, 0.5f), 0.15f, 0.6f, 2f, material, ZLSort.Canopy - 2, true);
             foreach (var h in Hostiles())
             {
                 var c = (Component)h;

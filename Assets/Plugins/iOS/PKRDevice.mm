@@ -6,3 +6,15 @@ extern "C" bool PKR_IsPadIdiom()
 {
     return [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad;
 }
+
+// 0 nominal, 1 fair, 2 serious, 3 critical (NSProcessInfoThermalState). Read by PerfMonitor every few seconds.
+extern "C" int PKR_ThermalState()
+{
+    return (int)[NSProcessInfo processInfo].thermalState;
+}
+
+// Low Power Mode (Settings > Battery): Auto graphics drops to 30 FPS while it's on.
+extern "C" bool PKR_LowPowerMode()
+{
+    return [NSProcessInfo processInfo].isLowPowerModeEnabled;
+}
