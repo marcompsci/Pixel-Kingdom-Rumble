@@ -12,6 +12,8 @@ mkdir -p "$OUT"; rm -f "$OUT"/*
 say() { echo "$@" | tee -a "$OUT/SUMMARY.txt"; }
 BUNDLE="com.marcompsci.pixelkingdomrumble"
 DEVICE_NAME="${PKR_SIM_DEVICE:-iPhone 17 Pro Max}"
+# Logs/shots_device (one line, a simulator name such as "iPad Pro 13-inch (M4)") overrides the device for one run.
+[ -f "$PROJ/Logs/shots_device" ] && DEVICE_NAME="$(cat "$PROJ/Logs/shots_device")" && rm -f "$PROJ/Logs/shots_device"
 # Logs/shots_scenes (one line, space separated) overrides the scene list for a single run.
 [ -f "$PROJ/Logs/shots_scenes" ] && PKR_SHOT_SCENES="$(cat "$PROJ/Logs/shots_scenes")" && rm -f "$PROJ/Logs/shots_scenes"
 SCENES="${PKR_SHOT_SCENES:-01_MainMenu 03_LevelSelect SQ_SunspireHeights SQ_RooftopRun SQ_FrostgearAscent MS_FirstLight 05_ShadowContracts VS_Dojo}"
