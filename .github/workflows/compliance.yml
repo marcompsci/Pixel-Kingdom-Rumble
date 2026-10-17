@@ -1,0 +1,23 @@
+# Apple compliance gate: static checks that need no Unity licence (secrets, tester-only code, purpose strings,
+# privacy manifest + policy, asset provenance, third-party names, purchase restore, versions).
+# Exported-Xcode-project checks and the archive run on the Mac (Logs/release_gate_request); see
+# Docs/testflight-release-checklist.md. A failing check fails the job; nothing is marked passed when skipped.
+name: Apple compliance gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compliance checks
+        run: python3 Tools/compliance_check.py
+      - name: Python tools parse
+        run: python3 -m py_compile Tools/compliance_check.py Tools/asc_api.py Tools/asc_audit.py Tools/asc_fix.py Tools/asc_screenshots.py

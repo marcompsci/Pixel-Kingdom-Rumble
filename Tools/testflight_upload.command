@@ -38,6 +38,13 @@ fi
 grep -E "Release build|PKR iOS\] Post-build" "$OUT/unity.log" | head -3 | sed 's/^/      /' | tee -a "$OUT/SUMMARY.txt"
 say "      OK"
 
+say "[gate] Apple compliance checks on the exported project..."
+if ! /usr/bin/python3 Tools/compliance_check.py --xcode Builds/iOS > "$OUT/compliance.log" 2>&1; then
+  say "      FAILED: nothing was archived or uploaded (Logs/testflight/compliance.log)"
+  grep -E "^FAIL" "$OUT/compliance.log" | tee -a "$OUT/SUMMARY.txt"
+  pause_end; exit 1
+fi
+grep -E "^(WARN|RESULT)" "$OUT/compliance.log" | sed 's/^/      /' | tee -a "$OUT/SUMMARY.txt"
 say "[2/3] Xcode: archiving (team $TEAM)..."
 ARCHIVE="Builds/PixelKingdomRumble.xcarchive"
 rm -rf "$ARCHIVE"
@@ -54,6 +61,14 @@ else
 ARCHIVE="Builds/PixelKingdomRumble.xcarchive"
 say "Upload only: $ARCHIVE ($(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCHIVE/Info.plist" 2>/dev/null))"
 fi
+
+APPDIR="$(ls -d "$ARCHIVE"/Products/Applications/*.app 2>/dev/null | head -1)"
+if [ -n "$APPDIR" ]; then
+  say "      In the archived app: $(find "$APPDIR" -name PrivacyInfo.xcprivacy | sed "s#$APPDIR/##" | tr '\n' ' ')"
+  say "      Version $(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APPDIR/Info.plist") ($(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APPDIR/Info.plist")), devices $(/usr/libexec/PlistBuddy -c 'Print :UIDeviceFamily' "$APPDIR/Info.plist" | tr -d ' \n')"
+fi
+# PKR_ARCHIVE_ONLY=1 (Logs/release_gate_request via the watcher): prove the release build archives, upload nothing.
+if [ "${PKR_ARCHIVE_ONLY:-0}" = "1" ]; then say ""; say "DONE (archive only, nothing uploaded)."; pause_end; exit 0; fi
 
 say "[3/3] Uploading to App Store Connect..."
 cat > Builds/ExportOptions.plist <<PLIST

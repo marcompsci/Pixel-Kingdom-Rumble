@@ -20,6 +20,7 @@ if [ -f Logs/asc_fix_request ]; then rm -f Logs/asc_fix_request; exec /usr/bin/p
 if [ -f Logs/asc_request ]; then rm -f Logs/asc_request; exec /usr/bin/python3 Tools/asc_screenshots.py; fi
 if [ -f Logs/shots_request ]; then rm -f Logs/shots_request; exec bash Tools/sim_screenshots.command; fi
 if [ -f Logs/upload_request ]; then rm -f Logs/upload_request; PKR_UPLOAD_ONLY=1 exec bash Tools/testflight_upload.command; fi
+if [ -f Logs/release_gate_request ]; then rm -f Logs/release_gate_request; PKR_ARCHIVE_ONLY=1 exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/testflight_request ]; then rm -f Logs/testflight_request; exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/ios_request ]; then rm -f Logs/ios_request; exec bash Tools/ios_build.command; fi
 PROJ="$(pwd)"
@@ -82,6 +83,10 @@ run_tests() {
 run_tests EditMode 3
 run_tests PlayMode 4
 
+say ""
+say "[+] Apple compliance gate (Tools/compliance_check.py)..."
+/usr/bin/python3 Tools/compliance_check.py > "$OUT/compliance.log" 2>&1
+grep -E "^(FAIL|WARN|SKIP)|^RESULT" "$OUT/compliance.log" | sed 's/^/      /' | tee -a "$OUT/SUMMARY.txt"
 say ""
 say "DONE. Tell Claude 'check done'."
 pause_end
