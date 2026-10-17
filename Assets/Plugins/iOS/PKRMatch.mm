@@ -66,6 +66,14 @@ static NSString *PKRMpId(GKPlayer *p) { return p.gamePlayerID ?: @""; }
     }
 }
 
+// Two-player matches only (GameKit's rule): try to bring a dropped player back into the same match. The host keeps
+// their seat (an AI plays it meanwhile) and hands it back when their controls arrive again.
+- (BOOL)match:(GKMatch *)match shouldReinviteDisconnectedPlayer:(GKPlayer *)player
+{
+    NSLog(@"[PKR Match] reinviting a dropped player");
+    return YES;
+}
+
 - (void)match:(GKMatch *)match didFailWithError:(NSError *)error
 {
     NSLog(@"[PKR Match] match error: %@", error.localizedDescription);

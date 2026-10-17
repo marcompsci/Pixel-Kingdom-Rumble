@@ -239,5 +239,127 @@ namespace PKR.Tests
                 if (ZLNet.Kind(data) == NetMsg.Start && ZLNet.ReadStart(data, out var mode, out var slots)) { gotStart = mode == SurvivalMode.Raid && slots.Count == 4; }
             Assert.IsTrue(gotStart, "the guest gets START");
         }
+
+        [UnityTest]
+        public IEnumerator Online_SilentGuest_GoesToAI_AndGetsTheirHeroBack()
+        {
+            yield return Load(SquadKind.Solo);
+            var g = ZLGame.Current;
+            var st = g.Stand;
+            var ends = LoopbackTransport.Create("A", "B");
+            var slots = new List<NetSlot>
+            {
+                new NetSlot { slot = 0, playerId = "A", name = "HOST", heroId = "" },
+                new NetSlot { slot = 1, playerId = "B", name = "FRIEND", heroId = "" },
+            };
+            st.SetupOnline(ends[0], true, 0, slots);
+            double clock = 100.0;
+            g.Net.Clock = () => clock;
+            foreach (var h in g.Squad) h.DebugInvulnerable = true;
+            var remote = st.HeroInSlot(1);
+            var guest = ends[1];
+            int seq = 0;
+            guest.SendTo("A", ZLNet.Input(new NetInput { seq = ++seq, posX = remote.transform.position.x, posY = remote.transform.position.y, aimX = 1f }), false);
+            yield return null;
+            Assert.AreEqual(ZLControl.Remote, remote.Control);
+            // a ping reaches the guest, and their pong gives the host a round trip
+            bool pinged = false;
+            while (guest.TryReceive(out var from, out var data))
+                if (ZLNet.Kind(data) == NetMsg.Ping && ZLNet.ReadStamp(data, out int stamp)) { pinged = true; guest.SendTo("A", ZLNet.Pong(stamp), false); }
+            Assert.IsTrue(pinged, "the host pings");
+            clock += 0.06;
+            yield return null;
+            Assert.AreEqual(60f, g.Net.HealthOf("B").RttMs, 5f, "round trip from the pong");
+
+            // silence longer than the drop time: an AI takes the seat
+            clock += NetHealth.GuestDropAfter + 0.5;
+            yield return null;
+            yield return null;
+            Assert.AreEqual(ZLControl.AI, remote.Control, "a silent guest is handed to an AI");
+            Assert.AreEqual(1, g.Net.DroppedCount);
+
+            // their controls come back: so does their hero
+            guest.SendTo("A", ZLNet.Input(new NetInput { seq = ++seq, posX = remote.transform.position.x, posY = remote.transform.position.y, aimX = 1f }), false);
+            yield return null;
+            yield return null;
+            Assert.AreEqual(ZLControl.Remote, remote.Control);
+            Assert.AreEqual(0, g.Net.DroppedCount);
+            Assert.AreEqual("FRIEND", remote.DisplayName);
+
+            // an old, late packet is ignored
+            guest.SendTo("A", ZLNet.Input(new NetInput { seq = seq - 1, posX = 0f, posY = 0f }), false);
+            yield return null;
+            Assert.Greater(Vector2.Distance(remote.transform.position, Vector2.zero), 0.5f);
+            yield return Calm();
+        }
+
+        [UnityTest]
+        public IEnumerator Online_Guest_IgnoresOldSnapshots_AndEndsWhenTheHostGoesQuiet()
+        {
+            yield return Load(SquadKind.Solo);
+            var g = ZLGame.Current;
+            var st = g.Stand;
+            var ends = LoopbackTransport.Create("A", "B");
+            var slots = new List<NetSlot>
+            {
+                new NetSlot { slot = 0, playerId = "A", name = "HOST", heroId = "" },
+                new NetSlot { slot = 1, playerId = "B", name = "ME", heroId = "" },
+            };
+            st.SetupOnline(ends[1], false, 1, slots);
+            double clock = 50.0;
+            g.Net.Clock = () => clock;
+            var host = ends[0];
+            NetSnapshot Snap(int tick, int round)
+            {
+                var s = new NetSnapshot { tick = tick, round = round, zombiesLeft = 3 };
+                s.members.Add(new NetMember { slot = 0, x = 20f, y = 8f, hp = 100, maxHp = 100 });
+                s.members.Add(new NetMember { slot = 1, x = g.Player.transform.position.x, y = g.Player.transform.position.y, hp = 100, maxHp = 100 });
+                return s;
+            }
+            host.SendTo("B", ZLNet.Snapshot(Snap(10, 6)), false);
+            yield return null;
+            host.SendTo("B", ZLNet.Snapshot(Snap(9, 5)), false);
+            yield return null;
+            Assert.AreEqual(6, st.Run.Round, "a late snapshot doesn't step back");
+            Assert.AreEqual(1, g.Net.OutOfOrderSnapshots);
+            Assert.AreEqual(NetQuality.Good, g.Net.Quality);
+            clock += 3.0;
+            yield return null;
+            Assert.AreEqual(NetQuality.Laggy, g.Net.Quality);
+            StringAssert.Contains("RECONNECTING", g.Net.StatusLine);
+            Assert.IsFalse(st.Over);
+            clock += NetHealth.HostLostAfter;
+            yield return null;
+            yield return null;
+            Assert.IsTrue(g.Net.HostLost);
+            Assert.IsTrue(st.Over, "a host gone quiet ends the run");
+            yield return Calm();
+        }
+
+        [UnityTest]
+        public IEnumerator Lobby_TurnsAwayAnotherVersion_AndStartsNowOnRequest()
+        {
+            var svc = PKRMatchService.Ensure();
+            svc.DontLoadScene = true;
+            svc.FillWithAI = false;
+            var ends = LoopbackTransport.Create("G:1", "G:2", "G:3");
+            svc.BeginLobby(ends[0], SurvivalMode.Endless);
+            Assert.IsTrue(svc.IsHost);
+            var old = ZLNet.Hello("OLDGAME", "");
+            old[1] = (byte)(ZLNet.Version - 1);
+            ends[2].SendTo("G:1", old, true);
+            yield return null;
+            bool rejected = false;
+            while (ends[2].TryReceive(out var from, out var data))
+                if (ZLNet.Kind(data) == NetMsg.Reject && ZLNet.ReadReject(data, out var why, out _)) rejected = why == NetReject.Version;
+            Assert.IsTrue(rejected, "an older game is told to update");
+            Assert.IsFalse(svc.CanStartNow, "nobody valid has joined yet");
+            ends[1].SendTo("G:1", ZLNet.Hello("FRIEND", "luma"), true);
+            float t = 0f;
+            while (svc.State != PKRMatchService.Phase.InGame && t < 3f) { t += Time.unscaledDeltaTime; yield return null; }
+            Assert.AreEqual(PKRMatchService.Phase.InGame, svc.State, "everyone valid is in: it starts");
+            Assert.AreEqual(2, svc.Slots.Count, "the old game isn't seated");
+            Assert.AreEqual("FRIEND", svc.Slots[1].name);
+        }
     }
 }

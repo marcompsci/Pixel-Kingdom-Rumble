@@ -92,6 +92,10 @@ namespace PKR
         readonly ZLAnim _anim = new ZLAnim();
         float _cool, _reload, _roll, _rollCool, _melee, _invuln, _animT, _flashT;
         Vector2 _rollDir, _puppetTarget;
+        readonly NetInterp _interp = new NetInterp();
+
+        /// <summary>Where to draw a networked hero now (interpolated between packets; the last target if none).</summary>
+        Vector2 NetDrawPos() => _interp.Sample(Time.unscaledTimeAsDouble, out float x, out float y) ? new Vector2(x, y) : _puppetTarget;
         bool _firePrev;
         SpriteRenderer _flash;
 
@@ -326,12 +330,24 @@ namespace PKR
             if (Body != null) Body.bodyType = RigidbodyType2D.Dynamic;
         }
 
+        /// <summary>Online host: a guest who dropped came back, so their controls drive this hero again.</summary>
+        public void BecomeRemote(IZLBrain brain)
+        {
+            Control = ZLControl.Remote;
+            Brain = brain;
+            _puppetTarget = transform.position;
+            _interp.Clear();
+            if (Body != null) { Body.linearVelocity = Vector2.zero; Body.bodyType = RigidbodyType2D.Kinematic; }
+        }
+
         /// <summary>Puppets and remote heroes: where the network says this hero is.</summary>
         public void SetNetPosition(Vector2 pos, Vector2 aim, bool snap = false)
         {
             _puppetTarget = pos;
             if (aim.sqrMagnitude > 0.01f) Aim = aim.normalized;
-            if (snap) transform.position = pos;
+            if (snap) { transform.position = pos; _interp.Clear(); }
+            _interp.Delay = Control == ZLControl.Remote ? 0.07f : 0.12f;   // guests send controls at 20/s, snapshots come at 10/s
+            _interp.Push(Time.unscaledTimeAsDouble, pos.x, pos.y);
         }
 
         // ---- the frame -----------------------------------------------------------------------------------
@@ -345,9 +361,7 @@ namespace PKR
             if (Control == ZLControl.Puppet)
             {
                 // smooth toward the host's position
-                Vector2 p = transform.position;
-                float k = 1f - Mathf.Exp(-12f * dt);
-                transform.position = (_puppetTarget - p).sqrMagnitude > 25f ? _puppetTarget : Vector2.Lerp(p, _puppetTarget, k);
+                transform.position = NetDrawPos();
                 return;
             }
             if (game.Paused || Dead || Out)
@@ -365,10 +379,7 @@ namespace PKR
             if (Control == ZLControl.Remote)
             {
                 // An online player moves on their own phone; here the hero follows where they say they are.
-                Vector2 p = transform.position;
-                float k = 1f - Mathf.Exp(-15f * dt);
-                var next = (_puppetTarget - p).sqrMagnitude > 25f ? _puppetTarget : Vector2.Lerp(p, _puppetTarget, k);
-                Body.MovePosition(next);
+                Body.MovePosition(NetDrawPos());
                 move = Vector2.zero;
             }
 

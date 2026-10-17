@@ -25,6 +25,7 @@ namespace PKR
         /// <summary>The hero who hit this zombie last (Last Stand points go to them).</summary>
         public ZLPlayer LastHitBy { get; private set; }
         Vector2 _netTarget;
+        readonly NetInterp _interp = new NetInterp();
 
         ZLGame _game;
         Rigidbody2D _body;
@@ -193,6 +194,7 @@ namespace PKR
             if ((pos - (Vector2)transform.position).sqrMagnitude > 0.0004f && _sr != null && Mathf.Abs(pos.x - transform.position.x) > 0.01f)
                 _sr.flipX = pos.x < transform.position.x;
             _netTarget = pos;
+            _interp.Push(Time.unscaledTimeAsDouble, pos.x, pos.y);
             int newHp = Mathf.Max(1, Mathf.RoundToInt(maxHp * health01));
             if (newHp < hp) _hurt = 0.12f;
             hp = newHp;
@@ -210,9 +212,7 @@ namespace PKR
         void Update()
         {
             if (!Puppet || _dead) return;
-            Vector2 p = transform.position;
-            float k = 1f - Mathf.Exp(-12f * Time.deltaTime);
-            var next = (_netTarget - p).sqrMagnitude > 25f ? _netTarget : Vector2.Lerp(p, _netTarget, k);
+            var next = _interp.Sample(Time.unscaledTimeAsDouble, out float x, out float y) ? new Vector2(x, y) : _netTarget;
             if (_body != null) _body.MovePosition(next); else transform.position = next;
             _hurt -= Time.deltaTime;
         }

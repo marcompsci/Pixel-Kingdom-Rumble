@@ -765,6 +765,17 @@ namespace PKR
                 if (z == null || !z.Alive) continue;
                 s.zombies.Add(new NetZombie { id = z.NetId, kind = (int)z.kind, x = z.transform.position.x, y = z.transform.position.y, hp01 = Mathf.Clamp(Mathf.RoundToInt(255f * z.hp / Mathf.Max(1, z.maxHp)), 1, 255) });
             }
+            if (s.zombies.Count > ZLNet.MaxSnapshotZombies)
+            {
+                // too many to fit one packet: guests get the ones nearest the squad
+                float Near(NetZombie z)
+                {
+                    float best = float.MaxValue;
+                    foreach (var m in s.members) { float dx = m.x - z.x, dy = m.y - z.y; best = Mathf.Min(best, dx * dx + dy * dy); }
+                    return best;
+                }
+                s.zombies.Sort((a, b) => Near(a).CompareTo(Near(b)));
+            }
             foreach (var p in _g.PowerUpsOnGround()) s.powerUps.Add(new NetPowerUp { id = p.id, kind = (int)p.kind, x = p.at.x, y = p.at.y });
             return s;
         }

@@ -39,8 +39,20 @@ namespace PKR
         public bool DontLoadScene { get; set; }
 
         readonly Dictionary<string, (string name, string hero)> _hellos = new Dictionary<string, (string, string)>();
-        float _lobbyT, _helloT;
-        bool _initDone;
+        readonly HashSet<string> _rejected = new HashSet<string>();
+        float _lobbyT, _helloT, _rosterT;
+        bool _initDone, _startNow;
+
+        /// <summary>The host starts without waiting for anyone still joining (at least one guest must be in).</summary>
+        public const float AutoStartAfter = 20f;
+
+        /// <summary>Lobby: who's in (the host's list; guests get it from the host).</summary>
+        public List<(string name, string heroId)> Roster { get; } = new List<(string, string)>();
+        /// <summary>Host: at least one guest has said hello, so START NOW works.</summary>
+        public bool CanStartNow => State == Phase.Lobby && IsHost && _hellos.Count > 0;
+
+        /// <summary>Host: start with whoever has joined.</summary>
+        public void StartNow() { if (CanStartNow) _startNow = true; }
 
         /// <summary>Game Center can run online play on this device.</summary>
         public static bool Supported
@@ -107,8 +119,12 @@ namespace PKR
             Transport = transport;
             Mode = mode;
             _hellos.Clear();
+            _rejected.Clear();
+            Roster.Clear();
             _lobbyT = 0f;
             _helloT = 0f;
+            _rosterT = 0f;
+            _startNow = false;
             var ids = new List<string>(transport.PeerIds) { transport.LocalId };
             IsHost = SquadRules.Host(ids) == transport.LocalId;
             State = Phase.Lobby;
@@ -156,17 +172,51 @@ namespace PKR
             while (Transport.TryReceive(out var from, out var data))
             {
                 var kind = ZLNet.Kind(data);
-                if (kind == NetMsg.Hello && IsHost && ZLNet.ReadHello(data, out var name, out var hero)) _hellos[from] = (name, hero);
+                if (kind == NetMsg.Hello && IsHost && ZLNet.ReadHello(data, out var name, out var hero, out int version))
+                {
+                    if (version != ZLNet.Version)
+                    {
+                        if (_rejected.Add(from)) Transport.SendTo(from, ZLNet.Reject(NetReject.Version), true);
+                    }
+                    else if (!_hellos.ContainsKey(from) && _hellos.Count + 1 >= SquadRules.MaxSquad)
+                    {
+                        if (_rejected.Add(from)) Transport.SendTo(from, ZLNet.Reject(NetReject.Full), true);
+                    }
+                    else _hellos[from] = (name, hero);
+                }
+                else if (kind == NetMsg.Reject && !IsHost && ZLNet.ReadReject(data, out var why, out int hv))
+                {
+                    Leave();
+                    State = Phase.Failed;
+                    Status = ZLNet.RejectText(why, hv);
+                    return;
+                }
+                else if (kind == NetMsg.Roster && !IsHost && ZLNet.ReadRoster(data, out var roster)) { Roster.Clear(); Roster.AddRange(roster); }
+                else if (kind == NetMsg.Ping && ZLNet.ReadStamp(data, out int stamp)) Transport.SendTo(from, ZLNet.Pong(stamp), false);
                 else if (kind == NetMsg.Start && !IsHost && ZLNet.ReadStart(data, out var mode, out var slots, out var map)) { MapId = map; Begin(mode, slots); return; }
-                else if (kind == NetMsg.Bye) Status = "A player left.";
+                else if (kind == NetMsg.Bye) _hellos.Remove(from);
             }
-            while (Transport.TakeLeft() != null) Status = "A player left.";
-            if (!IsHost) return;
-            var peers = Transport.PeerIds;
+            while (true)
+            {
+                string gone = Transport.TakeLeft();
+                if (gone == null) break;
+                _hellos.Remove(gone);
+            }
+            if (!IsHost) { Status = LobbyText(false); return; }
+            var peers = new List<string>();
+            foreach (var p in Transport.PeerIds) if (!_rejected.Contains(p)) peers.Add(p);
+            if (peers.Count == 0) { State = Phase.Failed; Status = _rejected.Count > 0 ? "The other player needs the same version of the game." : "Everyone left."; return; }
+            Roster.Clear();
+            Roster.Add((LocalName, GameSession.SelectedCharacterId));
+            foreach (var id in SquadRules.Slots(peers)) if (_hellos.TryGetValue(id, out var h)) Roster.Add((h.name, h.hero));
+            _rosterT -= dt;
+            if (_rosterT <= 0f) { _rosterT = 1f; Transport.SendToAll(ZLNet.Roster(Roster), false); }
+            Status = LobbyText(true);
             bool all = true;
             foreach (var p in peers) if (!_hellos.ContainsKey(p)) all = false;
-            if (peers.Count == 0) { State = Phase.Failed; Status = "Everyone left."; return; }
-            if (!all && _lobbyT < 8f) return;
+            bool go = _startNow || (all && _lobbyT >= 0.5f) || (_hellos.Count > 0 && _lobbyT >= AutoStartAfter);
+            if (!go) return;
+            peers.RemoveAll(p => !_hellos.ContainsKey(p));
 
             // START: the host is slot 0, everyone else by id, then AI teammates in the empty seats.
             var slotsOut = new List<NetSlot>
@@ -184,6 +234,18 @@ namespace PKR
                 while (slotsOut.Count < SquadRules.MaxSquad) slotsOut.Add(new NetSlot { slot = slotsOut.Count, playerId = "", name = "AI", heroId = "", ai = true });
             Transport.SendToAll(ZLNet.Start(Mode, slotsOut, MapId), true);
             Begin(Mode, slotsOut);
+        }
+
+        string LobbyText(bool host)
+        {
+            var sb = new StringBuilder(host ? "You're hosting." : "Joined. Waiting for the host to start.");
+            if (Roster.Count > 0)
+            {
+                sb.Append("  In the squad: ");
+                for (int i = 0; i < Roster.Count; i++) sb.Append(i > 0 ? ", " : "").Append(string.IsNullOrEmpty(Roster[i].name) ? "PLAYER" : Roster[i].name);
+            }
+            if (host && Roster.Count < (Transport != null ? Transport.PeerIds.Count + 1 : 1)) sb.Append("  (someone is still joining)");
+            return sb.ToString();
         }
 
         void Begin(SurvivalMode mode, List<NetSlot> slots)

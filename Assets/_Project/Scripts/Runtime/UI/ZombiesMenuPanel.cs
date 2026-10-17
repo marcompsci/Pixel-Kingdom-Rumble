@@ -345,6 +345,7 @@ namespace PKR
         // ---- Last Stand: who's with you ------------------------------------------------------------------
 
         Text _status;
+        Button _startNow;
         bool _fillAI = true;
 
         void OpenSquad()
@@ -386,6 +387,8 @@ namespace PKR
             fill.GetComponentInChildren<Text>().fontSize = 30;
             _status = UIFactory.Label(panel, "", 30, TextAnchor.MiddleCenter, 60f);
             _status.color = new Color32(255, 214, 90, 255);
+            _startNow = UIFactory.Button(panel, "START NOW", () => { var mm = PKRMatchService.Instance; if (mm != null) mm.StartNow(); }, 90f);
+            _startNow.gameObject.SetActive(false);
             UIFactory.Button(panel, "BACK", () => { var m = PKRMatchService.Instance; if (m != null && m.State != PKRMatchService.Phase.InGame) m.Leave(); Build(); });
             UIFactory.Select(solo);
         }
@@ -452,6 +455,7 @@ namespace PKR
             PollBoards();
             var m = PKRMatchService.Instance;
             if (_status != null && m != null && m.State != PKRMatchService.Phase.Idle) _status.text = m.Status;
+            if (_startNow != null) _startNow.gameObject.SetActive(m != null && m.CanStartNow);
         }
 
         void Go(string scene, bool weekly = false)

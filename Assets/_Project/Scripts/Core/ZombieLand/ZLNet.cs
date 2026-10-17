@@ -5,7 +5,10 @@ using System.Text;
 namespace PKR.Core
 {
     /// <summary>Message kinds for online Last Stand (first byte of every packet).</summary>
-    public enum NetMsg : byte { Hello = 1, Start = 2, Input = 3, Snapshot = 4, Toast = 5, Shot = 6, Over = 7, Bye = 8 }
+    public enum NetMsg : byte { Hello = 1, Start = 2, Input = 3, Snapshot = 4, Toast = 5, Shot = 6, Over = 7, Bye = 8, Ping = 9, Pong = 10, Reject = 11, Roster = 12 }
+
+    /// <summary>Why the host turned a player away in the lobby.</summary>
+    public enum NetReject : byte { Version = 1, Full = 2 }
 
     /// <summary>Little-endian packet writer (positions as hundredths of a tile in 16 bits).</summary>
     public class NetWriter
@@ -106,8 +109,22 @@ namespace PKR.Core
     /// <summary>Encoding and decoding of every message (pure, unit-tested).</summary>
     public static class ZLNet
     {
-        /// <summary>2: the Start message carries the map.</summary>
-        public const int Version = 2;
+        /// <summary>2: the Start message carries the map. 3: ping/pong, lobby roster, reject, snapshot cap.</summary>
+        public const int Version = 3;
+
+        /// <summary>
+        /// Game Center asks for unreliable packets under about 1000 bytes; a snapshot carries at most this many of the
+        /// dead (nearest the squad first), which keeps the worst case under that.
+        /// </summary>
+        public const int MaxSnapshotZombies = 96;
+        public const int MaxUnreliableBytes = 1000;
+
+        /// <summary>16-bit sequence numbers: is <paramref name="a"/> newer than <paramref name="b"/> (wraps)?</summary>
+        public static bool SeqNewer(int a, int b)
+        {
+            int d = ((a & 0xffff) - (b & 0xffff) + 65536) % 65536;
+            return d != 0 && d < 32768;
+        }
 
         /// <summary>Guns by index (the catalog order) so snapshots carry one byte per gun.</summary>
         public static int GunIndex(string id)
@@ -144,11 +161,64 @@ namespace PKR.Core
             return w.ToArray();
         }
 
-        public static bool ReadHello(byte[] d, out string name, out string heroId)
+        public static bool ReadHello(byte[] d, out string name, out string heroId) => ReadHello(d, out name, out heroId, out int v) && v == Version;
+
+        /// <summary>Reads a hello from any version (the host tells an old or newer game to update).</summary>
+        public static bool ReadHello(byte[] d, out string name, out string heroId, out int version)
         {
             var r = new NetReader(d); r.Byte();
-            int v = r.Byte(); name = r.Str(); heroId = r.Str();
-            return r.Ok && v == Version;
+            version = r.Byte(); name = r.Str(); heroId = r.Str();
+            return r.Ok;
+        }
+
+        public static byte[] Reject(NetReject why)
+        {
+            var w = new NetWriter();
+            w.Byte((int)NetMsg.Reject); w.Byte((int)why); w.Byte(Version);
+            return w.ToArray();
+        }
+
+        public static bool ReadReject(byte[] d, out NetReject why, out int hostVersion)
+        {
+            var r = new NetReader(d); r.Byte();
+            why = (NetReject)r.Byte(); hostVersion = r.Byte();
+            return r.Ok;
+        }
+
+        public static string RejectText(NetReject why, int hostVersion)
+        {
+            if (why == NetReject.Full) return "That squad is full.";
+            return hostVersion > Version ? "The host has a newer version. Update the game to play together."
+                                         : "The host has an older version. Ask them to update the game.";
+        }
+
+        /// <summary>Lobby: who's in so far (the host sends it every second so guests can see).</summary>
+        public static byte[] Roster(IList<(string name, string heroId)> players)
+        {
+            var w = new NetWriter();
+            w.Byte((int)NetMsg.Roster); w.Byte(Math.Min(8, players.Count));
+            for (int i = 0; i < players.Count && i < 8; i++) { w.Str(players[i].name); w.Str(players[i].heroId); }
+            return w.ToArray();
+        }
+
+        public static bool ReadRoster(byte[] d, out List<(string name, string heroId)> players)
+        {
+            var r = new NetReader(d); r.Byte();
+            int n = r.Byte();
+            players = new List<(string, string)>();
+            for (int i = 0; i < n && r.Ok; i++) players.Add((r.Str(), r.Str()));
+            return r.Ok;
+        }
+
+        /// <summary>Ping carries the sender's clock (ms); the pong sends the same value straight back.</summary>
+        public static byte[] Ping(int stampMs) { var w = new NetWriter(); w.Byte((int)NetMsg.Ping); w.Int(stampMs); return w.ToArray(); }
+        public static byte[] Pong(int stampMs) { var w = new NetWriter(); w.Byte((int)NetMsg.Pong); w.Int(stampMs); return w.ToArray(); }
+
+        public static bool ReadStamp(byte[] d, out int stampMs)
+        {
+            var r = new NetReader(d); r.Byte();
+            stampMs = r.Int();
+            return r.Ok;
         }
 
         public static byte[] Start(SurvivalMode mode, IList<NetSlot> slots) => Start(mode, slots, LastStandRules.MapId);
@@ -268,14 +338,16 @@ namespace PKR.Core
                 w.UShort(m.mag); w.UShort(m.reserve); w.Byte(m.gunIndex); w.Byte(m.perkMask);
                 w.Byte((m.downed ? 1 : 0) | (m.out_ ? 2 : 0) | (m.forged ? 4 : 0));
             }
-            w.Byte(Math.Min(255, s.zombies.Count));
-            for (int i = 0; i < s.zombies.Count && i < 255; i++)
+            int zn = Math.Min(MaxSnapshotZombies, s.zombies.Count);
+            w.Byte(zn);
+            for (int i = 0; i < zn; i++)
             {
                 var z = s.zombies[i];
                 w.UShort(z.id); w.Byte(z.kind); w.Pos(z.x); w.Pos(z.y); w.Byte(z.hp01);
             }
-            w.Byte(s.powerUps.Count);
-            foreach (var p in s.powerUps) { w.UShort(p.id); w.Byte(p.kind); w.Pos(p.x); w.Pos(p.y); }
+            int pn = Math.Min(8, s.powerUps.Count);
+            w.Byte(pn);
+            for (int i = 0; i < pn; i++) { var p = s.powerUps[i]; w.UShort(p.id); w.Byte(p.kind); w.Pos(p.x); w.Pos(p.y); }
             return w.ToArray();
         }
 

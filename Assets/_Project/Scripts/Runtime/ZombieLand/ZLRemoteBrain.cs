@@ -14,8 +14,12 @@ namespace PKR
         bool _have, _pendingUse, _pendingMelee, _pendingSwap;
         public float LastHeard { get; private set; }
 
+        public int Stale { get; private set; }
+
         public void Feed(NetInput i)
         {
+            // unreliable packets can arrive late: an older one would undo the newer position and presses
+            if (_have && !ZLNet.SeqNewer(i.seq, _in.seq)) { Stale++; return; }
             if (_have)
             {
                 if (ZLNet.Presses(_seenUse, i.useCount) > 0) _pendingUse = true;

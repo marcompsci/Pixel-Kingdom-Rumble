@@ -511,6 +511,12 @@ namespace PKR
             if (_g.Squad.Count > 1)
             {
                 var sb = new System.Text.StringBuilder();
+                if (_g.Net != null && !string.IsNullOrEmpty(_g.Net.StatusLine))
+                {
+                    var q = _g.Net.Quality;
+                    string nc = q == NetQuality.Good ? "8CE68C" : q == NetQuality.Laggy ? "FFD25A" : "FF6464";
+                    sb.Append($"<color=#{nc}>{_g.Net.StatusLine}</color>\n");
+                }
                 foreach (var h in _g.Squad)
                 {
                     if (h == null || h == p) continue;
