@@ -238,7 +238,19 @@ namespace PKR
         {
             _revives.TryGetValue(by, out int n);
             _revives[by] = n + 1;
+            if (by == _g.Player) Tell(ZombieDailyTracker.Revived(Map.Id));
         }
+
+        /// <summary>Daily orders, achievements and LOCKER unlocks report back as toasts.</summary>
+        void Tell(List<string> lines)
+        {
+            if (lines == null || lines.Count == 0) return;
+            if (Over) { _endLines.AddRange(lines); return; }
+            _g.ShowToast(string.Join("\n", lines), 4.5f);
+            Sfx.Play(Sfx.Purchase, 0.8f, 0f);
+        }
+
+        readonly List<string> _endLines = new List<string>();
 
         public int RevivesBy(ZLPlayer h) => _revives.TryGetValue(h, out int n) ? n : 0;
 
@@ -268,6 +280,7 @@ namespace PKR
         {
             int round = Run.NextRound();
             foreach (var h in _g.Squad) if (h != null && h.Wallet != null && h.Wallet != Run) h.Wallet.NextRound();
+            Tell(ZombieDailyTracker.Report(DailyKind.ReachRound, round, Map.Id));
             Intermission = false;
             HoundRound = Mut.IsHoundRound(Mode, round);
             int n = SquadSize;
@@ -514,17 +527,26 @@ namespace PKR
             int paid = _g.DoubleScrap ? pts * 2 : pts;
             Wallet(by).KillFor(paid);
             by.Kills++;
-            if (by == _g.Player && !_guest) ZLFloater.Show("+" + paid, z.transform.position, new Color(1f, 0.85f, 0.35f), 0.75f);
+            if (by == _g.Player && !_guest)
+            {
+                ZLFloater.Show("+" + paid, z.transform.position, new Color(1f, 0.85f, 0.35f), 0.75f);
+                Tell(ZombieDailyTracker.Report(DailyKind.Kills, 1, Map.Id));
+            }
             if (z == Butcher)
             {
                 Butcher = null;
                 _g.Announce(Map.BossName + " FALLS!", 3f);
+                Tell(ZombieDailyTracker.BossKilled(Map.Id));
                 _g.SpawnPowerUp(ZLShop.PickPowerUp(Random.value), z.transform.position);
             }
             if (z == HollowKing)
             {
                 HollowKing = null;
+                var before = ZombieDailyTracker.Snapshot();
                 HollowKingDefeated();
+                var lines = ZombieDailyTracker.BossKilled(Map.Id);
+                lines.AddRange(ZombieDailyTracker.AfterProgress(before));
+                Tell(lines);
             }
         }
 
@@ -556,6 +578,7 @@ namespace PKR
             if (Ls.DoorsOpen.Contains(d.id) || !Pay(by, DoorCost(d))) return;
             Ls.DoorsOpen.Add(d.id);
             Sfx.Play(Sfx.Secret, 0.8f, 0f);
+            if (by == _g.Player) Tell(ZombieDailyTracker.Report(DailyKind.Doors, 1, Map.Id));
             ClearDoor(door);
             bool opened = _openZones.Add(d.opens);
             string name = d.opens;
@@ -593,6 +616,7 @@ namespace PKR
             {
                 Sfx.Play(Sfx.Purchase, 0.9f, 0f);
                 _g.ShowToast(ZLShop.PerkName(k) + "!  " + ZLShop.PerkInfo(k), 2.5f);
+                Tell(ZombieDailyTracker.Report(DailyKind.Perks, 1, Map.Id));
             }
             return true;
         }
@@ -651,7 +675,12 @@ namespace PKR
         /// <summary>Pays for a box spin (the local hero's Lucky First Spin is free).</summary>
         public bool PayForBox(ZLPlayer p)
         {
-            if (p == _g.Player) return Ls.PayForSpin(BoxCost) || Pay(p, BoxCost) && CountSpin();
+            if (p == _g.Player)
+            {
+                bool paid = Ls.PayForSpin(BoxCost) || Pay(p, BoxCost) && CountSpin();
+                if (paid) Tell(ZombieDailyTracker.Report(DailyKind.BoxSpins, 1, Map.Id));
+                return paid;
+            }
             if (!Pay(p, BoxCost)) return false;
             Ls.CountBoxSpin();
             return true;
@@ -849,6 +878,7 @@ namespace PKR
         public void GameOver()
         {
             if (Over) return;
+            var before = ZombieDailyTracker.Snapshot();
             Over = true;
             Intermission = false;
             if (_g.Net != null && _g.Net.IsHost) _g.Net.BroadcastOver(Run.Won, Run.Round, Run.Kills);
@@ -873,6 +903,7 @@ namespace PKR
             RanksReached = ProgressTracker.AddZombieXp(XpEarned);
             if (Weekly != null) CheckWeekly(Mathf.Max(0, Run.Won ? Run.Round : Run.Round - 1));
             else ZombieBoards.Submit(Map.Id, Mode, Run.Round);
+            Tell(ZombieDailyTracker.AfterProgress(before));
             if (Services.Save != null) Services.Save.SaveNow();
             Sfx.Play(Run.Won ? Sfx.Victory : Sfx.KO, 0.9f, 0f);
             StartCoroutine(ShowOver());
@@ -888,7 +919,7 @@ namespace PKR
             if (touch != null) touch.gameObject.SetActive(false);
             var gold = new Color32(255, 214, 90, 255);
             bool squad = _g.Squad.Count > 1;
-            var panel = UIFactory.Panel(safe, new Vector2(1300f, squad ? 1000f : 960f));
+            var panel = UIFactory.Panel(safe, new Vector2(1300f, squad ? 1040f : 1000f));
             var title = UIFactory.Label(panel, Run.Won ? "RAID COMPLETE!" : Map.Title + " FELL", 70, TextAnchor.MiddleCenter, 96f, title: true);
             title.color = Run.Won ? (Color)gold : new Color32(255, 100, 70, 255);
             UIFactory.Label(panel, $"{SurvivalModes.Name(Mode)}  ·  ROUND {Run.Round}" + (Ls.HiddenBossBeaten ? $"  ·  {Map.HiddenBossName} SLAIN" : ""), 46,
@@ -923,11 +954,18 @@ namespace PKR
                     .color = NewBest ? (Color)gold : UITheme.Current.subtle;
             }
             UIFactory.Label(panel, $"+{ShardReward} Star Shards   ·   +{XpEarned} Survivor XP", 34, TextAnchor.MiddleCenter, 50f).color = gold;
+            var news = new List<string>();
+            foreach (var l in _endLines) if (l.StartsWith("NEW IN THE LOCKER")) news.Add(l);
+            int day = ZombieDailyTracker.Today;
+            string daily = $"DAILY ORDERS {ZombieDaily.DoneCount(career, day)}/{ZombieDaily.Orders}  ·  STREAK {ZombieDaily.StreakNow(career, day)}";
+            UIFactory.Label(panel, news.Count > 0 ? string.Join("   ", news) : daily, 28, TextAnchor.MiddleCenter, 40f)
+                .color = news.Count > 0 ? (Color)gold : UITheme.Current.subtle;
             if (career != null)
             {
                 int rank = SurvivorRank.RankFor(career.xp);
-                UIFactory.Label(panel, RanksReached.Count > 0 ? $"RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
-                                                              : $"SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(SurvivorRank.Progress01(career.xp) * 100f)}% to the next",
+                var worn = ZombieCosmetics.Worn(career, CosmeticSlot.Title, ZombieDailyTracker.Snapshot());
+                UIFactory.Label(panel, (worn != null ? worn.Name + "  ·  " : "") + (RanksReached.Count > 0 ? $"RANK UP!  SURVIVOR RANK {rank} · {SurvivorRank.Title(rank)}"
+                                                              : $"SURVIVOR RANK {rank}  ·  {Mathf.RoundToInt(SurvivorRank.Progress01(career.xp) * 100f)}% to the next"),
                                 28, TextAnchor.MiddleCenter, 44f).color = RanksReached.Count > 0 ? (Color)gold : UITheme.Current.subtle;
             }
             var buttons = UIFactory.Rect("Buttons", panel);

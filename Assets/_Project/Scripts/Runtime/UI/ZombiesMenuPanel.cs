@@ -41,9 +41,10 @@ namespace PKR
         void Build()
         {
             UIFactory.Clear(_root);
+            _boardLabels.Clear();
             var c = Career;
             var save = Services.Save != null ? Services.Save.Data : null;
-            var panel = UIFactory.Panel(_root, new Vector2(980f, 1640f));
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1800f));
             var title = UIFactory.Label(panel, "ZOMBIES", 110, TextAnchor.MiddleCenter, 140f, title: true);
             title.color = new Color32(255, 90, 70, 255);
 
@@ -56,6 +57,11 @@ namespace PKR
             var next = SurvivorRank.Next(rank);
             string nextText = next.rank > 0 ? $"{pct}% to rank {rank + 1}  ·  rank {next.rank}: {next.name}" : "Max rank. The dead fear you.";
             UIFactory.Label(panel, nextText, 30, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
+            int day = ZombieDailyTracker.Today;
+            int dDone = ZombieDaily.DoneCount(c, day);
+            var worn = ZombieCosmetics.Worn(c, CosmeticSlot.Title, ZombieDailyTracker.Snapshot());
+            UIFactory.Label(panel, (worn != null ? worn.Name + "  ·  " : "") + $"DAILY ORDERS {dDone}/{ZombieDaily.Orders}  ·  STREAK {ZombieDaily.StreakNow(c, day)}",
+                            30, TextAnchor.MiddleCenter, 44f).color = dDone >= ZombieDaily.Orders ? (Color)Gold : new Color32(255, 150, 90, 255);
 
             // Mode picker
             var modes = UIFactory.Rect("Modes", panel);
@@ -107,17 +113,174 @@ namespace PKR
             Big(panel, done ? "WEEKLY CHALLENGE: DONE" : "WEEKLY CHALLENGE", wSub, new Color32(130, 100, 30, 255), OpenWeekly,
                 Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
 
-            var foot = UIFactory.Rect("Foot", panel);
-            var fle = foot.gameObject.AddComponent<LayoutElement>();
-            fle.preferredHeight = fle.minHeight = UIFactory.RowHeight;
-            fle.flexibleHeight = 0f;
-            var fr = foot.gameObject.AddComponent<HorizontalLayoutGroup>();
-            fr.spacing = 24f;
-            fr.childControlWidth = true; fr.childControlHeight = true;
-            fr.childForceExpandWidth = true; fr.childForceExpandHeight = true;
-            UIFactory.Button(foot, "RANK & UNLOCKS", OpenUnlocks);
-            UIFactory.Button(foot, "BACK", () => _onBack?.Invoke());
+            var foot = Row(panel, UIFactory.RowHeight);
+            UIFactory.Button(foot, "DAILY ORDERS", OpenDaily);
+            UIFactory.Button(foot, "LOCKER", OpenLocker);
+            UIFactory.Button(foot, "BOARDS", OpenBoards);
+            var foot2 = Row(panel, UIFactory.RowHeight);
+            UIFactory.Button(foot2, "RANK & UNLOCKS", OpenUnlocks);
+            UIFactory.Button(foot2, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(zlButton);
+        }
+
+        static RectTransform Row(RectTransform panel, float height)
+        {
+            var r = UIFactory.Rect("Row", panel);
+            var le = r.gameObject.AddComponent<LayoutElement>();
+            le.preferredHeight = le.minHeight = height;
+            le.flexibleHeight = 0f;
+            var h = r.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 20f;
+            h.childControlWidth = true; h.childControlHeight = true;
+            h.childForceExpandWidth = true; h.childForceExpandHeight = true;
+            return r;
+        }
+
+        static void SmallText(Button b, string head, string sub, int size = 32)
+        {
+            var t = b.GetComponentInChildren<Text>();
+            if (t == null) return;
+            t.supportRichText = true;
+            t.resizeTextForBestFit = false;
+            t.fontSize = size;
+            t.text = string.IsNullOrEmpty(sub) ? head : $"{head}\n<size={size * 2 / 3}>{sub}</size>";
+        }
+
+        // ---- daily orders ---------------------------------------------------------------------------------
+
+        void OpenDaily()
+        {
+            UIFactory.Clear(_root);
+            _boardLabels.Clear();
+            var c = Career;
+            int day = ZombieDailyTracker.Today;
+            ZombieDaily.Roll(c, day);
+            var orders = ZombieDaily.For(day);
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1400f));
+            UIFactory.Label(panel, "DAILY ORDERS", 84, TextAnchor.MiddleCenter, 110f, title: true).color = Gold;
+            UIFactory.Label(panel, $"New orders in {ZombieDaily.LeftText(ZombieDailyTracker.Now)}  ·  the same for everyone", 30, TextAnchor.MiddleCenter, 48f)
+                .color = UITheme.Current.subtle;
+            for (int i = 0; i < orders.Length; i++)
+            {
+                var o = orders[i];
+                bool done = (c.dailyPaid & (1 << i)) != 0;
+                int have = ZombieDaily.ProgressOf(c, day, i);
+                var t = UIFactory.Label(panel, $"{(done ? "DONE  " : $"{have}/{o.Target}  ")}{o.Text}\n<size=26>+{o.RewardShards} Star Shards  ·  +{o.RewardXp} Survivor XP</size>",
+                                        36, TextAnchor.MiddleCenter, 110f, title: true);
+                t.supportRichText = true;
+                t.color = done ? (Color)Gold : UITheme.Current.title;
+            }
+            int streak = ZombieDaily.StreakNow(c, day);
+            UIFactory.Label(panel, $"STREAK {streak} DAY{(streak == 1 ? "" : "S")}  ·  best {c.bestStreak}", 40, TextAnchor.MiddleCenter, 60f, title: true)
+                .color = new Color32(255, 150, 90, 255);
+            UIFactory.Label(panel, $"Finish all three for a streak bonus: +{ZombieDaily.StreakBonusPerDay} Star Shards per day in a row (up to {ZombieDaily.MaxStreakBonusDays}). " +
+                                   "Miss a day and the streak restarts. Nothing else is lost.", 26, TextAnchor.MiddleCenter, 80f).color = UITheme.Current.subtle;
+            var play = Big(panel, "LAST STAND", "Most orders count in any Last Stand run (solo, AI squad, online or weekly)", new Color32(170, 70, 40, 255), OpenSquad,
+                           Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
+            UIFactory.Button(panel, "BACK", Build);
+            UIFactory.Select(play);
+        }
+
+        // ---- the locker -----------------------------------------------------------------------------------
+
+        void OpenLocker()
+        {
+            UIFactory.Clear(_root);
+            _boardLabels.Clear();
+            var c = Career;
+            var st = ZombieDailyTracker.Snapshot();
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1780f));
+            UIFactory.Label(panel, "LOCKER", 90, TextAnchor.MiddleCenter, 110f, title: true).color = new Color32(255, 90, 70, 255);
+            UIFactory.Label(panel, $"{ZombieCosmetics.UnlockedCount(st)}/{ZombieCosmetics.All.Length} earned  ·  earned by playing, never sold  ·  looks only",
+                            28, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
+            Button first = null;
+            foreach (var slot in new[] { CosmeticSlot.Tracer, CosmeticSlot.Title })
+            {
+                UIFactory.Label(panel, slot == CosmeticSlot.Tracer ? "TRACERS (your bullets' colour)" : "TITLES (shown with your rank)", 34, TextAnchor.MiddleCenter, 56f, title: true)
+                    .color = UITheme.Current.title;
+                RectTransform row = null;
+                int n = 0;
+                foreach (var item in ZombieCosmetics.All)
+                {
+                    if (item.Slot != slot) continue;
+                    if (n++ % 2 == 0) row = Row(panel, 112f);
+                    var it = item;
+                    bool have = item.Unlocked(st);
+                    bool on = (slot == CosmeticSlot.Tracer ? c.tracer : c.title) == item.Id;
+                    var b = UIFactory.Button(row, item.Name, () =>
+                    {
+                        if (ZombieCosmetics.Toggle(Career, it.Id, ZombieDailyTracker.Snapshot()) && Services.Save != null) Services.Save.MarkDirty();
+                        OpenLocker();
+                    }, 112f, have);
+                    var face = slot == CosmeticSlot.Tracer ? new Color32((byte)(item.R / 2), (byte)(item.G / 2), (byte)(item.B / 2), 255) : new Color32(70, 60, 90, 255);
+                    UIFactory.Tint(b, have ? face : new Color32(45, 42, 55, 255), have ? Color.white : new Color(1f, 1f, 1f, 0.5f));
+                    if (on) UIFactory.Highlight(b, Gold);
+                    SmallText(b, item.Name, on ? "WEARING (tap to take off)" : have ? "tap to wear" : "LOCKED: " + item.HowTo, 30);
+                    if (first == null) first = b;
+                }
+                if (n % 2 == 1) UIFactory.Rect("Spacer", row);
+            }
+            var back = UIFactory.Button(panel, "BACK", Build);
+            UIFactory.Select(first != null ? first : back);
+        }
+
+        // ---- leaderboards and achievements (Game Center) ----------------------------------------------------
+
+        readonly System.Collections.Generic.List<(string board, Text label, string head)> _boardLabels = new System.Collections.Generic.List<(string, Text, string)>();
+
+        void OpenBoards()
+        {
+            UIFactory.Clear(_root);
+            _boardLabels.Clear();
+            var c = Career;
+            var save = Services.Save != null ? Services.Save.Data : null;
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1780f));
+            UIFactory.Label(panel, "LEADERBOARDS", 84, TextAnchor.MiddleCenter, 110f, title: true).color = Gold;
+            UIFactory.Label(panel, GameCenterService.Available ? "You against your Game Center friends, or everyone" : "Game Center leaderboards open on iPhone",
+                            28, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.subtle;
+            Button first = null;
+            var boards = new System.Collections.Generic.List<(string board, string name, int best)>();
+            foreach (var m in LastStandMap.All)
+                boards.Add((m.Leaderboard, m.FullTitle, Mathf.Max(c.Best(m.Id, SurvivalMode.Endless), c.Best(m.Id, SurvivalMode.Hardcore))));
+            int manor = Mathf.Max(save != null ? save.zombieBestRound : 0, Mathf.Max(c.Best("manor", SurvivalMode.Endless), c.Best("manor", SurvivalMode.Hardcore)));
+            boards.Add((Achievements.LeaderboardManor, "SURVIVAL: THE MANOR", manor));
+            boards.Add((Achievements.LeaderboardSurvivorXp, "SURVIVOR RANK XP", c.xp));
+            foreach (var (board, name, best) in boards)
+            {
+                string head = $"{name}  ·  your best: {(best > 0 ? (board == Achievements.LeaderboardSurvivorXp ? best + " XP" : "round " + best) : "none yet")}";
+                var l = UIFactory.Label(panel, head, 32, TextAnchor.MiddleCenter, 50f, title: true);
+                l.color = UITheme.Current.title;
+                _boardLabels.Add((board, l, head));
+                GameCenterService.LoadFriendRank(board);
+                var row = Row(panel, 92f);
+                var bf = UIFactory.Button(row, "FRIENDS", () => GameCenterService.ShowLeaderboard(board, true), 92f, GameCenterService.Available);
+                UIFactory.Tint(bf, new Color32(70, 140, 90, 255), Color.white);
+                var be = UIFactory.Button(row, "EVERYONE", () => GameCenterService.ShowLeaderboard(board, false), 92f, GameCenterService.Available);
+                UIFactory.Tint(be, new Color32(60, 110, 160, 255), Color.white);
+                if (first == null) first = bf;
+            }
+            int earned = 0;
+            if (save != null && save.achievements != null)
+                foreach (var a in Achievements.All) if (save.achievements.Contains(a.id)) earned++;
+            var ach = Big(panel, "ACHIEVEMENTS", $"{earned}/{Achievements.All.Length} earned  ·  opens Game Center", new Color32(130, 100, 30, 255),
+                          GameCenterService.ShowDashboard, GameCenterService.Available);
+            if (first == null) first = ach;
+            UIFactory.Button(panel, "BACK", () => { _boardLabels.Clear(); Build(); });
+            UIFactory.Select(first);
+        }
+
+        float _boardPoll;
+
+        void PollBoards()
+        {
+            if (_boardLabels.Count == 0 || Time.unscaledTime < _boardPoll) return;
+            _boardPoll = Time.unscaledTime + 0.5f;
+            foreach (var (board, label, head) in _boardLabels)
+            {
+                if (label == null) continue;
+                int rank = GameCenterService.FriendRank(board, out int count);
+                label.text = rank > 0 && count > 1 ? $"{head}  ·  #{rank} of {count} friends" : rank < 0 ? head + "  ·  …" : head;
+            }
         }
 
         static Color32 ModeColor(SurvivalMode m) =>
@@ -126,6 +289,7 @@ namespace PKR
         void OpenUnlocks()
         {
             UIFactory.Clear(_root);
+            _boardLabels.Clear();
             var c = Career;
             int rank = SurvivorRank.RankFor(c.xp);
             var panel = UIFactory.Panel(_root, new Vector2(980f, 1760f));
@@ -285,6 +449,7 @@ namespace PKR
 
         void Update()
         {
+            PollBoards();
             var m = PKRMatchService.Instance;
             if (_status != null && m != null && m.State != PKRMatchService.Phase.Idle) _status.text = m.Status;
         }

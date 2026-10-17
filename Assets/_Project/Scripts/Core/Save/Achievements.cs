@@ -40,6 +40,19 @@ namespace PKR.Core
         public const string Cipher = "pkr.ach.cipher";
         public const string DojoChampion = "pkr.ach.versus_win";
 
+        // zombies
+        public const string ZRound10 = "pkr.ach.z_round10";
+        public const string ZRound20 = "pkr.ach.z_round20";
+        public const string ZHollowKing = "pkr.ach.z_hollow_king";
+        public const string ZTideMother = "pkr.ach.z_tide_mother";
+        public const string ZIronWidow = "pkr.ach.z_iron_widow";
+        public const string ZChapter1 = "pkr.ach.z_chapter1";
+        public const string ZChapter2 = "pkr.ach.z_chapter2";
+        public const string ZChapter3 = "pkr.ach.z_chapter3";
+        public const string ZWeekly = "pkr.ach.z_weekly";
+        public const string ZStreak = "pkr.ach.z_streak7";
+        public const string ZMedic = "pkr.ach.z_medic";
+
         /// <summary>Every achievement: id, title, points, how to earn it (also used for App Store Connect setup docs).</summary>
         public static readonly (string id, string title, int points, string howTo)[] All =
         {
@@ -53,7 +66,46 @@ namespace PKR.Core
             (RelicHunter, "Relic Hunter", 40, "Collect every ancient relic in one contract."),
             (Cipher, "Cipher Breaker", 30, "Find a cipher scroll and reveal a secret contract."),
             (DojoChampion, "Dojo Champion", 20, "Win a Versus match."),
+            (ZRound10, "Hold the Line", 20, "Reach round 10 in Last Stand."),
+            (ZRound20, "Still Standing", 40, "Reach round 20 in Last Stand."),
+            (ZHollowKing, "Crownbreaker", 40, "Defeat the Hollow King on Hollow Block."),
+            (ZTideMother, "Low Tide", 40, "Defeat the Tide Mother on Salt Pier."),
+            (ZIronWidow, "End of the Line", 40, "Defeat the Iron Widow on the Rail Yard."),
+            (ZChapter1, "Patient Zero", 30, "Defeat the First Turned in Zombie Land."),
+            (ZChapter2, "Blackwater", 30, "Defeat Mother Brine in Zombie Land chapter 2."),
+            (ZChapter3, "Sublevel Sealed", 40, "Defeat the Curator in Zombie Land chapter 3."),
+            (ZWeekly, "Weekly Warrior", 20, "Finish a weekly challenge."),
+            (ZStreak, "Orders Received", 30, "Finish every daily order 7 days in a row."),
+            (ZMedic, "No One Left Behind", 20, "Revive teammates 25 times."),
         };
+
+        /// <summary>The zombie achievements a career and Zombie Land save have earned (the save filters owned ones).</summary>
+        public static List<string> ForZombies(ZombieCareer c, ZombieLandProgress zl)
+        {
+            var list = new List<string>();
+            if (c != null)
+            {
+                c.Sanitize();
+                int best = 0;
+                for (int i = 0; i < c.bestKeys.Count && i < c.bestRounds.Count; i++)
+                    if (!c.bestKeys[i].StartsWith("manor_")) best = System.Math.Max(best, c.bestRounds[i]);
+                if (best >= 10) list.Add(ZRound10);
+                if (best >= 20) list.Add(ZRound20);
+                if (c.Has(LastStandRules.HiddenBossSecret)) list.Add(ZHollowKing);
+                if (c.Has(LastStandMap.SaltPier.HiddenSecret)) list.Add(ZTideMother);
+                if (c.Has(LastStandMap.RailYard.HiddenSecret)) list.Add(ZIronWidow);
+                if (c.weeklyWins > 0) list.Add(ZWeekly);
+                if (c.bestStreak >= 7) list.Add(ZStreak);
+                if (c.revives >= 25) list.Add(ZMedic);
+            }
+            if (zl != null)
+            {
+                if (zl.bossDefeated) list.Add(ZChapter1);
+                if (zl.chapter2Done) list.Add(ZChapter2);
+                if (zl.chapter3Done) list.Add(ZChapter3);
+            }
+            return list;
+        }
 
         /// <summary>Achievements a finished level or contract earns (some may already be owned; the save filters them).</summary>
         public static List<string> ForClear(ClearInfo c)

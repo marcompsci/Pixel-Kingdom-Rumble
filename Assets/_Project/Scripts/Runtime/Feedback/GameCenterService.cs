@@ -20,6 +20,9 @@ namespace PKR
         [DllImport("__Internal")] static extern void PKR_GC_ReportScore(string leaderboardId, long score);
         [DllImport("__Internal")] static extern void PKR_GC_ReportAchievement(string achievementId, double percent);
         [DllImport("__Internal")] static extern void PKR_GC_ShowDashboard();
+        [DllImport("__Internal")] static extern void PKR_GC_ShowLeaderboard(string leaderboardId, int friendsOnly);
+        [DllImport("__Internal")] static extern void PKR_GC_LoadFriendRank(string leaderboardId);
+        [DllImport("__Internal")] static extern int PKR_GC_FriendRank(string leaderboardId, out int count);
 #endif
 
         bool _synced;
@@ -84,6 +87,7 @@ namespace PKR
         {
             var save = Services.Save != null ? Services.Save.Data : null;
             if (save == null) return;
+            ZombieDailyTracker.CheckAchievements();
             foreach (var id in save.achievements) Send(id);
             int total = MissionBoard.TotalScore(save);
             if (total > 0) SendScore(Achievements.LeaderboardContracts, total);
@@ -135,6 +139,35 @@ namespace PKR
             PKR_GC_ReportScore(board, score);
 #else
             Debug.Log($"[PKR GameCenter] Score {score} -> {board}");
+#endif
+        }
+
+        /// <summary>Opens one leaderboard in Game Center: friends only, or everyone.</summary>
+        public static void ShowLeaderboard(string board, bool friendsOnly)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            PKR_GC_ShowLeaderboard(board, friendsOnly ? 1 : 0);
+#else
+            Debug.Log($"[PKR GameCenter] Leaderboard {board} ({(friendsOnly ? "friends" : "everyone")}) is only available on iPhone.");
+#endif
+        }
+
+        /// <summary>Starts loading where you stand among friends on a board (poll FriendRank).</summary>
+        public static void LoadFriendRank(string board)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            PKR_GC_LoadFriendRank(board);
+#endif
+        }
+
+        /// <summary>-1 loading, 0 none or unavailable, else your rank among friends; count = players on that friends board.</summary>
+        public static int FriendRank(string board, out int count)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            return PKR_GC_FriendRank(board, out count);
+#else
+            count = 0;
+            return 0;
 #endif
         }
 

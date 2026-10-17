@@ -39,6 +39,8 @@ namespace PKR
         public Material material;
 
         public ZLControl Control { get; private set; } = ZLControl.Local;
+        /// <summary>The LOCKER tracer colour this hero's bullets use (set for the local hero at spawn; wonder weapons keep theirs).</summary>
+        public Color32? Tracer;
         public IZLBrain Brain { get; set; }
         public int Slot { get; set; }
         public string DisplayName { get; set; } = "";
@@ -468,12 +470,13 @@ namespace PKR
             Vector2 from = (Vector2)transform.position + Aim * 0.5f + new Vector2(0f, 0.2f);
             int pellets = Mathf.Max(1, gun.pellets);
             bool cosmetic = game.IsGuest;
+            Color32 shotCol = Control == ZLControl.Local && Tracer.HasValue && !gun.wonder ? Tracer.Value : new Color32(gun.r, gun.g, gun.b, 255);
             for (int i = 0; i < pellets; i++)
             {
                 float spread = gun.spreadDegrees * (pellets > 1 ? (i / (float)(pellets - 1) - 0.5f) : (Random.value - 0.5f));
                 var dir = Quaternion.Euler(0f, 0f, spread) * Aim;
                 ZLBullet.Fire(from, dir, gun, cosmetic ? 0 : ZLShop.ShotDamage(L, ZLCatalog.Gun(gun.id)), false, game.ShotSprite(gun.shot),
-                              new Color32(gun.r, gun.g, gun.b, 255), material, _col, 0f, 0f, this, cosmetic);
+                              shotCol, material, _col, 0f, 0f, this, cosmetic);
             }
             _flashT = 0.08f;
             if (_flash != null) _flash.transform.localPosition = Aim * 0.6f + new Vector2(0f, 0.25f);

@@ -324,6 +324,9 @@ namespace PKR
             ProgressTracker.AddXp(600);
             AddXp(SurvivorRank.ZLBossXp);
             FlushXp();
+            var won = ZombieDailyTracker.BossKilled();
+            won.AddRange(ZombieDailyTracker.AfterProgress(_bossBefore));
+            TellDaily(won);
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
             Story("", ZLCatalog.Chapter2Ending, "dawn", () =>
@@ -414,6 +417,9 @@ namespace PKR
             ProgressTracker.AddXp(800);
             AddXp(SurvivorRank.ZLBossXp);
             FlushXp();
+            var won = ZombieDailyTracker.BossKilled();
+            won.AddRange(ZombieDailyTracker.AfterProgress(_bossBefore));
+            TellDaily(won);
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
             Story("", ZLCatalog.Chapter3Ending, "dawn", () => ShowToast($"+{ZLRules.Chapter3Reward} STAR SHARDS AND THE SINGULARITY. THE SUBLEVEL IS SEALED."));
@@ -446,6 +452,12 @@ namespace PKR
             Player.Init(this, def, material, roster != null && def != null ? roster.TintFor(def.id) : Color.white);
             Player.Loadout = Progress;
             Squad.Add(Player);
+            var sd = Services.Save != null ? Services.Save.Data : null;
+            if (sd != null)
+            {
+                var tr = ZombieCosmetics.Worn(sd.zombieCareer, CosmeticSlot.Tracer, CosmeticStats.From(sd.zombieCareer, sd.zombieLand));
+                if (tr != null) Player.Tracer = new Color32(tr.R, tr.G, tr.B, 255);
+            }
             var cam = Camera.main != null ? Camera.main.GetComponent<CameraFollowTopDown>() : null;
             if (cam != null) { cam.target = go.transform; cam.Snap(); }
         }
@@ -1347,6 +1359,7 @@ namespace PKR
             AddXp(spec.required ? SurvivorRank.ZLStoryMissionXp : SurvivorRank.ZLMissionXp);
             int got = ZLShop.Earn(Progress, spec.required ? ZLShop.StoryMissionScrap : ZLShop.BonusMissionScrap, false);
             var lines = new List<string> { spec.done + $"  (+{got} scrap)" };
+            TellDaily(ZombieDailyTracker.Report(DailyKind.Missions, 1));
             if (spec.required && spec.chapter == 3)
                 lines.Add($"SECURITY KEYCARDS: {Progress.Keycards}/{ZLCatalog.KeycardsNeeded}" +
                           (Progress.Keycards >= ZLCatalog.KeycardsNeeded ? ". The Curator's vault will open now." : ""));
@@ -1426,8 +1439,11 @@ namespace PKR
             return a;
         }
 
+        CosmeticStats _bossBefore;
+
         public void BossDefeated(ZLBoss boss)
         {
+            _bossBefore = ZombieDailyTracker.Snapshot();
             if (boss != null && boss.Curator) { Chapter3BossDefeated(boss); return; }
             if (boss != null && boss.Brine) { Chapter2BossDefeated(boss); return; }
             Progress.bossDefeated = true;
@@ -1441,6 +1457,9 @@ namespace PKR
             ProgressTracker.AddXp(600);
             AddXp(SurvivorRank.ZLBossXp);
             FlushXp();
+            var won = ZombieDailyTracker.BossKilled();
+            won.AddRange(ZombieDailyTracker.AfterProgress(_bossBefore));
+            TellDaily(won);
             Sfx.Play(Sfx.Victory, 1f);
             Save(true);
             Story("", ZLCatalog.Ending, "dawn", () =>
@@ -1515,6 +1534,13 @@ namespace PKR
         {
             CoachTip = text;
             CoachLeft = ZombieTips.Show;
+        }
+
+        /// <summary>Daily orders / achievements / LOCKER lines as one toast.</summary>
+        public void TellDaily(List<string> lines)
+        {
+            if (lines == null || lines.Count == 0) return;
+            ShowToast(string.Join("\n", lines), 4.5f);
         }
 
         public void ShowToast(string text, float seconds = 4f)

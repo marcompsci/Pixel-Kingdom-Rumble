@@ -48,6 +48,8 @@ namespace PKR.EditorTools
             plist.root.SetBoolean("ITSAppUsesNonExemptEncryption", false);
             // The share sheet's "Save Image" (photo mode, result cards) adds to the photo library.
             plist.root.SetString("NSPhotoLibraryAddUsageDescription", "Save your Pixel Kingdom Rumble photos and result cards.");
+            // Friends-only leaderboards (the LOCKER's "you vs your friends") ask for Game Center friends access.
+            plist.root.SetString("NSGKFriendListUsageDescription", "See where you rank against your Game Center friends on the zombie leaderboards.");
             plist.WriteToFile(plistPath);
 
             Debug.Log("[PKR iOS] Post-build: Game Center + In-App Purchase capabilities, ITSAppUsesNonExemptEncryption=NO, photo library add usage.");

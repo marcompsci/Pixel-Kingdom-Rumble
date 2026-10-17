@@ -25,6 +25,14 @@ namespace PKR.Core
         public List<string> weeklyDone = new List<string>();
         public string weeklyKey = "";
         public int weeklyBest, weeklyWins;
+        /// <summary>Daily orders (ZombieDaily): the day they're for, progress on each, which are paid (bits), the streak.</summary>
+        public int dailyDay = -1;
+        public List<int> dailyProgress = new List<int>();
+        public int dailyPaid, streak, streakDay = -10, bestStreak, dailyDays;
+        /// <summary>Teammates revived and bosses beaten (all zombie modes).</summary>
+        public int revives, bossKills;
+        /// <summary>Equipped cosmetics (ZombieCosmetics ids; "" = none).</summary>
+        public string tracer = "", title = "";
 
         public int Best(string map, SurvivalMode mode)
         {
@@ -53,6 +61,10 @@ namespace PKR.Core
             if (secrets == null) secrets = new List<string>();
             if (weeklyDone == null) weeklyDone = new List<string>();
             if (weeklyKey == null) weeklyKey = "";
+            if (dailyProgress == null) dailyProgress = new List<int>();
+            while (dailyProgress.Count < ZombieDaily.Orders) dailyProgress.Add(0);
+            if (tracer == null) tracer = "";
+            if (title == null) title = "";
             while (bestRounds.Count < bestKeys.Count) bestRounds.Add(0);
             if (xp < 0) xp = 0;
             if (rankPaid < 1) rankPaid = 1;
