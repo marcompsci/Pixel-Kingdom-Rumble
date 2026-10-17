@@ -41,7 +41,9 @@ say "      OK: $APP"
 
 say "[3/4] Booting '$DEVICE_NAME'..."
 UDID="$(xcrun simctl list devices available | grep -F "$DEVICE_NAME (" | head -1 | grep -oE '[0-9A-F-]{36}')"
-if [ -z "$UDID" ]; then say "      No simulator named '$DEVICE_NAME'. Available:"; xcrun simctl list devices available | grep iPhone | tee -a "$OUT/SUMMARY.txt"; pause_end; exit 1; fi
+# A partial name ("iPad Pro 13-inch") picks the first matching simulator.
+[ -z "$UDID" ] && UDID="$(xcrun simctl list devices available | grep -F "$DEVICE_NAME" | head -1 | grep -oE '[0-9A-F-]{36}')"
+if [ -z "$UDID" ]; then say "      No simulator named '$DEVICE_NAME'. Available:"; xcrun simctl list devices available | grep -E "iPhone|iPad" | tee -a "$OUT/SUMMARY.txt"; pause_end; exit 1; fi
 xcrun simctl boot "$UDID" 2>/dev/null; xcrun simctl bootstatus "$UDID" -b > /dev/null 2>&1
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 2>/dev/null
 xcrun simctl uninstall "$UDID" "$BUNDLE" 2>/dev/null
