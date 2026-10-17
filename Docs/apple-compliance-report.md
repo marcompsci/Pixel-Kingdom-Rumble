@@ -5,13 +5,13 @@ _Audit date: 17 Oct 2026. Repo commit: see git log. App Store Connect app 682141
 These five documents live in `Docs/` (not `docs/`): the Mac's file system is case-insensitive and the repo already
 has `Docs/`, so a second `docs/` folder would collide there.
 
-## Release-readiness result: **CONDITIONAL**, with one App Store blocker
+## Release-readiness result: **CONDITIONAL**
 
 - **External TestFlight:** CONDITIONAL. Every automated gate passes, the build is processed and all beta metadata is
   complete. What's left is manual: submit the build for TestFlight App Review, and check the purchase on a device
   (see F1).
-- **App Store submission:** FAIL until F1 (the in-app purchase has no price) is fixed and F3 (iPad) is decided.
-  Approval is never guaranteed, even with every item done.
+- **App Store submission:** CONDITIONAL. The two former blockers (F1 IAP price, F3 iPad) are fixed. What's left is
+  manual: the co-op test (F6), the App Privacy check, and Omari pressing Submit. Approval is never guaranteed.
 
 ## 1. Architecture summary (what is actually in the repo)
 
@@ -34,9 +34,9 @@ Severity: BLOCKER / HIGH / MEDIUM / LOW. "Verified by" names the check that show
 
 | # | Guideline / requirement | Where | Severity | Concern | Remediation | Done? | Verified by |
 |---|---|---|---|---|---|---|---|
-| F1 | 2.1 App Completeness (in-app purchases must be complete and reviewable); 3.1.1 | App Store Connect, IAP `…shadowcontracts` | **BLOCKER** for App Store; HIGH for TestFlight | The IAP is in **Missing Metadata**: no price schedule and no availability. The localization and review screenshot are fine. A product without a price can't be submitted with the version, and testers may get "store isn't ready". | Set the price ($3.99, US base) and availability (same territories as the app), then add the IAP to the version submission. | **No: needs Omari's approval** (pricing is a commercial decision) | `Tools/asc_fix.py` `iap_info` (17 Oct): localization ✓, review screenshot ✓ COMPLETE, price schedule ✗, availability 404 |
-| F2 | Hygiene | App Store Connect | LOW | A second IAP draft with a doubled product id (`…com.marcompsci.pixelkingdomrumble.shadowcontractsshadowcontracts`, named "UNUSED draft - typo in product ID"). It isn't used by the code. | Delete it (only possible while it's unsubmitted). | **No: deleting needs approval** | asc_audit |
-| F3 | 2.1 / 2.3.3 (screenshots for each supported device); App Review tests iPad builds | `ProjectSettings.asset` `targetDevice: 2` → `TARGETED_DEVICE_FAMILY 1,2` | **BLOCKER** for App Store (unless iPhone-only) | The build supports iPad, but App Store Connect has only iPhone screenshots. App Store Connect requires 13" iPad screenshots for an app that runs on iPad, and the game has never been checked on an iPad layout. | Either (a) verify the iPad layout and upload 13" iPad screenshots, or (b) make the app iPhone-only (`targetDevice: 0`). | In progress: iPad simulator screenshots taken for review (see section 3) | asc_audit: `13" iPad screenshots: missing`; compliance_check WARN `Device family` |
+| F1 | 2.1 App Completeness (in-app purchases must be complete and reviewable); 3.1.1 | App Store Connect, IAP `…shadowcontracts` | was **BLOCKER** | The IAP was in **Missing Metadata**: no price schedule and no availability. | Omari approved $3.99 in all territories. Set the US base price to $3.99 and made it available in all 175 territories plus new ones. | **Yes** (17 Oct) | `asc_fix`: state now **READY_TO_SUBMIT**; localization ✓, review screenshot ✓. It still has to be added to the version when submitting to the App Store |
+| F2 | Hygiene | App Store Connect | LOW | A second IAP draft with a doubled product id. The code doesn't use it. | Deleted (Omari approved). | **Yes** (17 Oct) | `asc_fix`: DELETE 204 |
+| F3 | 2.1 / 2.3.3 (screenshots for each supported device); App Review tests iPad builds | `OrientationController.cs`, `IOSPostBuild.cs`, `DeviceIdiom.cs` + `PKRDevice.mm` | was **BLOCKER** | The build supports iPad, but there were no iPad screenshots. On the iPad simulator, every forced rotation (portrait menus, landscape play) made iPadOS show the game in a small window over the home screen. | Omari chose to keep iPad support. On iPad the whole game now runs in landscape, either side, with no per-screen forced rotation; `Info.plist` declares landscape only for iPad (menus fit by aspect). I took 9 landscape 13" iPad screenshots in the simulator and uploaded them. iPhone behaviour is unchanged. | **Yes** (17 Oct) | iPad Pro 13" simulator: all 9 screens fill the display; App Store Connect `APP_IPAD_PRO_3GEN_129`: 9 COMPLETE |
 | F4 | 5.1.1(i) Privacy policy must accurately describe data use | `PRIVACY.md` (the App Store privacy URL) | MEDIUM | The policy called it "a single-player game". It didn't cover online co-op (Game Center nicknames and gameplay data shared with other players), Game Center friends access, or saving to Photos. | Rewrote the policy for all three. Still no data collected by the developer. | **Yes** | compliance_check: policy covers multiplayer / friends / photos; asc_audit: URL returns HTTP 200 |
 | F5 | Privacy manifests and required-reason APIs (Apple Developer documentation) | `Assets/_Project/Scripts/Editor/IOSPostBuild.cs` | MEDIUM | The app target had no `PrivacyInfo.xcprivacy`. The game's C# uses `Environment.TickCount` (system boot time), which UnityFramework's manifest didn't declare. | Post-build now writes the app manifest (no tracking, no data collected) into the app target, and adds system boot time (reason 35F9.1) to UnityFramework's manifest. | **Yes** | compliance_check (repo); `--xcode` check plus the archive listing in the release gate run (section 3) |
 | F6 | 2.3 Accurate Metadata | `Docs/AppStore/LISTING.md`, App Store description | HIGH | The store text promises online co-op for up to 4 players. It has never been tested on two real devices. | Test it on two iPhones with two Game Center accounts before release, or soften the text. | **No: manual** | `Docs/AppStore/RELEASE_CHECKLIST.md` §2 |
@@ -63,7 +63,7 @@ Not applicable here: 1.3 Kids Category (not in it), 4.7 hosted mini-apps or stre
 | Engine-free core tests (cloud) | 307 passed, 0 failed |
 | Device: install + cold launch on iPhone (1541c14 tester build) | Launched; 90 s of the game's log had no exceptions or crashes |
 | Simulator (iPhone 17 Pro Max): menu, 3 Last Stand maps, Zombie Land city/isle/sublevel | All scenes running after 30 s (the script checks the process each time) |
-| iPad 13" simulator | See the result at the end of this file |
+| iPad 13" simulator (landscape, 646e163) | Menus, all 3 Last Stand maps, Zombie Land city and sublevel, Story Quest, Shadow Contracts board: all running, all full-screen |
 | Background / foreground | Code review: `GameStateManager` pauses and saves on `OnApplicationPause(true)`; the save is also written on a timer and on quit |
 | Offline / no Game Center / store unavailable | Code review: Game Center calls are no-ops when not signed in; purchase/restore show "The App Store isn't ready" instead of failing silently |
 
@@ -71,8 +71,8 @@ Not run (manual): online co-op on two devices, real sandbox purchase/restore/Ask
 
 ## 4. Remaining manual Apple actions
 
-1. Approve and set the IAP price and availability (F1). Delete the typo IAP (F2).
-2. Decide on iPad: upload 13" screenshots, or go iPhone-only (F3).
+1. ~~IAP price and availability (F1); typo IAP (F2); iPad (F3)~~: done 17 Oct with Omari's approval.
+2. Play the new build on a real iPad in landscape (the simulator looked right; a real device hasn't been tried).
 3. Test online co-op on two iPhones (F6).
 4. Submit build 20261016.1842 (or newer) for **TestFlight App Review** (external group), then turn on or share the public link.
 5. Check App Privacy in App Store Connect still says "Data Not Collected" (the API can't read it).

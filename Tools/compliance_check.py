@@ -197,7 +197,14 @@ def check_versions():
     res("PASS" if m else "FAIL", "Marketing version set in ProjectSettings", m.group(1) if m else "")
     td = re.search(r"targetDevice: (\d)", ps)
     fam = {"0": "iPhone only", "1": "iPad only", "2": "iPhone + iPad"}.get(td.group(1) if td else "", "unknown")
-    res("WARN" if td and td.group(1) == "2" else "PASS", "Device family", fam + (" (App Store needs 13\" iPad screenshots and iPad testing)" if td and td.group(1) == "2" else ""))
+    if td and td.group(1) == "2":
+        oc = read("Assets/_Project/Scripts/Runtime/Bootstrap/OrientationController.cs") or ""
+        pb = read("Assets/_Project/Scripts/Editor/IOSPostBuild.cs") or ""
+        handled = "DeviceIdiom.IsPad" in oc and "UISupportedInterfaceOrientations~ipad" in pb
+        shots = glob.glob(os.path.join(ROOT, "Docs", "AppStore", "screenshots", "ipad13", "*.png"))
+        res("PASS" if handled and shots else "FAIL", "Device family", fam + f": iPad orientation handled={handled}, 13\" iPad screenshots in repo={len(shots)} (keep them current)")
+    else:
+        res("PASS", "Device family", fam)
     res("PASS" if "appleDeveloperTeamID: X6LZQ3FS36" in ps else "WARN", "Apple team set (automatic signing)")
 
 
