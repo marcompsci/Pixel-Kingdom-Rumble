@@ -763,6 +763,9 @@ namespace PKR
                 case ZLFoe.Herald: def = brute; scale = 1.35f; tint = new Color(0.75f, 0.7f, 0.95f); break;
                 case ZLFoe.Riot: def = shambler; scale = 0.82f; tint = new Color(0.62f, 0.7f, 0.85f); break;
                 case ZLFoe.Leaper: def = runner; scale = 0.66f; tint = new Color(0.75f, 0.95f, 0.65f); break;
+                case ZLFoe.Splitter: def = bloater; scale = 0.8f; tint = new Color(0.8f, 0.68f, 0.82f); break;
+                case ZLFoe.SplitterHalf: def = runner; scale = 0.5f; tint = new Color(0.8f, 0.68f, 0.82f); break;
+                case ZLFoe.Burrower: def = shambler; scale = 0.72f; tint = new Color(0.86f, 0.74f, 0.52f); break;
                 default: def = shambler; break;
             }
             if (kind == ZLFoe.Hound)
@@ -1108,7 +1111,7 @@ namespace PKR
 
         IEnumerable<IZLHittable> Hostiles()
         {
-            foreach (var z in _zombies.ToArray()) if (z != null && z.Alive) yield return z;
+            foreach (var z in _zombies.ToArray()) if (z != null && z.Alive && z.Hostile) yield return z;
             foreach (var n in _nests.ToArray()) if (n != null && n.Alive) yield return n;
             if (Boss != null && Boss.Alive) yield return Boss;
         }
@@ -1336,6 +1339,51 @@ namespace PKR
             if (Cues.Count >= 4) Cues.RemoveAt(0);
             Cues.Add((at, label, now + 2f));
         }
+
+        // ---- splitters and the Kindler ----------------------------------------------------------------------
+
+        /// <summary>A splitter fell: its two halves get up where it lay and keep coming.</summary>
+        public void SplitApart(ZLZombie z)
+        {
+            Vector2 at = z.transform.position;
+            Vector2 side = Vector2.Perpendicular(z.Facing.sqrMagnitude > 0.1f ? z.Facing : Vector2.right) * 0.45f;
+            for (int i = 0; i < ZLRules.SplitterHalves; i++)
+            {
+                Vector2 p = at + (i == 0 ? side : -side);
+                if (!City.Walkable(p)) p = at;
+                var half = IsLastStand && Stand != null ? Stand.SpawnAt(ZLFoe.SplitterHalf, p) : SpawnZombie(ZLFoe.SplitterHalf, p, z.threat, true);
+                if (half != null && half.Body != null) half.Body.linearVelocity = (p - at).normalized * 3f;
+            }
+            ZLFloater.Show("SPLIT!", at + Vector2.up * 0.6f, new Color(0.9f, 0.75f, 1f), 0.8f);
+        }
+
+        /// <summary>The nearest of the dead a kindled zombie can go after (alive, hostile, not itself).</summary>
+        public ZLZombie NearestHostileZombie(Vector2 at, float range, ZLZombie except)
+        {
+            ZLZombie best = null;
+            float bd = range * range;
+            foreach (var z in _zombies)
+            {
+                if (z == null || z == except || !z.Alive || !z.Hostile) continue;
+                float d = ((Vector2)z.transform.position - at).sqrMagnitude;
+                if (d < bd) { bd = d; best = z; }
+            }
+            return best;
+        }
+
+        /// <summary>A hit that counts as <paramref name="by"/>'s (points and kills), like a melee hit.</summary>
+        public void HitAs(ZLZombie target, int damage, Vector2 dir, ZLPlayer by)
+        {
+            if (target == null) return;
+            var prev = MeleeAttacker;
+            MeleeAttacker = by;
+            target.Hit(damage, dir, null);
+            MeleeAttacker = prev;
+        }
+
+        /// <summary>A kindled zombie's bite on the dead: grows with the round (Last Stand) or district threat.</summary>
+        public int KindledBiteDamage(int threat) => Mathf.RoundToInt(ZLCatalog.KindledBite * (IsLastStand && Stand != null
+            ? 1f + 0.14f * (Mathf.Max(1, Stand.Run.Round) - 1) : 1f + 0.15f * (Mathf.Max(1, threat) - 1)));
 
         public void Announce(string text, float seconds = 3f)
         {

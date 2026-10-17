@@ -26,6 +26,9 @@ namespace PKR.Core
                 case ZLFoe.Bloater:
                 case ZLFoe.Spitter: return 50;
                 case ZLFoe.Hound: return 60;
+                case ZLFoe.Splitter:
+                case ZLFoe.Burrower: return 60;
+                case ZLFoe.SplitterHalf: return 15;
                 case ZLFoe.Brute: return 150;
                 case ZLFoe.Herald: return 500;
                 case ZLFoe.FirstTurned: return 2000;

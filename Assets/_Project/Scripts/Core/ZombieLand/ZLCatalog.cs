@@ -27,7 +27,10 @@ namespace PKR.Core
         Herald,     // district lieutenants (mission targets): elite, armored
         FirstTurned, // the master
         Riot,       // riot police who turned with their shields up: bullets glance off the front, flank them or blow them up
-        Leaper      // wiry, low to the ground: crouches, then springs across the gap at you
+        Leaper,     // wiry, low to the ground: crouches, then springs across the gap at you
+        Splitter,   // two bodies stitched into one coat: kill it and both halves keep coming
+        SplitterHalf, // one of those halves: small, quick, fragile
+        Burrower    // tunnels under the street (a moving mound, untouchable), then bursts up beside you
     }
 
     public enum ZLMissionType { Signal, Retrieve, Rescue, PurgeNest, PowerUp, HuntHerald, Delivery, HoldOut }
@@ -98,6 +101,8 @@ namespace PKR.Core
         public float freeze;
         /// <summary>Pulls the dead toward where it lands for a moment before it bursts (the Singularity Cannon).</summary>
         public float pull;
+        /// <summary>The Kindler: the first of the dead it hits fights for you for this many seconds.</summary>
+        public float kindle;
         /// <summary>Never in the mystery box: only a boss drops it.</summary>
         public bool bossDrop;
         /// <summary>Hollow-forged at the upgrade forge (a copy made by ZLShop.Effective).</summary>
@@ -235,6 +240,21 @@ namespace PKR.Core
             shot = "comet", wonder = true, pull = 4f, bossDrop = true
         };
 
+        /// <summary>
+        /// The fourth wonder weapon (mystery box): a slow ember that "kindles" one of the dead. For a while it hunts its
+        /// own kind (its bites hit hard, and the points are yours), then it burns out. Bosses can't be kindled.
+        /// </summary>
+        public static readonly ZLGun Kindler = new ZLGun
+        {
+            id = "kindler", name = "THE KINDLER", damage = 6, magazine = 4, maxReserve = 24, pellets = 1,
+            shotsPerSecond = 1.1f, reloadSeconds = 2f, speed = 14f, range = 12f, noise = 0.4f, r = 255, g = 170, b = 70,
+            shot = "crescent", wonder = true, kindle = 10f
+        };
+
+        /// <summary>A kindled zombie's bite on the dead (scaled up by the round in Last Stand), and how often it bites.</summary>
+        public const int KindledBite = 45;
+        public const float KindledBiteEvery = 0.7f, KindledSpeedScale = 1.35f;
+
         /// <summary>How long the Singularity pulls before it bursts, and the burst radius.</summary>
         public const float PullSeconds = 0.6f, PullBurstRadius = 3.2f;
 
@@ -259,7 +279,11 @@ namespace PKR.Core
             StormCoil,
             RimeCannon,
             Singularity,
+            Kindler,   // appended: online play sends guns by index
         };
+
+        /// <summary>Can this kind be kindled (not bosses or the master)?</summary>
+        public static bool Kindleable(ZLFoe f) => f != ZLFoe.Herald && f != ZLFoe.FirstTurned;
 
 
         /// <summary>Relic weapons: damage everything, but only the true one hurts the First Turned.</summary>

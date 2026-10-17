@@ -12,6 +12,7 @@ namespace PKR.Core
     {
         public const string Points = "z_points", WallGun = "z_wallgun", Door = "z_door", Box = "z_box", Perk = "z_perk",
             LowAmmo = "z_lowammo", Hounds = "z_hounds", Riot = "z_riot", Leaper = "z_leaper", Downed = "z_downed",
+            Splitter = "z_splitter", Burrower = "z_burrower", Kindler = "z_kindler",
             PowerUp = "z_powerup", Safehouse = "z_zl_safehouse", Drive = "z_zl_drive", Leads = "z_zl_map";
 
         public static readonly Dictionary<string, string> Texts = new Dictionary<string, string>
@@ -25,6 +26,9 @@ namespace PKR.Core
             { Hounds, "HOUND ROUND! KEEP MOVING\nDON'T GET TRAPPED IN A CORNER" },
             { Riot, "RIOT SHIELDS STOP BULLETS FROM THE FRONT\nFLANK THEM, KNIFE THEM OR BLOW THEM UP" },
             { Leaper, "A LEAPER CROUCHES (!) BEFORE IT JUMPS\nDODGE WHEN YOU SEE THE !" },
+            { Splitter, "A SPLITTER FALLS INTO TWO HALVES\nKEEP SHOOTING WHEN IT DROPS" },
+            { Burrower, "BURROWERS TUNNEL UNDER THE STREET\nWHEN THE MOUND SHOWS ! STEP AWAY" },
+            { Kindler, "THE KINDLER: HIT ONE OF THE DEAD\nIT FIGHTS FOR YOU UNTIL IT BURNS OUT" },
             { Downed, "A TEAMMATE IS DOWN!\nSTAND NEXT TO THEM AND HOLD USE TO REVIVE" },
             { PowerUp, "POWER-UP! WALK OVER IT TO GRAB IT" },
             { Safehouse, "SAFEHOUSES ARE CHECKPOINTS\nTAP USE INSIDE FOR SUPPLIES AND REST" },

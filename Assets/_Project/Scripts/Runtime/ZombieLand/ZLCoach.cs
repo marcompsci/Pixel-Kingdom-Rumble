@@ -72,6 +72,7 @@ namespace PKR
             var ammo = p.Ammo;
             var gun = p.Gun;
             if (ammo != null && gun != null && ammo.mag + ammo.reserve < gun.magazine && Show(ZombieTips.LowAmmo)) return;
+            if (gun != null && gun.kindle > 0f && Show(ZombieTips.Kindler)) return;
 
             // the new dead and power-ups in view
             foreach (var z in _g.Zombies)
@@ -81,6 +82,8 @@ namespace PKR
                 if (d > 9f) continue;
                 if (z.kind == ZLFoe.Riot && Show(ZombieTips.Riot)) return;
                 if (z.kind == ZLFoe.Leaper && Show(ZombieTips.Leaper)) return;
+                if (z.kind == ZLFoe.Splitter && Show(ZombieTips.Splitter)) return;
+                if (z.kind == ZLFoe.Burrower && Show(ZombieTips.Burrower)) return;
             }
             foreach (var pu in _g.PowerUpsOnGround())
                 if (Vector2.Distance(pu.at, me) < 8f && Show(ZombieTips.PowerUp)) return;

@@ -7,7 +7,9 @@ namespace PKR
     /// One of the dead (top-down). Wanders until it sees or hears the hero, then hunts: straight at you when close and
     /// in sight, otherwise along the city flow field around buildings. Kinds: shamblers, runners, screamers (call a
     /// horde), bloaters (burst into rot), spitters (lob acid), brutes, blood hounds and the Heralds; riot zombies (a shield
-    /// that stops bullets from the front) and leapers (crouch, then spring at you). The Rime Cannon freezes them.
+    /// that stops bullets from the front) and leapers (crouch, then spring at you); splitters (fall into two halves),
+    /// burrowers (tunnel under the street as an untouchable mound, show "!", then burst up). The Rime Cannon freezes
+    /// them; the Kindler turns one to fight the rest for a while.
     /// </summary>
     public class ZLZombie : MonoBehaviour, IZLHittable
     {
@@ -50,7 +52,23 @@ namespace PKR
         public bool Crouching => _leapWind > 0f;
         public Vector2 Facing => _facing;
 
-        public bool Hostile => true;
+        // burrowers
+        bool _under;
+        float _underT, _burrowCool = 0.8f, _surfaceTell;
+        SpriteRenderer _mound;
+        /// <summary>Under the street (or about to burst up): bullets pass over it and nothing can hurt it.</summary>
+        public bool Burrowed => _under || _surfaceTell > 0f;
+
+        // kindled (the Kindler)
+        float _kindled, _allyBite, _allySeek;
+        ZLPlayer _kindledBy;
+        ZLZombie _prey;
+        /// <summary>Kindled: fights the other dead for a while, then burns out.</summary>
+        public bool Kindled => _kindled > 0f;
+        public ZLPlayer KindledBy => _kindledBy;
+
+        /// <summary>Something heroes shoot at (not while kindled or under the street).</summary>
+        public bool Hostile => !Kindled && !Burrowed;
         public bool Alive => !_dead;
         public Rigidbody2D Body => _body;
 
@@ -82,9 +100,14 @@ namespace PKR
 
         public void Hit(int damage, Vector2 dir, ZLGun gun)
         {
-            if (_dead || Puppet) return;
+            if (_dead || Puppet || Burrowed) return;
             var by = ZLBullet.LastOwner != null ? ZLBullet.LastOwner : _game.MeleeAttacker;
             if (by != null) LastHitBy = by;
+            if (gun != null && gun.kindle > 0f && !Kindled && ZLCatalog.Kindleable(kind))
+            {
+                Kindle(gun.kindle, by);
+                return;
+            }
             if (kind == ZLFoe.Riot && ZLBullet.Striking && !_game.InstaKills(kind))
             {
                 int through = ZLRules.RiotDamage(damage, _facing.x, _facing.y, dir.x, dir.y);
@@ -110,10 +133,25 @@ namespace PKR
             if (hp <= 0) Die();
         }
 
+        /// <summary>The Kindler: this zombie hunts the other dead for a while (points for its kills go to the shooter).</summary>
+        public void Kindle(float seconds, ZLPlayer by)
+        {
+            if (_dead || Kindled) return;
+            _kindled = seconds;
+            _kindledBy = by != null ? by : _game.Player;
+            LastHitBy = _kindledBy;
+            hunting = true;
+            _leapT = _leapWind = 0f;
+            _prey = null;
+            ZLFloater.Show("KINDLED", transform.position + Vector3.up * 0.8f, new Color(1f, 0.75f, 0.35f), 0.9f);
+            ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(1f, 0.65f, 0.25f, 0.85f), 0.5f, 1f, 4f, _game.material);
+        }
+
         /// <summary>The Rime Cannon: frozen for this long (crawls, takes extra damage; a leap in progress stops).</summary>
         public void Freeze(float seconds)
         {
             if (_dead) return;
+            if (_under || _surfaceTell > 0f) Surface(false);   // the frost drives a burrower up
             _frozen = Mathf.Max(_frozen, kind == ZLFoe.Herald || kind == ZLFoe.Brute ? seconds * 0.5f : seconds);
             _leapT = 0f; _leapWind = 0f;
         }
@@ -162,6 +200,7 @@ namespace PKR
             if (_dead) return;
             _dead = true;
             _game.ZombieDied(this);
+            if (kind == ZLFoe.Splitter && !_game.IsGuest) _game.SplitApart(this);
             if (kind == ZLFoe.Bloater)
             {
                 ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.55f, 0.85f, 0.35f, 0.7f), 1.2f, 2.5f, 2f, _game.material);
@@ -226,8 +265,10 @@ namespace PKR
             float dt = Time.fixedDeltaTime;
             _bite -= dt; _spit -= dt; _hurt -= dt; _lungeCool -= dt; _think -= dt;
             Vector2 pos = _body.position;
+            if (Kindled) { KindledThink(pos, dt); return; }
             Vector2 target = _game.TargetFor(pos);
             float dist = Vector2.Distance(pos, target);
+            if (kind == ZLFoe.Burrower && _frozen <= 0f && BurrowThink(pos, target, dist, dt)) return;
 
             // Senses
             if (!hunting && _think <= 0f)
@@ -340,6 +381,124 @@ namespace PKR
             if (look.sqrMagnitude > 0.5f) _facing = ((Vector2)Vector3.RotateTowards(_facing, look, 7f * dt, 0f)).normalized;
         }
 
+        // ---- burrowers ----------------------------------------------------------------------------------
+
+        bool BurrowThink(Vector2 pos, Vector2 target, float dist, float dt)
+        {
+            _burrowCool -= dt;
+            if (_surfaceTell > 0f)
+            {
+                _surfaceTell -= dt;
+                _body.linearVelocity = Vector2.zero;
+                if (_surfaceTell <= 0f) Surface(true);
+                return true;
+            }
+            if (_under)
+            {
+                _underT += dt;
+                if (ZLRules.BurrowerSurfaces(dist, _underT))
+                {
+                    _surfaceTell = ZLRules.BurrowTell;
+                    // the tell: a "!" (a shape, not only a colour) and a sound cue
+                    ZLFloater.Show("!", pos + Vector2.up * 0.9f, new Color(1f, 0.95f, 0.4f), 1.5f, true);
+                    _game.SoundCue(pos, "BURROWER");
+                    return true;
+                }
+                bool sees = dist < 5f && _game.City.Sees(pos, target);
+                Vector2 d = sees ? (target - pos).normalized : _game.Flow.Direction(pos);
+                if (d == Vector2.zero) d = (target - pos).normalized;
+                _body.linearVelocity = d * ZLRules.BurrowSpeed;
+                if (Random.value < dt * 6f)
+                    ZLFx.Spawn(GlowHalo.Sprite, pos + Random.insideUnitCircle * 0.25f, new Color(0.55f, 0.45f, 0.3f, 0.7f), 0.5f, 0.35f, 0.6f, _game.material, ZLSort.Decal + 2, true);
+                return true;
+            }
+            if (ZLRules.BurrowerDives(hunting, dist, _burrowCool)) { Dive(); return true; }
+            return false;
+        }
+
+        void Dive()
+        {
+            _under = true;
+            _underT = 0f;
+            if (_sr != null) _sr.enabled = false;
+            if (_mound == null)
+            {
+                var go = new GameObject("Mound");
+                go.transform.SetParent(transform, false);
+                go.transform.localScale = new Vector3(0.9f, 0.5f, 1f);
+                _mound = go.AddComponent<SpriteRenderer>();
+                _mound.sprite = GlowHalo.Sprite;
+                _mound.color = new Color(0.45f, 0.36f, 0.24f, 0.95f);
+                if (_game.material != null) _mound.sharedMaterial = _game.material;
+            }
+            _mound.enabled = true;
+            ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.55f, 0.45f, 0.3f, 0.8f), 0.4f, 0.8f, 2f, _game.material);
+        }
+
+        /// <summary>Bursts up out of the street (biting if the hero is right there).</summary>
+        void Surface(bool attack)
+        {
+            _under = false;
+            _surfaceTell = 0f;
+            _burrowCool = ZLRules.BurrowCooldown;
+            if (_sr != null) _sr.enabled = true;
+            if (_mound != null) _mound.enabled = false;
+            ZLFx.Spawn(GlowHalo.Sprite, transform.position, new Color(0.6f, 0.5f, 0.35f, 0.85f), 0.45f, 1f, 3f, _game.material);
+            if (!attack) return;
+            Vector2 pos = transform.position;
+            if (Vector2.Distance(pos, _game.TargetFor(pos)) < _col.radius + 0.9f && _bite <= 0f)
+            {
+                _bite = 1.1f;
+                _game.Bite(this, ZLRules.Bite(kind));
+            }
+        }
+
+        /// <summary>Guest: how the host's zombie looks right now (under the street, kindled).</summary>
+        public void SetNetFlags(bool burrowed, bool kindled)
+        {
+            if (burrowed != _under)
+            {
+                if (burrowed) Dive(); else { _under = false; if (_sr != null) _sr.enabled = true; if (_mound != null) _mound.enabled = false; }
+            }
+            _kindled = kindled ? 1f : 0f;
+        }
+
+        // ---- kindled ------------------------------------------------------------------------------------
+
+        void KindledThink(Vector2 pos, float dt)
+        {
+            _kindled -= dt;
+            _allyBite -= dt;
+            _allySeek -= dt;
+            if (_kindled <= 0f)
+            {
+                // burns out: counts as the shooter's kill
+                ZLFx.Spawn(GlowHalo.Sprite, pos, new Color(1f, 0.6f, 0.2f, 0.9f), 0.6f, 1.2f, 5f, _game.material);
+                Die();
+                return;
+            }
+            if (_allySeek <= 0f || _prey == null || !_prey.Alive || !_prey.Hostile)
+            {
+                _allySeek = 0.3f;
+                _prey = _game.NearestHostileZombie(pos, 14f, this);
+            }
+            Vector2 goal;
+            if (_prey != null) goal = _prey.transform.position;
+            else goal = _kindledBy != null ? (Vector2)_kindledBy.transform.position : _game.TargetPos;
+            Vector2 to = goal - pos;
+            float d = to.magnitude;
+            Vector2 dir = d > 0.01f ? to / d : Vector2.zero;
+            if (_prey == null && d < 2.5f) dir = Vector2.zero;   // no prey: stay near the one who kindled it
+            if (_prey != null && d > 3f && !_game.City.Sees(pos, goal)) dir = Vector2.zero;   // lost it behind a wall
+            _body.linearVelocity = Vector2.MoveTowards(_body.linearVelocity, dir * speed * ZLCatalog.KindledSpeedScale, 30f * dt);
+            if (dir.sqrMagnitude > 0.01f) _facing = dir;
+            if (_prey != null && d < _col.radius + 0.7f && _allyBite <= 0f)
+            {
+                _allyBite = ZLCatalog.KindledBiteEvery;
+                _game.HitAs(_prey, _game.KindledBiteDamage(_prey.threat), dir, _kindledBy);
+            }
+        }
+
         void LateUpdate()
         {
             if (_sr == null) return;
@@ -351,6 +510,13 @@ namespace PKR
             _sr.sortingOrder = ZLSort.ByY(transform.position.y);
             // Hurt flash: a quick white pop that always fades back to the zombie's own colour.
             var baseCol = _frozen > 0f ? Color.Lerp(_tint, new Color(0.55f, 0.85f, 1f), 0.7f) : _tint;
+            if (Kindled) baseCol = Color.Lerp(_tint, new Color(1f, 0.7f, 0.3f), 0.65f);
+            if (_mound != null && _mound.enabled)
+            {
+                float k = _surfaceTell > 0f ? 1f + 0.25f * Mathf.Sin(_animT * 30f) : 1f;
+                _mound.transform.localScale = new Vector3(0.9f * k, 0.5f * k, 1f);
+                _mound.sortingOrder = ZLSort.Decal + 2;
+            }
             if (_leapWind > 0f) baseCol = Color.Lerp(baseCol, new Color(1f, 0.4f, 0.3f), 0.5f + 0.5f * Mathf.Sin(_animT * 40f));   // the tell
             _sr.color = _hurt > 0f ? Color.Lerp(baseCol, Color.white, 0.65f) : baseCol;
             if (_shield != null)

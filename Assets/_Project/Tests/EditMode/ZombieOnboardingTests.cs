@@ -16,7 +16,7 @@ namespace PKR.Tests
                 Assert.LessOrEqual(lines.Length, 2, kv.Key);
                 foreach (var l in lines) Assert.LessOrEqual(l.Length, 44, kv.Key + ": " + l);
             }
-            Assert.AreEqual(14, ZombieTips.Texts.Count);
+            Assert.AreEqual(17, ZombieTips.Texts.Count);   // + splitter, burrower, Kindler
             Assert.Greater(ZombieTips.Gap, ZombieTips.Show, "one tip at a time");
         }
 

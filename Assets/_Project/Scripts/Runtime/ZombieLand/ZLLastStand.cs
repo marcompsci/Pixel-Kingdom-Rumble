@@ -469,6 +469,16 @@ namespace PKR
             return true;
         }
 
+        /// <summary>Spawns one of the dead at a given spot (a splitter's halves), counted in the round like any other.</summary>
+        public ZLZombie SpawnAt(ZLFoe kind, Vector2 at)
+        {
+            var z = Spawn(kind);
+            if (z == null) return null;
+            z.transform.position = at;
+            if (z.Body != null) z.Body.position = at;
+            return z;
+        }
+
         ZLZombie Spawn(ZLFoe kind)
         {
             if (!SpawnSpot(out var p)) return null;
@@ -761,7 +771,8 @@ namespace PKR
             foreach (var z in _g.Zombies)
             {
                 if (z == null || !z.Alive) continue;
-                s.zombies.Add(new NetZombie { id = z.NetId, kind = (int)z.kind, x = z.transform.position.x, y = z.transform.position.y, hp01 = Mathf.Clamp(Mathf.RoundToInt(255f * z.hp / Mathf.Max(1, z.maxHp)), 1, 255) });
+                // kind in the low 6 bits; 0x40 = under the street, 0x80 = kindled
+                s.zombies.Add(new NetZombie { id = z.NetId, kind = (int)z.kind | (z.Burrowed ? 0x40 : 0) | (z.Kindled ? 0x80 : 0), x = z.transform.position.x, y = z.transform.position.y, hp01 = Mathf.Clamp(Mathf.RoundToInt(255f * z.hp / Mathf.Max(1, z.maxHp)), 1, 255) });
             }
             if (s.zombies.Count > ZLNet.MaxSnapshotZombies)
             {
@@ -816,15 +827,17 @@ namespace PKR
             foreach (var nz in s.zombies)
             {
                 _seen.Add(nz.id);
+                var foe = (ZLFoe)(nz.kind & 0x3f);
                 if (!_puppets.TryGetValue(nz.id, out var z) || z == null)
                 {
-                    z = _g.SpawnZombie((ZLFoe)nz.kind, new Vector2(nz.x, nz.y), 1, false);
+                    z = _g.SpawnZombie(foe, new Vector2(nz.x, nz.y), 1, false);
                     z.MakePuppet(nz.id);
-                    if ((ZLFoe)nz.kind == ZLFoe.Herald && s.round % 10 != 0) { z.transform.localScale = Vector3.one * 1.5f; }
+                    if (foe == ZLFoe.Herald && s.round % 10 != 0) { z.transform.localScale = Vector3.one * 1.5f; }
                     _puppets[nz.id] = z;
                     _alive.Add(z);
                 }
                 z.SetNet(new Vector2(nz.x, nz.y), nz.hp01 / 255f);
+                z.SetNetFlags((nz.kind & 0x40) != 0, (nz.kind & 0x80) != 0);
             }
             var gone = new List<int>();
             foreach (var kv in _puppets) if (!_seen.Contains(kv.Key)) gone.Add(kv.Key);

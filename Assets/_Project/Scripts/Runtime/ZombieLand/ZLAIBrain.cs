@@ -35,7 +35,7 @@ namespace PKR
             int close = 0;
             foreach (var z in _g.Zombies)
             {
-                if (z == null || !z.Alive) continue;
+                if (z == null || !z.Alive || !z.Hostile) continue;   // kindled or under the street: not a target
                 float d = Vector2.Distance(z.transform.position, me);
                 if (d < 3f) close++;
                 if (d < nd && _g.City.Sees(me, z.transform.position)) { nd = d; nearest = z; }

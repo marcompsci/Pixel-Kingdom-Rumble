@@ -187,6 +187,9 @@ namespace PKR.Core
                 case ZLFoe.FirstTurned: return 900;
                 case ZLFoe.Riot: baseHp = 20; break;
                 case ZLFoe.Leaper: baseHp = 10; break;
+                case ZLFoe.Splitter: baseHp = 18; break;
+                case ZLFoe.SplitterHalf: baseHp = 6; break;
+                case ZLFoe.Burrower: baseHp = 16; break;
                 default: baseHp = 10; break;
             }
             return (int)Math.Round(baseHp * (1f + 0.15f * (Math.Max(1, threat) - 1)));
@@ -208,6 +211,9 @@ namespace PKR.Core
                 case ZLFoe.FirstTurned: s = 3f; break;
                 case ZLFoe.Riot: s = 1.7f; break;
                 case ZLFoe.Leaper: s = 2.9f; break;
+                case ZLFoe.Splitter: s = 1.6f; break;
+                case ZLFoe.SplitterHalf: s = 3.6f; break;
+                case ZLFoe.Burrower: s = 1.9f; break;
                 default: s = 1.5f; break;
             }
             return s * (1f + 0.05f * (Math.Max(1, threat) - 1));
@@ -225,6 +231,9 @@ namespace PKR.Core
                 case ZLFoe.Bloater: return 12;
                 case ZLFoe.Riot: return 14;
                 case ZLFoe.Leaper: return 12;
+                case ZLFoe.Splitter: return 11;
+                case ZLFoe.SplitterHalf: return 6;
+                case ZLFoe.Burrower: return 14;
                 default: return 10;
             }
         }
@@ -239,8 +248,12 @@ namespace PKR.Core
             double runner = 0.12 + 0.04 * threat;
             double riot = threat >= 3 ? 0.03 + 0.02 * (threat - 3) : 0;
             double leaper = threat >= 4 ? 0.03 + 0.03 * (threat - 4) : 0;
+            double splitter = threat >= 3 ? 0.03 + 0.01 * (threat - 3) : 0;
+            double burrower = threat >= 4 ? 0.03 : 0;
             if ((roll -= riot) < 0) return ZLFoe.Riot;
             if ((roll -= leaper) < 0) return ZLFoe.Leaper;
+            if ((roll -= splitter) < 0) return ZLFoe.Splitter;
+            if ((roll -= burrower) < 0) return ZLFoe.Burrower;
             if ((roll -= brute) < 0) return ZLFoe.Brute;
             if ((roll -= screamer) < 0) return ZLFoe.Screamer;
             if ((roll -= spitter) < 0) return ZLFoe.Spitter;
@@ -248,6 +261,22 @@ namespace PKR.Core
             if ((roll -= runner) < 0) return ZLFoe.Runner;
             return ZLFoe.Shambler;
         }
+
+        // ---- splitters and burrowers ----------------------------------------------------------------------
+        /// <summary>A splitter falls apart into this many halves.</summary>
+        public const int SplitterHalves = 2;
+
+        /// <summary>Burrowers dig when the hero is this far (tiles) and in reach, travel this fast under ground,
+        /// surface this close, show the mound's "!" this long first, and rest this long between dives.</summary>
+        public const float BurrowMin = 4f, BurrowMax = 14f, BurrowSpeed = 5.5f, BurrowSurfaceAt = 1.6f, BurrowTell = 0.55f,
+                           BurrowCooldown = 6f, BurrowMaxTime = 3.5f;
+
+        /// <summary>Should a burrower dive now? (hunting, out of bite range, not too far, rested)</summary>
+        public static bool BurrowerDives(bool hunting, float dist, float cooldownLeft) =>
+            hunting && cooldownLeft <= 0f && dist >= BurrowMin && dist <= BurrowMax;
+
+        /// <summary>Under ground, time to come up: close enough, or out of breath.</summary>
+        public static bool BurrowerSurfaces(float dist, float underFor) => dist <= BurrowSurfaceAt || underFor >= BurrowMaxTime;
 
         /// <summary>How far (tiles) the dead hear a noise of this loudness (gunshots, engines).</summary>
         public static float HearingRange(float noise) => 4f + noise * 14f;
