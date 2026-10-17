@@ -210,6 +210,9 @@ namespace PKR
             World.material = material;
             if (!World.Build(Progress.InLabs ? ZLCatalog.LabsMap : "city")) return;
             Flow = new ZLFlowField(City);
+            // each map has its own safehouses: a checkpoint from the other map falls back to this one's first
+            if (!City.safehouses.Exists(x => x.id == Progress.checkpoint))
+                Progress.checkpoint = Progress.InLabs && City.safehouses.Count > 0 ? City.safehouses[0].id : Progress.InLabs ? Progress.checkpoint : "";
 
             SpawnHero();
             Progress.arriveAt = "";
@@ -370,6 +373,7 @@ namespace PKR
             if (down) Progress.checkpoint = "safe_labs";
             else if (Progress.checkpoint == "safe_labs") Progress.checkpoint = "";
             Save(true);
+            Ready = false;   // nothing else runs (a safehouse touch would move the checkpoint back) while the scene reloads
             Sfx.Play(Sfx.Click, 0.9f, 0f);
             LiftRides++;
             if (Services.Scenes != null) Services.Scenes.ReloadCurrent();
