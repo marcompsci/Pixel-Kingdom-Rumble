@@ -1,0 +1,12 @@
+Thanks for testing Pixel Kingdom Rumble! This build leads with ZOMBIES (the first main-menu button).
+
+Please try:
+1. ZOMBIES > LAST STAND > SOLO on each map (Hollow Block, Salt Pier, Rail Yard). How far do you get? Anything unfair or confusing?
+2. LAST STAND > AI SQUAD: do the AI teammates help, revive you and stay out of doorways?
+3. ZOMBIE LAND: the open-city campaign. Missions, driving, safehouses, the map.
+4. DAILY ORDERS, LOCKER and BOARDS at the bottom of the ZOMBIES menu.
+5. If you have a friend on TestFlight: LAST STAND > ONLINE CO-OP (needs two iPhones signed in to Game Center).
+6. Story Quest, Arena Clash and Versus from the main menu.
+
+Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge).
+Feedback: take a screenshot in the game and tap "Share Beta Feedback", or email rodlonbell16@gmail.com.

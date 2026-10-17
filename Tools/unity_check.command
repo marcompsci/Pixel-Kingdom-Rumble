@@ -16,6 +16,7 @@ if [ -f Logs/balance_request ]; then exec bash Tools/balance_lab.command; fi
 if [ -f Logs/zombie_balance_request ]; then exec bash Tools/zombie_balance_lab.command; fi
 if [ -f Logs/trailer_request ]; then rm -f Logs/trailer_request; exec bash Tools/sim_trailer.command; fi
 if [ -f Logs/asc_audit_request ]; then rm -f Logs/asc_audit_request; exec /usr/bin/python3 Tools/asc_audit.py; fi
+if [ -f Logs/asc_fix_request ]; then rm -f Logs/asc_fix_request; exec /usr/bin/python3 Tools/asc_fix.py Logs/asc_fix.json; fi
 if [ -f Logs/asc_request ]; then rm -f Logs/asc_request; exec /usr/bin/python3 Tools/asc_screenshots.py; fi
 if [ -f Logs/shots_request ]; then rm -f Logs/shots_request; exec bash Tools/sim_screenshots.command; fi
 if [ -f Logs/upload_request ]; then rm -f Logs/upload_request; PKR_UPLOAD_ONLY=1 exec bash Tools/testflight_upload.command; fi
