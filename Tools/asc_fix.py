@@ -331,7 +331,36 @@ def gc_achievement(a):
         say("   image", _upload("gameCenterAchievementImages", "gameCenterAchievementLocalization", "gameCenterAchievementLocalizations", loc["id"], a["image"]))
 
 
-ACTIONS = {"gc_info": gc_info, "gc_leaderboard": gc_leaderboard, "gc_achievement": gc_achievement, "beta_text": beta_text, "beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def gc_release_info(_):
+    """Which leaderboards and achievements are on the app's Game Center releases (what the version's Game Center section shows)."""
+    gid = _gc_detail()
+    for kind, rel in (("achievementReleases", "gameCenterAchievement"), ("leaderboardReleases", "gameCenterLeaderboard")):
+        st, j = A.call("GET", f"/gameCenterDetails/{gid}/{kind}?limit=200&include={rel}")
+        if st != 200:
+            say(kind, f"HTTP {st} {(j or {}).get('error', '')[:200]}"); continue
+        inc = {x["id"]: x["attributes"].get("vendorIdentifier") for x in (j.get("included") or [])}
+        for r in j.get("data") or []:
+            rid = ((r.get("relationships") or {}).get(rel) or {}).get("data") or {}
+            say(kind, inc.get(rid.get("id"), rid.get("id")), json.dumps(r.get("attributes"))[:200])
+
+
+def gc_release(a):
+    """{"do":"gc_release","vendor":"pkr.ach.z_chapter4"} adds it to the app's Game Center release (the version's Game Center section)."""
+    gid = _gc_detail()
+    is_lb = a["vendor"].startswith("pkr.lb.")
+    items = _all(f"/gameCenterDetails/{gid}/{'gameCenterLeaderboards' if is_lb else 'gameCenterAchievements'}?limit=200")
+    item = next((x for x in items if x["attributes"].get("vendorIdentifier") == a["vendor"]), None)
+    if item is None:
+        say("Release", a["vendor"], "FAIL not found"); return
+    typ = "gameCenterLeaderboardReleases" if is_lb else "gameCenterAchievementReleases"
+    rel = "gameCenterLeaderboard" if is_lb else "gameCenterAchievement"
+    st, r = A.call("POST", "/" + typ, {"data": {"type": typ, "relationships": {
+        "gameCenterDetail": {"data": {"type": "gameCenterDetails", "id": gid}},
+        rel: {"data": {"type": rel + "s", "id": item["id"]}}}}})
+    say("Release", a["vendor"], "added" if st < 300 else f"HTTP {st} {(r or {}).get('error', '')[:300]}")
+
+
+ACTIONS = {"gc_release_info": gc_release_info, "gc_release": gc_release, "gc_info": gc_info, "gc_leaderboard": gc_leaderboard, "gc_achievement": gc_achievement, "beta_text": beta_text, "beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
