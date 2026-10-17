@@ -214,6 +214,7 @@ namespace PKR
                 Progress.zone = ZLCatalog.LabsMap;
                 Progress.arriveAt = "";
             }
+            else if (BootLoader.ShotPanel != null) { Progress.zone = ""; Progress.arriveAt = ""; }   // other shots are in the city
             // Chapter 3: the sublevel is its own map, reached by the freight lift.
             if (Progress.InLabs && !Progress.chapter3Begun) Progress.zone = "";
             World = gameObject.AddComponent<ZLWorld>();
@@ -1640,11 +1641,15 @@ namespace PKR
                 if (touch != null) touch.gameObject.SetActive(false);
                 ZLRules.GiveGun(Progress, ZLCatalog.Singularity, ZLCatalog.Singularity.magazine + ZLCatalog.Singularity.maxReserve);
                 Progress.equipped = ZLCatalog.Singularity.id;
-                var kinds = new[] { ZLFoe.Riot, ZLFoe.Leaper, ZLFoe.Shambler, ZLFoe.Runner, ZLFoe.Leaper, ZLFoe.Shambler };
-                for (int i = 0; i < kinds.Length; i++)
+                // a crowd closing in from all sides (tough enough to still be there when the shot is taken)
+                var kinds = new[] { ZLFoe.Riot, ZLFoe.Leaper, ZLFoe.Shambler, ZLFoe.Runner, ZLFoe.Leaper, ZLFoe.Shambler, ZLFoe.Riot, ZLFoe.Shambler };
+                for (int i = 0; i < 14; i++)
                 {
-                    Vector2 zp = at + new Vector2(5f + i % 3, -2f + i);
-                    if (City.Walkable(zp)) SpawnZombie(kinds[i], zp, 5, true);
+                    float a = i * Mathf.PI * 2f / 14f;
+                    Vector2 zp = at + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (7f + (i % 3));
+                    if (!City.Walkable(zp)) continue;
+                    var z = SpawnZombie(kinds[i % kinds.Length], zp, 5, true);
+                    if (z != null) { z.maxHp *= 8; z.hp = z.maxHp; }
                 }
                 ShowToast(ZLCatalog.Chapter3Name + "  ·  KEYCARDS 0/" + ZLCatalog.KeycardsNeeded, 10f);
             }
