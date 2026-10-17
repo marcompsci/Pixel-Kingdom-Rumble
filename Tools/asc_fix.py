@@ -208,7 +208,12 @@ def version_build(a):
     say("Version", v["attributes"]["versionString"], "now uses build", a["build"], st if st < 300 else f"FAIL {st} {r}")
 
 
-ACTIONS = {"version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def beta_info(_):
+    for rel in ("betaLicenseAgreement", "betaAppReviewDetail", "betaAppLocalizations"):
+        say(rel, str(_show(f"/apps/{A.APP_ID}/{rel}"))[:600])
+
+
+ACTIONS = {"beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
