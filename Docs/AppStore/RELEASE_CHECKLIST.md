@@ -5,7 +5,7 @@ Nothing here submits the app. Omari presses **Submit for Review** himself when e
 ## 1. Build
 - [x] Mac Unity check green on a527cff (16 Oct): compile 0 errors, EditMode 307/307, PlayMode 131 passed / 0 failed / 2 skipped (balance labs).
 - [x] Mac Unity check green on f59e47a (16 Oct, after onboarding, Rail Yard, chapter 3, daily orders, the LOCKER): EditMode 321/321, PlayMode 140 passed / 0 failed / 2 skipped.
-- [ ] TestFlight: 20261016.1338 uploaded 16 Oct (before the pathing / AI-ammo fixes). 20261016.1521 (a527cff, all fixes) is archived in Builds/ but not uploaded yet: Xcode Organizer > Distribute App > App Store Connect.
+- [x] TestFlight: 20261016.1842 (f59e47a + docs: Rail Yard, chapter 3, daily orders, LOCKER, friends boards) uploaded 16 Oct through Xcode Organizer ("Uploaded to Apple"; usual missing-dSYM warning for UnityRuntime). Apple processes it before it shows in TestFlight. Older: 1338 uploaded, 1521 never uploaded (superseded).
 - [ ] Installed on Omari's iPhone from TestFlight; launches, no crash in the first 5 minutes.
 - [ ] Version / build number in App Store Connect matches the TestFlight build picked for review.
 
