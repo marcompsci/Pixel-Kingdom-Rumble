@@ -86,7 +86,12 @@ def call(method, url, body=None, raw=None, headers=None):
 
 
 def main():
-    manifest = json.load(open(os.path.join(ROOT, sys.argv[1] if len(sys.argv) > 1 else "Docs/AppStore/screenshots_manifest.json")))
+    # Logs/asc_manifest (one line: a manifest path) picks another manifest for one run, e.g. only the iPad set.
+    pick = os.path.join(ROOT, "Logs", "asc_manifest")
+    path = sys.argv[1] if len(sys.argv) > 1 else (open(pick).read().strip() if os.path.exists(pick) else "Docs/AppStore/screenshots_manifest.json")
+    if os.path.exists(pick):
+        os.remove(pick)
+    manifest = json.load(open(os.path.join(ROOT, path)))
     say("PKR App Store screenshots", time.strftime("%c"))
     st, v = call("GET", f"/apps/{APP_ID}/appStoreVersions?filter[platform]=IOS&limit=5")
     ver = [x for x in v["data"] if x["attributes"]["appStoreState"] == "PREPARE_FOR_SUBMISSION"]
