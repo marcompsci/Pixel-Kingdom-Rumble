@@ -213,7 +213,22 @@ def beta_info(_):
         say(rel, str(_show(f"/apps/{A.APP_ID}/{rel}"))[:600])
 
 
-ACTIONS = {"beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def beta_text(a):
+    """TestFlight Test Information: beta app description (en-US) and the notes for Beta App Review."""
+    desc = open(os.path.join(A.ROOT, a["description"]), encoding="utf-8").read().strip()
+    notes = open(os.path.join(A.ROOT, a["notes"]), encoding="utf-8").read().strip()
+    locs = A.get(f"/apps/{A.APP_ID}/betaAppLocalizations").get("data") or []
+    en = next((l for l in locs if l["attributes"].get("locale") == "en-US"), None)
+    if en:
+        st, r = A.call("PATCH", f"/betaAppLocalizations/{en['id']}", {"data": {"type": "betaAppLocalizations", "id": en["id"], "attributes": {"description": desc}}})
+        say("Beta app description", "saved" if st < 300 else f"FAIL {st} {r}", f"({len(desc)} characters)")
+    rd = A.get(f"/apps/{A.APP_ID}/betaAppReviewDetail").get("data")
+    if rd:
+        st, r = A.call("PATCH", f"/betaAppReviewDetails/{rd['id']}", {"data": {"type": "betaAppReviewDetails", "id": rd["id"], "attributes": {"notes": notes}}})
+        say("Beta App Review notes", "saved" if st < 300 else f"FAIL {st} {r}", f"({len(notes)} characters)")
+
+
+ACTIONS = {"beta_text": beta_text, "beta_info": beta_info, "version_build": version_build, "beta_submit": beta_submit, "iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
