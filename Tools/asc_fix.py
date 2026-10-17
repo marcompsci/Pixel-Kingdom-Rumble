@@ -106,7 +106,70 @@ def content_rights(a):
     say("Content rights declaration", a["value"], "saved" if st < 300 else f"FAIL {st} {r}")
 
 
-ACTIONS = {"iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
+def _iap(product):
+    return next((x for x in iaps() if x["attributes"].get("productId") == product), None)
+
+
+def iap_delete(a):
+    """Deletes an UNSUBMITTED in-app purchase draft (Apple refuses for submitted ones). Needs the exact product id."""
+    p = _iap(a["product"])
+    if not p:
+        say("SKIP no IAP", a["product"]); return
+    if p["attributes"].get("state") not in ("MISSING_METADATA", "READY_TO_SUBMIT"):
+        say("SKIP not a draft", a["product"], p["attributes"].get("state")); return
+    st, r = A.call("DELETE", f"{V2}/inAppPurchases/{p['id']}")
+    say("Deleted IAP draft", a["product"], st if st < 300 else f"FAIL {st} {r}")
+
+
+def iap_price(a):
+    """Sets the base price (US) from a customer price like '3.99'; App Store Connect fills other territories."""
+    p = _iap(a["product"])
+    if not p:
+        say("FAIL no IAP", a["product"]); return
+    want = a["price"]
+    url = f"{V2}/inAppPurchases/{p['id']}/pricePoints?filter[territory]=USA&limit=200"
+    pp = None
+    while url and not pp:
+        st, j = A.call("GET", url)
+        if st != 200:
+            say("FAIL price points", st, j); return
+        for x in j.get("data", []):
+            if x["attributes"].get("customerPrice") == want:
+                pp = x; break
+        url = (j.get("links") or {}).get("next")
+    if not pp:
+        say("FAIL no USA price point", want); return
+    body = {"data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+                "inAppPurchase": {"data": {"type": "inAppPurchases", "id": p["id"]}},
+                "baseTerritory": {"data": {"type": "territories", "id": "USA"}},
+                "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": "${price0}"}]}}},
+            "included": [{"type": "inAppPurchasePrices", "id": "${price0}", "attributes": {"startDate": None},
+                          "relationships": {"inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": pp["id"]}},
+                                            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": p["id"]}}}}]}
+    st, r = A.call("POST", "/inAppPurchasePriceSchedules", body)
+    say("IAP price", a["product"], want, "USD (base USA)", "saved" if st < 300 else f"FAIL {st} {r}")
+
+
+def iap_availability(a):
+    """Available in every App Store territory, and in new ones as Apple adds them."""
+    p = _iap(a["product"])
+    if not p:
+        say("FAIL no IAP", a["product"]); return
+    terr, url = [], "/territories?limit=200"
+    while url:
+        st, j = A.call("GET", url)
+        if st != 200:
+            say("FAIL territories", st, j); return
+        terr += [t["id"] for t in j.get("data", [])]
+        url = (j.get("links") or {}).get("next")
+    body = {"data": {"type": "inAppPurchaseAvailabilities", "attributes": {"availableInNewTerritories": True},
+                     "relationships": {"inAppPurchase": {"data": {"type": "inAppPurchases", "id": p["id"]}},
+                                       "availableTerritories": {"data": [{"type": "territories", "id": t} for t in terr]}}}}
+    st, r = A.call("POST", "/inAppPurchaseAvailabilities", body)
+    say("IAP availability", a["product"], f"{len(terr)} territories + new ones", "saved" if st < 300 else f"FAIL {st} {r}")
+
+
+ACTIONS = {"iap_delete": iap_delete, "iap_price": iap_price, "iap_availability": iap_availability, "iap_info": iap_info, "iap_review_screenshot": iap_review_screenshot, "whats_new": whats_new, "content_rights": content_rights}
 
 
 def main():
