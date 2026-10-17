@@ -51,7 +51,7 @@ def call(method, url, body=None, raw=None, headers=None):
     h = {}
     if not url.startswith("http"):
         url = API + url
-    if url.startswith(API):
+    if url.startswith("https://api.appstoreconnect.apple.com/"):
         if _TOKEN is None:
             _TOKEN = token()
         h["Authorization"] = "Bearer " + _TOKEN
