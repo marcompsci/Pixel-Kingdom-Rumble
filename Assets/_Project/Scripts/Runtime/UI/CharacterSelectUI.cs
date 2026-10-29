@@ -194,7 +194,8 @@ namespace PKR
             {
                 var h = roster.heroes[i];
                 _cardImages[i].color = roster.IsSelectable(h) ? Color.white : Silhouette;
-                _cards[i].localScale = i == _index ? Vector3.one * 1.1f : Vector3.one * 0.92f;
+                // ease to the new size (interruptible, 140 ms) instead of snapping; a smaller gap between picked and not
+                UiMotion.ScaleTo(_cards[i], i == _index ? 1.06f : 0.95f, 0.14f);
             }
         }
 

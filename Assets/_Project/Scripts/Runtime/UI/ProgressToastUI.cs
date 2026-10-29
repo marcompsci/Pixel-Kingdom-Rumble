@@ -4,7 +4,11 @@ using UnityEngine.UI;
 
 namespace PKR
 {
-    /// <summary>Always-on overlay (survives scene loads) that shows progress toasts one at a time at the top.</summary>
+    /// <summary>
+    /// Always-on overlay (survives scene loads) that shows progress toasts one at a time at the top. A toast drops in
+    /// from the top edge by its own height while fading in (220 ms, strong ease-out), holds, then goes back up the way
+    /// it came, faster (150 ms). With Reduced motion it only fades.
+    /// </summary>
     public class ProgressToastUI : MonoBehaviour
     {
         static ProgressToastUI _instance;
@@ -12,8 +16,9 @@ namespace PKR
         RectTransform _box;
         Text _title, _detail;
         Image _bg;
+        CanvasGroup _group;
         float _shownAt = -99f;
-        const float Seconds = 2.6f;
+        const float Seconds = 2.6f, In = 0.22f, Out = 0.15f, Rest = -30f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
@@ -37,6 +42,8 @@ namespace PKR
             UISprites.ApplyPanelSprite(_bg);
             _bg.color = new Color(0.1f, 0.1f, 0.16f, 0.92f);
             _bg.raycastTarget = false;
+            _group = _box.gameObject.AddComponent<CanvasGroup>();
+            _group.blocksRaycasts = false;
             _title = MakeText("Title", 52, new Vector2(0f, -18f));
             _detail = MakeText("Detail", 32, new Vector2(0f, -86f));
             _box.gameObject.SetActive(false);
@@ -79,10 +86,13 @@ namespace PKR
             _box.gameObject.SetActive(showing);
             if (showing)
             {
-                // slide in from above, hold, slide out
                 float a = now - _shownAt;
-                float y = a < 0.25f ? Mathf.Lerp(160f, -30f, a / 0.25f) : a > Seconds - 0.25f ? Mathf.Lerp(-30f, 160f, (a - Seconds + 0.25f) / 0.25f) : -30f;
-                _box.anchoredPosition = new Vector2(0f, y);
+                // 1 = fully in place; 0 = above the top edge and transparent
+                float k = a < In ? PKR.Core.Ease.Out(a / In)
+                        : a > Seconds - Out ? 1f - PKR.Core.Ease.Out((a - (Seconds - Out)) / Out) : 1f;
+                float travel = SettingsService.ReducedMotion ? 0f : _box.sizeDelta.y;
+                _box.anchoredPosition = new Vector2(0f, Rest + travel * (1f - k));
+                _group.alpha = k;
             }
         }
     }

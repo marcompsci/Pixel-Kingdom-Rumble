@@ -36,6 +36,7 @@ namespace PKR
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
             var panel = UIFactory.Panel(_root, new Vector2(1500f, 1000f));
+            UiMotion.ModalIn(_root);
             var p = UITheme.Current;
 
             int winner = System.Array.IndexOf(e.placements, 1);

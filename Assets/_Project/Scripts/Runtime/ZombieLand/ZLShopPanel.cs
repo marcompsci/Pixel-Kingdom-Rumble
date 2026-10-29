@@ -43,13 +43,16 @@ namespace PKR
             Time.timeScale = 0f;
             _message = "";
             Build();
+            UiMotion.Restore(_root);
+            UiMotion.ModalIn(_root);   // in from 97% with the scrim; switching tabs inside doesn't replay this
         }
 
         public void Close()
         {
             if (!IsOpen) return;
             IsOpen = false;
-            if (_canvas != null) _canvas.enabled = false;
+            // fades out quickly (taps stop at once), then the canvas goes
+            if (_canvas != null) UiMotion.ModalOut(_root, () => { if (!IsOpen && _canvas != null) _canvas.enabled = false; });
             if (_touch != null) _touch.gameObject.SetActive(true);
             Time.timeScale = _prevScale;
             _g?.Save(true);

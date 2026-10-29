@@ -44,6 +44,7 @@ namespace PKR
         {
             _root.gameObject.SetActive(true);
             Build();
+            UiMotion.ModalIn(_root);   // opening; rebuilds while it is open don't replay this
         }
 
         void Build()

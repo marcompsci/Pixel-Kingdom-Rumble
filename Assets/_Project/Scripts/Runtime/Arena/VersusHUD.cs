@@ -153,6 +153,7 @@ namespace PKR
             UIFactory.Clear(_results);
             UIFactory.Dim(_results);
             var panel = UIFactory.Panel(_results, new Vector2(1400f, 1000f));
+            UiMotion.ModalIn(_results);
             string head = e.winner == 0 ? "YOU WIN!" : e.winner == 1 ? "YOU LOSE" : "DRAW";
             UIFactory.Label(panel, head, 80, TextAnchor.MiddleCenter, 100f, title: true);
             UIFactory.Label(panel, $"{e.playerName}  {e.playerRounds} - {e.opponentRounds}  {e.opponentName}", 44,

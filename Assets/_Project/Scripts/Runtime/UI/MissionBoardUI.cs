@@ -231,6 +231,7 @@ namespace PKR
             var p = UITheme.Current;
             UIFactory.Dim(_root);
             var panel = UIFactory.Panel(_root, new Vector2(960f, 1180f));
+            UiMotion.ModalIn(_root);   // the briefing opens over the board
             UIFactory.Label(panel, c.displayName.ToUpperInvariant(), 60, TextAnchor.MiddleCenter, 110f, title: true);
             UIFactory.Label(panel, c.kind == ContractKind.Secret ? "SECRET CONTRACT" : $"WORLD {c.world + 1} · {board.World(c.world).name.ToUpperInvariant()}",
                             32, TextAnchor.MiddleCenter, 50f).color = p.subtle;
@@ -286,12 +287,12 @@ namespace PKR
 
             yield return new WaitForSecondsRealtime(0.5f);
             float t = 0f;
-            const float open = 1.4f;
+            const float open = 1.2f;
             float width = ((RectTransform)_root).rect.width * 0.5f;
             while (t < open)
             {
                 t += Time.unscaledDeltaTime;
-                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / open));
+                float k = Ease.InOut(Mathf.Clamp01(t / open));   // a rare, big moment: long is fine, but on the strong curve
                 left.anchoredPosition = new Vector2(-width * k, 0f);
                 right.anchoredPosition = new Vector2(width * k, 0f);
                 yield return null;

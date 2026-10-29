@@ -148,7 +148,7 @@ namespace PKR
             {
                 _hearts[i].gameObject.SetActive(i < max);
                 _hearts[i].sprite = i < cur ? _heartFull : _heartEmpty;
-                if (_shownHp > cur && i >= cur && i < _shownHp) _hearts[i].transform.localScale = Vector3.one * 1.6f; // just lost
+                if (_shownHp > cur && i >= cur && i < _shownHp) _hearts[i].transform.localScale = Vector3.one * (SettingsService.ReducedMotion ? 1f : 1.3f); // just lost: a small kick, not a jump to 160%
             }
             _shownHp = cur;
             _shownMax = max;

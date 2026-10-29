@@ -157,7 +157,8 @@ namespace PKR
             var rt = (RectTransform)jet.transform;
             if (pack.IsStuck && !jet.Held)
             {
-                float k = 1f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 6f)) * 0.15f;
+                // stuck: a gentle, even breath on the jetpack button (it says "use me", it doesn't shout); none with Reduced motion
+                float k = SettingsService.ReducedMotion ? 1f : 1f + (Mathf.Sin(Time.unscaledTime * 4f) * 0.5f + 0.5f) * 0.08f;
                 rt.localScale = Vector3.one * (JetScale * k);
             }
             else if (!jet.Held) rt.localScale = Vector3.one * JetScale;

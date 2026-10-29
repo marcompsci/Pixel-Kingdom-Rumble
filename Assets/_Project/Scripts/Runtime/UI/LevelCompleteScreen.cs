@@ -62,6 +62,13 @@ namespace PKR
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             var reward = Row(panel, "Reward", "+0");
+            if (UISprites.HasDisplayFont)
+            {
+                // the pixel font's digits are all one width, so the number doesn't wobble while it counts up
+                reward.font = UISprites.DisplayFont;
+                reward.fontStyle = FontStyle.Normal;
+                reward.fontSize = 34;
+            }
             if (e.luckyBonus > 0 || e.worldBonus > 0)
             {
                 string extra = e.worldBonus > 0 ? $"{e.worldCompleted.ToUpperInvariant()} COMPLETE!  +{e.worldBonus} world bonus" : "";
@@ -118,21 +125,22 @@ namespace PKR
             else
                 ContractDoorButton(buttons);
             UIFactory.Select(again);
+            UiMotion.ModalIn(_root);   // the results fade in from 97% (rare, so it can take its full 200 ms)
 
             if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
 
-            // Count the reward up so it feels earned.
+            // Count the reward up so it feels earned: fast at first, settling onto the total (ease-out, not linear).
             int total = Services.Save != null ? Services.Save.Data.starShards : 0;
             float t = 0f;
-            const float duration = 1.2f;
+            const float duration = 0.9f;
             while (t < duration)
             {
                 t += Time.unscaledDeltaTime;
-                int shown = Mathf.RoundToInt(Mathf.Lerp(0, e.starShardReward, Mathf.Clamp01(t / duration)));
-                reward.text = $"+{shown} Star Shards   (total {total - e.starShardReward + shown})";
+                int shown = Mathf.RoundToInt(Mathf.Lerp(0, e.starShardReward, PKR.Core.Ease.Out(Mathf.Clamp01(t / duration))));
+                reward.text = $"+{Plural.Of(shown, "Star Shard")}   (total {total - e.starShardReward + shown})";
                 yield return null;
             }
-            reward.text = $"+{e.starShardReward} Star Shards   (total {total})";
+            reward.text = $"+{Plural.Of(e.starShardReward, "Star Shard")}   (total {total})";
         }
 
         /// <summary>

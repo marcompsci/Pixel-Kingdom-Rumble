@@ -950,6 +950,7 @@ namespace PKR
             var gold = new Color32(255, 214, 90, 255);
             bool squad = _g.Squad.Count > 1;
             var panel = UIFactory.Panel(safe, new Vector2(1300f, squad ? 1040f : 1000f));
+            UiMotion.ModalIn(safe);
             var title = UIFactory.Label(panel, Run.Won ? "RAID COMPLETE!" : Map.Title + " FELL", 70, TextAnchor.MiddleCenter, 96f, title: true);
             title.color = Run.Won ? (Color)gold : new Color32(255, 100, 70, 255);
             UIFactory.Label(panel, $"{SurvivalModes.Name(Mode)}  ·  ROUND {Run.Round}" + (Ls.HiddenBossBeaten ? $"  ·  {Map.HiddenBossName} SLAIN" : ""), 46,
@@ -962,7 +963,7 @@ namespace PKR
                 foreach (var h in sorted)
                 {
                     if (h == null) continue;
-                    var row = UIFactory.Label(panel, $"{h.DisplayName}   {h.Kills} kills   {Wallet(h).TotalEarned} pts   {RevivesBy(h)} revives", 30, TextAnchor.MiddleCenter, 40f);
+                    var row = UIFactory.Label(panel, $"{h.DisplayName}   {Plural.Of(h.Kills, "kill")}   {Wallet(h).TotalEarned} pts   {Plural.Of(RevivesBy(h), "revive")}", 30, TextAnchor.MiddleCenter, 40f);
                     row.color = SlotColor(h.Slot);
                 }
             }
@@ -1015,7 +1016,7 @@ namespace PKR
             string mapName = Map.Short;
             string with = Kind == SquadKind.Online ? " with friends" : Kind == SquadKind.AISquad ? " with my squad" : "";
             UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(
-                (won ? $"I held {mapName} through the Raid{with} ({kills} zombies down)" : $"I held {mapName} for {round} round{(round == 1 ? "" : "s")}{with} ({kills} down)") +
+                (won ? $"I held {mapName} through the Raid{with} ({Plural.Of(kills, "zombie")} down)" : $"I held {mapName} for {round} round{(round == 1 ? "" : "s")}{with} ({kills} down)") +
                 " in Pixel Kingdom Rumble! " + ShareCard.Link));
             var back = UIFactory.Button(buttons, "ZOMBIES", () =>
             {

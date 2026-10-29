@@ -29,7 +29,7 @@ namespace PKR
             _settingsRoot = UIFactory.Rect("Settings", _safe);
             UIFactory.Stretch(_settingsRoot);
             _settings = gameObject.AddComponent<SettingsPanel>();
-            Hide();
+            Hide(instant: true);
         }
 
         void OnEnable()
@@ -85,7 +85,8 @@ namespace PKR
                 return;
             }
             if (_editing) return;
-            if (!_menu.gameObject.activeSelf && !_settingsRoot.gameObject.activeSelf) ShowMenu();
+            if (_menu.gameObject.activeSelf) UiMotion.Restore(_menu);   // paused again while it was fading out
+            if (!_menu.gameObject.activeSelf && !_settingsRoot.gameObject.activeSelf) ShowMenu(animate: true);
         }
 
         void BuildPauseButton()
@@ -145,6 +146,7 @@ namespace PKR
             btn.colors = colors;
             btn.onClick.AddListener(onClick);
             btn.onClick.AddListener(() => { if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Light); });
+            rt.gameObject.AddComponent<PressScale>();   // presses in to 96% and eases back: the tap is felt
             var iconRt = UIFactory.Rect("Icon", rt);
             iconRt.sizeDelta = new Vector2(76f, 76f);
             iconRt.anchoredPosition = new Vector2(0f, 3f);
@@ -155,11 +157,19 @@ namespace PKR
             return iconImg;
         }
 
-        void ShowMenu()
+        /// <summary>
+        /// The pause menu. It fades in from 97% when the game pauses; coming back from Settings it just appears (moving
+        /// between pages of an open menu doesn't replay the entrance).
+        /// </summary>
+        void ShowMenu() => ShowMenu(animate: false);
+
+        void ShowMenu(bool animate)
         {
             _settingsRoot.gameObject.SetActive(false);
             _menu.gameObject.SetActive(true);
+            UiMotion.Restore(_menu);
             BuildMenu();
+            if (animate) UiMotion.ModalIn(_menu);
         }
 
         void BuildMenu()
@@ -198,7 +208,7 @@ namespace PKR
         {
             _editing = true;
             _editTouch = touch;
-            Hide();
+            Hide(instant: true);
             _pauseButton.SetActive(false);
             touch.BeginEdit(() =>
             {
@@ -209,10 +219,16 @@ namespace PKR
             });
         }
 
-        void Hide()
+        /// <summary>Resuming: the open page fades out quickly (exits are faster than entrances) and stops taking touches at once.</summary>
+        void Hide(bool instant = false)
         {
-            if (_menu != null) _menu.gameObject.SetActive(false);
-            if (_settingsRoot != null) _settingsRoot.gameObject.SetActive(false);
+            foreach (var page in new[] { _menu, _settingsRoot })
+            {
+                if (page == null || !page.gameObject.activeSelf) continue;
+                if (instant) { UiMotion.Restore(page); page.gameObject.SetActive(false); continue; }
+                var p = page;
+                UiMotion.ModalOut(p, () => { if (p != null && !(Services.State != null && Services.State.IsPaused)) p.gameObject.SetActive(false); });
+            }
         }
     }
 }

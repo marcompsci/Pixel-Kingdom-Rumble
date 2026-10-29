@@ -13,7 +13,7 @@ namespace PKR
         int _target = -1;
         Vector2 _from, _to;
         float _hop = 1f;
-        const float HopTime = 0.35f, HopHeight = 60f, MarkerLift = 86f;
+        const float HopTime = 0.3f, HopHeight = 36f, MarkerLift = 86f;
 
         public int Target => _target;
         public bool Hopping => _hop < 1f;
@@ -54,17 +54,22 @@ namespace PKR
             if (_hop < 1f)
             {
                 _hop = Mathf.Min(1f, _hop + dt / HopTime);
-                float e = _hop * _hop * (3f - 2f * _hop);
-                _marker.anchoredPosition = Vector2.Lerp(_from, _to, e) + Vector2.up * (Mathf.Sin(_hop * Mathf.PI) * HopHeight);
-                _marker.localScale = new Vector3(1f + 0.15f * Mathf.Sin(_hop * Mathf.PI), 1f - 0.1f * Mathf.Sin(_hop * Mathf.PI), 1f);
+                // moving across the map: the strong ease-in-out; a small arc and a hint of stretch, not a cartoon squash
+                bool calm = SettingsService.ReducedMotion;
+                float e = PKR.Core.Ease.InOut(_hop);
+                float arc = calm ? 0f : Mathf.Sin(_hop * Mathf.PI);
+                _marker.anchoredPosition = Vector2.Lerp(_from, _to, e) + Vector2.up * (arc * HopHeight);
+                _marker.localScale = new Vector3(1f + 0.05f * arc, 1f - 0.04f * arc, 1f);
             }
             else
             {
+                // resting: a slow, small breath (it's on screen the whole time, so it stays quiet); still with Reduced motion
                 float t = Time.unscaledTime;
-                _marker.anchoredPosition = _to + Vector2.up * (Mathf.Abs(Mathf.Sin(t * 3f)) * 10f);
+                float bob = SettingsService.ReducedMotion ? 0f : (Mathf.Sin(t * 2.4f) * 0.5f + 0.5f) * 4f;
+                _marker.anchoredPosition = _to + Vector2.up * bob;
                 _marker.localScale = Vector3.one;
             }
-            float pulse = 1f + 0.06f * Mathf.Sin(Time.unscaledTime * 4f);
+            float pulse = SettingsService.ReducedMotion ? 1f : 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 2.6f);
             _nodes[_target].localScale = new Vector3(pulse, pulse, 1f);
         }
     }

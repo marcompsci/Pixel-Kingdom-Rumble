@@ -68,7 +68,7 @@ namespace PKR
 
             var save = Services.Save != null ? Services.Save.Data : null;
             string best = save != null && save.zombieBestRound > 0
-                ? $"Best: round {save.zombieBestRound} · {save.zombieBestPoints} pts · {save.zombieBestKills} kills"
+                ? $"Best: round {save.zombieBestRound} · {save.zombieBestPoints} pts · {Plural.Of(save.zombieBestKills, "kill")}"
                 : "Hold the manor windows for as many rounds as you can";
             var survival = Big(panel, "ZOMBIE SURVIVAL", best, new Color32(200, 70, 50, 255), () => Go(SessionMode.Halloween, SceneIds.ZombieSurvival));
             UIFactory.Label(panel, "Guns on the walls · mystery crate · perk shrines · the upgrade forge · power-ups · a boss every 5 rounds · a secret",

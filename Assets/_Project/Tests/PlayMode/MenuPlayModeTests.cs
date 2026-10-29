@@ -49,9 +49,26 @@ namespace PKR.Tests
             Assert.IsTrue(menu.gameObject.activeSelf, "menu opens on pause");
             Assert.Greater(menu.GetComponentsInChildren<Button>().Length, 3);
 
+            var group = menu.GetComponent<CanvasGroup>();
+            Assert.IsNotNull(group, "the menu fades in");
+            float t = 0f;
+            while (group.alpha < 1f && t < 1f) { t += Time.unscaledDeltaTime; yield return null; }
+            Assert.AreEqual(1f, group.alpha, 0.001f, "fully shown within the entrance time");
+            Assert.Less(t, 0.5f);
+
             Services.State.Resume();
             yield return null;
+            Assert.IsFalse(group.blocksRaycasts, "stops taking taps the moment the game resumes");
+            t = 0f;
+            while (menu.gameObject.activeSelf && t < 1f) { t += Time.unscaledDeltaTime; yield return null; }
             Assert.IsFalse(menu.gameObject.activeSelf, "menu closes on resume");
+            Assert.Less(t, 0.4f, "a quick exit");
+
+            Services.State.Pause();
+            yield return null;
+            Assert.IsTrue(menu.gameObject.activeSelf, "opens again");
+            Assert.IsTrue(group.blocksRaycasts);
+            Services.State.Resume();
         }
 
         [UnityTest]

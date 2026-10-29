@@ -227,6 +227,7 @@ namespace PKR
             var safe = UIFactory.CreateCanvas(transform, "GameOverCanvas", sortingOrder + 20, landscape: true, out _);
             UIFactory.Dim(safe);
             var panel = UIFactory.Panel(safe, new Vector2(1180f, 980f));
+            UiMotion.ModalIn(safe);
             var title = UIFactory.Label(panel, run.Won ? "RAID COMPLETE!" : "THE HORDE GOT YOU", 80, TextAnchor.MiddleCenter, 110f, title: true);
             title.color = run.Won ? Gold : Blood;
             int shown = run.Won ? run.Round : run.Round;
@@ -262,7 +263,7 @@ namespace PKR
             int round = run.Round, kills = run.Kills;
             bool won = run.Won;
             UIFactory.Button(buttons, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(
-                (won ? $"I beat the Raid ({kills} zombies down)" : $"I survived {round} round{(round == 1 ? "" : "s")} of zombies ({kills} down)") +
+                (won ? $"I beat the Raid ({Plural.Of(kills, "zombie")} down)" : $"I survived {round} round{(round == 1 ? "" : "s")} of zombies ({kills} down)") +
                 " in Pixel Kingdom Rumble! " + ShareCard.Link));
             bool zombiesMenu = GameSession.Mode == SessionMode.Zombies;
             UIFactory.Button(buttons, zombiesMenu ? "ZOMBIES" : "HALLOWEEN", () =>

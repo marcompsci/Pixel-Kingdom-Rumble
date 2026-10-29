@@ -196,7 +196,8 @@ namespace PKR
             _powers = Txt(pw, "", 34, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.35f));
             // Co-op: the squad (names, health, points)
             var sq = Box(_safe, "Squad", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -440f), new Vector2(520f, 150f));
-            _squad = Txt(sq, "", 26, TextAnchor.UpperLeft, Color.white, false);
+            // the pixel font: its digits are all one width, so HP and points don't shuffle the line as they change
+            _squad = Txt(sq, "", 24, TextAnchor.UpperLeft, Color.white, UISprites.HasDisplayFont);
             _squad.supportRichText = true;
 
             // Visual sound cues (Settings > Accessibility): a label at the screen edge toward the noise
@@ -230,6 +231,8 @@ namespace PKR
             // Toast
             var tt = Box(_safe, "Toast", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(1400f, 60f));
             _toast = Txt(tt, "", 34, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.8f));
+            _toastRt = tt;
+            _toastHome = tt.anchoredPosition;
 
             // First-time coaching tip (ZLCoach): a banner under the round counter
             _coachBox = Box(_safe, "Coach", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1100f, 110f));
@@ -238,6 +241,9 @@ namespace PKR
             cbg.raycastTarget = false;
             _coach = Txt(_coachBox, "", 32, TextAnchor.MiddleCenter, new Color(1f, 0.88f, 0.45f));
             _coachBox.gameObject.SetActive(false);
+            _coachGroup = _coachBox.gameObject.AddComponent<CanvasGroup>();
+            _coachGroup.blocksRaycasts = false;
+            _coachHome = _coachBox.anchoredPosition;
 
             // Death
             var dd = UIFactory.Rect("Death", _safe);
@@ -335,12 +341,7 @@ namespace PKR
             _hp.fillAmount = p.Health / (float)p.MaxHealth;
             _hp.color = SettingsService.RoleColor(ColorRole.Health);
             UpdateCues();
-            if (_coachBox != null)
-            {
-                bool on = _g.CoachLeft > 0f && !string.IsNullOrEmpty(_g.CoachTip);
-                if (_coachBox.gameObject.activeSelf != on) _coachBox.gameObject.SetActive(on);
-                if (on) { _coach.text = "TIP  ·  " + _g.CoachTip; var cc = _coach.color; cc.a = Mathf.Clamp01(_g.CoachLeft * 2f); _coach.color = cc; }
-            }
+            UpdateCoach();
             if (_danger != null)
             {
                 float h01 = p.Health / (float)Mathf.Max(1, p.MaxHealth);
@@ -455,8 +456,7 @@ namespace PKR
             if (p.Driving != null) _prompt.text = "USE: GET OUT";
             else _prompt.text = p.Nearby != null ? "USE: " + p.Nearby.Prompt : "";
 
-            _toast.text = _g.ToastLeft > 0f ? _g.Toast : "";
-            var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
+            UpdateToast();
 
             bool dead = _g.RespawnPending;
             _deathDim.enabled = dead;
@@ -545,10 +545,55 @@ namespace PKR
                 _squad.text = sb.ToString();
             }
             else _squad.text = "";
-            _toast.text = _g.ToastLeft > 0f ? _g.Toast : "";
-            var tc = _toast.color; tc.a = Mathf.Clamp01(_g.ToastLeft * 2f); _toast.color = tc;
+            UpdateToast();
             _deathDim.enabled = st.Over && !st.Run.Won;
             _death.enabled = false;
+        }
+
+        // ---- toasts and tips: they rise in and fade (180 ms ease-out) and leave faster (140 ms), not a 0.5 s linear fade ----
+
+        RectTransform _toastRt;
+        Vector2 _toastHome, _coachHome;
+        CanvasGroup _coachGroup;
+        float _toastStart = -9f, _toastPrevLeft, _coachStart = -9f, _coachPrevLeft;
+        string _toastPrevText, _coachPrevText;
+        const float MsgIn = 0.18f, MsgOut = 0.14f;
+
+        void UpdateToast()
+        {
+            float left = _g.ToastLeft, now = Time.unscaledTime;
+            string text = _g.Toast;
+            if (left > 0f && (text != _toastPrevText || left > _toastPrevLeft + 0.05f)) _toastStart = now;   // a new message
+            _toastPrevText = text;
+            _toastPrevLeft = left;
+            if (left <= 0f) { _toast.text = ""; return; }
+            _toast.text = text;
+            var (enter, exit) = Ease.Presence(now - _toastStart, left, MsgIn, MsgOut);
+            var tc = _toast.color; tc.a = Mathf.Min(enter, exit); _toast.color = tc;
+            if (_toastRt != null)
+            {
+                float rise = SettingsService.ReducedMotion ? 0f : enter < 1f ? -12f * (1f - enter) : 8f * (1f - exit);
+                _toastRt.anchoredPosition = _toastHome + new Vector2(0f, rise);
+            }
+        }
+
+        void UpdateCoach()
+        {
+            if (_coachBox == null) return;
+            float left = _g.CoachLeft, now = Time.unscaledTime;
+            string tip = _g.CoachTip;
+            bool on = left > 0f && !string.IsNullOrEmpty(tip);
+            if (on && (tip != _coachPrevText || left > _coachPrevLeft + 0.05f)) _coachStart = now;
+            _coachPrevText = tip;
+            _coachPrevLeft = left;
+            if (_coachBox.gameObject.activeSelf != on) _coachBox.gameObject.SetActive(on);
+            if (!on) return;
+            _coach.text = "TIP  ·  " + tip;
+            var (enter, exit) = Ease.Presence(now - _coachStart, left, MsgIn + 0.04f, MsgOut);
+            _coachGroup.alpha = Mathf.Min(enter, exit);
+            // it hangs under the top edge, so it drops down into place and goes back up
+            float drop = SettingsService.ReducedMotion ? 0f : enter < 1f ? 14f * (1f - enter) : 10f * (1f - exit);
+            _coachBox.anchoredPosition = _coachHome + new Vector2(0f, drop);
         }
 
         static Color FinishColor(WeaponFinish f)

@@ -46,6 +46,7 @@ namespace PKR
             Time.timeScale = 0f;
             Build();
             Show();
+            UiMotion.ModalIn(_root);
         }
 
         void Build()
@@ -149,22 +150,9 @@ namespace PKR
             _caption.color = narration ? UITheme.Current.subtle : UITheme.Current.text;
             _counter.text = $"{_index + 1} / {_beat.panels.Length}";
             DrawArt(panel.art);
-            StopAllCoroutines();
-            StartCoroutine(Pop());
+            // the next page comes in from the right (reading direction) and fades up: 160 ms, ease-out
+            UiMotion.Enter(_art, PKR.Core.Ease.Quick, 1f, new Vector2(28f, 0f));
             Sfx.Play(Sfx.Click, 0.6f, 0f);
-        }
-
-        IEnumerator Pop()
-        {
-            float t = 0f;
-            while (t < 0.18f)
-            {
-                t += Time.unscaledDeltaTime;
-                float k = Mathf.Clamp01(t / 0.18f);
-                _art.localScale = Vector3.one * Mathf.Lerp(1.08f, 1f, k);
-                yield return null;
-            }
-            _art.localScale = Vector3.one;
         }
 
         public void Finish()
