@@ -19,7 +19,7 @@ namespace PKR
     public class UiMotion : MonoBehaviour
     {
         static UiMotion _runner;
-        static readonly Dictionary<int, Coroutine> Running = new Dictionary<int, Coroutine>();
+        static readonly Dictionary<UnityEngine.Object, Coroutine> Running = new Dictionary<UnityEngine.Object, Coroutine>();
 
         static UiMotion Runner
         {
@@ -38,12 +38,12 @@ namespace PKR
 
         static void Run(UnityEngine.Object key, IEnumerator routine)
         {
-            int id = key.GetInstanceID();
+            UnityEngine.Object id = key;
             if (Running.TryGetValue(id, out var c) && c != null) Runner.StopCoroutine(c);
             Running[id] = Runner.StartCoroutine(Wrap(id, routine));
         }
 
-        static IEnumerator Wrap(int id, IEnumerator routine)
+        static IEnumerator Wrap(UnityEngine.Object id, IEnumerator routine)
         {
             yield return routine;
             Running.Remove(id);
@@ -53,8 +53,8 @@ namespace PKR
         public static void Stop(UnityEngine.Object key)
         {
             if (key == null) return;
-            if (Running.TryGetValue(key.GetInstanceID(), out var c) && c != null && _runner != null) _runner.StopCoroutine(c);
-            Running.Remove(key.GetInstanceID());
+            if (Running.TryGetValue(key, out var c) && c != null && _runner != null) _runner.StopCoroutine(c);
+            Running.Remove(key);
         }
 
         /// <summary>A modal that was fading out is wanted again: stop the fade and show it fully.</summary>
@@ -118,13 +118,13 @@ namespace PKR
             if (rt == null) return;
             var g = Group(rt);
             // interrupted half way (fast taps)? slide from the real resting place, not from where it got to
-            int id = rt.GetInstanceID();
+            UnityEngine.Object id = rt;
             if (!(Running.ContainsKey(id) && Homes.TryGetValue(id, out var home))) home = rt.anchoredPosition;
             Homes[id] = home;
             Run(rt, EnterRoutine(rt, g, seconds, Reduced ? 1f : fromScale, Reduced ? Vector2.zero : fromOffset, home));
         }
 
-        static readonly Dictionary<int, Vector2> Homes = new Dictionary<int, Vector2>();
+        static readonly Dictionary<UnityEngine.Object, Vector2> Homes = new Dictionary<UnityEngine.Object, Vector2>();
 
         static IEnumerator EnterRoutine(RectTransform rt, CanvasGroup g, float seconds, float fromScale, Vector2 fromOffset, Vector2 home)
         {
@@ -142,7 +142,7 @@ namespace PKR
             g.alpha = 1f;
             rt.localScale = Vector3.one;
             rt.anchoredPosition = home;
-            Homes.Remove(rt.GetInstanceID());
+            Homes.Remove(rt);
         }
 
         public static void FadeGraphic(Graphic gr, float from, float to, float seconds)
