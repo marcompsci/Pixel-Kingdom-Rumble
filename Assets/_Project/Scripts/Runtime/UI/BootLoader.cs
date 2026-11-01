@@ -57,6 +57,15 @@ namespace PKR
         static string Accept(string spec)
         {
             if (string.IsNullOrEmpty(spec)) return null;
+            // "SCENE#20261224": screenshot runs can show a live season on another day (Christmas, Thanksgiving...).
+            int hash = spec.IndexOf('#');
+            if (hash > 0)
+            {
+                if (System.DateTime.TryParseExact(spec.Substring(hash + 1), "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture,
+                                                  System.Globalization.DateTimeStyles.None, out var day))
+                    PKR.Core.SeasonCalendar.OverrideToday = day;
+                spec = spec.Substring(0, hash);
+            }
             string scene = spec, panel = null;
             int at = spec.IndexOf('@');
             if (at > 0) { scene = spec.Substring(0, at); panel = spec.Substring(at + 1).ToLowerInvariant(); }
