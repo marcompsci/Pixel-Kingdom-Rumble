@@ -24,6 +24,7 @@ if [ -f Logs/upload_request ]; then rm -f Logs/upload_request; PKR_UPLOAD_ONLY=1
 if [ -f Logs/release_gate_request ]; then rm -f Logs/release_gate_request; PKR_ARCHIVE_ONLY=1 exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/testflight_request ]; then rm -f Logs/testflight_request; exec bash Tools/testflight_upload.command; fi
 if [ -f Logs/ios_request ]; then rm -f Logs/ios_request; exec bash Tools/ios_build.command; fi
+if [ -f Logs/widget_request ]; then rm -f Logs/widget_request; exec bash Tools/widget_check.sh; fi
 if [ -f Logs/perf_request ]; then rm -f Logs/perf_request; exec bash Tools/device_perf.command; fi
 PROJ="$(pwd)"
 OUT="$PROJ/Logs/check"
@@ -89,6 +90,10 @@ say ""
 say "[+] Apple compliance gate (Tools/compliance_check.py)..."
 /usr/bin/python3 Tools/compliance_check.py > "$OUT/compliance.log" 2>&1
 grep -E "^(FAIL|WARN|SKIP)|^RESULT" "$OUT/compliance.log" | sed 's/^/      /' | tee -a "$OUT/SUMMARY.txt"
+say ""
+say "[+] Quick Game widget (Swift)..."
+bash Tools/widget_check.sh > /dev/null 2>&1
+grep -vE "^Quick Game widget check|^DONE" Logs/widget/SUMMARY.txt | tee -a "$OUT/SUMMARY.txt"
 say ""
 say "DONE. Tell Claude 'check done'."
 pause_end
