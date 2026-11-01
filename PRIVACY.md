@@ -1,12 +1,15 @@
 # Pixel Kingdom Rumble — Privacy Policy
 
-_Last updated: October 17, 2026_
+_Last updated: November 1, 2026_
 
 Pixel Kingdom Rumble does not collect, store, sell or share any personal information. We run no servers of our own.
 
 - **No accounts, no tracking, no ads.** The game has no sign-up, no advertising and no analytics or tracking SDKs.
 - **Your progress stays on your device.** Save data (progress, scores, unlocks, settings) is stored only on your iPhone
   or iPad. Deleting the app deletes it.
+- **Quick Game widget (optional).** If you add the Quick Game widget, your run and widget stats are kept on your device
+  in a space shared only between the game and its own widget, so the game can show them under Story Quest stats.
+  Nothing is sent anywhere.
 - **Game Center (optional).** If you are signed in to Apple Game Center, your achievements and best scores are sent to
   Apple's Game Center so they appear on leaderboards. That is handled by Apple under
   [Apple's Privacy Policy](https://www.apple.com/legal/privacy/); we never receive your Apple Account or contact details.

@@ -75,6 +75,8 @@ namespace PKR.Core
         public bool zombieLanternsLit;
         /// <summary>Live seasons in Story Quest: tokens, challenges and keepsakes (Seasons).</summary>
         public SeasonSave season = new SeasonSave();
+        /// <summary>The Quick Game widget: clears already paid in Star Shards and the last stats read from it.</summary>
+        public QuickGameSave quickGame = new QuickGameSave();
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -213,6 +215,8 @@ namespace PKR.Core
             if (starShards < 0) starShards = 0;
             if (season == null) season = new SeasonSave();
             season.Sanitize();
+            if (quickGame == null) quickGame = new QuickGameSave();
+            quickGame.Sanitize();
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

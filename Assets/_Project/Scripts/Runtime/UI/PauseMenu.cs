@@ -172,12 +172,41 @@ namespace PKR
             if (animate) UiMotion.ModalIn(_menu);
         }
 
+        /// <summary>
+        /// In a Story level: how this run is going ("SHARDS 12/31 · SECRETS 0/1 · 1:04.2 / PAR 1:30.0 · GOLDEN ACORN
+        /// HIDDEN"), so the pause screen shows what's left. Null elsewhere.
+        /// </summary>
+        static string RunProgress()
+        {
+            var flow = LevelFlowController.Current;
+            if (flow == null || flow.Run == null || flow.Level == null || MissionTracker.Current != null) return null;
+            var parts = new System.Collections.Generic.List<string>();
+            if (flow.TotalShards > 0) parts.Add($"SHARDS {flow.Run.Shards}/{flow.TotalShards}");
+            if (flow.TotalSecrets > 0) parts.Add($"SECRETS {flow.Run.SecretsFound}/{flow.TotalSecrets}");
+            if (flow.Level.parTimeSeconds > 0f)
+                parts.Add($"{PKR.Core.ResultsMath.FormatTime(flow.Run.ElapsedSeconds)} / PAR {PKR.Core.ResultsMath.FormatTime(flow.Level.parTimeSeconds)}");
+            var season = SeasonDirector.Current;
+            var save = Services.Save != null ? Services.Save.Data : null;
+            if (season != null && save != null)
+            {
+                bool found = PKR.Core.Seasons.HasToken(save, season.State, flow.Level.id);
+                parts.Add($"{PKR.Core.Seasons.TokenName(season.State.Event).ToUpperInvariant()} {(found ? "FOUND" : "HIDDEN")}");
+            }
+            return parts.Count > 0 ? string.Join("  ·  ", parts) : null;
+        }
+
         void BuildMenu()
         {
             UIFactory.Clear(_menu);
             UIFactory.Dim(_menu);
-            var panel = UIFactory.Panel(_menu, new Vector2(820f, 830f)); // fits the five rows
+            string progress = RunProgress();
+            var panel = UIFactory.Panel(_menu, new Vector2(820f, progress != null ? 900f : 830f)); // fits the five rows
             UIFactory.Label(panel, "PAUSED", 72, TextAnchor.MiddleCenter, 110f, title: true);
+            if (progress != null)
+            {
+                var line = UIFactory.Label(panel, progress, 28, TextAnchor.MiddleCenter, 52f);
+                line.color = UITheme.Current.subtle;
+            }
             var resume = UIFactory.Button(panel, "RESUME", () => { if (Services.State != null) Services.State.Resume(); });
             UIFactory.Button(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             UIFactory.Button(panel, "PHOTO MODE", () => PhotoMode.Begin(null));

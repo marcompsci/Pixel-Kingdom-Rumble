@@ -36,7 +36,9 @@ namespace PKR
             _root.gameObject.SetActive(true);
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1240f, string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f));
+            string left = e.isContract ? null : StillToFind(e);
+            float panelH = (string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f) + (left != null ? 62f : 0f);
+            var panel = UIFactory.Panel(_root, new Vector2(1240f, panelH));
             var p = UITheme.Current;
 
             var rank = ResultsMath.Rank(e.timeSeconds, e.parTimeSeconds, e.shards, e.totalShards,
@@ -47,7 +49,10 @@ namespace PKR
             rankLabel.color = rank == ClearRank.S ? p.title : p.accent;
 
             string best = e.newBestTime ? "   NEW BEST!" : "";
-            Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){best}");
+            var medal = StoryMedals.For(e.timeSeconds, e.parTimeSeconds);
+            string medalText = e.isContract || medal == TimeMedal.None ? "" : $"   {StoryMedals.Name(medal)}";
+            var timeRow = Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){medalText}{best}");
+            if (medal == TimeMedal.Gold && !e.isContract) timeRow.color = p.title;
             if (e.isContract)
             {
                 Row(panel, "Contract score", $"{e.contractScore:N0}{(e.newBestScore ? "   NEW BEST!" : "")}").color = p.title;
@@ -61,6 +66,11 @@ namespace PKR
             Row(panel, "Falls", e.deaths.ToString());
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
+            if (left != null)
+            {
+                var todo = UIFactory.Label(panel, left, 32, TextAnchor.MiddleCenter, 50f);
+                todo.color = p.subtle;
+            }
             var reward = Row(panel, "Reward", "+0");
             if (UISprites.HasDisplayFont)
             {
@@ -182,6 +192,23 @@ namespace PKR
         }
 
         /// <summary>"Name ........ value" row; returns the value label so it can be animated.</summary>
+        /// <summary>
+        /// "Still to find: 3 Star Shards · 1 secret · GOLD: under 1:00.0" from the level's best record (this run
+        /// included), or "Everything found!" once nothing is left. Story levels only.
+        /// </summary>
+        static string StillToFind(LevelCompleted e)
+        {
+            var save = Services.Save != null ? Services.Save.Data : null;
+            var rec = save != null ? save.GetLevel(e.levelId) : null;
+            if (rec == null) return null;
+            var season = SeasonDirector.Current;
+            string token = season != null ? Seasons.TokenName(season.State.Event) : null;
+            bool found = season == null || Seasons.HasToken(save, season.State, e.levelId);
+            var list = StoryChecklist.Missing(rec.mostShardsCollected, e.totalShards, rec.mostSecretsFound, e.totalSecrets,
+                                              rec.bestTimeSeconds, e.parTimeSeconds, token, found);
+            return list.Count == 0 ? "Everything found in this level!" : "Still to find: " + string.Join("  ·  ", list);
+        }
+
         static Text Row(RectTransform parent, string name, string value)
         {
             var row = UIFactory.Rect("Row_" + name, parent);

@@ -230,6 +230,23 @@ def check_xcode(path):
     ent = glob.glob(os.path.join(path, "Unity-iPhone", "*.entitlements"))
     gc = ent and plistlib.load(open(ent[0], "rb")).get("com.apple.developer.game-center")
     res("PASS" if gc else "FAIL", "Entitlements: Game Center")
+    # Quick Game widget extension (Native/QuickGameWidget, added by IOSPostBuild).
+    wdir = os.path.join(path, "QuickGameWidget")
+    if os.path.isdir(wdir):
+        res("PASS" if "QuickGameWidget.appex" in pbx else "FAIL", "Widget: QuickGameWidget extension is embedded in the app")
+        winfo = plistlib.load(open(os.path.join(wdir, "Info.plist"), "rb"))
+        same = winfo.get("CFBundleShortVersionString") == info.get("CFBundleShortVersionString") and \
+               winfo.get("CFBundleVersion") == info.get("CFBundleVersion")
+        res("PASS" if same else "FAIL", "Widget: version and build match the app",
+            f"{winfo.get('CFBundleShortVersionString')} ({winfo.get('CFBundleVersion')})")
+        wp = os.path.join(wdir, "PrivacyInfo.xcprivacy")
+        wd = plistlib.load(open(wp, "rb")) if os.path.exists(wp) else {}
+        res("PASS" if wd.get("NSPrivacyTracking") is False else "FAIL", "Widget privacy manifest: tracking = false")
+        groups_w = plistlib.load(open(os.path.join(wdir, "QuickGameWidget.entitlements"), "rb")).get("com.apple.security.application-groups", [])
+        groups_a = plistlib.load(open(ent[0], "rb")).get("com.apple.security.application-groups", []) if ent else []
+        res("PASS" if groups_w and set(groups_w) <= set(groups_a) else "FAIL", "Widget and app share the App Group", ", ".join(groups_w))
+    else:
+        res("WARN", "Widget: QuickGameWidget folder not in the Xcode project")
     fam = re.findall(r'TARGETED_DEVICE_FAMILY = "?([0-9,]+)"?', pbx)
     res("INFO", "TARGETED_DEVICE_FAMILY", ", ".join(sorted(set(fam))))
     dt = sorted(set(re.findall(r"IPHONEOS_DEPLOYMENT_TARGET = ([0-9.]+)", pbx)))

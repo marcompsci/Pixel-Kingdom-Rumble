@@ -144,8 +144,17 @@ namespace PKR
             // Live seasons: weather over the map and a badge on each node for the level's hidden token.
             SeasonWeatherUI.Attach(mapRt, 0.6f, behind: true);
             SeasonBadges(page, nodes);
+            MedalBadges(page, nodes);
 
-            UIFactory.Button(panel, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect); });
+            var bottom = UIFactory.Rect("BackStats", panel);
+            bottom.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var bh = bottom.gameObject.AddComponent<HorizontalLayoutGroup>();
+            bh.spacing = 24f;
+            bh.childControlWidth = true; bh.childControlHeight = true;
+            bh.childForceExpandWidth = true; bh.childForceExpandHeight = true;
+            UIFactory.Button(bottom, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect); });
+            var stats = UIFactory.Button(bottom, "STORY STATS", ShowStats);
+            UIFactory.Tint(stats, new Color32(70, 150, 200, 255), Color.white);
             int start = SuggestedIndex >= 0 ? SuggestedIndex : FirstOpen();
             Choose(start, instant: true);
             if (start >= 0 && start < _cards.Count && _cards[start].interactable) UIFactory.Select(_cards[start]);
@@ -336,8 +345,20 @@ namespace PKR
             // Enemy drops can push the collected count past the placed total; cap it for display.
             string shards = level != null && level.totalShards > 0 ? $"   SHARDS {Mathf.Min(slot.shards, level.totalShards)}/{level.totalShards}" : "";
             string secrets = level != null && level.totalSecrets > 0 ? $"   SECRETS {slot.secrets}/{level.totalSecrets}" : "";
+            var medal = StoryMedals.For(slot.bestTimeSeconds, level != null ? level.parTimeSeconds : 0f);
+            string medalText = medal == TimeMedal.None ? "" : " " + StoryMedals.Name(medal);
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}\n" +
-                   $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{shards}{secrets}";
+                   $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}";
+        }
+
+        /// <summary>Story Quest totals across every world, and the Quick Game widget's stats.</summary>
+        public void ShowStats()
+        {
+            var levels = new List<LevelDefinition>();
+            foreach (var w in _pages) foreach (var l in w.levels) if (l != null) levels.Add(l);
+            var panel = GetComponent<StoryStatsPanel>();
+            if (panel == null) panel = gameObject.AddComponent<StoryStatsPanel>();
+            panel.Open(_root, levels, Build);
         }
 
         /// <summary>"  ·  GOLDEN ACORN FOUND" on the level card while a season is live.</summary>
@@ -348,6 +369,35 @@ namespace PKR
             var save = Services.Save != null ? Services.Save.Data : null;
             bool found = save != null && Seasons.HasToken(save, s, level.id);
             return $"\n{Seasons.TokenName(s.Event).ToUpperInvariant()}: {(found ? "FOUND" : "STILL HIDDEN")}";
+        }
+
+        /// <summary>A gold, silver or bronze coin on each cleared level's node: its best time medal.</summary>
+        void MedalBadges(WorldDefinition page, RectTransform[] nodes)
+        {
+            for (int i = 0; i < nodes.Length && i < page.levels.Count && i < _slots.Length; i++)
+            {
+                var level = page.levels[i];
+                if (level == null || nodes[i] == null || !_slots[i].completed) continue;
+                var medal = StoryMedals.For(_slots[i].bestTimeSeconds, level.parTimeSeconds);
+                if (medal == TimeMedal.None) continue;
+                Color c = medal == TimeMedal.Gold ? new Color32(255, 204, 64, 255)
+                        : medal == TimeMedal.Silver ? new Color32(206, 216, 230, 255) : new Color32(205, 128, 66, 255);
+                var r = UIFactory.Rect("MedalBadge", nodes[i]);
+                r.anchorMin = r.anchorMax = new Vector2(0f, 1f);
+                r.sizeDelta = new Vector2(34f, 34f);
+                r.anchoredPosition = new Vector2(10f, -10f);
+                var ring = r.gameObject.AddComponent<Image>();
+                ring.sprite = UISprites.Circle;
+                ring.color = new Color(0.13f, 0.09f, 0.15f, 1f);
+                ring.raycastTarget = false;
+                var coin = UIFactory.Rect("Coin", r);
+                UIFactory.Stretch(coin);
+                coin.offsetMin = new Vector2(4f, 4f); coin.offsetMax = new Vector2(-4f, -4f);
+                var img = coin.gameObject.AddComponent<Image>();
+                img.sprite = UISprites.Circle;
+                img.color = c;
+                img.raycastTarget = false;
+            }
         }
 
         static void SeasonBadges(WorldDefinition page, RectTransform[] nodes)
