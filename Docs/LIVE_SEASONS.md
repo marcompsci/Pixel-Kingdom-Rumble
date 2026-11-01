@@ -48,3 +48,15 @@ All art is drawn in code at the game's 32 px per tile with the house ink outline
   - A spring day and seasons-off: no dressing.
   - Menus and the world map show the season.
 - Every Story level in the smoke tests now runs dressed for Harvest, because the test date is November.
+
+## Verification (1 Nov 2026)
+- Cloud core tests: 367/367.
+- Mac Unity check at 71e469d: compile 0 errors; EditMode 381/381; PlayMode 153 passed, 0 failed, 2 skipped (as before); Apple compliance gate PASS.
+- Simulator screenshots (iPhone 17 Pro Max), checked by eye:
+  - Today's date: Harvest menu banner, season panel, map badges, a level with leaves, pumpkins, corn and a warm sky.
+  - 26 Nov: Gearfall Caverns with leaf crowns on the foes.
+  - 24 Dec: Sunspire Heights and Frostgear Ascent with a dusk sky, snow on the ledges, snowfall, a gift and holly beanies.
+  - Fixed after the first look: the menu overflowing, the crushed keepsake row, the smudgy map badges, a greyish autumn sky and the scarf art.
+- GitHub main at 71e469d. Installed on Omari's iPhone: launch log clean, menu 60 fps.
+- Not done: nobody has played a full level by hand in-season. Token spots and the feel of the snow and leaves on a real phone still need a human look. No TestFlight upload.
+- Screenshot runs can preview any date with SCENE#yyyymmdd (e.g. SQ_SunspireHeights#20261224).
