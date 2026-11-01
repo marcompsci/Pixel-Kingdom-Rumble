@@ -56,6 +56,18 @@ namespace PKR
             LateUpdate();
         }
 
+        /// <summary>Recolour the layer (the live seasons warm or cool the background). Works before or after Start.</summary>
+        public void SetTint(Color c)
+        {
+            if (_tinted == null) _tinted = baseColor;
+            tint = c;
+            baseColor = _tinted.Value * new Color(c.r, c.g, c.b, 1f);
+            foreach (var sr in _tiles) if (sr != null) sr.color = tint;
+            if (_base != null) _base.color = baseColor;
+        }
+
+        Color? _tinted;
+
         static Sprite _solid;
         static Sprite SolidSprite()
         {

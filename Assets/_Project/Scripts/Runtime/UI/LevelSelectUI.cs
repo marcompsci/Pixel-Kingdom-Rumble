@@ -141,6 +141,9 @@ namespace PKR
                 nodes[i] = (RectTransform)b.transform;
             }
             _map.Init(nodes, Marker(mapRt), SuggestedIndex);
+            // Live seasons: weather over the map and a badge on each node for the level's hidden token.
+            SeasonWeatherUI.Attach(mapRt, 0.6f, behind: true);
+            SeasonBadges(page, nodes);
 
             UIFactory.Button(panel, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect); });
             int start = SuggestedIndex >= 0 ? SuggestedIndex : FirstOpen();
@@ -188,7 +191,7 @@ namespace PKR
             var slot = _slots[index];
             string note = page.sectioned && page.sectionNotes != null && index < page.sectionNotes.Count ? page.sectionNotes[index] : null;
             if (_detailText != null)
-                _detailText.text = CardText(index, level, slot) + (string.IsNullOrEmpty(note) ? "" : "\n" + note);
+                _detailText.text = CardText(index, level, slot) + SeasonLine(level, slot) + (string.IsNullOrEmpty(note) ? "" : "\n" + note);
             if (_playButton != null) _playButton.interactable = _cards[index].interactable;
             if (_map != null) _map.MoveTo(index, instant);
         }
@@ -335,6 +338,39 @@ namespace PKR
             string secrets = level != null && level.totalSecrets > 0 ? $"   SECRETS {slot.secrets}/{level.totalSecrets}" : "";
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}\n" +
                    $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{shards}{secrets}";
+        }
+
+        /// <summary>"  ·  GOLDEN ACORN FOUND" on the level card while a season is live.</summary>
+        static string SeasonLine(LevelDefinition level, LevelSlot slot)
+        {
+            var s = SettingsService.Season;
+            if (!s.Active || level == null || !slot.unlocked || level.isEvent) return "";
+            var save = Services.Save != null ? Services.Save.Data : null;
+            bool found = save != null && Seasons.HasToken(save, s, level.id);
+            return $"\n{Seasons.TokenName(s.Event).ToUpperInvariant()}: {(found ? "FOUND" : "STILL HIDDEN")}";
+        }
+
+        static void SeasonBadges(WorldDefinition page, RectTransform[] nodes)
+        {
+            var s = SettingsService.Season;
+            if (!s.Active) return;
+            var save = Services.Save != null ? Services.Save.Data : null;
+            var sprite = SeasonArt.Token(s.Event);
+            for (int i = 0; i < nodes.Length && i < page.levels.Count; i++)
+            {
+                var level = page.levels[i];
+                if (level == null || level.isEvent || nodes[i] == null) continue;
+                bool found = save != null && Seasons.HasToken(save, s, level.id);
+                var r = UIFactory.Rect("SeasonBadge", nodes[i]);
+                r.anchorMin = r.anchorMax = new Vector2(1f, 1f);
+                r.sizeDelta = new Vector2(52f, 52f);
+                r.anchoredPosition = new Vector2(-6f, -6f);
+                var img = r.gameObject.AddComponent<Image>();
+                img.sprite = sprite;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+                img.color = found ? Color.white : new Color(0.1f, 0.1f, 0.15f, 0.45f);
+            }
         }
 
         void Play(int index)

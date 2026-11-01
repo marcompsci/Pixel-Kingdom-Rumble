@@ -106,7 +106,7 @@ namespace PKR
             return true;
         }
 
-        static void Toast(string title, string detail, Color color)
+        public static void Toast(string title, string detail, Color color)
         {
             EventBus<ProgressToast>.Raise(new ProgressToast { title = title, detail = detail, color = color });
             Sfx.Play(Sfx.PowerUp, 0.6f, 0f);

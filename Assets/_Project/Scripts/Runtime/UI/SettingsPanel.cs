@@ -124,6 +124,12 @@ namespace PKR
             });
             UIFactory.Toggle(colA, "High contrast", d.highContrastUI, settings.SetHighContrast);
             UIFactory.Toggle(colA, "Screen shake", d.screenShakeEnabled, settings.SetScreenShake);
+            bool live = d.seasonalMode != PKR.Core.SeasonCalendar.ModeOff;
+            Cycle(colA, "Live seasons: " + (live ? "ON" : "OFF"), () =>
+            {
+                settings.SetSeasonalMode(live ? PKR.Core.SeasonCalendar.ModeOff : PKR.Core.SeasonCalendar.ModeLive);
+                Rebuild();
+            });
             UIFactory.Toggle(colB, "Reduced motion", d.reducedMotion, settings.SetReducedMotion);
             UIFactory.Toggle(colB, "Left-handed controls", d.leftHanded, settings.SetLeftHanded);
             UIFactory.Toggle(colB, "Bigger touch targets", d.bigTouchTargets, settings.SetBigTouchTargets);

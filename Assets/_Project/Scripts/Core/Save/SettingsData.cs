@@ -77,6 +77,8 @@ namespace PKR.Core
         public bool leftHanded;
         public bool bigTouchTargets;
         public bool soundCues;
+        /// <summary>Story Quest's live seasons: SeasonCalendar.ModeLive (follow the date) or ModeOff.</summary>
+        public int seasonalMode = SeasonCalendar.ModeLive;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>
@@ -114,6 +116,7 @@ namespace PKR.Core
             controlOpacity = float.IsNaN(controlOpacity) ? DefaultControlOpacity : Math.Max(0.2f, Math.Min(1f, controlOpacity));
             hudScale = float.IsNaN(hudScale) || hudScale <= 0f ? 1f : Math.Max(MinHudScale, Math.Min(MaxHudScale, hudScale));
             if (colorAssist < 0 || colorAssist > (int)ColorAssist.BlueYellow) colorAssist = (int)ColorAssist.Off;
+            if (seasonalMode != SeasonCalendar.ModeOff) seasonalMode = SeasonCalendar.ModeLive;
             if (graphicsMode < 0 || graphicsMode > (int)GraphicsMode.BatterySaver) graphicsMode = (int)GraphicsMode.Auto;
             musicVolume = Clamp01(musicVolume);
             sfxVolume = Clamp01(sfxVolume);

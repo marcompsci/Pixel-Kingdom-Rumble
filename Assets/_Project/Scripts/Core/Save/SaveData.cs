@@ -73,6 +73,8 @@ namespace PKR.Core
         public ZombieCareer zombieCareer = new ZombieCareer();
         /// <summary>Found the Zombie Survival lantern secret at least once.</summary>
         public bool zombieLanternsLit;
+        /// <summary>Live seasons in Story Quest: tokens, challenges and keepsakes (Seasons).</summary>
+        public SeasonSave season = new SeasonSave();
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -209,6 +211,8 @@ namespace PKR.Core
             version = CurrentVersion;
 
             if (starShards < 0) starShards = 0;
+            if (season == null) season = new SeasonSave();
+            season.Sanitize();
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

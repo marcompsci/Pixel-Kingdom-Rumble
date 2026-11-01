@@ -79,6 +79,7 @@ namespace PKR
         public void SetLeftHanded(bool on) { Data.leftHanded = on; Commit(); }
         public void SetBigTouchTargets(bool on) { Data.bigTouchTargets = on; Commit(); }
         public void SetSoundCues(bool on) { Data.soundCues = on; Commit(); }
+        public void SetSeasonalMode(int mode) { Data.seasonalMode = mode == SeasonCalendar.ModeOff ? SeasonCalendar.ModeOff : SeasonCalendar.ModeLive; Commit(); }
 
         public ColorAssist ColorMode => (ColorAssist)Data.colorAssist;
 
@@ -89,6 +90,9 @@ namespace PKR
             var c = Accessibility.Color(role, mode);
             return new Color(c.r / 255f, c.g / 255f, c.b / 255f, alpha);
         }
+
+        /// <summary>The live season Story Quest is dressed for today (inactive when the player turned seasons off).</summary>
+        public static SeasonState Season => SeasonCalendar.Current(Services.Settings != null ? Services.Settings.Data.seasonalMode : SeasonCalendar.ModeLive);
 
         public static bool ReducedMotion => Services.Settings != null && Services.Settings.Data.reducedMotion;
         public static float ShakeScale => Services.Settings == null ? 1f : Accessibility.ShakeScale(Services.Settings.Data.screenShakeEnabled, Services.Settings.Data.reducedMotion);

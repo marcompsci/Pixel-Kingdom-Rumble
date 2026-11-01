@@ -56,6 +56,12 @@ namespace PKR
         {
             if (mode != LoadSceneMode.Single || Services.Audio == null) return;
             var music = MusicFor(scene.name);
+            // Live seasons: the menus and the world map play the season's tune (Harvest stroll, Winterfest bells).
+            if (music == Sfx.MusicTitle)
+            {
+                var seasonal = SeasonAudio.MenuMusic(SettingsService.Season);
+                if (seasonal != null && Sfx.Clip(seasonal) != null) music = seasonal;
+            }
             if (music != null) Services.Audio.PlayMusic(Sfx.Clip(music));
         }
 

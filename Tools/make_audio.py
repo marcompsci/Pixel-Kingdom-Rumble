@@ -534,6 +534,49 @@ def music_zombies2():
                                    section(172, 4, zb, zb_bass, zb_ch, beat(B_FILL), P("G#4 - - - - - - - F#4 - - - E4 - - - "), 0.125, 'saw')), 0.45)
 
 
+# ---- live seasons (November 2026): Story Quest dresses itself for the real-world season ----------------------
+def sfx_seasons():
+    # season_chime: a warm wooden arpeggio (a token found in autumn)
+    parts = []
+    for i, n in enumerate(["G5", "B5", "D6", "G6"]):
+        d = 0.5
+        tone = tri(hz(n), d) * env(int(SR * d), 0.001, 0.32, 0, 0.05) + sine(hz(n) * 4, d) * env(int(SR * d), 0.001, 0.05, 0, 0.01) * 0.25
+        pad = np.zeros(int(SR * 0.07 * i))
+        parts.append(np.concatenate([pad, tone]))
+    save("season_chime", mixdown(*parts), 0.5)
+    # season_bells: small bells with a shaker (a token found in winter)
+    parts = []
+    for i, n in enumerate(["E6", "G6", "C7"]):
+        d = 0.9
+        f = hz(n)
+        bell = (sine(f, d) + sine(f * 2.76, d) * 0.4 + sine(f * 5.4, d) * 0.15) * env(int(SR * d), 0.001, 0.8, 0, 0.05)
+        parts.append(np.concatenate([np.zeros(int(SR * 0.08 * i)), bell]))
+    shake = np.concatenate([hp(noise(0.05), 6000) * env(int(SR * 0.05), 0.001, 0.045, 0, 0.004) * 0.5 for _ in range(4)])
+    save("season_bells", mixdown(*parts, shake * 0.6), 0.45)
+
+
+def music_seasons():
+    def beat(b): return [None if x == '.' else x for x in b]
+    # Harvest: an easy-going D major country stroll, triangle lead, brushed snare
+    hv = P("A4 - D5 - F#5 - E5 - D5 - - - B4 - A4 - - - F#4 - A4 - B4 - D5 - - - - - . . "
+           "A4 - D5 - F#5 - A5 - G5 - F#5 - E5 - - - D5 - E5 - F#5 - E5 - - - - - - - . . . . ")
+    hv_bass = P("D2 . A2 . D2 . A2 . G2 . D3 . G2 . D3 . A1 . E2 . A1 . E2 . D2 . A2 . D2 . A2 .")
+    hv_ch = [("D4", "F#4", "A4"), ("G4", "B4", "D5"), ("A4", "C#5", "E5"), ("D4", "F#4", "A4")]
+    stroll = "k . h . s . h h k . h . s . h .".split()
+    save("music_harvest", song(section(108, 8, hv, hv_bass, hv_ch, beat(stroll), None, 0.5, 'tri', echo=0.35, arp_vol=0.05),
+                               section(108, 8, hv, hv_bass, hv_ch, beat(B_HALF), P("F#4 - - - - - - - E4 - - - D4 - - - "), 0.5,
+                                       'tri', echo=0.3, arp_vol=0.05)), 0.45)
+    # Winterfest: a music-box lead in G major over sleigh-bell hats
+    wf = P("D5 - B4 - D5 - G5 - - - F#5 - E5 - D5 - - - B4 - C5 - D5 - E5 - D5 - - - . . "
+           "D5 - G5 - B5 - A5 - G5 - E5 - F#5 - - - D5 - E5 - F#5 - G5 - - - - - - - . . . . ")
+    wf_bass = P("G2 . D3 . G2 . D3 . C3 . G3 . C3 . G3 . D2 . A2 . D2 . A2 . G2 . D3 . G2 . D3 .")
+    wf_ch = [("G4", "B4", "D5"), ("C5", "E5", "G5"), ("D5", "F#5", "A5"), ("G4", "B4", "D5")]
+    bells = "k h h h s h h h k h h h s h h h".split()
+    save("music_winterfest", song(section(126, 8, wf, wf_bass, wf_ch, beat(bells), P("B3 - - - - - - - C4 - - - A3 - - - "), 0.25,
+                                          'tri', echo=0.45, arp_vol=0.07),
+                                  section(126, 8, wf, wf_bass, wf_ch, beat(B_POP), None, 0.25, 'tri', echo=0.4, arp_vol=0.06)), 0.45)
+
+
 if __name__ == "__main__":
     import sys
     only = sys.argv[1:] or ['sfx', 'music']
@@ -542,4 +585,5 @@ if __name__ == "__main__":
     if 'events' in only: sfx_events(); music_events()
     if 'world4' in only: music_world4()
     if 'zombies2' in only: sfx_zombies2(); music_zombies2()
+    if 'seasons' in only: sfx_seasons(); music_seasons()
     print("audio written to", os.path.abspath(OUT))

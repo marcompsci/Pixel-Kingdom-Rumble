@@ -53,6 +53,8 @@ namespace PKR
         {
             Current = this;
             LevelPuzzleState.Reset(); // keys and switch-block colour start fresh every level
+            // Live seasons: Story Quest dresses itself for the real-world season (Harvest, Winterfest...).
+            if (SeasonDirector.AppliesTo(level)) SeasonDirector.Attach(this, spriteMaterial);
             if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (roster == null)
                 Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +
@@ -183,6 +185,7 @@ namespace PKR
             }
             RemoveEnemy(e, drop: true);
             ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
+            if (SeasonDirector.Current != null) SeasonDirector.Current.CountFoe();
         }
 
         void DiscoverCodex(CodexCategory category, string id, string displayName)
@@ -351,6 +354,7 @@ namespace PKR
             else ProgressTracker.Report(ChallengeKind.ClearLevels, 1);
             if (level != null && level.modeTag == "Maze") ProgressTracker.Report(ChallengeKind.ClearMaze, 1);
             ProgressTracker.Report(ChallengeKind.CollectShards, Run.Shards);
+            if (SeasonDirector.Current != null) SeasonDirector.Current.RecordClear(data, Run.Shards);
             if (save != null) save.SaveNow();
 
             // Freeze the hero in a victory pose; LevelCompleteScreen takes over.

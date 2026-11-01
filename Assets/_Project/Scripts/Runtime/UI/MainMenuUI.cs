@@ -24,6 +24,7 @@ namespace PKR
         CodexPanel _codex;
         EventMenuPanel _events;
         ZombiesMenuPanel _zombies;
+        SeasonPanel _season;
 
         void Awake()
         {
@@ -45,6 +46,9 @@ namespace PKR
             _zombiesRoot = UIFactory.Rect("Zombies", safe);
             UIFactory.Stretch(_zombiesRoot);
             _zombies = gameObject.AddComponent<ZombiesMenuPanel>();
+            _season = gameObject.AddComponent<SeasonPanel>();
+            // Live seasons: leaves or snow drift over the menus (never over taps).
+            SeasonWeatherUI.Attach(safe, 0.7f);
         }
 
         void OnEnable() => EventBus<SettingsChanged>.Subscribe(OnSettingsChanged);
@@ -69,6 +73,7 @@ namespace PKR
             else if (BootLoader.TakeShotPanel("holiday") != null) ShowHoliday();
             else if (BootLoader.TakeShotPanel("halloween") != null) ShowHalloween();
             else if (BootLoader.TakeShotPanel("zombies") != null) ShowZombies();
+            else if (BootLoader.TakeShotPanel("season") != null) ShowSeason();
         }
 
         bool _lastHighContrast;
@@ -121,7 +126,9 @@ namespace PKR
                     best = $"Best {ResultsMath.FormatTime(rec.bestTimeSeconds)}  ·  {rec.mostShardsCollected} shards  ·  {rec.mostSecretsFound} secret(s)";
             }
             string levelName = featuredLevel != null ? featuredLevel.displayName : "Story Quest";
-            UIFactory.Label(panel, $"{levelName}: {best}", 36, TextAnchor.MiddleCenter, 70f).color = UITheme.Current.subtle;
+            var season = SettingsService.Season;
+            if (season.Active) SeasonBanner(panel, season, save);
+            else UIFactory.Label(panel, $"{levelName}: {best}", 36, TextAnchor.MiddleCenter, 70f).color = UITheme.Current.subtle;
 
             // ZOMBIES leads the menu, all year round.
             var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 130f);
@@ -140,6 +147,7 @@ namespace PKR
             }
             var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest),
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
+            if (season.Active) UIFactory.Tint(story, SeasonPanel.ColorFor(season), Color.white);
             // Holiday Mode and Halloween (zombies) side by side.
             var events = UIFactory.Rect("EventModes", panel);
             events.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
@@ -198,6 +206,47 @@ namespace PKR
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Select(zombies);
+        }
+
+        /// <summary>
+        /// The live season, under the title: what's on, the season's tokens and what's next. Tap it for the season
+        /// panel (challenges, keepsakes). Replaces the featured-level line while a season runs.
+        /// </summary>
+        void SeasonBanner(RectTransform panel, SeasonState s, SaveData save)
+        {
+            var today = SeasonCalendar.Today;
+            int have = save != null ? Seasons.Tokens(save, s) : 0;
+            int unclaimed = save != null ? Seasons.Unclaimed(save, s) : 0;
+            string headline = s.AtPeak ? $"{SeasonCalendar.PeakName(s.Peak).ToUpperInvariant()}  ·  LIVE"
+                                       : $"{SeasonCalendar.Name(s.Event).ToUpperInvariant()}  ·  LIVE";
+            string sub;
+            if (unclaimed > 0) sub = $"{Plural.Of(unclaimed, "reward")} to claim!";
+            else
+            {
+                var peak = SeasonCalendar.NextPeak(today);
+                var next = SeasonCalendar.Next(today);
+                bool peakSoon = !s.AtPeak && peak.peak != SeasonPeak.None && peak.start <= s.End;
+                sub = peakSoon ? $"{SeasonCalendar.PeakName(peak.peak)} {SeasonCalendar.InDays((peak.start - today).Days)}"
+                               : $"{SeasonCalendar.Name(next.ev)} {SeasonCalendar.InDays((next.start - today).Days)}";
+            }
+            var b = UIFactory.Button(panel, "", ShowSeason, 96f);
+            UIFactory.Tint(b, Color.Lerp(SeasonPanel.ColorFor(s), Color.black, 0.35f), Color.white);
+            if (unclaimed > 0 || s.AtPeak) UIFactory.Highlight(b, new Color32(255, 214, 90, 255));
+            var t = b.GetComponentInChildren<Text>();
+            if (t != null)
+            {
+                t.supportRichText = true;
+                t.resizeTextForBestFit = false;
+                t.fontSize = 36;
+                t.text = $"{headline}\n<size=24>{Seasons.TokenName(s.Event)}s {have}/{SeasonDirector.StoryLevelCount}  ·  {sub}</size>";
+            }
+        }
+
+        void ShowSeason()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(true);
+            _season.Open(_eventRoot, ShowMenu);
         }
 
         void Choose(SessionMode mode)
