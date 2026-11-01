@@ -124,8 +124,8 @@ namespace PKR
             bool evening = State.Peak == SeasonPeak.Christmas || State.Peak == SeasonPeak.NewYear || State.Peak == SeasonPeak.HalloweenWeek;
             if (Look == SeasonLook.Autumn)
             {
-                topTo = evening ? new Color(0.28f, 0.16f, 0.32f) : new Color(0.86f, 0.46f, 0.26f);
-                bottomTo = evening ? new Color(0.95f, 0.52f, 0.3f) : new Color(1f, 0.8f, 0.52f);
+                topTo = evening ? new Color(0.28f, 0.16f, 0.32f) : new Color(0.95f, 0.58f, 0.3f);
+                bottomTo = evening ? new Color(0.95f, 0.52f, 0.3f) : new Color(1f, 0.84f, 0.56f);
                 layerTo = new Color(1f, 0.8f, 0.62f);
             }
             else
@@ -135,6 +135,7 @@ namespace PKR
                 layerTo = evening ? new Color(0.62f, 0.66f, 0.9f) : new Color(0.82f, 0.9f, 1f);
             }
             if (evening) k = 0.62f;
+            else if (Look == SeasonLook.Autumn) k = State.AtPeak ? 0.6f : 0.5f; // a blue sky lerped weakly toward orange turns grey
             foreach (var sky in FindObjectsByType<SkyGradient>())
                 sky.SetColors(Color.Lerp(sky.top, topTo, k), Color.Lerp(sky.bottom, bottomTo, k));
             foreach (var layer in FindObjectsByType<ParallaxLayer>())

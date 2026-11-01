@@ -369,7 +369,7 @@ namespace PKR
                 img.sprite = sprite;
                 img.preserveAspect = true;
                 img.raycastTarget = false;
-                img.color = found ? Color.white : new Color(0.1f, 0.1f, 0.15f, 0.45f);
+                img.color = found ? Color.white : new Color(1f, 1f, 1f, 0.32f);
             }
         }
 

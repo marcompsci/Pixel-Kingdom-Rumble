@@ -127,13 +127,16 @@ namespace PKR
         {
             UIFactory.Label(panel, "KEEPSAKES  ·  worn in Story Quest", 34, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.subtle;
             var row = Row(panel, 150f);
+            row.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = true;
             string worn = save != null && save.season != null ? save.season.worn : "";
             foreach (var k in Seasons.Keepsakes)
             {
                 bool owned = save != null && Seasons.Owns(save, k.id);
                 bool wearing = owned && worn == k.id;
                 string id = k.id;
-                var b = UIFactory.Button(row, owned ? (wearing ? "WEARING" : "WEAR") : "???", () => Wear(wearing ? "" : id), 140f, interactable: owned);
+                var b = UIFactory.Button(row, owned ? (wearing ? "WEARING" : "WEAR") : "LOCKED", () => Wear(wearing ? "" : id), 140f, interactable: owned);
+                var ble = b.GetComponent<LayoutElement>();
+                ble.preferredWidth = 190f; ble.flexibleWidth = 1f;
                 var t = b.GetComponentInChildren<Text>();
                 if (t != null)
                 {
@@ -148,7 +151,7 @@ namespace PKR
                 img.sprite = SeasonArt.HatSprite(SeasonArt.KeepsakeHat(k.id) ?? SeasonArt.Hat.LeafCrown);
                 img.preserveAspect = true;
                 img.raycastTarget = false;
-                img.color = owned ? Color.white : new Color(0f, 0f, 0f, 0.55f);
+                img.color = owned ? Color.white : new Color(1f, 1f, 1f, 0.3f);
                 if (wearing) UIFactory.Highlight(b, UITheme.Current.title);
             }
         }

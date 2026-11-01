@@ -100,7 +100,7 @@ namespace PKR
         {
             _lastHighContrast = Services.Settings != null && Services.Settings.Data.highContrastUI;
             UIFactory.Clear(_menuRoot);
-            var panel = UIFactory.Panel(_menuRoot, new Vector2(960f, 1680f));
+            var panel = UIFactory.Panel(_menuRoot, new Vector2(960f, 1800f));
 
             UIFactory.Label(panel, "PIXEL KINGDOM\nRUMBLE", 92, TextAnchor.MiddleCenter, 210f, title: true);
             if (roster != null)
@@ -229,7 +229,7 @@ namespace PKR
                 sub = peakSoon ? $"{SeasonCalendar.PeakName(peak.peak)} {SeasonCalendar.InDays((peak.start - today).Days)}"
                                : $"{SeasonCalendar.Name(next.ev)} {SeasonCalendar.InDays((next.start - today).Days)}";
             }
-            var b = UIFactory.Button(panel, "", ShowSeason, 96f);
+            var b = UIFactory.Button(panel, "", ShowSeason, 84f);
             UIFactory.Tint(b, Color.Lerp(SeasonPanel.ColorFor(s), Color.black, 0.35f), Color.white);
             if (unclaimed > 0 || s.AtPeak) UIFactory.Highlight(b, new Color32(255, 214, 90, 255));
             var t = b.GetComponentInChildren<Text>();
@@ -237,8 +237,8 @@ namespace PKR
             {
                 t.supportRichText = true;
                 t.resizeTextForBestFit = false;
-                t.fontSize = 36;
-                t.text = $"{headline}\n<size=24>{Seasons.TokenName(s.Event)}s {have}/{SeasonDirector.StoryLevelCount}  ·  {sub}</size>";
+                t.fontSize = 32;
+                t.text = $"{headline}\n<size=22>{Seasons.TokenName(s.Event)}s {have}/{SeasonDirector.StoryLevelCount}  ·  {sub}</size>";
             }
         }
 

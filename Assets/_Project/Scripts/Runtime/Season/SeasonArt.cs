@@ -430,13 +430,18 @@ namespace PKR
                     p.Set(14, 3, Rgb(46, 120, 76)); p.Set(15, 4, Rgb(46, 120, 76)); p.Set(16, 3, Rgb(220, 50, 60)); // holly
                     break;
                 case Hat.HarvestScarf:
-                    p = new Px(22, 14);
-                    var o = Rgb(236, 126, 40); var o2 = Rgb(200, 92, 30);
-                    p.Rect(1, 9, 20, 12, o);
-                    for (int x = 2; x < 20; x += 4) p.Rect(x, 9, x + 1, 12, o2);
-                    p.Rect(14, 1, 17, 9, o); p.Rect(14, 3, 17, 3, o2); p.Rect(14, 6, 17, 6, o2);
-                    p.Set(14, 0, o2); p.Set(16, 0, o2);
+                {
+                    // a wrap around the neck with one knitted tail and a fringe
+                    p = new Px(24, 20);
+                    var o = Rgb(236, 126, 40); var o2 = Rgb(196, 88, 30); var cream = Rgb(250, 222, 160);
+                    p.Ellipse(12f, 14f, 10.5f, 4.5f, o);
+                    p.Ellipse(12f, 15f, 7f, 2.2f, Clear);
+                    for (int x = 3; x < 22; x += 4) for (int y = 10; y < 19; y++) if (p.Get(x, y).a > 0) p.Set(x, y, o2);
+                    p.Rect(14, 3, 18, 11, o);
+                    p.Rect(14, 5, 18, 5, cream); p.Rect(14, 8, 18, 8, cream);
+                    for (int x = 14; x <= 18; x += 2) { p.Set(x, 2, o2); p.Set(x, 1, o2); }
                     break;
+                }
                 case Hat.Earmuffs:
                     p = new Px(24, 12);
                     var band = Rgb(150, 170, 200); var fluff = Rgb(200, 236, 255);
