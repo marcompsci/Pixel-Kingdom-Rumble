@@ -129,34 +129,20 @@ namespace PKR
             var season = SettingsService.Season;
 
             // STORY QUEST leads the menu (the main game), dressed for the live season when one is on.
-            var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest), 124f,
+            var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest), 128f,
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
             UIFactory.Tint(story, season.Active ? SeasonPanel.ColorFor(season) : (Color)new Color32(214, 116, 40, 255), Color.white);
             UIFactory.Highlight(story, new Color32(255, 200, 80, 255));
-            var st = story.GetComponentInChildren<Text>();
-            if (st != null)
-            {
-                st.supportRichText = true;
-                st.resizeTextForBestFit = false;
-                st.fontSize = 52;
-                string sub = season.Active ? $"{SeasonCalendar.Name(season.Event)} is live in every world" : $"{levelName}: {best}";
-                st.text = $"STORY QUEST\n<size=24>{sub}</size>";
-            }
+            string storySub = season.Active ? $"{SeasonCalendar.Name(season.Event)} is live in every world" : $"{levelName}: {best}";
+            UIFactory.TwoLine(story, "STORY QUEST", storySub, 50, 24);
             if (season.Active) SeasonBanner(panel, season, save);
 
-            var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 112f);
+            var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 116f);
             UIFactory.Tint(zombies, new Color32(190, 40, 40, 255), Color.white);
-            var zt = zombies.GetComponentInChildren<Text>();
-            if (zt != null)
-            {
-                var career = save != null ? save.zombieCareer : null;
-                int zr = ZombiePrestige.Rank(career);
-                string pz = career != null && career.prestige > 0 ? $"P{career.prestige} " : "";
-                zt.supportRichText = true;
-                zt.resizeTextForBestFit = false;
-                zt.fontSize = 46;
-                zt.text = $"ZOMBIES\n<size=24>Zombie Land · Last Stand · Survival  ·  {pz}Rank {zr}</size>";
-            }
+            var career = save != null ? save.zombieCareer : null;
+            int zr = ZombiePrestige.Rank(career);
+            string pz = career != null && career.prestige > 0 ? $"P{career.prestige} " : "";
+            UIFactory.TwoLine(zombies, "ZOMBIES", $"Zombie Land · Last Stand · Survival  ·  {pz}Rank {zr}", 44, 22);
             // Holiday Mode and Halloween (zombies) side by side.
             var events = UIFactory.Rect("EventModes", panel);
             events.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
@@ -239,17 +225,10 @@ namespace PKR
                 sub = peakSoon ? $"{SeasonCalendar.PeakName(peak.peak)} {SeasonCalendar.InDays((peak.start - today).Days)}"
                                : $"{SeasonCalendar.Name(next.ev)} {SeasonCalendar.InDays((next.start - today).Days)}";
             }
-            var b = UIFactory.Button(panel, "", ShowSeason, 84f);
+            var b = UIFactory.Button(panel, "", ShowSeason, 96f);
             UIFactory.Tint(b, Color.Lerp(SeasonPanel.ColorFor(s), Color.black, 0.35f), Color.white);
             if (unclaimed > 0 || s.AtPeak) UIFactory.Highlight(b, new Color32(255, 214, 90, 255));
-            var t = b.GetComponentInChildren<Text>();
-            if (t != null)
-            {
-                t.supportRichText = true;
-                t.resizeTextForBestFit = false;
-                t.fontSize = 32;
-                t.text = $"{headline}\n<size=22>{Seasons.TokenName(s.Event)}s {have}/{SeasonDirector.StoryLevelCount}  ·  {sub}</size>";
-            }
+            UIFactory.TwoLine(b, headline, $"{Seasons.TokenName(s.Event)}s {have}/{SeasonDirector.StoryLevelCount}  ·  {sub}", 34, 20);
         }
 
         void ShowSeason()

@@ -235,6 +235,46 @@ namespace PKR
             return btn;
         }
 
+        /// <summary>
+        /// A button with a title and a smaller line under it, each in its own text box: the pair sits centred on the key
+        /// face with an even gap, instead of one rich-text label whose big line height shoves the title against the top
+        /// edge and crams the small line at the bottom. Both move with the key press.
+        /// </summary>
+        public static void TwoLine(Button b, string title, string sub, int titleSize = 46, int subSize = 22)
+        {
+            if (b == null) return;
+            var label = b.GetComponentInChildren<Text>();
+            if (label == null) return;
+            var color = label.color;
+            label.text = "";
+            label.enabled = false;
+            var box = (RectTransform)label.transform;
+            Text Line(string name, string text, int size, float yMin, float yMax, TextAnchor align, float alpha)
+            {
+                var r = Rect(name, box);
+                r.anchorMin = new Vector2(0f, yMin);
+                r.anchorMax = new Vector2(1f, yMax);
+                r.offsetMin = r.offsetMax = Vector2.zero;
+                var t = r.gameObject.AddComponent<Text>();
+                t.font = UISprites.DisplayFont;
+                t.fontStyle = UISprites.HasDisplayFont ? FontStyle.Normal : FontStyle.Bold;
+                t.text = text;
+                t.fontSize = size;
+                t.resizeTextForBestFit = true;
+                t.resizeTextMinSize = Mathf.Max(12, size / 2);
+                t.resizeTextMaxSize = size;
+                t.alignment = align;
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+                t.color = new Color(color.r, color.g, color.b, color.a * alpha);
+                t.raycastTarget = false;
+                return t;
+            }
+            // title in the upper 58%, its baseline just above the middle; the small line just under it
+            Line("Title", title, titleSize, 0.42f, 1f, TextAnchor.MiddleCenter, 1f);
+            Line("Sub", sub, subSize, 0.04f, 0.44f, TextAnchor.MiddleCenter, 0.88f);
+        }
+
         /// <summary>A button that reads "Label: ON/OFF" and flips on tap (large and unambiguous on phones).</summary>
         public static Button Toggle(RectTransform parent, string label, bool value, Action<bool> onChanged)
         {
