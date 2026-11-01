@@ -14,12 +14,18 @@ namespace PKR.Tests
     /// </summary>
     public class SeasonPlayModeTests
     {
-        [TearDown]
-        public void TearDown()
+        /// <summary>Leave an empty scene behind, so later tests don't run inside a dressed Story level with its hero.</summary>
+        [UnityTearDown]
+        public IEnumerator TearDown()
         {
             SeasonCalendar.OverrideToday = null;
             if (Services.Settings != null) Services.Settings.SetSeasonalMode(SeasonCalendar.ModeLive);
             Time.timeScale = 1f;
+            var old = SceneManager.GetActiveScene();
+            var empty = SceneManager.CreateScene("SeasonTestsDone" + Time.frameCount);
+            SceneManager.SetActiveScene(empty);
+            if (old.IsValid() && old.isLoaded && old != empty) yield return SceneManager.UnloadSceneAsync(old);
+            yield return null;
         }
 
         static IEnumerator Load(string scene, DateTime day)
