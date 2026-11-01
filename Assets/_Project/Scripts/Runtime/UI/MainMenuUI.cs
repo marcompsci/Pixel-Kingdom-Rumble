@@ -127,13 +127,25 @@ namespace PKR
             }
             string levelName = featuredLevel != null ? featuredLevel.displayName : "Story Quest";
             var season = SettingsService.Season;
-            if (season.Active) SeasonBanner(panel, season, save);
-            else UIFactory.Label(panel, $"{levelName}: {best}", 36, TextAnchor.MiddleCenter, 70f).color = UITheme.Current.subtle;
 
-            // ZOMBIES leads the menu, all year round.
-            var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 130f);
+            // STORY QUEST leads the menu (the main game), dressed for the live season when one is on.
+            var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest), 124f,
+                                         interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
+            UIFactory.Tint(story, season.Active ? SeasonPanel.ColorFor(season) : (Color)new Color32(214, 116, 40, 255), Color.white);
+            UIFactory.Highlight(story, new Color32(255, 200, 80, 255));
+            var st = story.GetComponentInChildren<Text>();
+            if (st != null)
+            {
+                st.supportRichText = true;
+                st.resizeTextForBestFit = false;
+                st.fontSize = 52;
+                string sub = season.Active ? $"{SeasonCalendar.Name(season.Event)} is live in every world" : $"{levelName}: {best}";
+                st.text = $"STORY QUEST\n<size=24>{sub}</size>";
+            }
+            if (season.Active) SeasonBanner(panel, season, save);
+
+            var zombies = UIFactory.Button(panel, "ZOMBIES", ShowZombies, 112f);
             UIFactory.Tint(zombies, new Color32(190, 40, 40, 255), Color.white);
-            UIFactory.Highlight(zombies, new Color32(255, 200, 80, 255));
             var zt = zombies.GetComponentInChildren<Text>();
             if (zt != null)
             {
@@ -142,12 +154,9 @@ namespace PKR
                 string pz = career != null && career.prestige > 0 ? $"P{career.prestige} " : "";
                 zt.supportRichText = true;
                 zt.resizeTextForBestFit = false;
-                zt.fontSize = 52;
-                zt.text = $"ZOMBIES\n<size=26>Zombie Land · Last Stand · Survival  ·  {pz}Rank {zr}</size>";
+                zt.fontSize = 46;
+                zt.text = $"ZOMBIES\n<size=24>Zombie Land · Last Stand · Survival  ·  {pz}Rank {zr}</size>";
             }
-            var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest),
-                                         interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
-            if (season.Active) UIFactory.Tint(story, SeasonPanel.ColorFor(season), Color.white);
             // Holiday Mode and Halloween (zombies) side by side.
             var events = UIFactory.Rect("EventModes", panel);
             events.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
@@ -205,7 +214,8 @@ namespace PKR
                 gc.GetComponentInChildren<Text>().fontSize = 30;
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
-            UIFactory.Select(zombies);
+            UIFactory.Select(story.interactable ? story : zombies);
+            FitPanel(panel);
         }
 
         /// <summary>
@@ -247,6 +257,25 @@ namespace PKR
             _menuRoot.gameObject.SetActive(false);
             _eventRoot.gameObject.SetActive(true);
             _season.Open(_eventRoot, ShowMenu);
+        }
+
+        /// <summary>
+        /// The menu panel takes exactly the height of its contents, and shrinks to fit when a phone's screen is shorter
+        /// than that, so every button (down to GAME CENTER) is always inside the frame and on screen.
+        /// </summary>
+        void FitPanel(RectTransform panel)
+        {
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
+            float h = LayoutUtility.GetPreferredHeight(panel);
+            if (h < 200f) return;
+            UIFactory.ResizePanel(panel, h);
+            if (panel.parent is RectTransform edge)
+            {
+                float room = _menuRoot.rect.height - 24f;
+                float need = edge.sizeDelta.y;
+                edge.localScale = room > 400f && need > room ? Vector3.one * (room / need) : Vector3.one;
+            }
         }
 
         void Choose(SessionMode mode)
