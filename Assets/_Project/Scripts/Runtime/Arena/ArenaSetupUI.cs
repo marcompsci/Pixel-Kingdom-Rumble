@@ -42,6 +42,10 @@ namespace PKR
 
         public void Show()
         {
+            // Screenshot runs: "ARENA_SCENE@balloon" (or brawl, coin, crown) opens that party quest.
+            foreach (var (panel, mode) in new[] { ("balloon", PartyMode.BalloonBattle), ("brawl", PartyMode.RingOut),
+                                                  ("coin", PartyMode.CoinRush), ("crown", PartyMode.KingOfTheHill) })
+                if (BootLoader.TakeShotPanel(panel) != null) GameSession.Party = mode;
             // A Kingdom Plaza party quest: its rules are fixed, so go straight in.
             if (GameSession.Party != PartyMode.None && GameSession.Party != PartyMode.ItemRace)
             {
