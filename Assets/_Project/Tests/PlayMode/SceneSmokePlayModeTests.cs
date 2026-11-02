@@ -24,7 +24,7 @@ namespace PKR.Tests
             SceneIds.GearworkMaze, SceneIds.FrozenVault, SceneIds.ShatteredLabyrinth,
             SceneIds.StarfallSteps, SceneIds.OrreryGardens, SceneIds.CelestialMaze, SceneIds.CometRun, SceneIds.OrrerySentinel,
             SceneIds.WinterGiftRun, SceneIds.SweetheartSprint, SceneIds.HarvestHustle, SceneIds.CountdownClimb, SceneIds.HauntedEscape,
-            SceneIds.ZombieSurvival,
+            SceneIds.ZombieSurvival, SceneIds.KingdomPlaza, SceneIds.ItemRace,
             SceneIds.MissionBoard, "MS_FirstLight", "MS_ClocktowerShadow", "MS_GearworksFoundry", "MS_SkybridgeGala", "MS_FrozenGate", "MS_CloudDocks", "MS_LastContract"
         };
 

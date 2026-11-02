@@ -39,7 +39,8 @@ namespace PKR
 
         /// <summary>Should this level be dressed? Story Quest levels only (not events, contracts or modes).</summary>
         public static bool AppliesTo(LevelDefinition level) =>
-            level != null && !level.isEvent && StoryWorlds.WorldOf(level.id) >= 0 && SettingsService.Season.Active;
+            level != null && (level.id == KingdomPlaza.PlazaLevelId || (!level.isEvent && StoryWorlds.WorldOf(level.id) >= 0))
+            && SettingsService.Season.Active;
 
         public static SeasonDirector Attach(LevelFlowController flow, Material mat)
         {
@@ -366,7 +367,7 @@ namespace PKR
 
         void PlaceToken(LevelDefinition level)
         {
-            if (level == null) return;
+            if (level == null || level.id == KingdomPlaza.PlazaLevelId) return; // tokens are hidden in Story levels only
             var spots = new List<Vector2>();
             float minX = float.MaxValue, maxX = float.MinValue;
             foreach (var s in FindObjectsByType<PickupSpot>())

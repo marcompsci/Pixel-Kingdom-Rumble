@@ -31,6 +31,9 @@ namespace PKR
         [SerializeField] Sprite healthSprite;
 
         public LevelDefinition Level => level;
+        public CharacterRoster Roster => roster;
+        public Material SpriteMaterial => spriteMaterial;
+        public GameObject Player => player;
         public LevelRun Run { get; private set; }
         public Damageable PlayerHealth { get; private set; }
         public bool IsComplete => Run != null && Run.IsComplete;
@@ -55,6 +58,12 @@ namespace PKR
             LevelPuzzleState.Reset(); // keys and switch-block colour start fresh every level
             // Live seasons: Story Quest dresses itself for the real-world season (Harvest, Winterfest...).
             if (SeasonDirector.AppliesTo(level)) SeasonDirector.Attach(this, spriteMaterial);
+            // The Kingdom Plaza (Story Quest's roamable world) and the Item Race run on top of the normal level flow.
+            if (level != null && level.id == KingdomPlaza.PlazaLevelId) gameObject.AddComponent<HubDirector>();
+            if (level != null && level.id == KingdomPlaza.RaceLevelId) gameObject.AddComponent<RaceDirector>();
+            // Story levels count toward their world building's live players in the plaza.
+            int worldGroup = level != null ? KingdomPlaza.WorldGroup(StoryWorlds.WorldOf(level.id)) : -1;
+            if (worldGroup >= 0) LivePresence.Enter(worldGroup);
             if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (roster == null)
                 Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +

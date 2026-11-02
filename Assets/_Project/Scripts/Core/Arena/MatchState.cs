@@ -72,8 +72,11 @@ namespace PKR.Core
                 case MatchMode.Training:
                     return true;
                 case MatchMode.Timed:
-                    victim.score -= 1;
-                    if (creditAttacker) _fighters[lastAttackerSlot].score += 1;
+                    if (ScoresFalls)
+                    {
+                        victim.score -= 1;
+                        if (creditAttacker) _fighters[lastAttackerSlot].score += 1;
+                    }
                     return true;
                 default: // Stock
                     victim.stocks = Math.Max(0, victim.stocks - 1);
@@ -89,6 +92,20 @@ namespace PKR.Core
             if (IsOver || Mode != MatchMode.Timed || deltaTime <= 0f) return;
             TimeRemaining = Math.Max(0f, TimeRemaining - deltaTime);
             if (TimeRemaining <= 0f) IsOver = true;
+        }
+
+        /// <summary>
+        /// Timed matches normally score knock-outs (+1) and falls (-1). Party quests that score something else (Coin
+        /// Rush coins, King of the Hill seconds) turn this off and use AddScore instead.
+        /// </summary>
+        public bool ScoresFalls { get; set; } = true;
+
+        /// <summary>Add (or take away, never below zero) points for a fighter in a Timed match.</summary>
+        public void AddScore(int slot, int points)
+        {
+            if (IsOver || slot < 0 || slot >= _fighters.Count) return;
+            var f = _fighters[slot];
+            f.score = Math.Max(0, f.score + points);
         }
 
         /// <summary>Ends Training (or any mode) manually.</summary>

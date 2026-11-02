@@ -41,6 +41,7 @@ namespace PKR
 
             int winner = System.Array.IndexOf(e.placements, 1);
             string title = e.humans < 2 && e.playerPlacement == 1 ? "YOU WIN!" : (winner >= 0 ? $"{e.names[winner]} WINS" : "MATCH OVER");
+            if (e.party != PartyMode.None) title = PartyModes.Info(e.party).name + "  ·  " + title;
             UIFactory.Label(panel, title, 70, TextAnchor.MiddleCenter, 90f, title: true);
 
             // Standings, best placement first.
@@ -49,7 +50,8 @@ namespace PKR
             System.Array.Sort(order, (a, b) => e.placements[a].CompareTo(e.placements[b]));
             foreach (int slot in order)
             {
-                string score = e.mode == MatchMode.Timed ? $"   score {e.scores[slot]}" : "";
+                string unit = e.party == PartyMode.CoinRush ? "coins" : e.party == PartyMode.KingOfTheHill ? "crown time" : "score";
+                string score = e.mode == MatchMode.Timed ? $"   {unit} {e.scores[slot]}" : "";
                 var row = UIFactory.Label(panel, $"{Ordinal(e.placements[slot])}   {e.names[slot]}   KOs {e.knockouts[slot]}   falls {e.falls[slot]}{score}",
                                           36, TextAnchor.MiddleLeft, 52f);
                 row.color = slot < ArenaMatchController.SlotColors.Length ? ArenaMatchController.SlotColors[slot] : p.text;
@@ -67,11 +69,23 @@ namespace PKR
             h.spacing = 24f;
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
-            var rematch = UIFactory.Button(buttons, "REMATCH", () =>
+            bool party = e.party != PartyMode.None;
+            var rematch = UIFactory.Button(buttons, party ? "PLAY AGAIN" : "REMATCH", () =>
             {
                 _root.gameObject.SetActive(false);
                 if (match != null) match.StartMatch(match.Config);
             });
+            if (party)
+            {
+                UIFactory.Button(buttons, "BACK TO PLAZA", () =>
+                {
+                    GameSession.PlazaReturnX = -1f;
+                    GameSession.ReturnToPlaza();
+                });
+                UIFactory.Select(rematch);
+                if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+                return;
+            }
             UIFactory.Button(buttons, "CHANGE RULES", () =>
             {
                 _root.gameObject.SetActive(false);

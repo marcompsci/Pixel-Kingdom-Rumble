@@ -106,6 +106,17 @@ namespace PKR.EditorTools
             return lvl;
         }
 
+        // ---- the Kingdom Plaza and the Item Race (Story Quest's roamable world and its race) ---------------------------
+        public static LevelDefinition GetOrCreateKingdomPlaza() => EventLevel(
+            "SQ_KingdomPlaza", KingdomPlaza.PlazaLevelId, "Kingdom Plaza", "Kingdom Plaza", SceneIds.KingdomPlaza, 600f,
+            new Color32(140, 196, 250, 255), "", 0f,
+            "The heart of the kingdom. Every Story world and party quest has its door here, and the signs show who's playing.");
+
+        public static LevelDefinition GetOrCreateItemRace() => EventLevel(
+            "SQ_ItemRace", KingdomPlaza.RaceLevelId, "Item Race", "Racing Gate", SceneIds.ItemRace, 90f,
+            new Color32(150, 210, 250, 255), "", 0f,
+            "Three rivals, one flag. Boost belts, springs, a high road and item boxes full of tricks.");
+
         public static LevelDefinition GetOrCreateWinterGiftRun() => EventLevel(
             "EV_WinterGiftRun", "ev_winter_gift_run", "Winter Gift Run", "Winter Village", SceneIds.WinterGiftRun, 150f,
             new Color32(150, 190, 235, 255), "GIFTS", 0f,

@@ -56,6 +56,11 @@ namespace PKR
         /// <summary>Last Stand: Hollow Block, round-based survival on the Zombie Land engine.</summary>
         public const string LastStand = "EV_LastStand";
 
+        /// <summary>Story Quest's roamable world: walk between the quest buildings (world levels and party quests).</summary>
+        public const string KingdomPlaza = "SQ_KingdomPlaza";
+        /// <summary>Party quest: the Item Race course.</summary>
+        public const string ItemRace = "SQ_ItemRace";
+
         public const string MissionBoard = "05_ShadowContracts";
         public const string ContractPrefix = "MS_";
 

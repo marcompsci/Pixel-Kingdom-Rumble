@@ -29,7 +29,7 @@ namespace PKR
             var p = UITheme.Current;
             var save = Services.Save != null ? Services.Save.Data : null;
             UIFactory.Clear(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1700f));
+            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1840f));
             UIFactory.Label(panel, "STORY STATS", 72, TextAnchor.MiddleCenter, 110f, title: true);
 
             int cleared = 0, shards = 0, totalShards = 0, secrets = 0, totalSecrets = 0, gold = 0, silver = 0, bronze = 0;
@@ -62,6 +62,19 @@ namespace PKR
             if (season.Active && save != null)
                 Row(panel, $"{Seasons.TokenName(season.Event)}s ({SeasonCalendar.Name(season.Event)})",
                     $"{Seasons.Tokens(save, season)} / {SeasonDirector.StoryLevelCount}");
+
+            Section(panel, "PARTY QUESTS  ·  KINGDOM PLAZA");
+            var lines = new List<string>();
+            foreach (var info in PartyModes.All)
+            {
+                var r = save != null && save.party != null ? save.party.Find(info.mode) : null;
+                if (r == null || r.played == 0) { lines.Add($"{info.name}:  not played yet"); continue; }
+                string best = info.mode == PartyMode.ItemRace && r.bestRaceSeconds > 0f
+                    ? $"  ·  best {(int)r.bestRaceSeconds / 60}:{r.bestRaceSeconds % 60f:00.0}" : "";
+                lines.Add($"{info.name}:  {Plural.Of(r.played, "match", "matches")}  ·  {Plural.Of(r.wins, "win")}  ·  {r.podiums} on the podium{best}");
+            }
+            var partyText = UIFactory.Label(panel, string.Join("\n", lines), 28, TextAnchor.MiddleLeft, 200f);
+            partyText.color = p.text;
 
             Section(panel, "QUICK GAME  ·  HOME SCREEN WIDGET");
             var q = save != null && save.quickGame != null ? save.quickGame.last : null;

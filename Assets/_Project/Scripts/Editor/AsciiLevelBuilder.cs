@@ -129,6 +129,10 @@ namespace PKR.EditorTools
 
             BuildLevel(SceneIds.ZombieSurvival, EventLayouts.ZombieArena, () => DataAssets.GetOrCreateZombieSurvivalLevel(),
                        style: new EventStyle());
+
+            // Story Quest's Kingdom Plaza (HubDirector places the quest buildings) and the Item Race course.
+            BuildLevel(SceneIds.KingdomPlaza, PartyLayouts.KingdomPlaza, () => DataAssets.GetOrCreateKingdomPlaza(), style: new EventStyle());
+            BuildLevel(SceneIds.ItemRace, PartyLayouts.ItemRace, () => DataAssets.GetOrCreateItemRace(), style: new EventStyle());
         }
 
         /// <summary>Builds every Shadow Contracts scene (MS_*) from ContractLayouts.</summary>

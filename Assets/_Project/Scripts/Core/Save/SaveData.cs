@@ -77,6 +77,8 @@ namespace PKR.Core
         public SeasonSave season = new SeasonSave();
         /// <summary>The Quick Game widget: clears already paid in Star Shards and the last stats read from it.</summary>
         public QuickGameSave quickGame = new QuickGameSave();
+        /// <summary>Kingdom Plaza party quests: played, wins, podiums, best race time.</summary>
+        public PartySave party = new PartySave();
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -217,6 +219,8 @@ namespace PKR.Core
             season.Sanitize();
             if (quickGame == null) quickGame = new QuickGameSave();
             quickGame.Sanitize();
+            if (party == null) party = new PartySave();
+            party.Sanitize();
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

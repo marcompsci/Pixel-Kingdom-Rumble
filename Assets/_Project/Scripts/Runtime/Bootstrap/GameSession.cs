@@ -29,6 +29,26 @@ namespace PKR
             ZombieSquad = PKR.Core.SquadKind.Solo;
             ZombieMap = PKR.Core.LastStandRules.MapId;
             ZombieWeekly = false;
+            Party = PartyMode.None;
+            PlazaWorld = -1;
+            PlazaReturnX = -1f;
+        }
+
+        /// <summary>A Kingdom Plaza party quest in progress (the arena plays it instead of opening its setup screen).</summary>
+        public static PartyMode Party { get; set; } = PartyMode.None;
+        /// <summary>The Story world whose building the player entered (the level select opens on its page; -1 = any).</summary>
+        public static int PlazaWorld { get; set; } = -1;
+        /// <summary>Where the hero stands when coming back to the plaza (the building they entered; -1 = the start).</summary>
+        public static float PlazaReturnX { get; set; } = -1f;
+
+        /// <summary>Back to the Kingdom Plaza (or the level select / main menu when the plaza isn't in the build).</summary>
+        public static void ReturnToPlaza()
+        {
+            Party = PartyMode.None;
+            Mode = SessionMode.StoryQuest;
+            if (Services.Scenes == null) return;
+            if (Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza)) Services.Scenes.Load(SceneIds.KingdomPlaza);
+            else Services.Scenes.Load(SceneIds.MainMenu);
         }
 
         /// <summary>Last Stand: which map (a LastStandMap id).</summary>
@@ -94,6 +114,8 @@ namespace PKR
                 if ((Mode == SessionMode.Holiday || Mode == SessionMode.Halloween || Mode == SessionMode.Zombies) && !string.IsNullOrEmpty(EventScene)) return EventScene;
                 if (Mode == SessionMode.Contracts)
                     return !string.IsNullOrEmpty(ContractScene) ? ContractScene : SceneIds.MissionBoard;
+                // Story Quest opens on the Kingdom Plaza, the world you roam between quests.
+                if (UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza)) return SceneIds.KingdomPlaza;
                 return UnityEngine.Application.CanStreamedLevelBeLoaded(SceneIds.LevelSelect) ? SceneIds.LevelSelect : SceneIds.StoryTest;
             }
         }

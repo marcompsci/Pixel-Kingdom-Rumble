@@ -22,6 +22,8 @@ namespace PKR
         public int humans;
         /// <summary>Rumble Rating result for P1 (null when the match wasn't rated).</summary>
         public RumbleOutcome rumble;
+        /// <summary>A Kingdom Plaza party quest (None for Arena Clash).</summary>
+        public PartyMode party;
     }
 
     /// <summary>
@@ -75,7 +77,11 @@ namespace PKR
         public ArenaMatchConfig Config { get; private set; } = new ArenaMatchConfig();
         public IReadOnlyList<Fighter> Fighters => _fighters;
         public Rect StageRect => stageRect;
-        public Rect BlastZone => blastZone;
+        /// <summary>Ring-Out Brawl shrinks it during the match.</summary>
+        public Rect BlastZone { get => blastZone; set => blastZone = value; }
+        public Material SpriteMaterial => spriteMaterial;
+        public bool IsRespawning(int slot) => _respawning.Contains(slot);
+        PartyArena _party;
         public CharacterRoster Roster => roster;
 
         readonly List<Fighter> _fighters = new List<Fighter>();
@@ -180,7 +186,12 @@ namespace PKR
                 if (arenaCamera != null) arenaCamera.group.Add(go.transform);
             }
 
-            if (bridge != null) { bridge.ResetCycle(); bridge.Running = Config.mode != MatchMode.Training; }
+            if (bridge != null) { bridge.ResetCycle(); bridge.Running = Config.mode != MatchMode.Training && Config.party == PartyMode.None; }
+            if (Config.party != PartyMode.None)
+            {
+                if (_party == null) _party = gameObject.AddComponent<PartyArena>();
+                _party.Begin(this);
+            }
             IsLive = true;
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             EventBus<ArenaMatchStarted>.Raise(new ArenaMatchStarted { mode = Config.mode, fighters = Config.FighterCount });
@@ -225,6 +236,7 @@ namespace PKR
             ClearSplitTouch();
             ArenaMods.Reset();
             SparkTrap.DespawnAll();
+            if (_party != null) _party.Clear();
             _respawning.Clear();
             foreach (var f in _fighters) if (f.go != null) Destroy(f.go);
             _fighters.Clear();
@@ -252,7 +264,7 @@ namespace PKR
             {
                 mode = Config.mode, placements = placements, names = new string[n], knockouts = new int[n],
                 falls = new int[n], scores = new int[n], playerPlacement = placements.Length > 0 ? placements[0] : 0,
-                humans = Config.humans
+                humans = Config.humans, party = Config.party
             };
             for (int i = 0; i < n; i++)
             {
@@ -262,12 +274,19 @@ namespace PKR
                 result.falls[i] = rec.falls;
                 result.scores[i] = rec.score;
             }
-            if (Config.mode != MatchMode.Training && grantRewards && Services.Save != null)
+            if (Config.party != PartyMode.None && grantRewards && Services.Save != null)
+            {
+                // Party quests pay their own table and count toward STORY STATS.
+                result.starShardReward = PartyResults.Record(Services.Save.Data, Config.party, result.playerPlacement);
+                Services.Save.SaveNow();
+            }
+            else if (Config.mode != MatchMode.Training && grantRewards && Services.Save != null)
             {
                 result.starShardReward = Economy.ArenaReward(result.playerPlacement);
                 Services.Save.AddShards(result.starShardReward);
                 Services.Save.SaveNow();
             }
+            if (_party != null) _party.Clear();
             if (Config.Rated && grantRewards && Services.Save != null && n >= 2)
             {
                 var me = Match.Get(0);
@@ -307,6 +326,7 @@ namespace PKR
 
             bool respawn = Match.ReportFall(f.slot, attacker);
             _tracker?.OnFall(f.slot, attacker, Match.Placements());
+            if (_party != null) _party.OnFall(f.slot);
             EventBus<ArenaKO>.Raise(new ArenaKO { victimSlot = f.slot, attackerSlot = attacker, eliminated = !respawn });
 
             if (f.go.TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
@@ -347,9 +367,38 @@ namespace PKR
 
         void OnDestroy() => ClearFighters();
 
-        /// <summary>Closest active opponent (for CPU targeting).</summary>
+        /// <summary>
+        /// Balloon Battle: a hard hit (or an item) popped one of this fighter's balloons. Counts like a fall (credit to
+        /// the attacker); the last balloon knocks them out of the match.
+        /// </summary>
+        public void Pop(int victimSlot, int attackerSlot)
+        {
+            if (!IsLive || Match == null || Match.IsOver || victimSlot < 0 || victimSlot >= _fighters.Count) return;
+            var f = _fighters[victimSlot];
+            if (f.go == null || !f.go.activeSelf || _respawning.Contains(victimSlot)) return;
+            bool stillIn = Match.ReportFall(victimSlot, attackerSlot);
+            _tracker?.OnFall(victimSlot, attackerSlot, Match.Placements());
+            EventBus<ArenaKO>.Raise(new ArenaKO { victimSlot = victimSlot, attackerSlot = attackerSlot, eliminated = !stillIn });
+            PuffEffect.Play((Vector2)f.go.transform.position + Vector2.up * 1.2f, f.color, spriteMaterial, 0.3f, 6f, 0.5f);
+            if (f.human && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
+            if (!stillIn)
+            {
+                if (f.go.TryGetComponent(out HeroAbilities abilities)) abilities.Cancel();
+                if (f.go.TryGetComponent(out AttackRunner atk)) atk.Cancel();
+                f.motor.Intent.ClearAll();
+                f.go.SetActive(false);
+            }
+            else if (f.go.TryGetComponent(out Invulnerability inv)) inv.Grant(1.2f, blink: true);
+        }
+
+        /// <summary>Closest active opponent (for CPU targeting). Party quests may point CPUs at coins, the crown zone or an item box instead.</summary>
         public GameObject NearestOpponent(GameObject self, Vector2 from)
         {
+            if (_party != null && _party.Running)
+            {
+                var objective = _party.ObjectiveFor(self, from);
+                if (objective != null) return objective;
+            }
             GameObject best = null;
             float bestD = float.MaxValue;
             foreach (var f in _fighters)

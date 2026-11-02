@@ -86,6 +86,12 @@ namespace PKR
             _allSlots = LevelSelect.Build(ids.ToArray(), Services.Save != null ? Services.Save.Data : null, openAll);
             int suggestedAll = LevelSelect.Suggested(_allSlots);
 
+            // Came in through a world's building in the Kingdom Plaza: open on that world.
+            if (GameSession.PlazaWorld >= 0 && GameSession.PlazaWorld < _pages.Count)
+            {
+                _page = GameSession.PlazaWorld;
+                GameSession.PlazaWorld = -1;
+            }
             if (_page < 0 || _page >= _pages.Count) _page = PageOf(suggestedAll);
             var page = _pages[_page];
             int first = FirstIndex(_page);
@@ -152,7 +158,12 @@ namespace PKR
             bh.spacing = 24f;
             bh.childControlWidth = true; bh.childControlHeight = true;
             bh.childForceExpandWidth = true; bh.childForceExpandHeight = true;
-            UIFactory.Button(bottom, "BACK", () => { if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect); });
+            bool plaza = Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza);
+            UIFactory.Button(bottom, plaza ? "PLAZA" : "BACK", () =>
+            {
+                if (plaza) GameSession.ReturnToPlaza();
+                else if (Services.Scenes != null) Services.Scenes.Load(SceneIds.CharacterSelect);
+            });
             var stats = UIFactory.Button(bottom, "STORY STATS", ShowStats);
             UIFactory.Tint(stats, new Color32(70, 150, 200, 255), Color.white);
             int start = SuggestedIndex >= 0 ? SuggestedIndex : FirstOpen();

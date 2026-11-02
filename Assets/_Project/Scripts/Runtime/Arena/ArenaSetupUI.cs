@@ -42,6 +42,13 @@ namespace PKR
 
         public void Show()
         {
+            // A Kingdom Plaza party quest: its rules are fixed, so go straight in.
+            if (GameSession.Party != PartyMode.None && GameSession.Party != PartyMode.ItemRace)
+            {
+                _root.gameObject.SetActive(false);
+                if (match != null) match.StartMatch(ArenaMatchConfig.ForParty(GameSession.Party));
+                return;
+            }
             _root.gameObject.SetActive(true);
             Build();
             UiMotion.ModalIn(_root);   // opening; rebuilds while it is open don't replay this

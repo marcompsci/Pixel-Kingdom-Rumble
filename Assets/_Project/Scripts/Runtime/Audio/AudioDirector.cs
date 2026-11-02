@@ -42,7 +42,9 @@ namespace PKR
             if (scene.StartsWith(SceneIds.ContractPrefix) || scene == SceneIds.MissionBoard ||
                 scene == SceneIds.RooftopRun || scene == SceneIds.NightMarketHeist) return Sfx.MusicStealth;
             if (scene.StartsWith("VS_") || scene.StartsWith("AC_") || scene == SceneIds.VersusSelect) return Sfx.MusicVersus;
-            if (scene == SceneIds.MainMenu || scene == SceneIds.CharacterSelect || scene == SceneIds.LevelSelect) return Sfx.MusicTitle;
+            if (scene == SceneIds.MainMenu || scene == SceneIds.CharacterSelect || scene == SceneIds.LevelSelect ||
+                scene == SceneIds.KingdomPlaza) return Sfx.MusicTitle; // the plaza plays the season's tune when one is live
+            if (scene == SceneIds.ItemRace) return Sfx.MusicVersus;
             if (scene == SceneIds.BossTest || scene == SceneIds.FourfoldSovereign || scene == SceneIds.OrrerySentinel) return Sfx.MusicBoss;
             if (scene == SceneIds.StarfallSteps || scene == SceneIds.OrreryGardens || scene == SceneIds.CelestialMaze ||
                 scene == SceneIds.CometRun) return Sfx.MusicAstral;

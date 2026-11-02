@@ -25,14 +25,26 @@ namespace PKR.Core
         public Mutator mutators = Mutator.None;
         /// <summary>This match is today's Daily Rumble (set by the setup screen, not by the player).</summary>
         public bool daily;
+        /// <summary>A Kingdom Plaza party quest played in the arena (Balloon Battle, Ring-Out, Coin Rush, King of the Hill).</summary>
+        public PartyMode party = PartyMode.None;
 
         public int FighterCount => humans + botCount;
         /// <summary>Two players can fight each other with no CPUs.</summary>
         public int MinBotsNow => humans >= 2 ? 0 : MinBots;
         public int MaxBotsNow => MaxFighters - humans;
         /// <summary>Only solo matches against the CPU count for Rumble Rating.</summary>
-        public bool Rated => humans == 1 && mode != MatchMode.Training;
-        public float DurationSeconds => minutes * 60f;
+        public bool Rated => humans == 1 && mode != MatchMode.Training && party == PartyMode.None;
+        public float DurationSeconds => party != PartyMode.None && PartyModes.Info(party).seconds > 0f ? PartyModes.Info(party).seconds : minutes * 60f;
+
+        /// <summary>The fixed rules of a party quest: one hero against three CPUs.</summary>
+        public static ArenaMatchConfig ForParty(PartyMode p, BotLevel level = BotLevel.Normal)
+        {
+            var c = new ArenaMatchConfig { party = p, humans = 1, botCount = 3, autoLevel = true, botLevel = level };
+            c.mode = p == PartyMode.CoinRush || p == PartyMode.KingOfTheHill ? MatchMode.Timed : MatchMode.Stock;
+            c.stocks = 3;
+            c.Clamp();
+            return c;
+        }
 
         public void Clamp()
         {
@@ -47,7 +59,10 @@ namespace PKR.Core
         public MatchState CreateMatch()
         {
             Clamp();
-            return new MatchState(mode, FighterCount, stocks, DurationSeconds);
+            var m = new MatchState(mode, FighterCount, stocks, DurationSeconds);
+            // Coin Rush and King of the Hill score coins / seconds in the zone, not knock-outs.
+            if (party == PartyMode.CoinRush || party == PartyMode.KingOfTheHill) m.ScoresFalls = false;
+            return m;
         }
 
         /// <summary>Cycle helper for setup buttons: next value in [min,max], wrapping.</summary>
