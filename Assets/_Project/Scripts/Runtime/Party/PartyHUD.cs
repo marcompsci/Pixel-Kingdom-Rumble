@@ -15,13 +15,17 @@ namespace PKR
         float _flashAt = -99f;
         System.Func<string> _lineSource;
 
-        public static PartyHUD Show(string title, System.Func<string> line)
+        public static PartyHUD Show(string title, System.Func<string> line, bool belowMatchClock = false)
         {
             if (_instance == null)
             {
                 var go = new GameObject("PartyHUD");
                 _instance = go.AddComponent<PartyHUD>();
             }
+            // The arena's match clock sits top-centre: drop the banner under it there.
+            float top = belowMatchClock ? -84f : -14f;
+            _instance._title.rectTransform.anchoredPosition = new Vector2(0f, top);
+            _instance._line.rectTransform.anchoredPosition = new Vector2(0f, top - 52f);
             _instance._title.text = title;
             _instance._lineSource = line;
             _instance.gameObject.SetActive(true);

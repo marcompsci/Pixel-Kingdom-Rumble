@@ -66,6 +66,7 @@ namespace PKR
             GameSession.Party = PartyMode.None;
             GameSession.Mode = SessionMode.StoryQuest;
 
+            StoryHUD.HideRunStats = true;
             PartyHUD.Show("KINGDOM PLAZA", Banner);
             BuildCard();
             Refresh();
@@ -227,6 +228,7 @@ namespace PKR
         {
             LivePresence.UnwatchAll();
             PartyHUD.Hide();
+            StoryHUD.HideRunStats = false;
         }
     }
 }

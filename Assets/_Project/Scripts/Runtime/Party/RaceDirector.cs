@@ -70,6 +70,7 @@ namespace PKR
                 ItemBox.Spawn(this, hit.point + new Vector2(0f, 1.1f), seed++);
             }
 
+            StoryHUD.HideRunStats = true;
             PartyHUD.Show("ITEM RACE", Line);
             LivePresence.Enter(PartyModes.Info(PartyMode.ItemRace).playerGroup);
 
@@ -220,6 +221,10 @@ namespace PKR
 
         public void OnItemHit(GameObject victim, GameObject attacker) { }
 
-        void OnDestroy() => PartyHUD.Hide();
+        void OnDestroy()
+        {
+            PartyHUD.Hide();
+            StoryHUD.HideRunStats = false;
+        }
     }
 }

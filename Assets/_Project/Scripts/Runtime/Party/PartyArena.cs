@@ -69,7 +69,7 @@ namespace PKR
                 BuildZone();
             }
             var info = PartyModes.Info(_mode);
-            PartyHUD.Show(info.name, Line);
+            PartyHUD.Show(info.name, Line, belowMatchClock: true);
             LivePresence.Enter(info.playerGroup);
         }
 

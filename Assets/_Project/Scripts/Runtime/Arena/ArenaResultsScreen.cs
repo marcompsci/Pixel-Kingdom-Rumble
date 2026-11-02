@@ -60,7 +60,10 @@ namespace PKR
             {
                 int total = Services.Save != null ? Services.Save.Data.starShards : 0;
                 UIFactory.Label(panel, $"+{e.starShardReward} Star Shards   (total {total})", 38, TextAnchor.MiddleCenter, 54f).color = p.title;
-                RumbleUI.AddResults(panel, e.rumble);
+                if (e.party != PartyMode.None)
+                    UIFactory.Label(panel, "Party quest against CPU rivals (doesn't change your Rumble Rating)", 30,
+                                    TextAnchor.MiddleCenter, 50f).color = p.subtle;
+                else RumbleUI.AddResults(panel, e.rumble);
             }
 
             var buttons = UIFactory.Rect("Buttons", panel);

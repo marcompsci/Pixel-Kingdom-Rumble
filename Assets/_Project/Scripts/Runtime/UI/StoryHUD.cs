@@ -74,6 +74,9 @@ namespace PKR
         void OnSettings(SettingsChanged e) => ApplyTheme();
 
         /// <summary>Kept for callers; formatting lives in Core so it is unit-tested.</summary>
+        /// <summary>The plaza and the race keep their own clock and have no shards: hide the run timer and shard count.</summary>
+        public static bool HideRunStats;
+
         public static string FormatTime(float seconds) => ResultsMath.FormatTime(seconds);
 
         void ShowBanner(string text, float seconds)
@@ -92,11 +95,12 @@ namespace PKR
             var run = flow.Run;
             if (_playerHealth != null) UpdateHealth(_playerHealth.Health, _playerHealth.MaxHealth);
             string treats = flow.Level != null && !string.IsNullOrEmpty(flow.Level.collectibleName) ? flow.Level.collectibleName : "SHARDS";
-            _shards.text = flow.TotalShards > 0 || MissionTracker.Current == null ? $"{treats} {run.Shards}/{flow.TotalShards}" : "";
+            _shards.text = HideRunStats ? "" : flow.TotalShards > 0 || MissionTracker.Current == null ? $"{treats} {run.Shards}/{flow.TotalShards}" : "";
             _secrets.text = (flow.TotalSecrets > 0 ? $"SECRETS {run.SecretsFound}/{flow.TotalSecrets}" : "") +
                             (LevelPuzzleState.Keys > 0 ? $"   KEYS {LevelPuzzleState.Keys}" : "");
             float left = flow.TimeLeft;
-            if (left >= 0f)
+            if (HideRunStats) _time.text = "";
+            else if (left >= 0f)
             {
                 _time.text = $"COUNTDOWN {FormatTime(left)}";
                 _time.color = left < 15f && Mathf.Repeat(Time.unscaledTime, 0.5f) < 0.25f ? new Color(1f, 0.35f, 0.3f) : Color.white;
