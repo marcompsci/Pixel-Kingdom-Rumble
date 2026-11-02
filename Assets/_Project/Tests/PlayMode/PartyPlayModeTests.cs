@@ -114,9 +114,13 @@ namespace PKR.Tests
         public IEnumerator CoinRush_SpawnsCoins()
         {
             yield return Party(PartyMode.CoinRush);
-            yield return new WaitForSecondsRealtime(3f);
-            Assert.Greater(Count("Coin"), 1);
-            Assert.AreEqual(MatchMode.Timed, Object.FindAnyObjectByType<ArenaMatchController>().Match.Mode);
+            yield return new WaitForSecondsRealtime(4f);
+            var arena = Object.FindAnyObjectByType<ArenaMatchController>();
+            Assert.AreEqual(MatchMode.Timed, arena.Match.Mode);
+            int collected = 0;
+            foreach (var f in arena.Match.Fighters) collected += f.score;
+            // CPUs head straight for coins, so count the ones on the field and the ones already grabbed.
+            Assert.GreaterOrEqual(Count("Coin") + collected, 3, $"coins keep appearing (field {Count("Coin")}, collected {collected})");
         }
 
         [UnityTest]
