@@ -84,7 +84,7 @@ namespace PKR
                 });
                 UIFactory.Select(rematch);
                 if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
-                return;
+                yield break;
             }
             UIFactory.Button(buttons, "CHANGE RULES", () =>
             {
