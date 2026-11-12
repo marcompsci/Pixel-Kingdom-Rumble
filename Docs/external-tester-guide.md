@@ -14,7 +14,8 @@ Keep it short, saying what the game is and what to focus on. Suggested text:
 ## 2. What to Test
 
 Saved for builds 20261016.1842 and 20261016.2133 from `Docs/AppStore/whats-to-test.txt`. Update it for every build (see the release
-checklist, step 8).
+checklist, step 8). On 12 Nov the file was rewritten for the next build (Kingdom Plaza, party quests, widget, seasons).
+Build 2133 doesn't have those features, so don't paste it there.
 
 ## 3. Contacts and links
 
@@ -31,6 +32,8 @@ Answered by the build itself (`ITSAppUsesNonExemptEncryption = NO`), so no quest
 ## 5. Tester requirements
 
 - iPhone (or iPad, while the build supports iPad) on iOS 15 or later, with Metal and GameKit (every supported device)
+- The Quick Game Home Screen widget needs iOS 17 or later. The game itself still runs on iOS 15
+- Live player counts in the Kingdom Plaza need the tester signed in to Game Center; otherwise the signs show "--"
 - The TestFlight app from the App Store
 - For online co-op: two devices, each signed in to Game Center
 

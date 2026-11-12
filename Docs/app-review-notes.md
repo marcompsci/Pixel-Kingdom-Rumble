@@ -1,7 +1,7 @@
 # App Review notes (App Store and TestFlight beta review)
 
-The text in section 1 is what's saved in App Store Connect (App Review Information > Notes, updated 16 Oct 2026).
-Keep the two in sync.
+The text in section 1 is what's saved in App Store Connect (App Review Information > Notes, updated 16 Oct 2026). The 12 Nov text in
+`Docs/AppStore/REVIEW_NOTES.md` and `beta-review-notes.txt` goes in with the next build. Keep them in sync.
 
 ## 1. Notes for the reviewer
 
@@ -9,10 +9,18 @@ Pixel Kingdom Rumble is an original pixel-art zombie survival game, platformer a
 sign-in is needed, and the app collects no data.
 
 How to try each mode (all free except Shadow Contracts):
-- ZOMBIES (first main-menu button): LAST STAND > SOLO starts a round-based run (pick Hollow Block, Salt Pier or Rail
+- STORY QUEST (first main-menu button) opens the KINGDOM PLAZA, a street you walk along. Stand at a door and tap
+  ENTER. The four world buildings open level select (PLAZA brings you back). The five party-quest buildings (Item Race,
+  Balloon Battle, Ring-Out Brawl, Coin Rush, King of the Hill) are matches against CPU rivals, not online.
+- Live player counts on the plaza signs come from Game Center matchmaking activity. They are approximate and show "--"
+  when not signed in. Nothing goes to the developer.
+- QUICK GAME widget (iOS 17+): Home Screen > Edit > Add Widget > Pixel Kingdom Rumble. Tap the arrows to step and
+  JUMP to jump. Clears add Star Shards in the game (Story Quest > STORY STATS).
+- Seasonal looks (autumn harvest, winter snow) switch on by the device date. All of it is in this build; nothing is
+  downloaded or turned on remotely (guideline 2.5.19).
+- ZOMBIES (second main-menu button): LAST STAND > SOLO starts a round-based run (pick Hollow Block, Salt Pier or Rail
   Yard). AI SQUAD adds three computer teammates. ZOMBIE LAND is the open-city campaign. DAILY ORDERS, LOCKER and BOARDS
   are at the bottom of the ZOMBIES menu. Online co-op (ONLINE CO-OP) needs a second Game Center account and is optional.
-- Story Quest: Main Menu > STORY QUEST > pick a hero > pick a level.
 - Arena Clash, Versus, Couch 2P: from the main menu.
 
 In-app purchase "Shadow Contracts" (non-consumable): Main Menu > SHADOW CONTRACTS > UNLOCK ALL CONTRACTS. The first
@@ -28,6 +36,10 @@ asks for friends access first.
 
 | Feature | Path |
 |---|---|
+| Kingdom Plaza, Story worlds | Launch > STORY QUEST > walk to a door > ENTER |
+| Party quests (vs CPU) | STORY QUEST > the party buildings on the plaza (Item Race at the first party door) |
+| Story stats (incl. widget stats) | STORY QUEST > a world > STORY STATS |
+| Home Screen widget | Home Screen > Edit > Add Widget > Pixel Kingdom Rumble > QUICK GAME (iOS 17+) |
 | Zombie survival | Launch > ZOMBIES > LAST STAND > SOLO > (map) |
 | AI teammates | ZOMBIES > LAST STAND > AI SQUAD |
 | Open-world campaign | ZOMBIES > ZOMBIE LAND |
@@ -48,4 +60,10 @@ other mode works offline.
   so it isn't a paid loot box.
 - **Multiplayer safety:** no chat and no user content. Players see each other's Game Center nicknames only, inside
   matches made by Game Center.
+- **Live player counts:** Game Center `queryPlayerGroupActivity` for each place, plus a short hosted matchmaking
+  request (cancelled after 6 s, never matches anyone into a game) so the place counts the player. It runs only while
+  the player is in the plaza, a Story level or a party quest. It's skipped and never cancels anything while Online
+  Co-op is searching or playing.
+- **Widget:** WidgetKit extension with App Intents buttons. Its state stays in the app's own App Group on the device.
+  No network.
 - **Encryption:** only Apple system networking; `ITSAppUsesNonExemptEncryption = NO`.

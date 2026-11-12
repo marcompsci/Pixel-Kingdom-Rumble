@@ -22,7 +22,12 @@ Each step says how it is checked. A step that wasn't run is left unticked. Never
 
 9. Install from TestFlight on an iPhone. Cold start; play 5 minutes; background and come back; lock and unlock the phone.
 10. ZOMBIES: Last Stand solo on each map; AI squad; Zombie Land for one mission; daily orders, Locker and Boards pages.
-11. Story Quest one level; Arena Clash one match; Versus one match.
+11. Story Quest: walk the Kingdom Plaza, enter every building, come back with PLAZA; play each party quest once;
+    one Story level. Arena Clash one match; Versus one match.
+11a. Quick Game widget (iOS 17+ device): add it, clear a stage, open the game, and check that Story Stats and Star
+     Shards updated.
+11b. Live counts: signed out, the signs show "--". Signed in on two phones, the counts move. While one phone searches in
+     ONLINE CO-OP, the other walking the plaza must not cancel that search.
 12. Shadow Contracts: buy with a sandbox account; delete and reinstall; RESTORE PURCHASE brings it back; cancelling shows "Purchase cancelled."
 13. Online co-op on two iPhones with two Game Center accounts (the store text promises it).
 14. iPad (while the app supports iPad): menus, one Last Stand round, share sheet.

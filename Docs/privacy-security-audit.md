@@ -1,4 +1,4 @@
-# Privacy and security audit (17 Oct 2026)
+# Privacy and security audit (17 Oct 2026, re-checked 12 Nov 2026)
 
 ## Data inventory
 
@@ -10,6 +10,8 @@
 | Game Center friends rank | Read on device by GameKit after iOS asks | No (only Apple's service is queried) | The user |
 | Photos the user saves | Photo library (add only, through the share sheet) | Only if the user shares | The user |
 | Purchases | StoreKit | Yes, to Apple | Apple |
+| Quick Game widget run and stats (12 Nov) | App Group `group.com.marcompsci.pixelkingdomrumble` (UserDefaults), shared only by the game and its widget | No | Only the user |
+| Live player counts (12 Nov) | GameKit: a hosted matchmaking request for the place's player group (cancelled after 6 s) and `queryPlayerGroupActivity` | Yes, to Apple Game Center only, and only when signed in | Apple. Other players see an aggregate number, never an identity. The developer receives nothing |
 
 Result: the developer collects no data. That matches the App Privacy label ("Data Not Collected"; recheck in App Store
 Connect), `PRIVACY.md`, and the app privacy manifest (`NSPrivacyCollectedDataTypes` empty, `NSPrivacyTracking`
@@ -28,6 +30,9 @@ false).
 | Purpose strings | OK | `NSPhotoLibraryAddUsageDescription`, `NSGKFriendListUsageDescription`; no camera, microphone, location or tracking use |
 | Privacy policy access | OK | `PRIVACY.md` on GitHub (HTTP 200); set as the privacy URL for the App Store and TestFlight |
 | Account deletion | Not applicable | No accounts. Deleting the app deletes all local data |
+| Widget privacy manifest (12 Nov) | OK | `Native/QuickGameWidget/PrivacyInfo.xcprivacy`: no tracking, no data collected, UserDefaults 1C8F.1. UnityFramework also declares 1C8F.1 for the game's App Group read (`PKRWidget.mm`). Gate-checked |
+| Widget network (12 Nov) | OK | No `URLSession` or URLs in the widget's Swift. Gate-checked |
+| Live counts lifecycle (12 Nov) | **Fixed** | Pings had kept running after the player left the plaza, and each one ended with `[GKMatchmaker cancel]`, which could stop a real Online Co-op search. Now they are owner-scoped (`LivePresence.Enter/Leave(owner)`), stop when the scene goes, and are skipped while co-op is busy (`PKR_MP_State`). PlayMode test `Plaza_StopsAnnouncing_WhenThePlayerLeaves`; gate checks for both |
 | Privacy manifests | Fixed | App target manifest added; UnityFramework manifest declares FileTimestamp (C617.1/0A2A.1), UserDefaults (CA92.1), SystemBootTime (35F9.1); UnityRuntime.framework declares its own |
 | Third-party SDKs | None besides Unity IAP (StoreKit) | `Packages/manifest.json` |
 | Export compliance | Exempt | `ITSAppUsesNonExemptEncryption = NO`; App Store Connect shows `usesNonExemptEncryption=False` |
@@ -42,3 +47,4 @@ this file together:
 - adding analytics or ads
 - adding chat or user-generated content (guideline 1.2: report, block, filter, contact)
 - adding sign-in (4.8, and in-app account deletion under 5.1.1(v))
+- sending anything new through Game Center (the gate checks that PRIVACY.md covers the live counts and the widget)

@@ -1,11 +1,67 @@
 # Apple compliance report: Pixel Kingdom Rumble 1.0
 
-_Audit date: 17 Oct 2026. Repo commit: see git log. App Store Connect app 6821419588, bundle `com.marcompsci.pixelkingdomrumble`._
+_Audit dates: 17 Oct 2026; re-audit 12 Nov 2026._ Repo commit: see git log. App Store Connect app 6821419588, bundle `com.marcompsci.pixelkingdomrumble`._
 
 These five documents live in `Docs/` (not `docs/`): the Mac's file system is case-insensitive and the repo already
 has `Docs/`, so a second `docs/` folder would collide there.
 
-## Release-readiness result: **CONDITIONAL**
+## Re-audit 12 Nov 2026 (features added since 17 Oct)
+
+**Release-readiness result: CONDITIONAL.** Every automated gate passes on commit `7083b39` and on the release archive
+**1.0 (20261112.1455)**, which was archived but **not uploaded**. Manual Apple account actions and on-device checks remain
+(see "Still open" below). This is not a PASS, and App Review approval is never guaranteed.
+
+What changed since 17 Oct (all checked in the code):
+- Kingdom Plaza: a walkable Story Quest hub, with live player counts from Game Center in a new plugin `PKRPresence.mm`.
+- Five party quests vs CPU: Item Race, Balloon Battle, Ring-Out Brawl, Coin Rush and King of the Hill.
+- The Quick Game Home Screen widget: a WidgetKit and App Intents extension, iOS 17+, sharing App Group
+  `group.com.marcompsci.pixelkingdomrumble`.
+- Live seasons that switch by the device date, plus menu and UI polish.
+- No new SDKs, servers, network calls, sign-in, chat, purchases or tracking.
+
+| # | Guideline / requirement | Where | Severity | Concern | Remediation | Done? | Verified by |
+|---|---|---|---|---|---|---|---|
+| N1 | 2.1 App Completeness (crashes and bugs); GameKit used as intended | `PKRPresence.mm`, `LivePresence.cs` | **HIGH** | Live-count pings never stopped once started: `LivePresence.Leave()` was never called, so a ping went out every 45 s anywhere in the app. Each ping ended with `[GKMatchmaker cancel]`, which could also kill an Online Co-op search in progress. | Pings are now owned by the scene that started them (`Enter/Leave(owner)`) and stop when it's destroyed. They are skipped, and never cancel, while co-op is matchmaking or connected (`PKR_MP_State` 1 or 2). | **Yes** | New PlayMode test `Plaza_StopsAnnouncing_WhenThePlayerLeaves` passes. The gate checks for the guard and the leave; a mutation test confirmed it FAILs when the guard is removed. The co-op interaction itself still needs two devices (manual). |
+| N2 | 5.1.1(i) privacy policy accuracy | `PRIVACY.md` | MEDIUM | The policy didn't describe the live counts (matchmaking pings and activity queries to Game Center). | Added a "Live player counts" section: only when signed in, only while in those places, Apple only, nothing to the developer. | **Yes** | Gate: "Privacy policy covers the plaza's live player counts"; URL HTTP 200 (asc_audit) |
+| N3 | Privacy manifests and required-reason APIs | `Native/QuickGameWidget/PrivacyInfo.xcprivacy`, `IOSPostBuild.cs` | MEDIUM | The widget extension needs its own manifest, and the App Group UserDefaults reason (1C8F.1) must be declared by both the widget and the game. | Already in place. Now gate-checked. | Yes (check added) | The release archive lists 4 PrivacyInfo files, including `PlugIns/QuickGameWidget.appex/PrivacyInfo.xcprivacy`. `--xcode` gate PASS |
+| N4 | 2.3 Accurate metadata; 2.2 beta test info | `Docs/AppStore/whats-to-test.txt`, `beta-review-notes.txt`, `REVIEW_NOTES.md` | MEDIUM | The reviewer notes still said ZOMBIES is the first menu button (it's STORY QUEST now), and the new features weren't mentioned. | Rewrote all three for the next build: plaza navigation, party quests vs CPU, approximate counts, widget path, seasons. | Yes (repo). **App Store Connect still has the 16 Oct text, which matches build 2133.** Paste with the next upload. | Gate (no third-party names) PASS; lengths: What to Test 1,720, beta notes 623 characters |
+| N5 | 2.5.19 Bait-and-switch (new, 16 Oct 2026) | `SeasonCalendar`, `SeasonDirector` | LOW | Holiday looks switch on by date after review. All of the content and code is in the binary, and nothing is downloaded or flagged remotely. | The review notes now say so explicitly, so it reads as documented behaviour, not a hidden feature. | Yes | Code review: no network or remote config in game code; gate: no `UnityWebRequest`/analytics |
+| N6 | 5.2 Intellectual property | `Party.cs` mode and item names | LOW | Modes are inspired by kart racers and platform fighters. No blocked names or characters appear. "Balloon Battle" is also the name of the battle mode in a well-known kart series. It's a generic phrase, not a trademark I could find, but it's associated with that series. | Not changed. **Omari decides** whether to rename it (for example "Balloon Bash"). | No (decision) | Gate: no third-party game names PASS |
+| N7 | 2.3.1 / 2.5.19 hidden features | widget, plaza | INFO (OK) | — | The widget and plaza are reachable and documented in the review notes. No tester-only code outside `#if PKR_TESTER`. | — | Gate PASS |
+| N8 | 1.2 UGC; 4.8 login; 3.1 payments | — | Not applicable (unchanged) | The live counts are aggregate numbers only: no names, chat or profiles. Party quests are vs CPU. There are no new purchases; widget clears pay earned Star Shards, never money. | — | — | Code review |
+| N9 | 2.2 / TestFlight | App Store Connect | **BLOCKER for external TestFlight (unconfirmed)** | Build 2133's external state is still `READY_FOR_BETA_SUBMISSION`. The 17 Oct refusal was `BETA_CONTRACT_MISSING`. The API can't read the agreements page, so I can't tell whether Omari has accepted the agreement since. | Omari: App Store Connect > Business > Agreements. Accept any pending agreement as Account Holder, then decide whether to submit 2133 or upload 1455 (it has the new features) first. | **No** (needs Omari) | asc_audit 12 Nov 14:45 |
+
+Guideline sources checked on 12 Nov: Apple's 16 Oct 2026 news post ("Strengthening App Review Guidelines against
+nonconsensual intimate imagery and bait-and-switch apps": 1.2, the new 2.5.19, section 5) and a public change summary
+of the same revision (submission checklist, regulated-app documentation, creative assets, specific update descriptions).
+Only 2.5.19, and the call for clear "What's New" text, apply to this game.
+
+### Checks run 12 Nov (real results)
+
+| Check | Result |
+|---|---|
+| Mac Unity check at `7083b39`: compile, EditMode, PlayMode | 0 errors; EditMode 396/396; PlayMode 164 passed, 0 failed, 2 skipped (the balance labs); widget Swift tests 60/60 |
+| Compliance gate (repo) | PASS: 0 FAIL, 0 WARN (37 checks, including 9 new ones for presence, the widget and the policy) |
+| Release gate: export, `--xcode` gate, archive | PASS, `ARCHIVE SUCCEEDED`, **1.0 (20261112.1455)**; deployment targets 15.0 (app) and 17.0 (widget). **Nothing uploaded** |
+| App Store Connect audit (read-only) | 0 FAIL, 0 WARN; IAP READY_TO_SUBMIT; version 1.0 PREPARE_FOR_SUBMISSION with build 2133 |
+| Engine-free core tests in the cloud | **Not run this time** (no .NET in this cloud session). The same tests run inside the Mac EditMode suite, which passed |
+
+### Still open (manual; I can't do these)
+
+1. Accept any pending App Store Connect agreement (N9).
+2. Say whether to upload build 20261112.1455 to TestFlight. Then paste `whats-to-test.txt` and the new review notes.
+3. On two iPhones: Online Co-op (F6), plus walking the plaza on one phone while the other searches in co-op (N1).
+4. Widget on an iOS 17+ device: add it, clear a stage, check the Star Shards in the game.
+5. Real iPad in landscape (F3).
+6. App Privacy in App Store Connect still says "Data Not Collected". That's still true: only Apple's Game Center gets
+   the live-count pings.
+7. Decide on the "Balloon Battle" name (N6).
+
+---
+
+## 17 Oct 2026 audit (kept for history)
+
+### Release-readiness result then: **CONDITIONAL**
 
 - **External TestFlight:** CONDITIONAL. Build **20261016.2133** passed every automated gate, then uploaded and
   processed. It contains all the fixes below, is attached to version 1.0, and is in the external group "Public
