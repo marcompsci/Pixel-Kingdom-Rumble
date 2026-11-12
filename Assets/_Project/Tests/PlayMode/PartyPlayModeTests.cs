@@ -71,6 +71,20 @@ namespace PKR.Tests
         }
 
         [UnityTest]
+        public IEnumerator Plaza_StopsAnnouncing_WhenThePlayerLeaves()
+        {
+            yield return Load(SceneIds.KingdomPlaza);
+            yield return null;
+            Assert.AreEqual(KingdomPlaza.PlazaGroup, LivePresence.Here, "the plaza announces itself");
+            var old = SceneManager.GetActiveScene();
+            var empty = SceneManager.CreateScene("LeftPlaza" + Time.frameCount);
+            SceneManager.SetActiveScene(empty);
+            yield return SceneManager.UnloadSceneAsync(old);
+            yield return null;
+            Assert.AreEqual(-1, LivePresence.Here, "no live-count pings after leaving (they could cancel an Online Co-op search)");
+        }
+
+        [UnityTest]
         public IEnumerator ItemRace_CountsDown_ThenCpuRacersRun()
         {
             yield return Load(SceneIds.ItemRace);

@@ -21,6 +21,7 @@ namespace PKR
         static LivePresence _runner;
         static readonly HashSet<int> Watched = new HashSet<int>();
         static int _here = -1;
+        static Object _owner;
         float _nextQuery, _nextAnnounce;
 
         static LivePresence Runner
@@ -45,13 +46,24 @@ namespace PKR
 #endif
 
         /// <summary>The player is now in this place (a player group); -1 when they leave the plaza and its quests.</summary>
-        public static void Enter(int group)
+        /// <param name="owner">The scene object that put the player there; only its Leave clears the place, so a
+        /// level being torn down after the next one has started can't cancel the new one.</param>
+        public static void Enter(int group, Object owner)
         {
             _here = group;
+            _owner = owner;
             Runner._nextAnnounce = 0f;
         }
 
-        public static void Leave() => _here = -1;
+        public static void Leave(Object owner)
+        {
+            if (_owner != owner) return;
+            _here = -1;
+            _owner = null;
+        }
+
+        /// <summary>The place being announced, or -1 when the player isn't in the plaza, a Story level or a party quest.</summary>
+        public static int Here => _here;
 
         /// <summary>Keep this place's count fresh (every LiveCount.RefreshSeconds).</summary>
         public static void Watch(int group)
@@ -74,6 +86,7 @@ namespace PKR
         void Update()
         {
             float now = Time.unscaledTime;
+            if (_here >= 0 && _owner == null) _here = -1; // its scene is gone
             if (_here >= 0 && now >= _nextAnnounce)
             {
                 _nextAnnounce = now + LiveCount.AnnounceSeconds;

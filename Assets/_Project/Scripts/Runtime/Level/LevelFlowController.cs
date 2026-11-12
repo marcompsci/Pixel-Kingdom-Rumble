@@ -63,7 +63,7 @@ namespace PKR
             if (level != null && level.id == KingdomPlaza.RaceLevelId) gameObject.AddComponent<RaceDirector>();
             // Story levels count toward their world building's live players in the plaza.
             int worldGroup = level != null ? KingdomPlaza.WorldGroup(StoryWorlds.WorldOf(level.id)) : -1;
-            if (worldGroup >= 0) LivePresence.Enter(worldGroup);
+            if (worldGroup >= 0) LivePresence.Enter(worldGroup, this);
             if (GetComponent<JuiceDirector>() == null) gameObject.AddComponent<JuiceDirector>();
             if (roster == null)
                 Debug.LogWarning("[LevelFlowController] No roster assigned, so clearing this level unlocks no heroes. " +
@@ -82,6 +82,7 @@ namespace PKR
 
         void OnDestroy()
         {
+            LivePresence.Leave(this); // stop the live-count pings once the player leaves the level, plaza or race
             if (Current == this) Current = null;
             Pickup.MagnetRadius = 0f;
         }

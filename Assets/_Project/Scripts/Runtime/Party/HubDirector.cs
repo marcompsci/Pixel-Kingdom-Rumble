@@ -54,7 +54,7 @@ namespace PKR
                 LivePresence.Watch(b.playerGroup);
             }
             LivePresence.Watch(KingdomPlaza.PlazaGroup);
-            LivePresence.Enter(KingdomPlaza.PlazaGroup);
+            LivePresence.Enter(KingdomPlaza.PlazaGroup, _flow != null ? (Object)_flow : this);
 
             // Back from a quest: stand at its door.
             var hero = _flow != null ? _flow.Player : null;

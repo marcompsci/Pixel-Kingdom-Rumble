@@ -72,7 +72,7 @@ namespace PKR
 
             StoryHUD.HideRunStats = true;
             PartyHUD.Show("ITEM RACE", Line);
-            LivePresence.Enter(PartyModes.Info(PartyMode.ItemRace).playerGroup);
+            LivePresence.Enter(PartyModes.Info(PartyMode.ItemRace).playerGroup, _flow != null ? (Object)_flow : this);
 
             // 3-2-1-GO with everyone held at the line.
             var router = hero.GetComponent<PlayerInputRouter>();

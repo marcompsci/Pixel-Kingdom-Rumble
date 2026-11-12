@@ -70,12 +70,13 @@ namespace PKR
             }
             var info = PartyModes.Info(_mode);
             PartyHUD.Show(info.name, Line, belowMatchClock: true);
-            LivePresence.Enter(info.playerGroup);
+            LivePresence.Enter(info.playerGroup, this);
         }
 
         public void Clear()
         {
             Running = false;
+            LivePresence.Leave(this);
             foreach (var u in _unsubscribe) u();
             _unsubscribe.Clear();
             foreach (var b in _boxes) if (b != null) Destroy(b.gameObject);

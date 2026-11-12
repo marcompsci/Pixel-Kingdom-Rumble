@@ -1,21 +1,24 @@
-Thanks for testing Pixel Kingdom Rumble! This build leads with ZOMBIES (the first main-menu button).
+Thanks for testing Pixel Kingdom Rumble! This build leads with STORY QUEST (the first main-menu button).
 
 New in this build:
-- GRAVEMOOR PARK, a fourth Last Stand map, and ZOMBIE LAND CHAPTER 4: COLD HARBOR (after the Curator).
-- New dead: SPLITTERS (fall into two halves) and BURROWERS (tunnel under the street; step away when you see "!").
-- THE KINDLER, a new wonder weapon in the mystery box: the zombie it hits fights the others for a while.
-- OVERCHARGE (take a forged gun through the forge again), weapon finishes (LOCKER > ARMORY) and PRESTIGE at rank 30.
-- Online co-op: a lobby list, START NOW, a connection readout, and dropped players get their hero back.
-- Settings > DISPLAY & ACCESS: graphics (Auto / High / Battery saver), Show FPS, colour vision, reduced motion,
-  left-handed controls, bigger touch targets, sound cues on screen.
-- New music for each zombie map and for boss fights.
+- KINGDOM PLAZA: Story Quest now opens in a street you can walk. Its buildings lead to the four Story worlds and five
+  party quests. The sign over each building shows your progress and roughly how many players are there right now
+  (from Game Center; "--" when it can't tell, for example when you're not signed in).
+- Five party quests against CPU rivals: ITEM RACE, BALLOON BATTLE, RING-OUT BRAWL, COIN RUSH and KING OF THE HILL,
+  with item boxes (Dash Fizz, Bubble Shield, Seeker Star, Slick Puddle, Thunder Bell).
+- QUICK GAME widget (iOS 17+): a tiny Story Quest stage on your Home Screen. Tap left/right to step, JUMP to jump.
+  Clears pay Star Shards in the game; see Story Quest > STORY STATS.
+- Live seasons: Story Quest dresses itself for the real date (autumn harvest now, winter snow from December).
+- Story Stats page, time medals, menu and font clean-up.
 
 Please try:
-1. ZOMBIES > LAST STAND on Gravemoor Park. Light the three lanterns. Too hard? Too easy?
-2. ZOMBIE LAND: if you've finished chapter 3, take the road by the rail depot to Cold Harbor.
-3. With a friend on TestFlight: ONLINE CO-OP. Does it feel smooth? What happens if one of you loses signal?
-4. Settings > DISPLAY & ACCESS: anything that doesn't do what it says?
-5. Long sessions: does the phone get hot or the game slow down? (Show FPS helps.)
+1. STORY QUEST: walk the plaza, enter each building, and come back with PLAZA. Any dead ends?
+2. Each party quest once. Fair? Too long? Do the CPUs ever get stuck?
+3. Add the QUICK GAME widget (touch and hold the Home Screen > + > Pixel Kingdom Rumble). Clear a stage, then open the
+   game: do the Star Shards and stats show up?
+4. With a friend: are the live counts on the plaza signs believable? (They are approximate.)
+5. ZOMBIES and ONLINE CO-OP still work as before.
 
-Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge).
+Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge). Party quests are against the
+computer, not online.
 Feedback: take a screenshot in the game and tap "Share Beta Feedback", or email rodlonbell16@gmail.com.

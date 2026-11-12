@@ -128,6 +128,10 @@ def check_privacy_policy():
         res("PASS" if re.search(r"(?i)friends", p) else "FAIL", "Privacy policy covers Game Center friends access")
     if "UIActivityViewController" in mm:
         res("PASS" if re.search(r"(?i)photo", p) else "FAIL", "Privacy policy covers saving to Photos")
+    if "queryPlayerGroupActivity" in mm or "findPlayersForHostedRequest" in mm:
+        res("PASS" if re.search(r"(?i)live player counts", p) else "FAIL", "Privacy policy covers the plaza's live player counts (Game Center matchmaking pings)")
+    if "suiteName" in mm or os.path.isdir(os.path.join(ROOT, "Native", "QuickGameWidget")):
+        res("PASS" if re.search(r"(?i)widget", p) else "FAIL", "Privacy policy covers the Quick Game widget's shared storage")
     sdk = ("Firebase", "UnityEngine.Analytics", "Unity.Services.Analytics", "AppsFlyer", "Adjust.start", "FB.Init",
            "GoogleMobileAds", "Amplitude.Instance", "Mixpanel", "UnityEngine.Advertisements", "IronSource", "AppLovin")
     allcode = "\n".join(open(f, encoding="utf-8", errors="replace").read() for f in cs_files())
@@ -135,6 +139,36 @@ def check_privacy_policy():
     analytics = [x for x in sdk if x in allcode] + [x for x in ("com.unity.services.analytics", "com.unity.ads", "com.google.firebase") if x in manifest]
     res("FAIL" if analytics else "PASS", "No analytics/ads/tracking SDKs (the policy and App Privacy label say none)", ", ".join(analytics))
     res("PASS" if read("SUPPORT.md") else "FAIL", "SUPPORT.md (support URL target) exists")
+
+
+def check_presence_and_widget():
+    """Kingdom Plaza live counts (PKRPresence.mm) and the Quick Game widget (Native/QuickGameWidget)."""
+    pres = read("Assets/Plugins/iOS/PKRPresence.mm")
+    if pres:
+        guarded = "PKRCoopBusy()" in pres and "PKR_MP_State" in pres and re.search(r"if \(!PKRCoopBusy\(\)\) \[\[GKMatchmaker sharedMatchmaker\] cancel\]", pres)
+        res("PASS" if guarded else "FAIL", "Live counts never cancel an Online Co-op search (matchmaker cancel guarded)")
+        lp = read("Assets/_Project/Scripts/Runtime/Party/LivePresence.cs") or ""
+        code = "\n".join(open(f, encoding="utf-8", errors="replace").read() for f in cs_files())
+        enters = len(re.findall(r"LivePresence\.Enter\(", code))
+        leaves = len(re.findall(r"LivePresence\.Leave\(", code))
+        res("PASS" if "_owner == null" in lp and leaves >= 2 else "FAIL", "Live-count pings stop when the player leaves", f"{enters} Enter, {leaves} Leave")
+        res("PASS" if re.search(r"\? \(int\?\)null|return null;", lp) and "-- LIVE" in (read("Assets/_Project/Scripts/Core/Party/Party.cs") or "") else "FAIL",
+            "Unknown live counts show '--', never a made-up number")
+    w = os.path.join(ROOT, "Native", "QuickGameWidget")
+    if os.path.isdir(w):
+        pm = os.path.join(w, "PrivacyInfo.xcprivacy")
+        d = plistlib.load(open(pm, "rb")) if os.path.exists(pm) else {}
+        reasons = [r for t in d.get("NSPrivacyAccessedAPITypes", []) if t.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategoryUserDefaults"
+                   for r in t.get("NSPrivacyAccessedAPITypeReasons", [])]
+        res("PASS" if d.get("NSPrivacyTracking") is False and not d.get("NSPrivacyCollectedDataTypes") and "1C8F.1" in reasons else "FAIL",
+            "Widget privacy manifest: no tracking, no data collected, App Group UserDefaults (1C8F.1)")
+        swift = "\n".join(open(f, encoding="utf-8").read() for f in glob.glob(os.path.join(w, "*.swift")))
+        res("FAIL" if re.search(r"URLSession|URLRequest|https?://", swift) else "PASS", "Widget makes no network requests")
+        pb = read("Assets/_Project/Scripts/Editor/IOSPostBuild.cs") or ""
+        grp = re.search(r'AppGroup = "([^"]+)"', pb)
+        ent = plistlib.load(open(os.path.join(w, "QuickGameWidget.entitlements"), "rb")).get("com.apple.security.application-groups", [])
+        res("PASS" if grp and grp.group(1) in ent and grp.group(1) in swift else "FAIL", "Widget, game and post-build use the same App Group", grp.group(1) if grp else "")
+        res("PASS" if "1C8F.1" in pb else "FAIL", "Required-reason API: App Group UserDefaults (1C8F.1) declared for UnityFramework")
 
 
 def check_assets():
@@ -255,7 +289,7 @@ def check_xcode(path):
 
 def main():
     print("PKR Apple compliance gate")
-    check_secrets(); check_tester_code(); check_post_build(); check_privacy_policy(); check_assets(); check_ip()
+    check_secrets(); check_tester_code(); check_post_build(); check_privacy_policy(); check_presence_and_widget(); check_assets(); check_ip()
     check_store(); check_versions()
     if "--xcode" in sys.argv:
         check_xcode(sys.argv[sys.argv.index("--xcode") + 1])

@@ -1,6 +1,6 @@
 # Pixel Kingdom Rumble — Privacy Policy
 
-_Last updated: November 1, 2026_
+_Last updated: November 12, 2026_
 
 Pixel Kingdom Rumble does not collect, store, sell or share any personal information. We run no servers of our own.
 
@@ -13,6 +13,11 @@ Pixel Kingdom Rumble does not collect, store, sell or share any personal informa
 - **Game Center (optional).** If you are signed in to Apple Game Center, your achievements and best scores are sent to
   Apple's Game Center so they appear on leaderboards. That is handled by Apple under
   [Apple's Privacy Policy](https://www.apple.com/legal/privacy/); we never receive your Apple Account or contact details.
+- **Live player counts (optional).** In the Kingdom Plaza, the signs show roughly how many players are in each place.
+  While you are in the plaza, a Story Quest level or a party quest, and only if you are signed in to Game Center, the
+  game sends Game Center a short matchmaking request for that place (it is cancelled after a few seconds and never
+  puts you in a match) and asks Game Center for each place's recent activity count. Only Apple's Game Center sees
+  this; other players see a number, never who you are, and we receive nothing.
 - **Online co-op (optional).** Online Last Stand uses Game Center matchmaking. While you play together, the game sends
   gameplay data (hero positions, actions, the round and score) and shows each player's Game Center nickname to the other
   players in that match. This goes through Apple's Game Center service directly between the players' devices; we do not
