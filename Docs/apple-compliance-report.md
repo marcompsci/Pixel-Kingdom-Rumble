@@ -41,7 +41,7 @@ Only 2.5.19, and the call for clear "What's New" text, apply to this game.
 | Check | Result |
 |---|---|
 | Mac Unity check at `7083b39`: compile, EditMode, PlayMode | 0 errors; EditMode 396/396; PlayMode 164 passed, 0 failed, 2 skipped (the balance labs); widget Swift tests 60/60 |
-| Compliance gate (repo) | PASS: 0 FAIL, 0 WARN (37 checks, including 9 new ones for presence, the widget and the policy) |
+| Compliance gate (repo) | PASS: 0 FAIL, 0 WARN (36 repo checks, 9 of them new for presence, the widget and the policy) |
 | Release gate: export, `--xcode` gate, archive | PASS, `ARCHIVE SUCCEEDED`, **1.0 (20261112.1455)**; deployment targets 15.0 (app) and 17.0 (widget). **Nothing uploaded** |
 | App Store Connect audit (read-only) | 0 FAIL, 0 WARN; IAP READY_TO_SUBMIT; version 1.0 PREPARE_FOR_SUBMISSION with build 2133 |
 | Engine-free core tests in the cloud | **Not run this time** (no .NET in this cloud session). The same tests run inside the Mac EditMode suite, which passed |
