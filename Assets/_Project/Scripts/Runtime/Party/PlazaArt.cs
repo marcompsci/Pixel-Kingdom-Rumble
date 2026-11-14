@@ -198,6 +198,47 @@ namespace PKR
             return Make("crown", p, new Vector2(0.5f, 0f));
         }
 
+        /// <summary>The plaza notice board: a wooden board on two posts with pinned notes (pivot at the feet).</summary>
+        public static Sprite NoticeBoard()
+        {
+            if (Cached("board", out var s)) return s;
+            var p = new Px(56, 60);
+            var wood = Rgb(150, 98, 56); var dark = Shade(wood, 0.7f);
+            p.Rect(8, 0, 12, 44, dark); p.Rect(43, 0, 47, 44, dark);          // posts
+            p.Rect(2, 20, 53, 54, wood);                                     // board
+            p.Rect(2, 52, 53, 54, Shade(wood, 1.15f));
+            p.Rect(4, 22, 51, 24, dark);
+            p.Tri(54, 59, 28f, 29f, Rgb(200, 70, 60));                       // little roof
+            var notes = new[] { Rgb(250, 240, 210), Rgb(255, 214, 90), Rgb(170, 220, 255), Rgb(255, 170, 190) };
+            p.Rect(7, 30, 18, 46, notes[0]); p.Rect(22, 34, 33, 48, notes[1]); p.Rect(37, 28, 49, 44, notes[2]); p.Rect(23, 26, 31, 31, notes[3]);
+            for (int x = 9; x <= 16; x += 2) p.Set(x, 40, dark);
+            for (int x = 24; x <= 31; x += 2) p.Set(x, 42, dark);
+            for (int x = 39; x <= 47; x += 2) p.Set(x, 38, dark);
+            p.Outline(Ink);
+            return Make("board", p, new Vector2(0.5f, 0f));
+        }
+
+        /// <summary>A plaza townsperson (original, simple): hat, head, coat and legs in one of a few outfits.</summary>
+        public static Sprite Townsfolk(int variant, int frame)
+        {
+            string key = "folk_" + variant + "_" + frame;
+            if (Cached(key, out var s)) return s;
+            var coats = new[] { Rgb(90, 140, 210), Rgb(200, 90, 90), Rgb(110, 170, 100), Rgb(210, 160, 70), Rgb(150, 110, 190) };
+            var skins = new[] { Rgb(250, 214, 180), Rgb(205, 150, 105), Rgb(140, 95, 65), Rgb(232, 182, 140) };
+            var hats = new[] { Rgb(60, 50, 70), Rgb(230, 220, 200), Rgb(170, 60, 60), Rgb(70, 110, 160) };
+            var coat = coats[variant % coats.Length]; var skin = skins[variant % skins.Length]; var hat = hats[(variant / 2) % hats.Length];
+            var p = new Px(16, 24);
+            int step = frame % 2;
+            p.Rect(5, 0, 6, 4 + step, Rgb(60, 50, 60)); p.Rect(9, 0, 10, 5 - step, Rgb(60, 50, 60)); // legs
+            p.Rect(4, 5, 11, 14, coat); p.Rect(4, 5, 11, 6, Shade(coat, 0.75f));                   // coat
+            p.Rect(3, 8, 3, 13, Shade(coat, 0.85f)); p.Rect(12, 8, 12, 13, Shade(coat, 0.85f));    // arms
+            p.Ellipse(8f, 17.5f, 3.6f, 3.4f, skin);                                                 // head
+            p.Set(9, 18, Ink); p.Set(10, 18, Ink);                                                  // eye (facing right)
+            p.Rect(4, 20, 11, 21, hat); p.Rect(5, 22, 10, 23, hat);                                 // hat
+            p.Outline(Ink);
+            return Make(key, p, new Vector2(0.5f, 0f));
+        }
+
         /// <summary>A plain white square (zones, bars, sparks).</summary>
         public static Sprite Solid()
         {

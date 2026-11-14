@@ -36,10 +36,10 @@ namespace PKR.Core
         public bool Rated => humans == 1 && mode != MatchMode.Training && party == PartyMode.None;
         public float DurationSeconds => party != PartyMode.None && PartyModes.Info(party).seconds > 0f ? PartyModes.Info(party).seconds : minutes * 60f;
 
-        /// <summary>The fixed rules of a party quest: one hero against three CPUs.</summary>
+        /// <summary>The fixed rules of a party quest: one hero against three CPUs at the plaza's party difficulty.</summary>
         public static ArenaMatchConfig ForParty(PartyMode p, BotLevel level = BotLevel.Normal)
         {
-            var c = new ArenaMatchConfig { party = p, humans = 1, botCount = 3, autoLevel = true, botLevel = level };
+            var c = new ArenaMatchConfig { party = p, humans = 1, botCount = 3, autoLevel = false, botLevel = level };
             c.mode = p == PartyMode.CoinRush || p == PartyMode.KingOfTheHill ? MatchMode.Timed : MatchMode.Stock;
             c.stocks = 3;
             c.Clamp();

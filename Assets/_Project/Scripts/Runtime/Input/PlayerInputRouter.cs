@@ -30,6 +30,8 @@ namespace PKR
         public TouchControlsUI Touch => touchControls;
         /// <summary>Ignore move/jump/attack input (round intros in Versus) while pause still works.</summary>
         public bool GameplayLocked { get; set; }
+        /// <summary>Item Race AUTO-RUN (Settings on the plaza notice board): the hero runs right on their own.</summary>
+        public static bool AutoRunRight { get; set; }
         /// <summary>Couch play: "P1" / "P2" (null in single player).</summary>
         public string PlayerTag { get; private set; }
 
@@ -108,6 +110,8 @@ namespace PKR
             Vector2 keys = _devicesOff ? Vector2.zero : _move.ReadValue<Vector2>();
             Vector2 stick = touch ? touchControls.StickValue : Vector2.zero;
             intent.Move = Vector2.ClampMagnitude(stick.sqrMagnitude > keys.sqrMagnitude ? stick : keys, 1f);
+            // Accessibility (Item Race AUTO-RUN): keep running right unless the player pushes left.
+            if (AutoRunRight && intent.Move.x > -0.3f) intent.Move = new Vector2(1f, intent.Move.y);
 
             float now = Time.time;
             Route(intent.Jump, _jump, ControlIds.Jump, touch, now);

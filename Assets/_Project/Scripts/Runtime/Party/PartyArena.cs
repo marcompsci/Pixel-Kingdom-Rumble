@@ -69,7 +69,8 @@ namespace PKR
                 BuildZone();
             }
             var info = PartyModes.Info(_mode);
-            PartyHUD.Show(info.name, Line, belowMatchClock: true);
+            PartyHUD.Show(PartyFlow.CupActive ? "KINGDOM CUP  ·  " + info.name : info.name, Line, belowMatchClock: true);
+            HowToPlay.ShowOnce(_mode);
             LivePresence.Enter(info.playerGroup, this);
         }
 
@@ -81,7 +82,7 @@ namespace PKR
             _unsubscribe.Clear();
             foreach (var b in _boxes) if (b != null) Destroy(b.gameObject);
             _boxes.Clear();
-            foreach (var c in _coins) if (c != null) Destroy(c.gameObject);
+            foreach (var c in _coins) if (c != null) c.Release();
             _coins.Clear();
             _hitsTaken.Clear();
             if (_zone != null) Destroy(_zone.gameObject);
@@ -161,7 +162,7 @@ namespace PKR
 
         void TickCoins()
         {
-            _coins.RemoveAll(c => c == null);
+            _coins.RemoveAll(c => c == null || !c.Live);
             if (Time.time < _nextCoin || _coins.Count >= 14) return;
             _nextCoin = Time.time + 0.8f;
             var stage = _arena.StageRect;
@@ -273,7 +274,7 @@ namespace PKR
             if (_mode == PartyMode.CoinRush)
                 foreach (var c in _coins)
                 {
-                    if (c == null || !c.Collectable) continue;
+                    if (c == null || !c.Live || !c.Collectable) continue;
                     float d = ((Vector2)c.transform.position - from).sqrMagnitude;
                     if (d < bestD) { bestD = d; best = c.gameObject; }
                 }

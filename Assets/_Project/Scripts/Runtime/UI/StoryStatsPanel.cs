@@ -29,7 +29,7 @@ namespace PKR
             var p = UITheme.Current;
             var save = Services.Save != null ? Services.Save.Data : null;
             UIFactory.Clear(_root);
-            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1840f));
+            var panel = UIFactory.Panel(_root, new Vector2(1000f, 1910f));
             UIFactory.Label(panel, "STORY STATS", 72, TextAnchor.MiddleCenter, 110f, title: true);
 
             int cleared = 0, shards = 0, totalShards = 0, secrets = 0, totalSecrets = 0, gold = 0, silver = 0, bronze = 0;
@@ -71,9 +71,16 @@ namespace PKR
                 if (r == null || r.played == 0) { lines.Add($"{info.name}:  not played yet"); continue; }
                 string best = info.mode == PartyMode.ItemRace && r.bestRaceSeconds > 0f
                     ? $"  ·  best {(int)r.bestRaceSeconds / 60}:{r.bestRaceSeconds % 60f:00.0}" : "";
-                lines.Add($"{info.name}:  {Plural.Of(r.played, "match", "matches")}  ·  {Plural.Of(r.wins, "win")}  ·  {r.podiums} on the podium{best}");
+                lines.Add($"{info.name}:  {PartyRanks.Name(PartyRanks.For(r.rankPoints))}  ·  {Plural.Of(r.played, "match", "matches")}  ·  {Plural.Of(r.wins, "win")}  ·  {r.podiums} on the podium{best}");
             }
-            var partyText = UIFactory.Label(panel, string.Join("\n", lines), 28, TextAnchor.MiddleLeft, 200f);
+            var ps = save != null ? save.party : null;
+            if (ps != null)
+            {
+                string Trophy(PartyDifficulty d) => $"{PartyDifficulties.Name(d)} {KingdomCup.TrophyName(ps.BestTrophy(d))}";
+                lines.Add($"KINGDOM CUP:  {Plural.Of(ps.cupsPlayed, "cup")} played  ·  best trophies: {Trophy(PartyDifficulty.Easy)}  ·  {Trophy(PartyDifficulty.Normal)}  ·  {Trophy(PartyDifficulty.Hard)}");
+                lines.Add($"DAILY PARTY CHALLENGE:  {ps.dailyCompleted} done  ·  streak {ps.dailyStreak}");
+            }
+            var partyText = UIFactory.Label(panel, string.Join("\n", lines), 26, TextAnchor.MiddleLeft, 270f);
             partyText.color = p.text;
 
             Section(panel, "QUICK GAME  ·  HOME SCREEN WIDGET");

@@ -276,9 +276,14 @@ namespace PKR
             }
             if (Config.party != PartyMode.None && grantRewards && Services.Save != null)
             {
-                // Party quests pay their own table and count toward STORY STATS.
-                result.starShardReward = PartyResults.Record(Services.Save.Data, Config.party, result.playerPlacement);
-                Services.Save.SaveNow();
+                // Party quests pay their own table (by difficulty) and count toward ranks, the daily challenge, the cup
+                // and STORY STATS.
+                int score = Config.party == PartyMode.BalloonBattle ? Match.Get(0).stocks : Match.Get(0).score;
+                var report = PartyFlow.Finish(new PartyOutcome
+                {
+                    mode = Config.party, placement = result.playerPlacement, score = score, placements = (int[])placements.Clone()
+                });
+                result.starShardReward = report.shards + report.dailyBonus + report.cupBonus;
             }
             else if (Config.mode != MatchMode.Training && grantRewards && Services.Save != null)
             {

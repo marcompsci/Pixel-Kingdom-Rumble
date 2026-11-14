@@ -47,9 +47,10 @@ namespace PKR.Core
     /// <summary>
     /// Item box contents. All take effect the moment they're picked up (no extra button on a phone):
     /// Dash Fizz = a speed burst, Bubble Shield = blocks the next hit, Seeker Star = flies at the nearest rival,
-    /// Slick Puddle = dropped behind you, makes whoever runs into it spin out, Thunder Bell = stuns every rival briefly.
+    /// Slick Puddle = dropped behind you, makes whoever runs into it spin out, Thunder Bell = stuns every rival briefly,
+    /// Gust Fan = a blast of wind that shoves every rival near you away.
     /// </summary>
-    public enum PartyItem { DashFizz = 0, BubbleShield = 1, SeekerStar = 2, SlickPuddle = 3, ThunderBell = 4 }
+    public enum PartyItem { DashFizz = 0, BubbleShield = 1, SeekerStar = 2, SlickPuddle = 3, ThunderBell = 4, GustFan = 5 }
 
     public static class PartyItems
     {
@@ -60,6 +61,7 @@ namespace PKR.Core
             PartyItem.SeekerStar => "SEEKER STAR",
             PartyItem.SlickPuddle => "SLICK PUDDLE",
             PartyItem.ThunderBell => "THUNDER BELL",
+            PartyItem.GustFan => "GUST FAN",
             _ => "",
         };
 
@@ -70,7 +72,7 @@ namespace PKR.Core
         public static int[] Weights(int place, int fighters)
         {
             float back = fighters <= 1 ? 0f : (place - 1) / (float)(fighters - 1); // 0 = leading, 1 = last
-            // DashFizz, BubbleShield, SeekerStar, SlickPuddle, ThunderBell
+            // DashFizz, BubbleShield, SeekerStar, SlickPuddle, ThunderBell, GustFan
             return new[]
             {
                 (int)Math.Round(15 + 30 * back),
@@ -78,6 +80,7 @@ namespace PKR.Core
                 (int)Math.Round(20 + 10 * back),
                 (int)Math.Round(35 - 30 * back),
                 back >= 0.99f ? 15 : back >= 0.5f ? 6 : 0,
+                (int)Math.Round(6 + 10 * back),
             };
         }
 
@@ -278,12 +281,50 @@ namespace PKR.Core
         public int played, wins, podiums;
         /// <summary>Item Race only: fastest finish in seconds (0 = none yet).</summary>
         public float bestRaceSeconds;
+        /// <summary>Party rank points (a win 3, another podium 1): PartyRanks.</summary>
+        public int rankPoints;
     }
 
     [System.Serializable]
     public class PartySave
     {
         public System.Collections.Generic.List<PartyRecord> records = new System.Collections.Generic.List<PartyRecord>();
+        /// <summary>CPU difficulty for party quests (PartyDifficulty).</summary>
+        public int difficulty = (int)PartyDifficulty.Normal;
+        /// <summary>Daily party challenge: the last day (yyyymmdd) it was done, the streak of days in a row, and the total.</summary>
+        public int dailyDoneDay, dailyStreak, dailyCompleted;
+        /// <summary>The Kingdom Cup run in progress (inactive when none).</summary>
+        public CupRun cup = new CupRun();
+        public int cupsPlayed;
+        /// <summary>Best cup trophy (CupTrophy) won on Easy, Normal and Hard.</summary>
+        public int[] trophies = new int[3];
+        /// <summary>The Item Race ghost of your best time (GhostTrack.Encode) and that time.</summary>
+        public string ghost = "";
+        public float ghostSeconds;
+        /// <summary>Accessibility: Item Race runs on its own (you only jump and use the course).</summary>
+        public bool autoRun;
+
+        public PartyDifficulty Difficulty => (PartyDifficulty)System.Math.Max(0, System.Math.Min(2, difficulty));
+
+        public CupTrophy BestTrophy(PartyDifficulty d) => trophies != null && (int)d < trophies.Length ? (CupTrophy)trophies[(int)d] : CupTrophy.None;
+
+        /// <summary>Keep the best trophy per difficulty.</summary>
+        public void AwardTrophy(PartyDifficulty d, CupTrophy t)
+        {
+            if (trophies == null || trophies.Length != 3) trophies = new int[3];
+            int i = (int)d;
+            if ((int)t > trophies[i]) trophies[i] = (int)t;
+        }
+
+        /// <summary>Saves the ghost if this run beat the stored one (or there was none).</summary>
+        public bool OfferGhost(GhostTrack run, float seconds)
+        {
+            if (run == null || run.Count < 2 || seconds <= 0f) return false;
+            if (ghostSeconds > 0f && seconds >= ghostSeconds && !string.IsNullOrEmpty(ghost)) return false;
+            ghost = run.Encode();
+            ghostSeconds = seconds;
+            return true;
+        }
 
         public PartyRecord Find(PartyMode m)
         {
@@ -299,7 +340,19 @@ namespace PKR.Core
             {
                 r.played = System.Math.Max(0, r.played); r.wins = System.Math.Max(0, r.wins); r.podiums = System.Math.Max(0, r.podiums);
                 if (r.bestRaceSeconds < 0f || float.IsNaN(r.bestRaceSeconds)) r.bestRaceSeconds = 0f;
+                r.rankPoints = System.Math.Max(0, r.rankPoints);
             }
+            difficulty = System.Math.Max(0, System.Math.Min(2, difficulty));
+            dailyStreak = System.Math.Max(0, dailyStreak); dailyCompleted = System.Math.Max(0, dailyCompleted);
+            cupsPlayed = System.Math.Max(0, cupsPlayed);
+            if (cup == null) cup = new CupRun();
+            if (cup.points == null || cup.points.Length != KingdomCup.Entrants) { cup.points = new int[KingdomCup.Entrants]; cup.active = false; }
+            if (cup.eventIndex < 0 || cup.eventIndex >= KingdomCup.Events.Length) { cup.active = false; cup.eventIndex = 0; }
+            cup.difficulty = System.Math.Max(0, System.Math.Min(2, cup.difficulty));
+            if (trophies == null || trophies.Length != 3) trophies = new int[3];
+            for (int i = 0; i < 3; i++) trophies[i] = System.Math.Max(0, System.Math.Min(3, trophies[i]));
+            if (ghost == null) ghost = "";
+            if (ghostSeconds < 0f || float.IsNaN(ghostSeconds)) { ghostSeconds = 0f; ghost = ""; }
         }
     }
 

@@ -20,7 +20,7 @@ namespace PKR.Tests
             var rng = new System.Random(3);
             var seen = new HashSet<PartyItem>();
             for (int i = 0; i < 400; i++) seen.Add(PartyItems.Roll(rng, 4, 4));
-            Assert.AreEqual(5, seen.Count, "last place can roll everything");
+            Assert.AreEqual(6, seen.Count, "last place can roll everything");
             for (int i = 0; i < 400; i++) Assert.AreNotEqual(PartyItem.ThunderBell, PartyItems.Roll(rng, 1, 4));
             foreach (PartyItem it in System.Enum.GetValues(typeof(PartyItem))) Assert.IsTrue(PartyItems.Name(it).Length > 0);
         }

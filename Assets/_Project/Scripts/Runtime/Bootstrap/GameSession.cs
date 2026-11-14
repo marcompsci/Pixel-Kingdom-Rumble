@@ -51,6 +51,21 @@ namespace PKR
             else Services.Scenes.Load(SceneIds.MainMenu);
         }
 
+        /// <summary>Load a party quest: the Item Race course, or the arena for the other four.</summary>
+        public static void StartPartyQuest(PartyMode mode)
+        {
+            if (mode == PartyMode.None || Services.Scenes == null) return;
+            Party = mode;
+            if (mode == PartyMode.ItemRace)
+            {
+                Mode = SessionMode.StoryQuest;
+                if (Application.CanStreamedLevelBeLoaded(SceneIds.ItemRace)) Services.Scenes.Load(SceneIds.ItemRace);
+                return;
+            }
+            Mode = SessionMode.ArenaClash;
+            if (Application.CanStreamedLevelBeLoaded(SceneIds.ArenaTest)) Services.Scenes.Load(SceneIds.ArenaTest);
+        }
+
         /// <summary>Last Stand: which map (a LastStandMap id).</summary>
         public static string ZombieMap { get; set; } = PKR.Core.LastStandRules.MapId;
 

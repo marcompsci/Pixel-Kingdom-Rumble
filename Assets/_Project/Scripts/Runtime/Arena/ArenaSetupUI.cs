@@ -50,7 +50,7 @@ namespace PKR
             if (GameSession.Party != PartyMode.None && GameSession.Party != PartyMode.ItemRace)
             {
                 _root.gameObject.SetActive(false);
-                if (match != null) match.StartMatch(ArenaMatchConfig.ForParty(GameSession.Party));
+                if (match != null) match.StartMatch(ArenaMatchConfig.ForParty(GameSession.Party, PartyDifficulties.Bots(PartyFlow.Difficulty)));
                 return;
             }
             _root.gameObject.SetActive(true);

@@ -19,6 +19,8 @@ namespace PKR
         readonly List<float> _times = new List<float>();
         readonly List<RacerBot> _bots = new List<RacerBot>();
         RaceStandings _standings;
+        GhostTrack _run, _best;
+        Transform _ghost;
         float _startX, _clock;
         bool _running, _over;
         Material _mat;
@@ -59,6 +61,7 @@ namespace PKR
                 _times.Add(0f);
             }
             ItemBuffs.On(hero);
+            foreach (var b in _bots) ItemBuffs.On(b.gameObject).baseSpeed = PartyDifficulties.RaceSpeed(PartyFlow.Difficulty, 0f);
             _standings = new RaceStandings(_racers.Count, finishX);
 
             // Item boxes every ~20 tiles, on whatever is under them (ground or a high plank).
@@ -71,7 +74,16 @@ namespace PKR
             }
 
             StoryHUD.HideRunStats = true;
-            PartyHUD.Show("ITEM RACE", Line);
+            PartyHUD.Show(PartyFlow.CupActive ? "KINGDOM CUP  ·  ITEM RACE" : "ITEM RACE", Line);
+            HowToPlay.ShowOnce(PartyMode.ItemRace);
+            PlayerInputRouter.AutoRunRight = PartyFlow.Party != null && PartyFlow.Party.autoRun;
+            _run = new GhostTrack();
+            var saved = PartyFlow.Party;
+            if (saved != null && !string.IsNullOrEmpty(saved.ghost))
+            {
+                _best = GhostTrack.Decode(saved.ghost);
+                if (_best.Count > 1) _ghost = GhostRacer.Spawn(hero, _mat).transform;
+            }
             LivePresence.Enter(PartyModes.Info(PartyMode.ItemRace).playerGroup, _flow != null ? (Object)_flow : this);
 
             // 3-2-1-GO with everyone held at the line.
@@ -115,6 +127,12 @@ namespace PKR
             if (!_running || _over || _standings == null) return;
             _clock += Time.deltaTime;
             var hero = _racers[0];
+            if (hero != null && !_standings.IsFinished(0)) _run.Record(Time.deltaTime, hero.transform.position.x, hero.transform.position.y);
+            if (_ghost != null && _best != null)
+            {
+                var g = _best.At(_clock);
+                _ghost.position = new Vector3(g.x, g.y, 0f);
+            }
             for (int i = 0; i < _racers.Count; i++)
             {
                 var r = _racers[i];
@@ -141,7 +159,7 @@ namespace PKR
                 if (go == null) continue;
                 float gap = go.transform.position.x - hero.transform.position.x;
                 var buffs = go.GetComponent<ItemBuffs>();
-                if (buffs != null) buffs.baseSpeed = gap > 14f ? 0.86f : gap < -14f ? 1.1f : 0.97f;
+                if (buffs != null) buffs.baseSpeed = PartyDifficulties.RaceSpeed(PartyFlow.Difficulty, gap);
             }
         }
 
@@ -156,18 +174,16 @@ namespace PKR
             _over = true;
             foreach (var b in _bots) if (b != null) b.Running = false;
             int place = _standings.Place(0);
-            int shards = 0;
-            var save = Services.Save;
-            if (save != null)
-            {
-                shards = PartyResults.Record(save.Data, PartyMode.ItemRace, place, _times[0]);
-                save.SaveNow();
-            }
+            var all = new int[_racers.Count];
+            for (int i = 0; i < all.Length; i++) all[i] = _standings.Place(i);
+            float mine = _standings.IsFinished(0) ? _times[0] : 0f;
+            if (PartyFlow.Party != null && mine > 0f && PartyFlow.Party.OfferGhost(_run, mine) && Services.Save != null) Services.Save.SaveNow();
+            var report = PartyFlow.Finish(new PartyOutcome { mode = PartyMode.ItemRace, placement = place, raceSeconds = mine, placements = all });
             ProgressTracker.MatchPlayed(place == 1, versus: false);
-            ShowResults(place, shards);
+            ShowResults(place, report);
         }
 
-        void ShowResults(int place, int shards)
+        void ShowResults(int place, PartyReport report)
         {
             var root = UIFactory.CreateCanvas(transform, "RaceResults", 60, landscape: true, out _);
             UIFactory.Dim(root);
@@ -188,15 +204,19 @@ namespace PKR
             }
             var rec = Services.Save != null ? Services.Save.Data.party.Find(PartyMode.ItemRace) : null;
             string best = rec != null && rec.bestRaceSeconds > 0f ? $"   ·   best {(int)rec.bestRaceSeconds / 60}:{rec.bestRaceSeconds % 60f:00.0}" : "";
-            UIFactory.Label(panel, $"+{shards} Star Shards{best}", 38, TextAnchor.MiddleCenter, 56f).color = p.title;
+            int earned = report != null ? report.shards + report.dailyBonus + report.cupBonus : 0;
+            UIFactory.Label(panel, $"+{earned} Star Shards{best}   ·   CPUs {PartyDifficulties.Name(PartyFlow.Difficulty)}", 36, TextAnchor.MiddleCenter, 56f).color = p.title;
+            PartyFlow.AddLines(panel, report, PartyMode.ItemRace);
             var buttons = UIFactory.Rect("Buttons", panel);
             buttons.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
             var h = buttons.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.spacing = 24f;
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
-            var again = UIFactory.Button(buttons, "RACE AGAIN", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
-            UIFactory.Button(buttons, "BACK TO PLAZA", GameSession.ReturnToPlaza);
+            string time = _standings.IsFinished(0) ? $"{(int)_times[0] / 60}:{_times[0] % 60f:00.0}" : "";
+            var again = PartyFlow.AddButtons(buttons, report, PartyMode.ItemRace,
+                () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); },
+                PartyFlow.ShareText(PartyMode.ItemRace, place, _racers.Count, report, time));
             UIFactory.Select(again);
         }
 
@@ -223,6 +243,7 @@ namespace PKR
 
         void OnDestroy()
         {
+            PlayerInputRouter.AutoRunRight = false;
             PartyHUD.Hide();
             StoryHUD.HideRunStats = false;
         }

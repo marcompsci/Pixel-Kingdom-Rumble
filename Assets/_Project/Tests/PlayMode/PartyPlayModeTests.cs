@@ -70,6 +70,45 @@ namespace PKR.Tests
             Assert.IsTrue(HasText(KingdomPlaza.Buildings[0].name.ToUpperInvariant()));
         }
 
+        static Button ButtonWith(string text)
+        {
+            foreach (var b in Object.FindObjectsByType<Button>())
+            {
+                var t = b.GetComponentInChildren<Text>();
+                if (b.isActiveAndEnabled && t != null && t.text != null && t.text.StartsWith(text)) return b;
+            }
+            return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Plaza_NoticeBoard_TownsfolkAndMapTravel()
+        {
+            yield return Load(SceneIds.KingdomPlaza);
+            Assert.AreEqual(1, Count("NoticeBoard"));
+            Assert.GreaterOrEqual(Count("Townsfolk_"), 3, "townsfolk stroll the street");
+            var hero = Object.FindAnyObjectByType<PlayerMarker>();
+            var motor = hero.GetComponent<PlatformerMotor2D>();
+            motor.Teleport(new Vector2(HubDirector.BoardX + 0.5f, 3.2f));
+            yield return new WaitForSecondsRealtime(0.6f);
+            Assert.IsTrue(HasText("NOTICE BOARD"));
+            Assert.IsNotNull(ButtonWith("CPUs:"), "difficulty button");
+            Assert.IsNotNull(ButtonWith("KINGDOM CUP") ?? ButtonWith("CONTINUE CUP"), "cup button");
+            Assert.IsNotNull(ButtonWith("AUTO-RUN"), "auto-run button");
+            // Fast travel: MAP > COIN VAULT puts the hero at that door.
+            var map = ButtonWith("MAP");
+            Assert.IsNotNull(map);
+            map.onClick.Invoke();
+            yield return null;
+            var vault = ButtonWith("COIN VAULT");
+            Assert.IsNotNull(vault, "every place is on the map");
+            vault.onClick.Invoke();
+            yield return new WaitForSecondsRealtime(0.3f);
+            float vaultX = 0f;
+            foreach (var b in KingdomPlaza.Buildings) if (b.party == PartyMode.CoinRush) vaultX = b.x;
+            Assert.AreEqual(vaultX + 0.5f, hero.transform.position.x, 1.5f, "travelled to the Coin Vault");
+            Assert.IsTrue(HasText("COIN VAULT"), "its enter card is up");
+        }
+
         [UnityTest]
         public IEnumerator Plaza_StopsAnnouncing_WhenThePlayerLeaves()
         {
@@ -85,6 +124,29 @@ namespace PKR.Tests
         }
 
         [UnityTest]
+        public IEnumerator ItemRace_YourBestRunRacesAsAGhost()
+        {
+            if (Services.Save == null) Assert.Ignore("needs the save service");
+            var party = Services.Save.Data.party;
+            string oldGhost = party.ghost; float oldSecs = party.ghostSeconds;
+            var g = new GhostTrack();
+            for (int i = 0; i < 200; i++) g.Add(4f + i * 0.5f, 3f);
+            party.ghost = g.Encode(); party.ghostSeconds = 20f;
+            try
+            {
+                yield return Load(SceneIds.ItemRace);
+                yield return new WaitForSecondsRealtime(4.5f); // past 3-2-1-GO
+                Assert.AreEqual(1, Count("RaceGhost"), "the ghost is on the course");
+                var ghost = GameObject.Find("RaceGhost");
+                float x0 = ghost.transform.position.x;
+                yield return new WaitForSecondsRealtime(1f);
+                Assert.Greater(ghost.transform.position.x, x0 + 2f, "and it runs your saved line");
+                Assert.IsNull(ghost.GetComponent<Collider2D>(), "it can't touch anyone");
+            }
+            finally { party.ghost = oldGhost; party.ghostSeconds = oldSecs; }
+        }
+
+        [UnityTest]
         public IEnumerator ItemRace_CountsDown_ThenCpuRacersRun()
         {
             yield return Load(SceneIds.ItemRace);
@@ -96,6 +158,8 @@ namespace PKR.Tests
             Assert.Greater(Count("ItemBox"), 3, "item boxes along the course");
             float[] start = new float[bots.Length];
             for (int i = 0; i < bots.Length; i++) start[i] = bots[i].transform.position.x;
+            if (Services.Save != null) Assert.IsTrue(HasText("RUN RIGHT TO THE FLAG") || Services.Save.Data.seenHints.Contains(HowToPlay.HintId(PartyMode.ItemRace)),
+                                                     "the first race shows how to play");
             yield return new WaitForSecondsRealtime(9f);
             int moved = 0;
             for (int i = 0; i < bots.Length; i++) if (bots[i].transform.position.x > start[i] + 6f) moved++;

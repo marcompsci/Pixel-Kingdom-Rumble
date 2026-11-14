@@ -61,8 +61,11 @@ namespace PKR
                 int total = Services.Save != null ? Services.Save.Data.starShards : 0;
                 UIFactory.Label(panel, $"+{e.starShardReward} Star Shards   (total {total})", 38, TextAnchor.MiddleCenter, 54f).color = p.title;
                 if (e.party != PartyMode.None)
-                    UIFactory.Label(panel, "Party quest against CPU rivals (doesn't change your Rumble Rating)", 30,
-                                    TextAnchor.MiddleCenter, 50f).color = p.subtle;
+                {
+                    UIFactory.Label(panel, $"Party quest vs CPU rivals ({PartyDifficulties.Name(PartyFlow.Difficulty)}) · doesn't change your Rumble Rating", 28,
+                                    TextAnchor.MiddleCenter, 44f).color = p.subtle;
+                    PartyFlow.AddLines(panel, PartyFlow.Last, e.party);
+                }
                 else RumbleUI.AddResults(panel, e.rumble);
             }
 
@@ -73,22 +76,23 @@ namespace PKR
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
             bool party = e.party != PartyMode.None;
-            var rematch = UIFactory.Button(buttons, party ? "PLAY AGAIN" : "REMATCH", () =>
+            if (party)
+            {
+                string unitShare = e.party == PartyMode.CoinRush ? $"{e.scores[0]} coins" : e.party == PartyMode.KingOfTheHill ? $"{e.scores[0]} s with the crown" : "";
+                var first = PartyFlow.AddButtons(buttons, PartyFlow.Last, e.party, () =>
+                {
+                    _root.gameObject.SetActive(false);
+                    if (match != null) match.StartMatch(match.Config);
+                }, PartyFlow.ShareText(e.party, e.playerPlacement, e.placements.Length, PartyFlow.Last, unitShare));
+                UIFactory.Select(first);
+                if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+                yield break;
+            }
+            var rematch = UIFactory.Button(buttons, "REMATCH", () =>
             {
                 _root.gameObject.SetActive(false);
                 if (match != null) match.StartMatch(match.Config);
             });
-            if (party)
-            {
-                UIFactory.Button(buttons, "BACK TO PLAZA", () =>
-                {
-                    GameSession.PlazaReturnX = -1f;
-                    GameSession.ReturnToPlaza();
-                });
-                UIFactory.Select(rematch);
-                if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
-                yield break;
-            }
             UIFactory.Button(buttons, "CHANGE RULES", () =>
             {
                 _root.gameObject.SetActive(false);
