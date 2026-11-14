@@ -213,10 +213,10 @@ namespace PKR
             h.spacing = 24f;
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
-            string time = _standings.IsFinished(0) ? $"{(int)_times[0] / 60}:{_times[0] % 60f:00.0}" : "";
+            string myTime = _standings.IsFinished(0) ? $"{(int)_times[0] / 60}:{_times[0] % 60f:00.0}" : "";
             var again = PartyFlow.AddButtons(buttons, report, PartyMode.ItemRace,
                 () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); },
-                PartyFlow.ShareText(PartyMode.ItemRace, place, _racers.Count, report, time));
+                PartyFlow.ShareText(PartyMode.ItemRace, place, _racers.Count, report, myTime));
             UIFactory.Select(again);
         }
 
