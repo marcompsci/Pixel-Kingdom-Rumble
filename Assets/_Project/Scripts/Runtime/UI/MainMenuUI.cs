@@ -74,6 +74,8 @@ namespace PKR
             else if (BootLoader.TakeShotPanel("halloween") != null) ShowHalloween();
             else if (BootLoader.TakeShotPanel("zombies") != null) ShowZombies();
             else if (BootLoader.TakeShotPanel("season") != null) ShowSeason();
+            else if (BootLoader.TakeShotPanel("welcome") != null || (!GameSession.ReopenEventMenu && WelcomeGuide.ShouldShow(Services.Save != null ? Services.Save.Data : null)))
+                WelcomeGuide.Show(transform, () => Choose(SessionMode.StoryQuest), null);
         }
 
         bool _lastHighContrast;

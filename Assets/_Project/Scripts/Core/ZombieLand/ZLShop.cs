@@ -7,7 +7,7 @@ namespace PKR.Core
     public enum ZLPerk { ThickSkin, QuickHands, SteadyAim, FleetFoot, SecondChance }
 
     /// <summary>Power-ups the dead drop now and then.</summary>
-    public enum ZLPowerUp { InstaKill, DoubleScrap, Nuke, MaxAmmo }
+    public enum ZLPowerUp { InstaKill, DoubleScrap, Nuke, MaxAmmo, BargainBell }
 
     /// <summary>
     /// The classic zombies loop for the top-down modes: SCRAP from kills, nests and missions buys supplies, perks,
@@ -283,6 +283,20 @@ namespace PKR.Core
         public static bool DropsPowerUp(int killsSinceDrop, double roll, float chance = PowerUpChance, int pity = PowerUpPity) =>
             killsSinceDrop >= pity || roll < chance;
 
+        /// <summary>Last Stand's table adds the BARGAIN BELL (mystery box spins cost 10 for a while).</summary>
+        public static ZLPowerUp PickPowerUp(double roll, bool lastStand)
+        {
+            if (!lastStand) return PickPowerUp(roll);
+            if (roll < 0.27) return ZLPowerUp.MaxAmmo;
+            if (roll < 0.52) return ZLPowerUp.DoubleScrap;
+            if (roll < 0.76) return ZLPowerUp.InstaKill;
+            if (roll < 0.9) return ZLPowerUp.Nuke;
+            return ZLPowerUp.BargainBell;
+        }
+
+        /// <summary>A mystery box spin while the Bargain Bell rings.</summary>
+        public const int BargainSpinCost = 10;
+
         public static ZLPowerUp PickPowerUp(double roll)
         {
             if (roll < 0.3) return ZLPowerUp.MaxAmmo;
@@ -298,6 +312,7 @@ namespace PKR.Core
                 case ZLPowerUp.InstaKill: return "INSTA-KILL";
                 case ZLPowerUp.DoubleScrap: return "DOUBLE SCRAP";
                 case ZLPowerUp.Nuke: return "NUKE";
+                case ZLPowerUp.BargainBell: return "BARGAIN BELL";
                 default: return "MAX AMMO";
             }
         }
@@ -310,6 +325,7 @@ namespace PKR.Core
                 case ZLPowerUp.InstaKill: return "pu_instakill";
                 case ZLPowerUp.DoubleScrap: return "pu_double";
                 case ZLPowerUp.Nuke: return "pu_nuke";
+                case ZLPowerUp.BargainBell: return "pu_bargain";
                 default: return "pu_ammo";
             }
         }

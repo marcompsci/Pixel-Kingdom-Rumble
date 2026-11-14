@@ -40,6 +40,8 @@ namespace PKR
         /// <summary>Power-ups running: insta-kill and double scrap/points (seconds left).</summary>
         public float InstaKillLeft { get; private set; }
         public float DoubleScrapLeft { get; private set; }
+        /// <summary>Last Stand: the Bargain Bell's time left (box spins cost ZLShop.BargainSpinCost).</summary>
+        public float BargainLeft { get; private set; }
         public bool DoubleScrap => DoubleScrapLeft > 0f;
         /// <summary>The Survivor Rank XP (read once at start, for field kits).</summary>
         public int CareerXp { get; private set; }
@@ -738,6 +740,7 @@ namespace PKR
             if (_flowT <= 0f) { _flowT = 0.35f; BuildFlow(); }
             if (InstaKillLeft > 0f) InstaKillLeft -= dt;
             if (DoubleScrapLeft > 0f) DoubleScrapLeft -= dt;
+            if (BargainLeft > 0f) BargainLeft -= dt;
             UpdatePowerUps();
             if (IsLastStand)
             {
@@ -927,18 +930,35 @@ namespace PKR
             Save(false);
         }
 
+        /// <summary>ZOMBIES > FIELD GUIDE: count the kill; mastering a kind pays Star Shards once.</summary>
+        void CountFieldGuide(ZLFoe kind)
+        {
+            var save = Services.Save;
+            if (save == null) return;
+            var c = save.Data.zombieCareer ?? (save.Data.zombieCareer = new ZombieCareer());
+            int before = ZombieFieldGuide.Kills(c, kind);
+            int shards = ZombieFieldGuide.Add(c, kind);
+            if (shards > 0)
+            {
+                Economy.Grant(save.Data, shards);
+                ShowToast($"FIELD GUIDE: {ZombieFieldGuide.Get(kind).name} MASTERED!  +{shards} STAR SHARDS", 4f);
+            }
+            else if (before == 0) ShowToast($"FIELD GUIDE: NEW ENTRY · {ZombieFieldGuide.Get(kind).name}", 3f);
+        }
+
         public void ZombieDied(ZLZombie z)
         {
             _zombies.Remove(z);
             if (_fromNest.TryGetValue(z, out var n)) { _fromNest.Remove(z); if (n != null) _nestSpawns[n] = Mathf.Max(0, NestSpawnCount(n) - 1); }
             Progress.kills++;
             ProgressTracker.Report(ChallengeKind.DefeatEnemies, 1);
+            if (z.LastHitBy == Player || (z.LastHitBy == null && (Net == null || Net.IsHost))) CountFieldGuide(z.kind);
             if (_nuking) return;
             Progress.killsSinceDrop++;
             if (IsLastStand)
             {
                 Stand.ZombieDied(z);
-                if (!Stand.HoundRound && !Stand.Mut.NoDrops && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value, 0.04f, 30)) SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
+                if (!Stand.HoundRound && !Stand.Mut.NoDrops && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value, 0.04f, 30)) SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value, IsLastStand), z.transform.position);
                 return;
             }
             Active?.ZombieDied(z);
@@ -948,7 +968,7 @@ namespace PKR
             AddXp(SurvivorRank.ZLKillXp);
             if (Boss == null && ZLShop.DropsPowerUp(Progress.killsSinceDrop, UnityEngine.Random.value))
             {
-                SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value), z.transform.position);
+                SpawnPowerUp(ZLShop.PickPowerUp(UnityEngine.Random.value, IsLastStand), z.transform.position);
                 return;
             }
             float roll = UnityEngine.Random.value;
@@ -1010,6 +1030,7 @@ namespace PKR
                     foreach (var h in Squad) if (h != null && h.Loadout != null) { ZLShop.MaxAmmo(h.Loadout); h.CancelReload(); }
                     break;
                 case ZLPowerUp.Nuke: Nuke(at); break;
+                case ZLPowerUp.BargainBell: BargainLeft = ZLShop.PowerUpSeconds; label = $"BARGAIN BELL: BOX SPINS {ZLShop.BargainSpinCost}"; break;
             }
             ShowToast(label + "!", 2.5f);
             if (Net != null) Net.BroadcastToast(label + "!", 1);
@@ -1040,8 +1061,9 @@ namespace PKR
         }
 
         /// <summary>Guest: the host's power-up timers (for the HUD).</summary>
-        public void MirrorPowerUps(bool instaKill, bool doublePoints)
+        public void MirrorPowerUps(bool instaKill, bool doublePoints, bool bargain = false)
         {
+            BargainLeft = bargain ? Mathf.Max(BargainLeft, 1f) : 0f;
             InstaKillLeft = instaKill ? Mathf.Max(InstaKillLeft, 1f) : 0f;
             DoubleScrapLeft = doublePoints ? Mathf.Max(DoubleScrapLeft, 1f) : 0f;
         }
@@ -1683,6 +1705,7 @@ namespace PKR
             if (boss != null && boss.Marshal) { Chapter4BossDefeated(boss); return; }
             if (boss != null && boss.Curator) { Chapter3BossDefeated(boss); return; }
             if (boss != null && boss.Brine) { Chapter2BossDefeated(boss); return; }
+            CountFieldGuide(ZLFoe.FirstTurned);
             Progress.bossDefeated = true;
             foreach (var z in _zombies.ToArray()) if (z != null) z.Vanish(true);
             _zombies.Clear();

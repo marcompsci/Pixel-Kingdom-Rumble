@@ -46,7 +46,7 @@ namespace PKR
         /// <summary>The rule changes for this run (the weekly challenge's mutators, or none).</summary>
         public MutatorSet Mut { get; private set; } = MutatorSet.None;
         public bool WeeklyPaid { get; private set; }
-        public int BoxCost => Mut.BoxCost(LastStandRules.BoxCost);
+        public int BoxCost => _g != null && _g.BargainLeft > 0f ? ZLShop.BargainSpinCost : Mut.BoxCost(LastStandRules.BoxCost);
         /// <summary>Assist mode (Settings) and the rookie warm-up (a player's first Last Stand runs).</summary>
         public bool Assist => Services.Settings != null && Services.Settings.Data.assistMode;
         public bool RookieRound => ZombieAssist.Rookie(_lsRuns, Run.Round);
@@ -400,7 +400,7 @@ namespace PKR
             if (CheckWeekly(Run.Round)) _g.Announce($"WEEKLY CHALLENGE COMPLETE!  +{Weekly.RewardShards} STAR SHARDS  ·  +{Weekly.RewardXp} XP", 4f);
             else _g.Announce($"ROUND {Run.Round} SURVIVED!  +{bonus}", 2.5f);
             if (SurvivalModes.CacheAfter(Run.Round))
-                _g.SpawnPowerUp(Run.Round % 2 == 0 ? ZLPowerUp.MaxAmmo : ZLShop.PickPowerUp(Random.value), _g.TargetPos + Vector2.up * 1.5f);
+                _g.SpawnPowerUp(Run.Round % 2 == 0 ? ZLPowerUp.MaxAmmo : ZLShop.PickPowerUp(Random.value, true), _g.TargetPos + Vector2.up * 1.5f);
             Intermission = true;
             IntermissionLeft = SurvivalModes.Intermission(Mode);
             HoundRound = false;
@@ -546,7 +546,7 @@ namespace PKR
                 Butcher = null;
                 _g.Announce(Map.BossName + " FALLS!", 3f);
                 Tell(ZombieDailyTracker.BossKilled(Map.Id));
-                _g.SpawnPowerUp(ZLShop.PickPowerUp(Random.value), z.transform.position);
+                _g.SpawnPowerUp(ZLShop.PickPowerUp(Random.value, true), z.transform.position);
             }
             if (z == HollowKing)
             {
@@ -756,7 +756,7 @@ namespace PKR
             {
                 tick = tick, round = Run.Round, zombiesLeft = ZombiesLeft, intermissionLeft = Mathf.CeilToInt(Mathf.Max(0f, IntermissionLeft)),
                 intermission = Intermission, houndRound = HoundRound, over = Over, won = Run.Won,
-                instaKill = _g.InstaKillLeft > 0f, doublePoints = _g.DoubleScrap,
+                instaKill = _g.InstaKillLeft > 0f, doublePoints = _g.DoubleScrap, bargain = _g.BargainLeft > 0f,
                 boxSpot = Box != null ? Box.Spot : 0, boxBusy = Box != null && Box.Busy
             };
             for (int i = 0; i < _doors.Count; i++) if (_doors[i] == null || _doors[i].Cleared) s.doorMask |= 1 << i;
@@ -808,7 +808,7 @@ namespace PKR
             IntermissionLeft = s.intermissionLeft;
             HoundRound = s.houndRound;
             _guestLeft = s.zombiesLeft;
-            _g.MirrorPowerUps(s.instaKill, s.doublePoints);
+            _g.MirrorPowerUps(s.instaKill, s.doublePoints, s.bargain);
             foreach (var m in s.members)
             {
                 var h = HeroInSlot(m.slot);

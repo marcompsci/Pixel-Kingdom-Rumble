@@ -50,7 +50,9 @@ namespace PKR
 
             string best = e.newBestTime ? "   NEW BEST!" : "";
             var medal = StoryMedals.For(e.timeSeconds, e.parTimeSeconds);
-            string medalText = e.isContract || medal == TimeMedal.None ? "" : $"   {StoryMedals.Name(medal)}";
+            string medalText = e.isContract || e.assistSpeed || medal == TimeMedal.None ? "" : $"   {StoryMedals.Name(medal)}";
+            if (e.assistSpeed) best = "   (slower game speed: no record)";
+            else if (e.newGhost) best += "   GHOST SAVED";
             var timeRow = Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){medalText}{best}");
             if (medal == TimeMedal.Gold && !e.isContract) timeRow.color = p.title;
             if (e.isContract)
@@ -63,7 +65,8 @@ namespace PKR
                 Row(panel, "Star Shards found", $"{e.shards} / {e.totalShards}  ({ResultsMath.Percent(e.shards, e.totalShards)}%)");
                 Row(panel, "Secrets", $"{e.secrets} / {e.totalSecrets}");
             }
-            Row(panel, "Falls", e.deaths.ToString());
+            var falls = Row(panel, "Falls", e.deaths.ToString() + (e.flawless && !e.isContract ? "   FLAWLESS!" + (e.flawlessShards > 0 ? $" +{e.flawlessShards}" : "") : ""));
+            if (e.flawless && !e.isContract) falls.color = p.title;
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             if (left != null)

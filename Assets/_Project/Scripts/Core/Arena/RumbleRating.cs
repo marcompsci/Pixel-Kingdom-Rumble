@@ -332,6 +332,7 @@ namespace PKR.Core
                 aggression = L(a.aggression, b.aggression),
                 recoverySkill = L(a.recoverySkill, b.recoverySkill),
                 dodgeChance = L(a.dodgeChance, b.dodgeChance),
+                edgeGuard = L(a.edgeGuard, b.edgeGuard),
             };
         }
     }

@@ -373,7 +373,8 @@ namespace PKR
             _perks.text = ps.ToString();
             ps.Clear();
             if (_g.InstaKillLeft > 0f) ps.Append($"INSTA-KILL {Mathf.CeilToInt(_g.InstaKillLeft)}   ");
-            if (_g.DoubleScrapLeft > 0f) ps.Append((_g.IsLastStand ? "DOUBLE POINTS " : "DOUBLE SCRAP ") + Mathf.CeilToInt(_g.DoubleScrapLeft));
+            if (_g.DoubleScrapLeft > 0f) ps.Append((_g.IsLastStand ? "DOUBLE POINTS " : "DOUBLE SCRAP ") + Mathf.CeilToInt(_g.DoubleScrapLeft) + "   ");
+            if (_g.BargainLeft > 0f) ps.Append($"BARGAIN BELL {Mathf.CeilToInt(_g.BargainLeft)}");
             _powers.text = ps.ToString();
 
             if (_g.IsLastStand)

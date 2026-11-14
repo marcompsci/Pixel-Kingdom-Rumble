@@ -82,6 +82,7 @@ namespace PKR
         public Material SpriteMaterial => spriteMaterial;
         public bool IsRespawning(int slot) => _respawning.Contains(slot);
         PartyArena _party;
+        TrainingLab _lab;
         public CharacterRoster Roster => roster;
 
         readonly List<Fighter> _fighters = new List<Fighter>();
@@ -150,7 +151,7 @@ namespace PKR
             for (int slot = 0; slot < Config.FighterCount; slot++)
             {
                 bool human = slot < Config.humans;
-                var def = slot == 0 ? playerDef : (human ? (p2Def ?? PickCpuHero(cpuRng)) : PickCpuHero(cpuRng));
+                var def = slot == 0 ? playerDef : (human ? (p2Def ?? PickCpuHero(cpuRng)) : (ChosenCpuHero() ?? PickCpuHero(cpuRng)));
                 Vector2 pos = spawnPoints != null && spawnPoints.Length > 0
                     ? (Vector2)spawnPoints[slot % spawnPoints.Length].position
                     : new Vector2(-6f + slot * 4f, 2f);
@@ -175,7 +176,10 @@ namespace PKR
                 else
                 {
                     var bot = go.AddComponent<BotController>();
-                    bot.Init(this, RumbleRecorder.BotTuning(Config.autoLevel, Config.botLevel), 7919 * (slot + 1), Config.mode == MatchMode.Training);
+                    bool training = Config.mode == MatchMode.Training;
+                    bot.Init(this, RumbleRecorder.BotTuning(Config.autoLevel, Config.botLevel), 7919 * (slot + 1),
+                             training && Config.trainingAct != TrainingAct.Fight);
+                    if (training) bot.trainingAct = Config.trainingAct;
                 }
 
                 _fighters.Add(new Fighter
@@ -187,14 +191,27 @@ namespace PKR
             }
 
             if (bridge != null) { bridge.ResetCycle(); bridge.Running = Config.mode != MatchMode.Training && Config.party == PartyMode.None; }
-            if (Config.party != PartyMode.None)
+            if (Config.party != PartyMode.None || (Config.items && Config.mode != MatchMode.Training))
             {
                 if (_party == null) _party = gameObject.AddComponent<PartyArena>();
                 _party.Begin(this);
             }
+            if (Config.mode == MatchMode.Training)
+            {
+                if (_lab == null) _lab = gameObject.AddComponent<TrainingLab>();
+                _lab.Begin(this);
+            }
             IsLive = true;
             if (Services.State != null) Services.State.SetState(GameState.Playing);
             EventBus<ArenaMatchStarted>.Raise(new ArenaMatchStarted { mode = Config.mode, fighters = Config.FighterCount });
+        }
+
+        /// <summary>Setup screen CPU HEROES: every CPU fights as this hero (if you've unlocked it).</summary>
+        CharacterDefinition ChosenCpuHero()
+        {
+            if (roster == null || string.IsNullOrEmpty(Config.cpuCharacterId)) return null;
+            var def = roster.Find(Config.cpuCharacterId);
+            return def != null && def.playableInThisBuild && roster.IsSelectable(def) ? def : null;
         }
 
         CharacterDefinition PickCpuHero(System.Random rng)
@@ -237,6 +254,7 @@ namespace PKR
             ArenaMods.Reset();
             SparkTrap.DespawnAll();
             if (_party != null) _party.Clear();
+            if (_lab != null) _lab.Clear();
             _respawning.Clear();
             foreach (var f in _fighters) if (f.go != null) Destroy(f.go);
             _fighters.Clear();
@@ -291,6 +309,7 @@ namespace PKR
                 Services.Save.AddShards(result.starShardReward);
                 Services.Save.SaveNow();
             }
+            if (_lab != null) _lab.Clear();
             if (_party != null) _party.Clear();
             if (Config.Rated && grantRewards && Services.Save != null && n >= 2)
             {

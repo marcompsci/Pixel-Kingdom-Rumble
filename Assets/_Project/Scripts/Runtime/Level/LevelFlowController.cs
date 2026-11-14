@@ -83,15 +83,38 @@ namespace PKR
         void OnDestroy()
         {
             LivePresence.Leave(this); // stop the live-count pings once the player leaves the level, plaza or race
+            if (GameStateManager.BaseTimeScale != 1f)
+            {
+                GameStateManager.BaseTimeScale = 1f;
+                if (Time.timeScale > 0f) Time.timeScale = 1f;
+            }
             if (Current == this) Current = null;
             Pickup.MagnetRadius = 0f;
         }
 
         SaveData SaveOrNull => Services.Save != null ? Services.Save.Data : null;
 
+        /// <summary>
+        /// Accessibility: Story Quest can run slower (Settings > STORY GAME SPEED). A run that was ever slowed doesn't
+        /// set a best time (the clear still counts).
+        /// </summary>
+        public void ApplyGameSpeed()
+        {
+            int speed = Services.Settings != null ? Services.Settings.Data.gameSpeed : 100;
+            GameStateManager.BaseTimeScale = IsStoryLevel ? GameSpeed.Scale(speed) : 1f;
+            if (Run != null && IsStoryLevel && !GameSpeed.CountsForRecords(speed)) Run.AssistSpeed = true;
+            bool paused = Services.State != null && Services.State.IsPaused;
+            if (!paused && Time.timeScale > 0f) Time.timeScale = GameStateManager.BaseTimeScale;
+        }
+
+        /// <summary>A Story Quest world level (not an event, contract, the plaza or the race).</summary>
+        public bool IsStoryLevel => level != null && !level.isEvent && StoryWorlds.WorldOf(level.id) >= 0;
+
         void Start()
         {
             Run = new LevelRun(level != null ? level.id : "unknown_level");
+            ApplyGameSpeed();
+            if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
                 PlayerHealth.bonusMaxHealth = (AssistMode ? AssistBonusHealth : 0) + Upgrades.BonusHealth(SaveOrNull);
@@ -326,6 +349,10 @@ namespace PKR
             int reward = Run.Complete(data);
             int lucky = data != null ? Upgrades.LuckyBonus(data, reward) : 0;
             if (lucky > 0) Economy.Grant(data, lucky);
+            // Story Quest extras: FLAWLESS (no hits taken) and the time-trial ghost of your best clear.
+            var extras = GetComponent<StoryRunExtras>();
+            var extra = extras != null ? extras.OnCleared(data, Run.LevelId, Run.ElapsedSeconds, Run.AssistSpeed) : default;
+            reward += extra.flawlessShards;
             int worldIndex = data != null ? StoryWorlds.ClaimIfComplete(data, Run.LevelId) : -1;
             int worldBonus = worldIndex >= 0 ? StoryWorlds.CompletionBonus : 0;
             reward += lucky + worldBonus;
@@ -380,7 +407,11 @@ namespace PKR
                 levelName = level != null ? level.displayName : Run.LevelId,
                 timeSeconds = Run.ElapsedSeconds,
                 parTimeSeconds = level != null ? level.parTimeSeconds : 0f,
-                newBestTime = previousBest <= 0f || Run.ElapsedSeconds < previousBest,
+                newBestTime = !Run.AssistSpeed && (previousBest <= 0f || Run.ElapsedSeconds < previousBest),
+                flawless = extra.flawless,
+                flawlessShards = extra.flawlessShards,
+                newGhost = extra.newGhost,
+                assistSpeed = Run.AssistSpeed,
                 shards = Run.Shards,
                 totalShards = TotalShards,
                 secrets = Run.SecretsFound,

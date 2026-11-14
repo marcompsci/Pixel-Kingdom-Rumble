@@ -38,6 +38,9 @@ namespace PKR.Core
         /// <summary>Weapon mastery: kills per gun id (parallel lists; JsonUtility has no dictionaries).</summary>
         public List<string> gunKillIds = new List<string>();
         public List<int> gunKills = new List<int>();
+        /// <summary>FIELD GUIDE: kills of each kind of the dead (index = (int)ZLFoe) and which kinds are mastered (bits).</summary>
+        public List<int> foeKills = new List<int>();
+        public int foeMastered;
 
         public int Best(string map, SurvivalMode mode)
         {
@@ -62,6 +65,8 @@ namespace PKR.Core
         public void Sanitize()
         {
             if (bestKeys == null) bestKeys = new List<string>();
+            if (foeKills == null) foeKills = new List<int>();
+            for (int i = 0; i < foeKills.Count; i++) if (foeKills[i] < 0) foeKills[i] = 0;
             if (bestRounds == null) bestRounds = new List<int>();
             if (secrets == null) secrets = new List<string>();
             if (weeklyDone == null) weeklyDone = new List<string>();

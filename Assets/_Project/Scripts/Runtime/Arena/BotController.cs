@@ -14,6 +14,10 @@ namespace PKR
     {
         public BotDifficulty difficulty = BotDifficulty.For(BotLevel.Normal);
         public bool passive;
+        /// <summary>Training: what a passive CPU does (stand, walk back and forth, hop).</summary>
+        public TrainingAct trainingAct = TrainingAct.Stand;
+        float _actClock;
+        int _walkDir = 1;
 
         IBotArena _match;
         PlatformerMotor2D _motor;
@@ -48,6 +52,11 @@ namespace PKR
         void FixedUpdate()
         {
             var intent = _motor.Intent;
+            if (passive && _match != null && _match.IsLive && trainingAct != TrainingAct.Stand && trainingAct != TrainingAct.Fight)
+            {
+                TrainingMove(intent);
+                return;
+            }
             if (passive || _match == null || !_match.IsLive)
             {
                 intent.Move = Vector2.zero;
@@ -83,6 +92,29 @@ namespace PKR
             if (_last.special) intent.Special.Press(now);
             if (_last.dodge) intent.Dodge.Press(now);
             UseSpecials(view, now);
+        }
+
+        /// <summary>Training lab dummies: WALK paces the stage (turning at the edges), JUMP hops in place.</summary>
+        void TrainingMove(FighterIntent intent)
+        {
+            _actClock += Time.fixedDeltaTime;
+            if (trainingAct == TrainingAct.Walk)
+            {
+                var stage = _match.StageRect;
+                float x = _motor.Body.position.x;
+                if (x > stage.xMax - 1.5f) _walkDir = -1;
+                else if (x < stage.xMin + 1.5f) _walkDir = 1;
+                intent.Move = new Vector2(_walkDir * 0.6f, 0f);
+                intent.Jump.SetHeld(false);
+                return;
+            }
+            intent.Move = Vector2.zero;
+            if (_actClock >= 1.1f && _motor.IsGrounded)
+            {
+                _actClock = 0f;
+                intent.Jump.Press(Time.time);
+            }
+            intent.Jump.SetHeld(_actClock < 0.3f);
         }
 
         /// <summary>

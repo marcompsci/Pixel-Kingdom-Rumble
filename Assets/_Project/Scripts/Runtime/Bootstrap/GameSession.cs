@@ -20,6 +20,7 @@ namespace PKR
             VersusOpponentId = null;
             VersusBotLevel = BotLevel.Normal;
             VersusAutoLevel = true;
+            Ladder = null;
             ContractScene = null;
             ContractWorldPage = -1;
             PendingWorldDoor = -1;
@@ -98,6 +99,8 @@ namespace PKR
         public static BotLevel VersusBotLevel { get; set; } = BotLevel.Normal;
         /// <summary>Versus CPU follows your Rumble skill (Auto) instead of VersusBotLevel.</summary>
         public static bool VersusAutoLevel { get; set; } = true;
+        /// <summary>The Versus ladder being climbed (null for a single match).</summary>
+        public static VersusLadder Ladder { get; set; }
 
         public static string SelectedCharacterId
         {

@@ -24,6 +24,12 @@ namespace PKR
         public int starShardReward;
         /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
         public int luckyBonus;
+        /// <summary>Story Quest: cleared without taking a hit, the one-off FLAWLESS shards, a new time-trial ghost
+        /// saved, and whether a slower Game Speed was on (no best times then).</summary>
+        public bool flawless;
+        public int flawlessShards;
+        public bool newGhost;
+        public bool assistSpeed;
         /// <summary>Story world whose every level this clear completed for the first time ("" if none), and its bonus.</summary>
         public string worldCompleted;
         public int worldBonus;

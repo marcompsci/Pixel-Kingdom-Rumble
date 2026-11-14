@@ -100,7 +100,7 @@ namespace PKR.Core
     public class NetSnapshot
     {
         public int tick, round, zombiesLeft, intermissionLeft, doorMask, boxSpot;
-        public bool intermission, houndRound, over, won, boxBusy, instaKill, doublePoints;
+        public bool intermission, houndRound, over, won, boxBusy, instaKill, doublePoints, bargain;
         public List<NetMember> members = new List<NetMember>();
         public List<NetZombie> zombies = new List<NetZombie>();
         public List<NetPowerUp> powerUps = new List<NetPowerUp>();
@@ -328,7 +328,7 @@ namespace PKR.Core
             w.Byte((int)NetMsg.Snapshot);
             w.Int(s.tick); w.UShort(s.round); w.UShort(s.zombiesLeft); w.Byte(s.intermissionLeft);
             w.Byte((s.intermission ? 1 : 0) | (s.houndRound ? 2 : 0) | (s.over ? 4 : 0) | (s.won ? 8 : 0) | (s.boxBusy ? 16 : 0) |
-                   (s.instaKill ? 32 : 0) | (s.doublePoints ? 64 : 0));
+                   (s.instaKill ? 32 : 0) | (s.doublePoints ? 64 : 0) | (s.bargain ? 128 : 0));
             w.UShort(s.doorMask); w.Byte(s.boxSpot);
             w.Byte(s.members.Count);
             foreach (var m in s.members)
@@ -357,7 +357,7 @@ namespace PKR.Core
             var s = new NetSnapshot { tick = r.Int(), round = r.UShort(), zombiesLeft = r.UShort(), intermissionLeft = r.Byte() };
             int f = r.Byte();
             s.intermission = (f & 1) != 0; s.houndRound = (f & 2) != 0; s.over = (f & 4) != 0; s.won = (f & 8) != 0;
-            s.boxBusy = (f & 16) != 0; s.instaKill = (f & 32) != 0; s.doublePoints = (f & 64) != 0;
+            s.boxBusy = (f & 16) != 0; s.instaKill = (f & 32) != 0; s.doublePoints = (f & 64) != 0; s.bargain = (f & 128) != 0;
             s.doorMask = r.UShort(); s.boxSpot = r.Byte();
             int n = r.Byte();
             for (int i = 0; i < n && r.Ok; i++)

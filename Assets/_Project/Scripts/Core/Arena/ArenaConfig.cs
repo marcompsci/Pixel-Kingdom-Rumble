@@ -27,13 +27,19 @@ namespace PKR.Core
         public bool daily;
         /// <summary>A Kingdom Plaza party quest played in the arena (Balloon Battle, Ring-Out, Coin Rush, King of the Hill).</summary>
         public PartyMode party = PartyMode.None;
+        /// <summary>ITEMS: ON drops the party item boxes into a normal Arena Clash match (unrated: items are luck).</summary>
+        public bool items;
+        /// <summary>Every CPU fights as this hero (null/empty = random).</summary>
+        public string cpuCharacterId;
+        /// <summary>Training: what the CPU does.</summary>
+        public TrainingAct trainingAct = TrainingAct.Stand;
 
         public int FighterCount => humans + botCount;
         /// <summary>Two players can fight each other with no CPUs.</summary>
         public int MinBotsNow => humans >= 2 ? 0 : MinBots;
         public int MaxBotsNow => MaxFighters - humans;
         /// <summary>Only solo matches against the CPU count for Rumble Rating.</summary>
-        public bool Rated => humans == 1 && mode != MatchMode.Training && party == PartyMode.None;
+        public bool Rated => humans == 1 && mode != MatchMode.Training && party == PartyMode.None && !items;
         public float DurationSeconds => party != PartyMode.None && PartyModes.Info(party).seconds > 0f ? PartyModes.Info(party).seconds : minutes * 60f;
 
         /// <summary>The fixed rules of a party quest: one hero against three CPUs at the plaza's party difficulty.</summary>

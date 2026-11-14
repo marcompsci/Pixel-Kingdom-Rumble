@@ -79,6 +79,10 @@ namespace PKR.Core
         public bool soundCues;
         /// <summary>Story Quest's live seasons: SeasonCalendar.ModeLive (follow the date) or ModeOff.</summary>
         public int seasonalMode = SeasonCalendar.ModeLive;
+        /// <summary>Accessibility: Story Quest game speed in percent (GameSpeed.Steps: 100, 90, 80, 70).</summary>
+        public int gameSpeed = 100;
+        /// <summary>Story Quest: race a ghost of your best clear in levels you've cleared.</summary>
+        public bool storyGhost = true;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>
@@ -117,6 +121,7 @@ namespace PKR.Core
             hudScale = float.IsNaN(hudScale) || hudScale <= 0f ? 1f : Math.Max(MinHudScale, Math.Min(MaxHudScale, hudScale));
             if (colorAssist < 0 || colorAssist > (int)ColorAssist.BlueYellow) colorAssist = (int)ColorAssist.Off;
             if (seasonalMode != SeasonCalendar.ModeOff) seasonalMode = SeasonCalendar.ModeLive;
+            gameSpeed = GameSpeed.Clamp(gameSpeed);
             if (graphicsMode < 0 || graphicsMode > (int)GraphicsMode.BatterySaver) graphicsMode = (int)GraphicsMode.Auto;
             musicVolume = Clamp01(musicVolume);
             sfxVolume = Clamp01(sfxVolume);

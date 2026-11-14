@@ -122,6 +122,7 @@ namespace PKR
             UIFactory.Button(foot, "BOARDS", OpenBoards);
             var foot2 = Row(panel, UIFactory.RowHeight);
             UIFactory.Button(foot2, "RANK & UNLOCKS", OpenUnlocks);
+            UIFactory.Button(foot2, "FIELD GUIDE", OpenFieldGuide);
             UIFactory.Button(foot2, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(zlButton);
         }
@@ -147,6 +148,35 @@ namespace PKR
             t.resizeTextForBestFit = false;
             t.fontSize = size;
             t.text = string.IsNullOrEmpty(sub) ? head : $"{head}\n<size={size * 2 / 3}>{sub}</size>";
+        }
+
+        // ---- field guide ----------------------------------------------------------------------------------
+
+        /// <summary>FIELD GUIDE: every kind of the dead, how to beat it, your kills and its tier (SEEN, STUDIED, MASTERED).</summary>
+        public void OpenFieldGuide()
+        {
+            UIFactory.Clear(_root);
+            _boardLabels.Clear();
+            var c = Career;
+            var panel = UIFactory.Panel(_root, new Vector2(980f, 1800f));
+            UIFactory.Label(panel, "FIELD GUIDE", 84, TextAnchor.MiddleCenter, 110f, title: true).color = new Color32(255, 90, 70, 255);
+            var (seen, mastered) = ZombieFieldGuide.Count(c);
+            UIFactory.Label(panel, $"{seen}/{ZombieFieldGuide.All.Length} found  ·  {mastered} mastered  ·  master a kind for +{ZombieFieldGuide.MasteryShards} Star Shards",
+                            28, TextAnchor.MiddleCenter, 44f).color = UITheme.Current.subtle;
+            foreach (var e in ZombieFieldGuide.All)
+            {
+                int kills = ZombieFieldGuide.Kills(c, e.kind);
+                var tier = ZombieFieldGuide.Tier(e.kind, kills);
+                int toNext = ZombieFieldGuide.ToNext(e.kind, kills);
+                string head = tier == FieldGuideTier.Unknown ? "???" : $"{e.name}  ·  {ZombieFieldGuide.TierName(tier)}";
+                string body = tier == FieldGuideTier.Unknown ? "Put one down to learn about it."
+                            : $"{e.tip}\n{Plural.Of(kills, "kill")}" + (toNext > 0 ? $"  ·  {toNext} to {(tier == FieldGuideTier.Seen ? "STUDIED" : "MASTERED")}" : "");
+                var t = UIFactory.Label(panel, $"{head}\n<size=22>{body}</size>", 30, TextAnchor.MiddleLeft, 84f);
+                t.supportRichText = true;
+                t.color = tier == FieldGuideTier.Mastered ? (Color)Gold : tier == FieldGuideTier.Unknown ? UITheme.Current.subtle : UITheme.Current.text;
+            }
+            var back = UIFactory.Button(panel, "BACK", Build);
+            UIFactory.Select(back);
         }
 
         // ---- daily orders ---------------------------------------------------------------------------------

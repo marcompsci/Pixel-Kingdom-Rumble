@@ -12,14 +12,16 @@ namespace PKR.Core
         public float aggression;     // 0..1 stick strength when approaching
         public float recoverySkill;  // chance to use the air dash when recovering
         public float dodgeChance;    // chance to dodge away when Exposed and threatened
+        /// <summary>Chance to wait at the ledge for a rival who is off the stage instead of standing in the middle (0 = never).</summary>
+        public float edgeGuard;
 
         public static BotDifficulty For(BotLevel level)
         {
             switch (level)
             {
-                case BotLevel.Easy: return new BotDifficulty { reactionTime = 0.36f, accuracy = 0.35f, aggression = 0.6f, recoverySkill = 0.5f, dodgeChance = 0.1f };
-                case BotLevel.Hard: return new BotDifficulty { reactionTime = 0.12f, accuracy = 0.85f, aggression = 1f, recoverySkill = 1f, dodgeChance = 0.5f };
-                default: return new BotDifficulty { reactionTime = 0.22f, accuracy = 0.6f, aggression = 0.85f, recoverySkill = 0.85f, dodgeChance = 0.25f };
+                case BotLevel.Easy: return new BotDifficulty { reactionTime = 0.36f, accuracy = 0.35f, aggression = 0.6f, recoverySkill = 0.5f, dodgeChance = 0.1f, edgeGuard = 0f };
+                case BotLevel.Hard: return new BotDifficulty { reactionTime = 0.12f, accuracy = 0.85f, aggression = 1f, recoverySkill = 1f, dodgeChance = 0.5f, edgeGuard = 0.75f };
+                default: return new BotDifficulty { reactionTime = 0.22f, accuracy = 0.6f, aggression = 0.85f, recoverySkill = 0.85f, dodgeChance = 0.25f, edgeGuard = 0.3f };
             }
         }
     }
@@ -110,6 +112,14 @@ namespace PKR.Core
             float dy = v.targetPosition.y - v.position.y;
             int toward = dx >= 0f ? 1 : -1;
 
+            // 1b) Edge-guard: the rival is off the stage and we're safely on it. Walk to the ledge on their side, wait
+            // there and swing as they come back (Hard CPUs do this most; Easy never).
+            if (d.edgeGuard > 0f && v.grounded && !IsOffstage(v) && TargetOffstage(v) && rng.NextDouble() < d.edgeGuard)
+            {
+                c = EdgeGuard(v, d, rng);
+                return SafeEdges(v, c);
+            }
+
             // 2) Exposed and threatened: back off or dodge.
             if (v.exposed && Math.Abs(dx) < 2.5f && Math.Abs(dy) < 2f)
             {
@@ -151,6 +161,33 @@ namespace PKR.Core
                 c.jumpHeld = true;
             }
             return SafeEdges(v, c);
+        }
+
+        /// <summary>The rival is past a stage edge or below the floor (recovering).</summary>
+        public static bool TargetOffstage(in BotView v) =>
+            v.hasTarget && (v.targetPosition.x < v.stageLeft || v.targetPosition.x > v.stageRight || v.targetPosition.y < v.stageTop - 0.6f);
+
+        /// <summary>Where an edge-guarding CPU stands: just inside the ledge on the rival's side.</summary>
+        public static float LedgeSpot(in BotView v)
+        {
+            float mid = (v.stageLeft + v.stageRight) * 0.5f;
+            return v.targetPosition.x >= mid ? v.stageRight - EdgeMargin - 0.2f : v.stageLeft + EdgeMargin + 0.2f;
+        }
+
+        static BotCommand EdgeGuard(in BotView v, in BotDifficulty d, Random rng)
+        {
+            var c = new BotCommand();
+            float spot = LedgeSpot(v);
+            float toSpot = spot - v.position.x;
+            float dx = v.targetPosition.x - v.position.x, dy = v.targetPosition.y - v.position.y;
+            if (Math.Abs(dx) <= AttackRangeX + 0.4f && Math.Abs(dy) <= AttackRangeY + 0.6f)
+            {
+                c.moveX = Math.Sign(dx) * 0.3f; // face them and swing as they grab back on
+                c.attack = rng.NextDouble() < d.accuracy;
+            }
+            else if (Math.Abs(toSpot) > 0.35f) c.moveX = Math.Sign(toSpot) * d.aggression;
+            else c.moveX = 0f;  // in position: wait
+            return c;
         }
 
         /// <summary>Don't walk off the main stage while grounded.</summary>

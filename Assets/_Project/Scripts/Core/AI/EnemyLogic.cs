@@ -101,13 +101,16 @@ namespace PKR.Core
         }
 
         /// <summary>Finish the run once and write it into the save. Returns shards awarded (0 if already complete).</summary>
+        /// <summary>Played at a slower game speed (Settings > ACCESSIBILITY): the clear counts, but not as a best time.</summary>
+        public bool AssistSpeed { get; set; }
+
         public int Complete(SaveData save)
         {
             if (IsComplete) return 0;
             IsComplete = true;
             if (save == null) return 0;
             bool firstClear = save.GetLevel(LevelId) == null || !save.GetLevel(LevelId).completed;
-            save.RecordLevelResult(LevelId, ElapsedSeconds, Shards, SecretsFound);
+            save.RecordLevelResult(LevelId, AssistSpeed ? 0f : ElapsedSeconds, Shards, SecretsFound);
             int reward = Economy.LevelReward(Shards, SecretsFound, firstClear);
             Economy.Grant(save, reward);
             return reward;

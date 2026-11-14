@@ -79,6 +79,15 @@ namespace PKR
         public void SetLeftHanded(bool on) { Data.leftHanded = on; Commit(); }
         public void SetBigTouchTargets(bool on) { Data.bigTouchTargets = on; Commit(); }
         public void SetSoundCues(bool on) { Data.soundCues = on; Commit(); }
+        /// <summary>Story Quest game speed (100/90/80/70%); takes effect at once in a Story level.</summary>
+        public void SetGameSpeed(int percent)
+        {
+            Data.gameSpeed = GameSpeed.Clamp(percent);
+            Commit();
+            if (LevelFlowController.Current != null) LevelFlowController.Current.ApplyGameSpeed();
+        }
+
+        public void SetStoryGhost(bool on) { Data.storyGhost = on; Commit(); }
         public void SetSeasonalMode(int mode) { Data.seasonalMode = mode == SeasonCalendar.ModeOff ? SeasonCalendar.ModeOff : SeasonCalendar.ModeLive; Commit(); }
 
         public ColorAssist ColorMode => (ColorAssist)Data.colorAssist;

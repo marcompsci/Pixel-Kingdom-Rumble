@@ -127,6 +127,8 @@ namespace PKR
                     cfg.mutators = Twists[(i + 1) % Twists.Length];
                 }, rebuild: true);
             }
+            if (cfg.mode == MatchMode.Training)
+                Cycle(col, () => $"CPU ACTS: {TrainingActs.Name(cfg.trainingAct)}", () => cfg.trainingAct = TrainingActs.Next(cfg.trainingAct));
             if (cfg.mode == MatchMode.Stock && (cfg.mutators & Mutator.SuddenDeath) == 0)
                 Cycle(col, () => $"STOCKS: {cfg.stocks}",
                       () => cfg.stocks = ArenaMatchConfig.Cycle(cfg.stocks, ArenaMatchConfig.MinStocks, ArenaMatchConfig.MaxStocks));
@@ -142,6 +144,10 @@ namespace PKR
         {
             var theme = UITheme.Current;
             var p = RumbleRecorder.Profile ?? new RumbleProfile();
+            // Who the CPUs fight as, and the party item boxes (luck, so those matches are unrated).
+            Cycle(col, () => $"CPU HEROES: {CpuName(cfg)}", () => cfg.cpuCharacterId = NextHero(cfg.cpuCharacterId));
+            if (cfg.mode != MatchMode.Training)
+                Cycle(col, () => cfg.items ? "ITEMS: ON (UNRATED)" : "ITEMS: OFF", () => cfg.items = !cfg.items);
             UIFactory.Label(col, "RUMBLE RATING", 40, TextAnchor.MiddleCenter, 52f, title: true);
             UIFactory.Label(col, RumbleUI.RankLine(p), 40, TextAnchor.MiddleCenter, 56f).color = RumbleUI.TierColor(p.Tier);
             RumbleUI.AddBar(col, RumbleTiers.Progress(p.rating), RumbleUI.TierColor(p.Tier));
@@ -207,6 +213,13 @@ namespace PKR
             return "RANDOM";
         }
 
+        string CpuName(ArenaMatchConfig cfg)
+        {
+            foreach (var h in Heroes())
+                if (h.id == cfg.cpuCharacterId) return "ALL " + h.displayName.ToUpperInvariant();
+            return "RANDOM";
+        }
+
         string NextHero(string current)
         {
             var heroes = Heroes();
@@ -224,7 +237,7 @@ namespace PKR
             {
                 case MatchMode.Stock: return "Knock rivals past the edges. Last fighter with lives left wins.\nBreak all 3 Guard Pips to EXPOSE a rival, then land a heavy hit.";
                 case MatchMode.Timed: return "+1 for every knockout, -1 for every fall. Highest score when time runs out wins.";
-                default: return "CPU fighters stand still. Practice combos and Exposed launches.\nPause > Main Menu to leave.";
+                default: return "Pick what the CPU does (stand, walk, hop or fight back). The lab counts your combos.\nPause > Main Menu to leave.";
             }
         }
     }

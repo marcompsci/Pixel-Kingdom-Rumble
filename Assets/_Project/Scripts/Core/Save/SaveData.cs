@@ -13,6 +13,8 @@ namespace PKR.Core
         public float bestTimeSeconds;
         public int mostShardsCollected;
         public int mostSecretsFound;
+        /// <summary>Cleared without taking a hit (FLAWLESS).</summary>
+        public bool flawless;
         /// <summary>Best clear rank + 1 (1 = C … 4 = S); 0 = no rank yet. Stored +1 so old saves (missing field = 0) read as "none".</summary>
         public int bestRankPlusOne;
 
@@ -79,6 +81,10 @@ namespace PKR.Core
         public QuickGameSave quickGame = new QuickGameSave();
         /// <summary>Kingdom Plaza party quests: played, wins, podiums, best race time.</summary>
         public PartySave party = new PartySave();
+        /// <summary>Versus ladder records.</summary>
+        public LadderSave ladder = new LadderSave();
+        /// <summary>Story Quest time-trial ghosts: your best clear of each level.</summary>
+        public List<StoryGhost> storyGhosts = new List<StoryGhost>();
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -221,6 +227,9 @@ namespace PKR.Core
             quickGame.Sanitize();
             if (party == null) party = new PartySave();
             party.Sanitize();
+            if (ladder == null) ladder = new LadderSave();
+            ladder.Sanitize();
+            StoryGhosts.Sanitize(this);
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

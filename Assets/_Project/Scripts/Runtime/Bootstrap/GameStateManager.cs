@@ -12,6 +12,8 @@ namespace PKR
     public class GameStateManager : MonoBehaviour
     {
         public GameState State { get; private set; } = GameState.Menu;
+        /// <summary>Game speed when not paused: 1, or slower in Story Quest with the Game Speed assist.</summary>
+        public static float BaseTimeScale = 1f;
         public bool IsPaused => State == GameState.Paused;
 
         public void SetState(GameState next)
@@ -21,7 +23,7 @@ namespace PKR
             State = next;
 
             bool frozen = next == GameState.Paused;
-            Time.timeScale = frozen ? 0f : 1f;
+            Time.timeScale = frozen ? 0f : BaseTimeScale;
             AudioListener.pause = frozen;
 
             EventBus<GameStateChanged>.Raise(new GameStateChanged { previous = prev, current = next });

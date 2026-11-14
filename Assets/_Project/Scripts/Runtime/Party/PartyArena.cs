@@ -68,6 +68,7 @@ namespace PKR
                 };
                 BuildZone();
             }
+            if (_mode == PartyMode.None) return; // Arena Clash with ITEMS: ON: just the boxes and items, normal rules
             var info = PartyModes.Info(_mode);
             PartyHUD.Show(PartyFlow.CupActive ? "KINGDOM CUP  ·  " + info.name : info.name, Line, belowMatchClock: true);
             HowToPlay.ShowOnce(_mode);
@@ -89,7 +90,7 @@ namespace PKR
             _zone = null;
             _zoneSpot = -1;
             if (_arena != null && _blastStart.width > 0f) _arena.BlastZone = _blastStart;
-            PartyHUD.Hide();
+            if (_mode != PartyMode.None) PartyHUD.Hide();
         }
 
         string Line()

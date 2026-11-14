@@ -105,9 +105,23 @@ namespace PKR
         public void Fight()
         {
             if (string.IsNullOrEmpty(_p1) || !_cpuChosen) return;
+            GameSession.Ladder = null;
             GameSession.Mode = SessionMode.Versus;
             GameSession.SelectCharacter(_p1);
             GameSession.VersusOpponentId = _cpu;
+            if (Services.Scenes != null) Services.Scenes.Load(SceneIds.VersusStage);
+        }
+
+        /// <summary>VERSUS LADDER: beat a run of CPU rivals in a row, Easy up to Hard (your CPU level setting is ignored).</summary>
+        public void StartLadder()
+        {
+            if (string.IsNullOrEmpty(_p1) || roster == null) return;
+            var ids = new System.Collections.Generic.List<string>();
+            foreach (var h in roster.heroes) if (h != null && h.playableInThisBuild && roster.IsSelectable(h)) ids.Add(h.id);
+            GameSession.Ladder = VersusLadder.Build(_p1, ids, System.Environment.TickCount);
+            GameSession.Mode = SessionMode.Versus;
+            GameSession.SelectCharacter(_p1);
+            GameSession.VersusOpponentId = GameSession.Ladder.CurrentRival;
             if (Services.Scenes != null) Services.Scenes.Load(SceneIds.VersusStage);
         }
 
@@ -182,6 +196,8 @@ namespace PKR
             UIFactory.Button(row, "BACK", Back, 110f).GetComponentInChildren<Text>().fontSize = 36;
             UIFactory.Button(row, $"CPU: {RumbleRecorder.LevelLabel(GameSession.VersusAutoLevel, GameSession.VersusBotLevel)}", CycleLevel, 110f)
                      .GetComponentInChildren<Text>().fontSize = 36;
+            if (_picking == 1 && !string.IsNullOrEmpty(_p1))
+                UIFactory.Button(row, "LADDER", StartLadder, 110f).GetComponentInChildren<Text>().fontSize = 36;
             string pickLabel = _cpuChosen ? "FIGHT!" : "PICK";
             var go = UIFactory.Button(row, pickLabel, () => { if (_cpuChosen) Fight(); else Pick(_highlight); }, 110f,
                                       interactable: _cpuChosen || HighlightPickable());

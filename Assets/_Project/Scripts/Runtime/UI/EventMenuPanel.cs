@@ -87,7 +87,7 @@ namespace PKR
         {
             _root = root; _onBack = onBack;
             UIFactory.Clear(root);
-            var panel = UIFactory.Panel(root, new Vector2(960f, 1300f));
+            var panel = UIFactory.Panel(root, new Vector2(960f, 1780f));
             UIFactory.Label(panel, "DAILY CHALLENGES", 76, TextAnchor.MiddleCenter, 120f, title: true);
             var save = Services.Save != null ? Services.Save.Data : null;
             int xp = save != null ? save.playerXp : 0;
@@ -116,8 +116,34 @@ namespace PKR
             }
             UIFactory.Label(panel, $"Every level pays Star Shards; every 5th level pays +{PlayerLevel.MilestoneBonus} more.", 28,
                             TextAnchor.MiddleCenter, 60f).color = UITheme.Current.subtle;
+            AlsoToday(panel, save);
             var back = UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(back);
+        }
+
+        /// <summary>ALSO TODAY: every other daily in one place (party challenge, Daily Rumble, zombie orders) and whether it's done.</summary>
+        static void AlsoToday(RectTransform panel, SaveData save)
+        {
+            UIFactory.Label(panel, "ALSO TODAY", 44, TextAnchor.MiddleCenter, 64f, title: true).color = UITheme.Current.title;
+            int partyDay = PartyFlow.Today;
+            var party = DailyParty.For(partyDay);
+            bool partyDone = save != null && save.party != null && save.party.dailyDoneDay == partyDay;
+            Line(panel, "STORY QUEST · PARTY CHALLENGE", party.text + $"   ·   +{party.reward} shards", partyDone);
+            int rumbleDay = RumbleRecorder.Today;
+            var rumble = DailyRumble.For(rumbleDay);
+            Line(panel, "ARENA CLASH · DAILY RUMBLE", rumble.title + "   ·   " + rumble.description, DailyRumble.PlayedToday(RumbleRecorder.Profile, rumbleDay));
+            var career = save != null ? save.zombieCareer : null;
+            int zDay = ZombieDailyTracker.Today;
+            int zDone = career != null ? ZombieDaily.DoneCount(career, zDay) : 0;
+            Line(panel, "ZOMBIES · DAILY ORDERS", $"{zDone}/{ZombieDaily.Orders} orders done   ·   streak {(career != null ? ZombieDaily.StreakNow(career, zDay) : 0)}",
+                 zDone >= ZombieDaily.Orders);
+        }
+
+        static void Line(RectTransform panel, string head, string body, bool done)
+        {
+            var t = UIFactory.Label(panel, $"{(done ? "DONE  ·  " : "")}{head}\n<size=24>{body}</size>", 32, TextAnchor.MiddleCenter, 84f);
+            t.supportRichText = true;
+            t.color = done ? new Color32(120, 220, 140, 255) : UITheme.Current.text;
         }
 
         Button Card(RectTransform panel, EventLevel ev, SessionMode mode)

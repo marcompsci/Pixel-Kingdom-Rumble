@@ -161,19 +161,45 @@ namespace PKR
             if (e.starShardReward > 0)
                 UIFactory.Label(panel, $"+{e.starShardReward} STAR SHARDS", 40, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.accent;
             if (e.rumble != null) RumbleUI.AddResults(panel, e.rumble);
+            if (e.ladder != null) LadderLine(panel, e);
             var row = UIFactory.Rect("Buttons", panel);
             row.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().preferredHeight = UIFactory.RowHeight;
             var h = row.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
             h.spacing = 24f;
             h.childControlWidth = true; h.childControlHeight = true;
             h.childForceExpandWidth = true; h.childForceExpandHeight = true;
-            var again = UIFactory.Button(row, "REMATCH", Rematch);
-            UIFactory.Button(row, "NEW FIGHTERS", () => Load(SceneIds.VersusSelect));
+            Button again;
+            if (e.ladder != null && e.ladder.Active)
+                again = UIFactory.Button(row, $"NEXT RIVAL ({e.ladder.rung + 1}/{e.ladder.Length})", NextRung);
+            else if (e.ladder != null && !e.ladder.cleared)
+            {
+                again = UIFactory.Button(row, "TRY AGAIN", () => { e.ladder.Retry(); NextRung(); });
+            }
+            else again = UIFactory.Button(row, "REMATCH", Rematch);
+            UIFactory.Button(row, e.ladder != null ? "QUIT LADDER" : "NEW FIGHTERS", () => { GameSession.Ladder = null; Load(SceneIds.VersusSelect); });
             string shareText = $"{(e.winner == 0 ? "Won" : e.winner == 1 ? "Lost" : "Drew")} {e.playerRounds}-{e.opponentRounds} as " +
                                $"{e.playerName} vs {e.opponentName} in Pixel Kingdom Rumble! " + PKR.Core.ShareCard.Link;
             UIFactory.Button(row, Highlights.Available ? "SHARE CLIP" : "SHARE", () => Highlights.Share(shareText));
             UIFactory.Button(row, "MAIN MENU", () => Load(SceneIds.MainMenu));
             UIFactory.Select(again);
+        }
+
+        static void LadderLine(RectTransform panel, VersusMatchEnded e)
+        {
+            var l = e.ladder;
+            string text = e.ladderCleared ? $"LADDER CLEARED!  {l.Length} rivals down  ·  +{e.ladderBonus} STAR SHARDS"
+                        : l.Active ? $"LADDER  ·  rung {l.rung + 1} of {l.Length} next  ·  {RumbleRecorder.LevelLabel(false, l.CurrentLevel)} CPU"
+                        : $"LADDER OVER on rung {l.rung + 1} of {l.Length}  ·  try that rival again";
+            UIFactory.Label(panel, text, 34, TextAnchor.MiddleCenter, 52f).color = e.ladderCleared ? UITheme.Current.accent : UITheme.Current.title;
+        }
+
+        /// <summary>The next rung of the ladder (or the same one again after TRY AGAIN).</summary>
+        void NextRung()
+        {
+            _results.gameObject.SetActive(false);
+            var l = GameSession.Ladder;
+            if (match == null || match.Player == null || l == null || !l.Active) return;
+            match.StartMatch(match.Player.def.id, l.CurrentRival, l.CurrentLevel);
         }
 
         public void Rematch()

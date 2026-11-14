@@ -16,6 +16,10 @@ namespace PKR
         public int starShardReward;
         /// <summary>Rumble Rating result (null when not rated, e.g. in tests).</summary>
         public RumbleOutcome rumble;
+        /// <summary>The Versus ladder (null for a single match), after this result was reported.</summary>
+        public VersusLadder ladder;
+        public bool ladderCleared;
+        public int ladderBonus;
     }
 
     /// <summary>
@@ -74,7 +78,10 @@ namespace PKR
 
         void Start()
         {
-            if (autoStart) StartMatch(GameSession.SelectedCharacterId, GameSession.VersusOpponentId, GameSession.VersusBotLevel);
+            var ladder = GameSession.Ladder;
+            if (autoStart && ladder != null && ladder.Active && !botVsBot)
+                StartMatch(GameSession.SelectedCharacterId, ladder.CurrentRival, ladder.CurrentLevel);
+            else if (autoStart) StartMatch(GameSession.SelectedCharacterId, GameSession.VersusOpponentId, GameSession.VersusBotLevel);
         }
 
         void OnDestroy() => Clear();
@@ -87,7 +94,7 @@ namespace PKR
             Match = new VersusMatch();
             PerfectRoundWon = false;
             // Bot-vs-bot (the balance lab) must give both CPUs the same fixed tuning, never the adaptive blend.
-            _auto = autoStart && !botVsBot ? GameSession.VersusAutoLevel : false;
+            _auto = autoStart && !botVsBot && !LadderOn ? GameSession.VersusAutoLevel : false;
             _level = level;
             _trailed = _decider = false;
             var playerDef = Pick(playerId, null);
@@ -228,11 +235,25 @@ namespace PKR
             else _flow = StartCoroutine(RoundIntro());
         }
 
+        /// <summary>This match is a rung of the Versus ladder.</summary>
+        bool LadderOn => autoStart && !botVsBot && GameSession.Ladder != null && GameSession.Ladder.Active;
+
         void Finish()
         {
             _flow = null;
             bool won = Match.Winner == 0;
             int reward = VersusRules.Reward(won, PerfectRoundWon);
+            VersusLadder ladder = null;
+            bool cleared = false;
+            int ladderBonus = 0;
+            if (LadderOn)
+            {
+                ladder = GameSession.Ladder;
+                cleared = ladder.Report(won);
+                if (cleared) ladderBonus = VersusLadder.ClearReward(ladder.Length);
+                if (ladder.over && grantRewards && Services.Save != null) Services.Save.Data.ladder.Record(ladder);
+                reward += ladderBonus;
+            }
             if (!grantRewards) reward = 0;
             else if (Services.Save != null)
             {
@@ -258,7 +279,8 @@ namespace PKR
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
             {
                 winner = Match.Winner, playerName = Player.name, opponentName = Opponent.name,
-                playerRounds = Match.Wins(0), opponentRounds = Match.Wins(1), starShardReward = reward, rumble = rumble
+                playerRounds = Match.Wins(0), opponentRounds = Match.Wins(1), starShardReward = reward, rumble = rumble,
+                ladder = ladder, ladderCleared = cleared, ladderBonus = ladderBonus
             });
         }
 
