@@ -187,10 +187,11 @@ namespace PKR
         {
             var safe = UIFactory.CreateCanvas(transform, "PlazaCard", 45, landscape: true, out _);
             _card = UIFactory.Rect("Card", safe);
-            _card.anchorMin = _card.anchorMax = new Vector2(0.5f, 0f);
-            _card.pivot = new Vector2(0.5f, 0f);
-            _card.anchoredPosition = new Vector2(0f, 230f);
-            _card.sizeDelta = new Vector2(1000f, 250f);
+            // Middle of the screen, clear of the move stick (bottom left) and the action buttons (bottom right).
+            _card.anchorMin = _card.anchorMax = new Vector2(0.5f, 0.56f);
+            _card.pivot = new Vector2(0.5f, 0.5f);
+            _card.anchoredPosition = Vector2.zero;
+            _card.sizeDelta = new Vector2(900f, 250f);
             var bg = _card.gameObject.AddComponent<Image>();
             UISprites.ApplyPanelSprite(bg);
             bg.color = new Color(0.1f, 0.08f, 0.14f, 0.94f);
@@ -279,15 +280,15 @@ namespace PKR
         {
             var safe = UIFactory.CreateCanvas(transform, "BoardCard", 46, landscape: true, out _);
             _boardCard = UIFactory.Rect("Board", safe);
-            _boardCard.anchorMin = _boardCard.anchorMax = new Vector2(0.5f, 0f);
-            _boardCard.pivot = new Vector2(0.5f, 0f);
-            _boardCard.anchoredPosition = new Vector2(0f, 220f);
-            _boardCard.sizeDelta = new Vector2(1320f, 330f);
+            _boardCard.anchorMin = _boardCard.anchorMax = new Vector2(0.5f, 0.55f);
+            _boardCard.pivot = new Vector2(0.5f, 0.5f);
+            _boardCard.anchoredPosition = Vector2.zero;
+            _boardCard.sizeDelta = new Vector2(920f, 330f);
             var bg = _boardCard.gameObject.AddComponent<Image>();
             UISprites.ApplyPanelSprite(bg);
             bg.color = new Color(0.1f, 0.08f, 0.14f, 0.95f);
             Line(_boardCard, "NOTICE BOARD", 44, 0.78f, 0.98f, UITheme.Current.title);
-            _boardDaily = Line(_boardCard, "", 30, 0.5f, 0.78f, Color.white);
+            _boardDaily = Line(_boardCard, "", 26, 0.5f, 0.78f, Color.white);
             var row = UIFactory.Rect("Buttons", _boardCard);
             row.anchorMin = new Vector2(0.03f, 0.06f);
             row.anchorMax = new Vector2(0.97f, 0.46f);
