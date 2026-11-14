@@ -87,7 +87,7 @@ namespace PKR
         {
             _root = root; _onBack = onBack;
             UIFactory.Clear(root);
-            var panel = UIFactory.Panel(root, new Vector2(960f, 1780f));
+            var panel = UIFactory.Panel(root, new Vector2(960f, 1600f));
             UIFactory.Label(panel, "DAILY CHALLENGES", 76, TextAnchor.MiddleCenter, 120f, title: true);
             var save = Services.Save != null ? Services.Save.Data : null;
             int xp = save != null ? save.playerXp : 0;
