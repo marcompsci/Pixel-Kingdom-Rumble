@@ -56,6 +56,8 @@ namespace PKR
         public int MaxHealth { get; private set; }
         /// <summary>Extra max health on top of the definition (Assist mode). Applied on the next ResetState.</summary>
         public int bonusMaxHealth;
+        /// <summary>When above 0, max health never goes past this (the BRAVE one-heart challenge). Applied on the next ResetState.</summary>
+        public int capMaxHealth;
         public int Health { get; private set; }
         public GuardPipState Pips { get; private set; }
         public bool IsDead { get; private set; }
@@ -113,6 +115,7 @@ namespace PKR
         {
             var def = _motor != null ? _motor.Definition : null;
             MaxHealth = (maxHealthOverride > 0 ? maxHealthOverride : (def != null ? def.maxHealth : 3)) + Mathf.Max(0, bonusMaxHealth);
+            if (capMaxHealth > 0) MaxHealth = Mathf.Min(MaxHealth, capMaxHealth);
             Health = MaxHealth;
             Pips = new GuardPipState(def != null ? Mathf.Max(1, def.guardPips) : 3);
             IsDead = false;

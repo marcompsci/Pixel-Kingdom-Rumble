@@ -131,19 +131,15 @@ namespace PKR
             if (invincible) Run.AssistSpeed = true;
             // BRAVE: the one-heart challenge.
             BraveRun = IsStoryLevel && !invincible && Services.Settings != null && Services.Settings.Data.storyBrave;
-            if (BraveRun && PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
-            {
-                int baseMax = PlayerHealth.MaxHealth - PlayerHealth.bonusMaxHealth;
-                PlayerHealth.bonusMaxHealth = 1 - baseMax;
-                PlayerHealth.ResetState();
-            }
+            if (PlayerHealth != null) PlayerHealth.capMaxHealth = BraveRun ? 1 : 0;
             if (IsStoryLevel) MetaTracker.Played(ContinueKind.StoryLevel, level.id);
             if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
                 PlayerHealth.bonusMaxHealth = (AssistMode ? AssistBonusHealth : 0) + Upgrades.BonusHealth(SaveOrNull);
-                PlayerHealth.ResetState();
+                PlayerHealth.ResetState(); // BRAVE's one-heart cap applies here
             }
+            else if (PlayerHealth != null && BraveRun) PlayerHealth.ResetState();
             if (level != null) DiscoverCodex(CodexCategory.Place, level.id, level.displayName);
 
             var spots = FindObjectsByType<PickupSpot>();
