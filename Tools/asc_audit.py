@@ -66,6 +66,12 @@ def main():
     vers = data(f"/apps/{A.APP_ID}/appStoreVersions?limit=10") or []
     ver = next((v for v in vers if v["attributes"]["appStoreState"] in ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")), None)
     build = None
+    for v in vers:
+        res("INFO", "App Store version", f"{v['attributes'].get('versionString')}  {v['attributes'].get('appStoreState')}")
+    # the latest uploads and their TestFlight state (even while a version is in review)
+    for b in data(f"/builds?filter[app]={A.APP_ID}&sort=-uploadedDate&limit=3&include=buildBetaDetail") or []:
+        ba = b["attributes"]
+        res("INFO", "Recent build", f"{ba.get('version')}  {ba.get('processingState')}  uploaded {ba.get('uploadedDate')}")
     if not ver:
         res("WARN", "Editable version", "none in Prepare for Submission")
     else:
