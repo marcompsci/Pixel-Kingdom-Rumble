@@ -8,6 +8,8 @@ New in this build:
 - ZOMBIES: the BARGAIN BELL power-up in Last Stand (box spins cost 10 for 20 s) and a FIELD GUIDE of every kind of the dead.
 - STORY QUEST: a time-trial ghost of your best clear, FLAWLESS clears, a shard compass on replays, and Settings > STORY GAME SPEED (100-70%).
 - A short welcome guide for new players, and the DAILY page now lists every daily in the game.
+- NEW: CONTINUE and PROFILE on the main menu, HERO MASTERY (every hero levels up in every mode), a daily login gift, WHAT'S NEW, Versus head-to-head records, best combos in Arena results, training RESET, Item Race medals and party bests.
+- Settings > ASSISTS: comfort preset, Story speed, an invincible assist (no records) and RESET HINTS & GUIDES. Story levels show where you fell last time.
 
 Please try:
 1. STORY QUEST: walk the plaza, enter buildings, replay a cleared level (ghost + compass).
@@ -16,6 +18,7 @@ Please try:
 4. ZOMBIES > FIELD GUIDE, then a Last Stand run. Did you see the Bargain Bell?
 5. Settings > STORY GAME SPEED at 70%: does it feel easier, and is anything broken?
 6. Add the QUICK GAME widget and clear a stage.
+7. Main menu > PROFILE: do the numbers look right? Does CONTINUE take you back to where you were?
 
 Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge). Party quests and the ladder are against the computer, not online.
 Feedback: take a screenshot in the game and tap "Share Beta Feedback", or email rodlonbell16@gmail.com.
