@@ -52,6 +52,7 @@ namespace PKR
             {
                 string unit = e.party == PartyMode.CoinRush ? "coins" : e.party == PartyMode.KingOfTheHill ? "crown time" : "score";
                 string score = e.mode == MatchMode.Timed ? $"   {unit} {e.scores[slot]}" : "";
+                if (e.bestCombo != null && slot < e.bestCombo.Length && e.bestCombo[slot] >= 2) score += $"   combo {e.bestCombo[slot]}";
                 var row = UIFactory.Label(panel, $"{Ordinal(e.placements[slot])}   {e.names[slot]}   KOs {e.knockouts[slot]}   falls {e.falls[slot]}{score}",
                                           36, TextAnchor.MiddleLeft, 52f);
                 row.color = slot < ArenaMatchController.SlotColors.Length ? ArenaMatchController.SlotColors[slot] : p.text;

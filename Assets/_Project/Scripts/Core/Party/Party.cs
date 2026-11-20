@@ -283,6 +283,8 @@ namespace PKR.Core
         public float bestRaceSeconds;
         /// <summary>Party rank points (a win 3, another podium 1): PartyRanks.</summary>
         public int rankPoints;
+        /// <summary>Best score: coins (Coin Rush), seconds in the zone (King of the Hill), balloons left on a win (Balloon Battle).</summary>
+        public int bestScore;
     }
 
     [System.Serializable]

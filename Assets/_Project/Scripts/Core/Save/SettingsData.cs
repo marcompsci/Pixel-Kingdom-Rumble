@@ -83,6 +83,19 @@ namespace PKR.Core
         public int gameSpeed = 100;
         /// <summary>Story Quest: race a ghost of your best clear in levels you've cleared.</summary>
         public bool storyGhost = true;
+        /// <summary>Accessibility: in Story Quest the hero can't lose hearts (pits still send you back). Clears count, no records.</summary>
+        public bool storyInvincible;
+
+        /// <summary>One tap to a gentler game: Assist mode, Story at 80%, strong aim assist and bigger touch targets.</summary>
+        public void ApplyComfortPreset()
+        {
+            assistMode = true;
+            gameSpeed = 80;
+            strongAimAssist = true;
+            bigTouchTargets = true;
+        }
+
+        public bool ComfortPresetOn => assistMode && gameSpeed == 80 && strongAimAssist && bigTouchTargets;
         public List<ControlPlacement> controlLayout = DefaultLayout();
 
         public static List<ControlPlacement> DefaultLayout() => new List<ControlPlacement>

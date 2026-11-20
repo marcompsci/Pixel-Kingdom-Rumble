@@ -170,6 +170,17 @@ namespace PKR
                         : focus.tagline + WeaponLine(focus);
             UIFactory.Label(panel, info, 30, TextAnchor.MiddleCenter, 50f).color = p.subtle;
             if (focus != null && !focusLocked)
+            {
+                // Mastery when picking your fighter; your record against them when picking the CPU.
+                var save = Services.Save != null ? Services.Save.Data : null;
+                int xp = HeroMastery.Xp(save, focus.id);
+                int lv = HeroMastery.Level(xp);
+                string meta = _picking == 0
+                    ? $"MASTERY {lv} · {HeroMastery.Title(lv)}" + (lv < HeroMastery.MaxLevel ? $"  ·  {HeroMastery.ToNext(xp)} XP to {lv + 1}" : "")
+                    : $"HEAD-TO-HEAD: {HeadToHead.Line(HeadToHead.Get(save, focus.id))}";
+                UIFactory.Label(panel, meta, 28, TextAnchor.MiddleCenter, 40f).color = p.accent;
+            }
+            if (focus != null && !focusLocked)
                 UIFactory.Label(panel, CodexPanel.HeroStats(focus, versus: true), 26, TextAnchor.UpperLeft, 370f);
             else UIFactory.Label(panel, "", 26, TextAnchor.UpperLeft, 370f);
 

@@ -74,8 +74,32 @@ namespace PKR
             else if (BootLoader.TakeShotPanel("halloween") != null) ShowHalloween();
             else if (BootLoader.TakeShotPanel("zombies") != null) ShowZombies();
             else if (BootLoader.TakeShotPanel("season") != null) ShowSeason();
+            else if (BootLoader.TakeShotPanel("profile") != null) ShowProfile();
             else if (BootLoader.TakeShotPanel("welcome") != null || (!GameSession.ReopenEventMenu && WelcomeGuide.ShouldShow(Services.Save != null ? Services.Save.Data : null)))
                 WelcomeGuide.Show(transform, () => Choose(SessionMode.StoryQuest), null);
+            else if (BootLoader.TakeShotPanel("whatsnew") != null || (!GameSession.ReopenEventMenu && !Application.isBatchMode && Services.Save != null &&
+                     WhatsNew.ShouldShow(Services.Save.Data, WelcomeGuide.IsNewPlayer(Services.Save.Data))))
+                WhatsNewCard.Show(transform);
+            ClaimLoginGift();
+        }
+
+        /// <summary>The daily login gift: Star Shards the first time the game opens each day (more for a streak).</summary>
+        static void ClaimLoginGift()
+        {
+            var save = Services.Save;
+            if (save == null || Application.isBatchMode) return;
+            var now = System.DateTime.Now;
+            int gift = LoginStreak.Claim(save.Data, DailyChallenges.DayKey(now), DailyChallenges.DayKey(now.AddDays(-1)));
+            if (gift <= 0) return;
+            Economy.Grant(save.Data, gift);
+            save.SaveNow();
+            int streak = save.Data.lifetime.loginStreak;
+            EventBus<ProgressToast>.Raise(new ProgressToast
+            {
+                title = $"DAILY GIFT  +{gift} STAR SHARDS",
+                detail = streak > 1 ? $"Day {streak} in a row  ·  tomorrow +{LoginStreak.GiftFor(streak + 1)}" : $"Come back tomorrow for +{LoginStreak.GiftFor(2)}",
+                color = new Color32(255, 214, 90, 255)
+            });
         }
 
         bool _lastHighContrast;
@@ -131,6 +155,7 @@ namespace PKR
             var season = SettingsService.Season;
 
             // STORY QUEST leads the menu (the main game), dressed for the live season when one is on.
+            ContinueButton(panel, save);
             var story = UIFactory.Button(panel, "STORY QUEST", () => Choose(SessionMode.StoryQuest), 128f,
                                          interactable: Application.CanStreamedLevelBeLoaded(SceneIds.StoryTest));
             UIFactory.Tint(story, season.Active ? SeasonPanel.ColorFor(season) : (Color)new Color32(214, 116, 40, 255), Color.white);
@@ -190,12 +215,19 @@ namespace PKR
             var daily = UIFactory.Button(misc, $"DAILY {dailyDone}/{DailyChallenges.PerDay}", ShowDaily);
             UIFactory.Tint(daily, new Color32(70, 150, 200, 255), Color.white);
             UIFactory.Button(misc, "SETTINGS", ShowSettings);
+            var cRow = UIFactory.Rect("ProfileCodex", panel);
+            cRow.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var ch = cRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            ch.spacing = 24f;
+            ch.childControlWidth = true; ch.childControlHeight = true;
+            ch.childForceExpandWidth = true; ch.childForceExpandHeight = true;
+            UIFactory.Button(cRow, "PROFILE", ShowProfile);
             if (codex != null)
             {
                 int unseen = codex.Progress().unseen;
-                UIFactory.Button(panel, unseen > 0 ? $"CODEX  ·  {unseen} NEW" : "CODEX", ShowCodex);
+                UIFactory.Button(cRow, unseen > 0 ? $"CODEX · {unseen} NEW" : "CODEX", ShowCodex);
             }
-            else UIFactory.Button(panel, "CODEX", null, interactable: false);
+            else UIFactory.Button(cRow, "CODEX", null, interactable: false);
             if (GameCenterService.Available)
             {
                 var gc = UIFactory.Button(panel, "GAME CENTER  ·  ACHIEVEMENTS & RANKS", GameCenterService.ShowDashboard, 80f);
@@ -257,6 +289,64 @@ namespace PKR
                 float need = edge.sizeDelta.y;
                 edge.localScale = room > 400f && need > room ? Vector3.one * (room / need) : Vector3.one;
             }
+        }
+
+        /// <summary>CONTINUE: straight back to the last thing played (a Story level, the plaza, Arena Clash, Versus or Zombies).</summary>
+        void ContinueButton(RectTransform panel, SaveData save)
+        {
+            if (save == null || save.lifetime == null) return;
+            var l = save.lifetime;
+            var kind = (ContinueKind)l.lastKind;
+            string scene = l.lastScene;
+            string sub = null;
+            System.Action go = null;
+            switch (kind)
+            {
+                case ContinueKind.StoryLevel:
+                    if (string.IsNullOrEmpty(scene) || !Application.CanStreamedLevelBeLoaded(scene)) return;
+                    sub = "Story Quest  ·  " + LevelName(l.lastLevelId);
+                    go = () => { GameSession.Mode = SessionMode.StoryQuest; if (Services.Scenes != null) Services.Scenes.Load(scene); };
+                    break;
+                case ContinueKind.Plaza:
+                    if (!Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza)) return;
+                    sub = "Story Quest  ·  Kingdom Plaza";
+                    go = () => { GameSession.Mode = SessionMode.StoryQuest; if (Services.Scenes != null) Services.Scenes.Load(SceneIds.KingdomPlaza); };
+                    break;
+                case ContinueKind.ArenaClash:
+                    if (!Application.CanStreamedLevelBeLoaded(SceneIds.ArenaTest)) return;
+                    sub = "Arena Clash";
+                    go = () => { GameSession.Mode = SessionMode.ArenaClash; if (Services.Scenes != null) Services.Scenes.Load(SceneIds.ArenaTest); };
+                    break;
+                case ContinueKind.Versus:
+                    if (!Application.CanStreamedLevelBeLoaded(SceneIds.VersusSelect)) return;
+                    sub = "Versus";
+                    go = () => { GameSession.Mode = SessionMode.Versus; if (Services.Scenes != null) Services.Scenes.Load(SceneIds.VersusSelect); };
+                    break;
+                case ContinueKind.Zombies:
+                    sub = "Zombies";
+                    go = ShowZombies;
+                    break;
+                default: return;
+            }
+            var b = UIFactory.Button(panel, "CONTINUE", () => go(), 96f);
+            UIFactory.Tint(b, new Color32(60, 150, 100, 255), Color.white);
+            UIFactory.TwoLine(b, "CONTINUE", sub, 40, 22);
+        }
+
+        string LevelName(string id)
+        {
+            if (featuredLevel != null && featuredLevel.id == id) return featuredLevel.displayName;
+            var all = Resources.FindObjectsOfTypeAll<LevelDefinition>();
+            foreach (var d in all) if (d != null && d.id == id) return d.displayName;
+            return string.IsNullOrEmpty(id) ? "your last level" : id.Replace("sq_", "").Replace('_', ' ').ToUpperInvariant();
+        }
+
+        void ShowProfile()
+        {
+            _menuRoot.gameObject.SetActive(false);
+            _eventRoot.gameObject.SetActive(true);
+            var p = GetComponent<ProfilePanel>() ?? gameObject.AddComponent<ProfilePanel>();
+            p.Open(_eventRoot, roster, ShowMenu);
         }
 
         void Choose(SessionMode mode)

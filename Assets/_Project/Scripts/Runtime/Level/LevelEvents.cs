@@ -29,6 +29,8 @@ namespace PKR
         public bool flawless;
         public int flawlessShards;
         public bool newGhost;
+        /// <summary>Seconds faster (+) or slower (-) than the ghost you raced (0 when there was none).</summary>
+        public float ghostDelta;
         public bool assistSpeed;
         /// <summary>Story world whose every level this clear completed for the first time ("" if none), and its bonus.</summary>
         public string worldCompleted;

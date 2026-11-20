@@ -35,7 +35,15 @@ namespace PKR
             if (save == null) return false;
             if (Application.isBatchMode && !ForceShow) return false;
             if (save.seenHints != null && save.seenHints.Contains(HintId)) return false;
-            foreach (var l in save.levels) if (l != null && l.completed) return false; // not new: they've played
+            if (save.lifetime != null && save.lifetime.replayWelcome) return true; // Settings > RESET HINTS & GUIDES
+            return IsNewPlayer(save);
+        }
+
+        /// <summary>No level cleared yet: a brand-new player (they get this guide, not WHAT'S NEW).</summary>
+        public static bool IsNewPlayer(SaveData save)
+        {
+            if (save == null) return true;
+            foreach (var l in save.levels) if (l != null && l.completed) return false;
             return true;
         }
 
@@ -75,7 +83,13 @@ namespace PKR
         public void Finish(bool story)
         {
             var save = Services.Save;
-            if (save != null && save.Data.MarkHintSeen(HintId)) save.SaveNow();
+            if (save != null)
+            {
+                save.Data.MarkHintSeen(HintId);
+                save.Data.lifetime.replayWelcome = false;
+                WhatsNew.MarkSeen(save.Data); // the guide already covers what's in the game
+                save.SaveNow();
+            }
             Destroy(gameObject);
             if (story) _onStory?.Invoke();
             else _onDone?.Invoke();

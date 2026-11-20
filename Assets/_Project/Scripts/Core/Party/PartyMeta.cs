@@ -71,6 +71,8 @@ namespace PKR.Core
         public bool rankUp;
         public PartyRank rank;
         public bool newBestTime;
+        /// <summary>A new personal best score (coins, crown seconds, balloons left).</summary>
+        public bool newBestScore;
         /// <summary>The cup moved on (an event finished inside a cup run).</summary>
         public bool cupEvent;
         /// <summary>The cup is over: final place 1..4, trophy and bonus shards.</summary>
@@ -281,6 +283,8 @@ namespace PKR.Core
             report.shards = scaled;
 
             var rec = party.Find(o.mode);
+            bool scored = o.mode == PartyMode.CoinRush || o.mode == PartyMode.KingOfTheHill || (o.mode == PartyMode.BalloonBattle && o.placement == 1);
+            if (scored && o.score > rec.bestScore) { report.newBestScore = rec.bestScore > 0 || o.score > 0; rec.bestScore = o.score; }
             report.newBestTime = o.mode == PartyMode.ItemRace && o.raceSeconds > 0f && rec.bestRaceSeconds == o.raceSeconds &&
                                  (oldBest <= 0f || o.raceSeconds < oldBest);
             rec.rankPoints = oldPoints + PartyRanks.PointsFor(o.placement);

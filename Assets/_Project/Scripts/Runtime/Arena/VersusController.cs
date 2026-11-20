@@ -99,6 +99,7 @@ namespace PKR
             _trailed = _decider = false;
             var playerDef = Pick(playerId, null);
             var opponentDef = Pick(opponentId, playerDef);
+            if (autoStart && !botVsBot) MetaTracker.Played(ContinueKind.Versus);
             Player = Spawn(playerDef, playerSpawn, 0, human: true, level);
             Opponent = Spawn(opponentDef, opponentSpawn, 1, human: false, level);
             _flow = StartCoroutine(RoundIntro());
@@ -275,7 +276,12 @@ namespace PKR
             }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             if (Services.Haptics != null) Services.Haptics.Play(won ? HapticStrength.Heavy : HapticStrength.Medium);
-            if (grantRewards && !botVsBot) ProgressTracker.MatchPlayed(won, versus: true);
+            if (grantRewards && !botVsBot)
+            {
+                ProgressTracker.MatchPlayed(won, versus: true);
+                if (Match.Winner >= 0) MetaTracker.Versus(Opponent.def.id, won);
+                MetaTracker.Mastery(Player.def.id, (won ? HeroMastery.VersusWinXp : HeroMastery.VersusMatchXp) + (cleared ? HeroMastery.LadderClearXp : 0), roster);
+            }
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
             {
                 winner = Match.Winner, playerName = Player.name, opponentName = Opponent.name,

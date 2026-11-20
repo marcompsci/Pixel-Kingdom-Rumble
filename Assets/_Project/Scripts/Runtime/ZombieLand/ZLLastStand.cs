@@ -928,6 +928,8 @@ namespace PKR
                 save.SaveNow();
             }
             ProgressTracker.Report(ChallengeKind.SurvivalRound, Run.Round);
+            if (!_guest && _g.Player != null && Weekly == null) MetaTracker.Played(ContinueKind.Zombies);
+            if (!_guest) MetaTracker.Mastery(GameSession.SelectedCharacterId, HeroMastery.LastStandRoundXp * Mathf.Max(0, Run.Round - 1));
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
             XpEarned = SurvivorRank.RunXp(Mode, Run.Round, Run.Kills, Run.Won);
             RanksReached = ProgressTracker.AddZombieXp(XpEarned);

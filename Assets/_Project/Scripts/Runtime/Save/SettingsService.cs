@@ -88,6 +88,26 @@ namespace PKR
         }
 
         public void SetStoryGhost(bool on) { Data.storyGhost = on; Commit(); }
+
+        /// <summary>Story Quest invincible assist; takes effect at once in a Story level.</summary>
+        public void SetStoryInvincible(bool on)
+        {
+            Data.storyInvincible = on;
+            Commit();
+            var flow = LevelFlowController.Current;
+            if (flow != null && flow.IsStoryLevel && flow.PlayerHealth != null)
+            {
+                flow.PlayerHealth.keepHealth = on;
+                if (on && flow.Run != null) flow.Run.AssistSpeed = true;
+            }
+        }
+
+        public void ApplyComfortPreset()
+        {
+            Data.ApplyComfortPreset();
+            Commit();
+            if (LevelFlowController.Current != null) LevelFlowController.Current.ApplyGameSpeed();
+        }
         public void SetSeasonalMode(int mode) { Data.seasonalMode = mode == SeasonCalendar.ModeOff ? SeasonCalendar.ModeOff : SeasonCalendar.ModeLive; Commit(); }
 
         public ColorAssist ColorMode => (ColorAssist)Data.colorAssist;

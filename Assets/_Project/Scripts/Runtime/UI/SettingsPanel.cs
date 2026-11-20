@@ -62,7 +62,8 @@ namespace PKR
             th.childForceExpandWidth = true; th.childForceExpandHeight = true;
             var t0 = UIFactory.Button(tabs, "SOUND & CONTROLS", () => { _page = 0; Rebuild(); }, 80f);
             var t1 = UIFactory.Button(tabs, "DISPLAY & ACCESS", () => { _page = 1; Rebuild(); }, 80f);
-            UIFactory.Highlight(_page == 0 ? t0 : t1, new Color32(255, 214, 90, 255));
+            var t2 = UIFactory.Button(tabs, "ASSISTS", () => { _page = 2; Rebuild(); }, 80f);
+            UIFactory.Highlight(_page == 0 ? t0 : _page == 1 ? t1 : t2, new Color32(255, 214, 90, 255));
 
             RectTransform colA = panel, colB = panel;
             if (_landscape)
@@ -78,6 +79,7 @@ namespace PKR
             }
 
             if (_page == 1) { DisplayPage(settings, d, colA, colB); return; }
+            if (_page == 2) { AssistPage(settings, d, colA, colB); return; }
 
             UIFactory.Slider(colA, "Music", d.musicVolume, 0f, 1f, settings.SetMusicVolume);
             UIFactory.Slider(colA, "Sound FX", d.sfxVolume, 0f, 1f, settings.SetSfxVolume);
@@ -134,17 +136,42 @@ namespace PKR
             UIFactory.Toggle(colB, "Left-handed controls", d.leftHanded, settings.SetLeftHanded);
             UIFactory.Toggle(colB, "Bigger touch targets", d.bigTouchTargets, settings.SetBigTouchTargets);
             UIFactory.Toggle(colB, "Sound cues on screen", d.soundCues, settings.SetSoundCues);
-            Cycle(colB, $"Story game speed: {PKR.Core.GameSpeed.Clamp(d.gameSpeed)}%", () =>
+            var info = UIFactory.Label(colB, PKR.Core.PerfGovernor.Info(gm) + ".\n" + PKR.Core.Accessibility.Info(ca) + ".", 24, TextAnchor.MiddleCenter, 70f);
+            info.color = UITheme.Current.subtle;
+            UIFactory.Button(colB, "BACK", () => _onBack?.Invoke());
+        }
+
+        /// <summary>ASSISTS: the comfort preset, Story game speed, the invincible assist, the time-trial ghost, and
+        /// resetting the first-time hints and guides.</summary>
+        void AssistPage(SettingsService settings, PKR.Core.SettingsData d, RectTransform colA, RectTransform colB)
+        {
+            Cycle(colA, d.ComfortPresetOn ? "Comfort preset: ON" : "Comfort preset: turn on", () =>
+            {
+                settings.ApplyComfortPreset();
+                Rebuild();
+            });
+            Cycle(colA, $"Story game speed: {PKR.Core.GameSpeed.Clamp(d.gameSpeed)}%", () =>
             {
                 settings.SetGameSpeed(PKR.Core.GameSpeed.Next(d.gameSpeed));
                 Rebuild();
             });
-            UIFactory.Toggle(colB, "Story time-trial ghost", d.storyGhost, settings.SetStoryGhost);
-            var info = UIFactory.Label(colB, PKR.Core.PerfGovernor.Info(gm) + ".\n" + PKR.Core.Accessibility.Info(ca) + "." +
-                                       (d.gameSpeed < 100 ? "\nSlower Story clears count, but don't set best times." : ""), 24, TextAnchor.MiddleCenter, 70f);
+            UIFactory.Toggle(colA, "Story: invincible", d.storyInvincible, on => { settings.SetStoryInvincible(on); Rebuild(); });
+            UIFactory.Toggle(colA, "Story time-trial ghost", d.storyGhost, settings.SetStoryGhost);
+            UIFactory.Toggle(colB, "Assist mode (+2 hearts)", d.assistMode, settings.SetAssistMode);
+            UIFactory.Button(colB, _hintsReset ? "HINTS RESET!" : "RESET HINTS & GUIDES", () =>
+            {
+                var save = Services.Save;
+                if (save != null) { save.Data.ResetHints(); save.SaveNow(); }
+                _hintsReset = true;
+                Rebuild();
+            });
+            var info = UIFactory.Label(colB, "Comfort preset: Assist mode, Story at 80%, strong aim assist, bigger touch targets.\n" +
+                                             "Slower speed or invincible: Story clears still count, but don't set best times.", 24, TextAnchor.MiddleCenter, 110f);
             info.color = UITheme.Current.subtle;
             UIFactory.Button(colB, "BACK", () => _onBack?.Invoke());
         }
+
+        bool _hintsReset;
 
         static void Cycle(RectTransform parent, string text, UnityEngine.Events.UnityAction onClick)
         {

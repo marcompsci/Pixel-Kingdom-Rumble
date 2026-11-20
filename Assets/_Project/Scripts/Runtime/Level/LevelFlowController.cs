@@ -114,6 +114,11 @@ namespace PKR
         {
             Run = new LevelRun(level != null ? level.id : "unknown_level");
             ApplyGameSpeed();
+            // Accessibility: the invincible assist (Story only). Like a slower speed, it means no records.
+            bool invincible = IsStoryLevel && Services.Settings != null && Services.Settings.Data.storyInvincible;
+            if (PlayerHealth != null) PlayerHealth.keepHealth = invincible;
+            if (invincible) Run.AssistSpeed = true;
+            if (IsStoryLevel) MetaTracker.Played(ContinueKind.StoryLevel, level.id);
             if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
@@ -256,6 +261,7 @@ namespace PKR
 
         void OnPlayerFellInPit()
         {
+            RememberFall();
             // Pits cost 1 HP and send you back to the checkpoint; the last HP means a full death.
             if (PlayerHealth == null) { StartCoroutine(RespawnRoutine(false)); return; }
             bool died = PlayerHealth.TakeDirectDamage(1);
@@ -266,8 +272,17 @@ namespace PKR
         void OnPlayerDied()
         {
             if (IsComplete) return;
+            RememberFall();
             Run.RecordDeath();
             if (!_respawning) StartCoroutine(RespawnRoutine(true));
+        }
+
+        /// <summary>Story Quest practice aid: where you fell, shown as a faint marker on your next try (FallMemory).</summary>
+        void RememberFall()
+        {
+            if (!IsStoryLevel || player == null || Services.Save == null) return;
+            Vector2 at = player.transform.position;
+            FallMemory.Add(Services.Save.Data, level.id, at.x, at.y);
         }
 
         IEnumerator RespawnRoutine(bool afterDeath)
@@ -353,6 +368,12 @@ namespace PKR
             var extras = GetComponent<StoryRunExtras>();
             var extra = extras != null ? extras.OnCleared(data, Run.LevelId, Run.ElapsedSeconds, Run.AssistSpeed) : default;
             reward += extra.flawlessShards;
+            if (IsStoryLevel && data != null)
+            {
+                MetaTracker.Mastery(GameSession.SelectedCharacterId,
+                                    HeroMastery.StoryClearXp + (previousBest <= 0f ? HeroMastery.StoryFirstClearXp : 0), roster);
+                if (Run.Deaths == 0 && extra.flawless) FallMemory.Clear(data, Run.LevelId);
+            }
             int worldIndex = data != null ? StoryWorlds.ClaimIfComplete(data, Run.LevelId) : -1;
             int worldBonus = worldIndex >= 0 ? StoryWorlds.CompletionBonus : 0;
             reward += lucky + worldBonus;
@@ -411,6 +432,7 @@ namespace PKR
                 flawless = extra.flawless,
                 flawlessShards = extra.flawlessShards,
                 newGhost = extra.newGhost,
+                ghostDelta = extra.ghostDelta,
                 assistSpeed = Run.AssistSpeed,
                 shards = Run.Shards,
                 totalShards = TotalShards,

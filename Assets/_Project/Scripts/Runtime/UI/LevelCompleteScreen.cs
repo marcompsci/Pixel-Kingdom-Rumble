@@ -52,7 +52,7 @@ namespace PKR
             var medal = StoryMedals.For(e.timeSeconds, e.parTimeSeconds);
             string medalText = e.isContract || e.assistSpeed || medal == TimeMedal.None ? "" : $"   {StoryMedals.Name(medal)}";
             if (e.assistSpeed) best = "   (slower game speed: no record)";
-            else if (e.newGhost) best += "   GHOST SAVED";
+            else if (e.newGhost) best += e.ghostDelta > 0f ? $"   BEAT YOUR GHOST BY {e.ghostDelta:0.0}s!" : "   GHOST SAVED";
             var timeRow = Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){medalText}{best}");
             if (medal == TimeMedal.Gold && !e.isContract) timeRow.color = p.title;
             if (e.isContract)

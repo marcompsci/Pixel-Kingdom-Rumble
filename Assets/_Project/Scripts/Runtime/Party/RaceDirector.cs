@@ -180,6 +180,7 @@ namespace PKR
             if (PartyFlow.Party != null && mine > 0f && PartyFlow.Party.OfferGhost(_run, mine) && Services.Save != null) Services.Save.SaveNow();
             var report = PartyFlow.Finish(new PartyOutcome { mode = PartyMode.ItemRace, placement = place, raceSeconds = mine, placements = all });
             ProgressTracker.MatchPlayed(place == 1, versus: false);
+            MetaTracker.Mastery(GameSession.SelectedCharacterId, place == 1 ? HeroMastery.PartyWinXp : HeroMastery.PartyMatchXp, _flow != null ? _flow.Roster : null);
             ShowResults(place, report);
         }
 
@@ -204,6 +205,8 @@ namespace PKR
             }
             var rec = Services.Save != null ? Services.Save.Data.party.Find(PartyMode.ItemRace) : null;
             string best = rec != null && rec.bestRaceSeconds > 0f ? $"   ·   best {(int)rec.bestRaceSeconds / 60}:{rec.bestRaceSeconds % 60f:00.0}" : "";
+            var medal = _standings.IsFinished(0) ? RaceMedals.For(_times[0]) : TimeMedal.None;
+            if (medal != TimeMedal.None) best += $"   ·   {StoryMedals.Name(medal)}";
             int earned = report != null ? report.shards + report.dailyBonus + report.cupBonus : 0;
             UIFactory.Label(panel, $"+{earned} Star Shards{best}   ·   CPUs {PartyDifficulties.Name(PartyFlow.Difficulty)}", 36, TextAnchor.MiddleCenter, 56f).color = p.title;
             PartyFlow.AddLines(panel, report, PartyMode.ItemRace);

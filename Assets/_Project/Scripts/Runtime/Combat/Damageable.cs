@@ -64,6 +64,8 @@ namespace PKR
         public int LastAttackerTeam { get; private set; } = -2;
         public float LastHitTime { get; private set; } = float.NegativeInfinity;
 
+        /// <summary>Story Quest's invincible assist: hits still knock you back, but no hearts are lost.</summary>
+        [NonSerialized] public bool keepHealth;
         public event Action<HitResult> Hit;
         /// <summary>A shield (IHitFilter) stopped a hit.</summary>
         public event Action<HitResult> Blocked;
@@ -162,7 +164,7 @@ namespace PKR
                 else if (_body != null && _body.bodyType == RigidbodyType2D.Dynamic) _body.linearVelocity = kb;
             }
 
-            if (model == DamageModel.StoryHealth)
+            if (model == DamageModel.StoryHealth && !keepHealth)
             {
                 Health = Mathf.Max(0, Health - result.hpDamage);
             }
@@ -188,7 +190,7 @@ namespace PKR
         /// </summary>
         public bool TakeDirectDamage(int amount)
         {
-            if (IsDead || amount <= 0 || model != DamageModel.StoryHealth) return false;
+            if (IsDead || amount <= 0 || model != DamageModel.StoryHealth || keepHealth) return false;
             Health = Mathf.Max(0, Health - amount);
             if (Health <= 0) { Die(); return true; }
             return false;

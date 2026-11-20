@@ -19,6 +19,7 @@ namespace PKR
             public bool flawless;
             public int flawlessShards;
             public bool newGhost;
+            public float ghostDelta;
         }
 
         LevelFlowController _flow;
@@ -26,6 +27,8 @@ namespace PKR
         int _lastHealth = -1;
         GhostTrack _run, _best;
         Transform _ghost;
+        float _ghostSeconds;
+        readonly System.Collections.Generic.List<GameObject> _marks = new System.Collections.Generic.List<GameObject>();
         float _recorded;
         bool _compassOn;
         RectTransform _compassRoot, _arrow;
@@ -52,8 +55,10 @@ namespace PKR
             if (saved != null && _flow.Player != null)
             {
                 _best = GhostTrack.Decode(saved.data);
+                _ghostSeconds = saved.seconds;
                 if (_best.Count > 1) _ghost = GhostRacer.Spawn(_flow.Player, _flow.SpriteMaterial).transform;
             }
+            ShowFallMarks(save, id);
             _compassOn = rec != null && rec.completed && _flow.TotalShards > 0 && rec.mostShardsCollected < _flow.TotalShards;
             if (_compassOn) BuildCompass();
         }
@@ -91,7 +96,9 @@ namespace PKR
         /// <summary>Called by LevelFlowController when the level is cleared (before the results screen).</summary>
         public Result OnCleared(SaveData data, string levelId, float seconds, bool assistSpeed)
         {
-            var r = new Result { flawless = !TookHit };
+            bool invincible = Services.Settings != null && Services.Settings.Data.storyInvincible;
+            var r = new Result { flawless = !TookHit && !invincible };
+            if (_ghost != null && _ghostSeconds > 0f && !assistSpeed) r.ghostDelta = _ghostSeconds - seconds;
             if (data == null) return r;
             var rec = data.GetLevel(levelId);
             if (rec == null)
@@ -181,8 +188,30 @@ namespace PKR
             return best;
         }
 
+        /// <summary>Faint markers where you fell on earlier tries (FallMemory), so the tricky spots are easy to spot.</summary>
+        void ShowFallMarks(SaveData save, string levelId)
+        {
+            var f = FallMemory.Get(save, levelId);
+            if (f == null) return;
+            for (int i = 0; i < f.xs.Count; i++)
+            {
+                var go = new GameObject("FallMark");
+                go.transform.position = new Vector3(f.xs[i], f.ys[i] + 0.4f, 0f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = Resources.Load<Sprite>("PKR/ZombieLand/Props/pk_arrow");
+                sr.color = new Color(1f, 0.35f, 0.35f, 0.35f);
+                sr.flipY = true; // points down at the spot
+                sr.sortingOrder = -5;
+                if (_flow.SpriteMaterial != null) sr.sharedMaterial = _flow.SpriteMaterial;
+                _marks.Add(go);
+            }
+        }
+
+        public int FallMarkCount => _marks.Count;
+
         void OnDestroy()
         {
+            foreach (var m in _marks) if (m != null) Destroy(m);
             if (_ghost != null) Destroy(_ghost.gameObject);
         }
     }

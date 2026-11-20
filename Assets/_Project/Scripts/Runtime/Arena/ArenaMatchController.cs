@@ -24,6 +24,8 @@ namespace PKR
         public RumbleOutcome rumble;
         /// <summary>A Kingdom Plaza party quest (None for Arena Clash).</summary>
         public PartyMode party;
+        /// <summary>Each fighter's best combo (hits landed while the target was still reeling).</summary>
+        public int[] bestCombo;
     }
 
     /// <summary>
@@ -83,6 +85,7 @@ namespace PKR
         public bool IsRespawning(int slot) => _respawning.Contains(slot);
         PartyArena _party;
         TrainingLab _lab;
+        ComboCounter[] _combos = new ComboCounter[0];
         public CharacterRoster Roster => roster;
 
         readonly List<Fighter> _fighters = new List<Fighter>();
@@ -190,6 +193,20 @@ namespace PKR
                 if (arenaCamera != null) arenaCamera.group.Add(go.transform);
             }
 
+            // Best combo per fighter for the results (credited to whoever landed the hit).
+            _combos = new ComboCounter[_fighters.Count];
+            for (int i = 0; i < _combos.Length; i++) _combos[i] = new ComboCounter();
+            foreach (var f in _fighters)
+            {
+                var victim = f;
+                if (victim.health != null) victim.health.Hit += r =>
+                {
+                    int by = victim.health.LastAttackerTeam;
+                    if (!r.blocked && by >= 0 && by < _combos.Length && by != victim.slot) _combos[by].Register(Time.time, r.hitstunFrames / 60f, 0, r.isLaunch);
+                };
+            }
+            if (Config.mode != MatchMode.Training)
+                MetaTracker.Played(Config.party != PartyMode.None ? ContinueKind.Plaza : ContinueKind.ArenaClash);
             if (bridge != null) { bridge.ResetCycle(); bridge.Running = Config.mode != MatchMode.Training && Config.party == PartyMode.None; }
             if (Config.party != PartyMode.None || (Config.items && Config.mode != MatchMode.Training))
             {
@@ -282,8 +299,9 @@ namespace PKR
             {
                 mode = Config.mode, placements = placements, names = new string[n], knockouts = new int[n],
                 falls = new int[n], scores = new int[n], playerPlacement = placements.Length > 0 ? placements[0] : 0,
-                humans = Config.humans, party = Config.party
+                humans = Config.humans, party = Config.party, bestCombo = new int[n]
             };
+            for (int i = 0; i < n && i < _combos.Length; i++) result.bestCombo[i] = _combos[i].Best;
             for (int i = 0; i < n; i++)
             {
                 var rec = Match.Get(i);
@@ -328,6 +346,15 @@ namespace PKR
             }
 
             if (Config.mode != MatchMode.Training && grantRewards) ProgressTracker.MatchPlayed(result.playerPlacement == 1, versus: false);
+            // Hero mastery for your fighter (party quests count too; Training doesn't).
+            if (Config.mode != MatchMode.Training && grantRewards && _fighters.Count > 0 && _fighters[0].go != null)
+            {
+                var vis = _fighters[0].go.GetComponent<FighterVisual>();
+                bool won = result.playerPlacement == 1;
+                int xp = Config.party != PartyMode.None ? (won ? HeroMastery.PartyWinXp : HeroMastery.PartyMatchXp)
+                                                        : (won ? HeroMastery.ArenaWinXp : HeroMastery.ArenaMatchXp);
+                if (vis != null && vis.Character != null) MetaTracker.Mastery(vis.Character.id, xp, roster);
+            }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             EventBus<ArenaMatchEnded>.Raise(result);
         }

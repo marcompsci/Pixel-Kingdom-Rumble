@@ -16,6 +16,8 @@ namespace PKR
         readonly Dictionary<int, int> _pips = new Dictionary<int, int>();
         ArenaMatchController _arena;
         int _lastFlash;
+        readonly Dictionary<int, Vector2> _starts = new Dictionary<int, Vector2>();
+        GameObject _ui;
 
         public ComboCounter Combo => _combo;
         public bool Running { get; private set; }
@@ -26,6 +28,9 @@ namespace PKR
             _arena = arena;
             _combo.Reset();
             Running = true;
+            _starts.Clear();
+            foreach (var f in arena.Fighters) if (f.go != null) _starts[f.slot] = f.go.transform.position;
+            BuildResetButton();
             foreach (var f in arena.Fighters)
             {
                 if (f.human || f.health == null) continue;
@@ -45,7 +50,48 @@ namespace PKR
             foreach (var u in _unsubscribe) u();
             _unsubscribe.Clear();
             _pips.Clear();
+            if (_ui != null) Destroy(_ui);
+            _ui = null;
             PartyHUD.Hide();
+        }
+
+        /// <summary>RESET: everyone back to their start spot, the dummies' Guard Pips refilled, the counter cleared.</summary>
+        public void ResetLab()
+        {
+            if (_arena == null) return;
+            foreach (var f in _arena.Fighters)
+            {
+                if (f.go == null) continue;
+                if (f.go.TryGetComponent(out HeroAbilities a)) a.Cancel();
+                if (f.go.TryGetComponent(out AttackRunner atk)) atk.Cancel();
+                f.motor.Intent.ClearAll();
+                if (_starts.TryGetValue(f.slot, out var at)) f.motor.Teleport(at);
+                if (!f.human && f.health != null)
+                {
+                    f.health.ResetState();
+                    _pips[f.slot] = f.health.Pips != null ? f.health.Pips.Current : 0;
+                }
+            }
+            _combo.Reset();
+            _lastFlash = 0;
+            PartyHUD.Flash("RESET");
+        }
+
+        void BuildResetButton()
+        {
+            if (_ui != null) Destroy(_ui);
+            _ui = new GameObject("TrainingLabUI");
+            _ui.transform.SetParent(transform, false);
+            var safe = UIFactory.CreateCanvas(_ui.transform, "TrainingLabCanvas", 41, landscape: true, out _);
+            var holder = UIFactory.Rect("Reset", safe);
+            holder.anchorMin = holder.anchorMax = new Vector2(0f, 1f);
+            holder.pivot = new Vector2(0f, 1f);
+            holder.anchoredPosition = new Vector2(40f, -150f);
+            holder.sizeDelta = new Vector2(220f, 90f);
+            var b = UIFactory.Button(holder, "RESET", ResetLab, 90f);
+            var rt = (RectTransform)b.transform;
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
         }
 
         void OnHit(ArenaMatchController.Fighter f, HitResult r)

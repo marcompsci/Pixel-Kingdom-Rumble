@@ -85,6 +85,8 @@ namespace PKR.Core
         public LadderSave ladder = new LadderSave();
         /// <summary>Story Quest time-trial ghosts: your best clear of each level.</summary>
         public List<StoryGhost> storyGhosts = new List<StoryGhost>();
+        /// <summary>PROFILE, CONTINUE, hero mastery, head-to-head, the login gift, fall markers, WHAT'S NEW.</summary>
+        public LifetimeSave lifetime = new LifetimeSave();
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -213,6 +215,14 @@ namespace PKR.Core
             return true;
         }
 
+        /// <summary>Settings > RESET HINTS & GUIDES: first-time hints, how-to-play cards and the welcome guide show again.</summary>
+        public void ResetHints()
+        {
+            if (seenHints != null) seenHints.Clear();
+            if (lifetime == null) lifetime = new LifetimeSave();
+            lifetime.replayWelcome = true;
+        }
+
         /// <summary>Repairs nulls/negatives and upgrades old versions. Safe to call on any loaded data.</summary>
         public void SanitizeAndMigrate()
         {
@@ -230,6 +240,8 @@ namespace PKR.Core
             if (ladder == null) ladder = new LadderSave();
             ladder.Sanitize();
             StoryGhosts.Sanitize(this);
+            if (lifetime == null) lifetime = new LifetimeSave();
+            lifetime.Sanitize();
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

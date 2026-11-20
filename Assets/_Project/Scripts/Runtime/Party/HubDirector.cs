@@ -91,6 +91,7 @@ namespace PKR
             GameSession.Mode = SessionMode.StoryQuest;
 
             StoryHUD.HideRunStats = true;
+            MetaTracker.Played(ContinueKind.Plaza);
             PartyHUD.Show("KINGDOM PLAZA", Banner);
             BuildCard();
             BuildBoardCard();
@@ -169,7 +170,23 @@ namespace PKR
             var daily = DailyParty.For(PartyFlow.Today);
             string star = daily.mode == b.party && (save == null || save.party == null || save.party.dailyDoneDay != PartyFlow.Today) ? "DAILY!  ·  " : "";
             if (rec == null || rec.played == 0) return star + mode;
-            return $"{star}{Plural.Of(rec.wins, "WIN")}  ·  {PartyRanks.Name(PartyRanks.For(rec.rankPoints))}";
+            return $"{star}{Plural.Of(rec.wins, "WIN")}  ·  {PartyRanks.Name(PartyRanks.For(rec.rankPoints))}" + BestText(b.party, rec);
+        }
+
+        /// <summary>The quest's personal best: race time (and medal), coins, crown seconds or balloons left.</summary>
+        static string BestText(PartyMode m, PartyRecord rec)
+        {
+            switch (m)
+            {
+                case PartyMode.ItemRace:
+                    if (rec.bestRaceSeconds <= 0f) return "";
+                    var medal = RaceMedals.For(rec.bestRaceSeconds);
+                    return $"  ·  BEST {(int)rec.bestRaceSeconds / 60}:{rec.bestRaceSeconds % 60f:00.0}" + (medal != TimeMedal.None ? " " + StoryMedals.Name(medal) : "");
+                case PartyMode.CoinRush: return rec.bestScore > 0 ? $"  ·  BEST {rec.bestScore} COINS" : "";
+                case PartyMode.KingOfTheHill: return rec.bestScore > 0 ? $"  ·  BEST {rec.bestScore}s" : "";
+                case PartyMode.BalloonBattle: return rec.bestScore > 0 ? $"  ·  BEST {rec.bestScore} LEFT" : "";
+                default: return "";
+            }
         }
 
         void Refresh()

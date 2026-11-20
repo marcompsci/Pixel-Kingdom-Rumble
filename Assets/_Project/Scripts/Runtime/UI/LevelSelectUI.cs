@@ -358,7 +358,11 @@ namespace PKR
             string secrets = level != null && level.totalSecrets > 0 ? $"   SECRETS {slot.secrets}/{level.totalSecrets}" : "";
             var medal = StoryMedals.For(slot.bestTimeSeconds, level != null ? level.parTimeSeconds : 0f);
             string medalText = medal == TimeMedal.None ? "" : " " + StoryMedals.Name(medal);
-            return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}\n" +
+            var save = Services.Save != null ? Services.Save.Data : null;
+            var rec = save != null && level != null ? save.GetLevel(level.id) : null;
+            string extras = (rec != null && rec.flawless ? "  FLAWLESS" : "") +
+                            (level != null && StoryGhosts.Find(save, level.id) != null ? "  GHOST" : "");
+            return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}{extras}\n" +
                    $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}";
         }
 
