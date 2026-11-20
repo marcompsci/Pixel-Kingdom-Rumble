@@ -36,7 +36,9 @@ namespace PKR
             var r = s.rumble;
             if (r != null) lines.Add($"Arena & Versus: {r.wins} wins in {Plural.Of(r.matches, "rated match", "rated matches")}  ·  best rating {r.bestRating}");
             var lad = s.ladder;
-            if (lad != null) lines.Add($"Versus ladder: {Plural.Of(lad.clears, "clear")}  ·  best climb {lad.bestRungs} rungs");
+            var top = HeroRecords.Best(s);
+            string topHero = top != null ? $"  ·  top hero {HeroName(roster, top.id)} {top.wins}W-{top.losses}L" : "";
+            if (lad != null) lines.Add($"Versus ladder: {Plural.Of(lad.clears, "clear")}  ·  best climb {lad.bestRungs} rungs{topHero}");
             HeadToHeadRecord nemesis = null;
             foreach (var h in s.lifetime.headToHead) if (h.losses > 0 && (nemesis == null || h.losses - h.wins > nemesis.losses - nemesis.wins)) nemesis = h;
             if (nemesis != null) lines.Add($"Toughest rival: {HeroName(roster, nemesis.id)}  ({HeadToHead.Line(nemesis)})");
@@ -55,6 +57,24 @@ namespace PKR
             lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
             lines.Add($"Story challenges: {StoryBrave.Count(s)} BRAVE clears  ·  {Plural.Of(s.storySplits.Count, "level")} with splits");
             return lines;
+        }
+
+        /// <summary>Earned badges by name, then the three you're closest to with progress ("TRAILBLAZER 7/10").</summary>
+        public static string BadgeLines(SaveData s)
+        {
+            var earned = new List<string>();
+            var open = new List<Badges.Badge>();
+            foreach (var b in Badges.All)
+            {
+                if (Badges.Has(s, b.id)) earned.Add(b.name);
+                else open.Add(b);
+            }
+            if (s != null) open.Sort((a, b) => ((double)b.Have(s) / b.need).CompareTo((double)a.Have(s) / a.need));
+            var close = new List<string>();
+            for (int i = 0; i < open.Count && i < 3; i++)
+                close.Add(open[i].need > 1 && s != null ? $"{open[i].name} {open[i].Have(s):N0}/{open[i].need:N0}" : $"{open[i].name} ({open[i].how})");
+            string a1 = earned.Count > 0 ? "Earned: " + string.Join("  ·  ", earned) : "No badges yet: they come from playing every mode.";
+            return close.Count > 0 ? a1 + "\nClosest: " + string.Join("  ·  ", close) : a1;
         }
 
         /// <summary>This week of the 7-day gift cycle: ● claimed, ○ to come.</summary>
@@ -95,7 +115,7 @@ namespace PKR
             heroes.Sort((a, b) => b.xp.CompareTo(a.xp));
             if (heroes.Count == 0)
                 UIFactory.Label(panel, "Play any mode to start mastering your heroes.", 28, TextAnchor.MiddleCenter, 44f).color = UITheme.Current.subtle;
-            for (int i = 0; i < heroes.Count && i < 6; i++)
+            for (int i = 0; i < heroes.Count && i < 4; i++)
             {
                 var h = heroes[i];
                 int lv = HeroMastery.Level(h.xp);
@@ -106,9 +126,7 @@ namespace PKR
 
             int earned = s != null ? s.lifetime.badges.Count : 0;
             UIFactory.Label(panel, $"BADGES  {earned}/{Badges.All.Length}", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
-            var names = new System.Collections.Generic.List<string>();
-            foreach (var b in Badges.All) names.Add(Badges.Has(s, b.id) ? b.name : "?");
-            UIFactory.Label(panel, string.Join("  ·  ", names), 24, TextAnchor.MiddleCenter, 90f).color = UITheme.Current.text;
+            UIFactory.Label(panel, BadgeLines(s), 24, TextAnchor.MiddleCenter, 120f).color = UITheme.Current.text;
 
             UIFactory.Label(panel, "RECORDS", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
             foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 28, TextAnchor.MiddleCenter, 52f);
@@ -120,9 +138,25 @@ namespace PKR
             h2.childControlWidth = true; h2.childControlHeight = true;
             h2.childForceExpandWidth = true; h2.childForceExpandHeight = true;
             UIFactory.Button(row, "SHARE", () => ShareService.Share(ShareText(s)));
+            UIFactory.Button(row, "ABOUT", ShowAbout);
             var back = UIFactory.Button(row, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(back);
         }
+
+        /// <summary>ABOUT: the version, that the art and music are original, and that progress stays on this device.</summary>
+        public void ShowAbout()
+        {
+            InfoCard.Show(transform, "ABOUT", $"Pixel Kingdom Rumble  ·  version {Application.version}", AboutLines(), "OK");
+        }
+
+        public static string[] AboutLines() => new[]
+        {
+            "Every hero, level, sprite and song is original.",
+            "No ads. No tracking. No analytics.",
+            "Your progress is saved on this device only.",
+            "Game Center (optional) handles scores, achievements and online co-op.",
+            "Privacy policy and support: see the App Store page.",
+        };
 
         string ShareText(SaveData s)
         {
@@ -130,7 +164,8 @@ namespace PKR
             string hero = fav != null ? $"{HeroName(_roster, fav.id)} at mastery {HeroMastery.Level(fav.xp)}" : "my heroes";
             int cleared = 0;
             if (s != null) foreach (var l in s.levels) if (l != null && l.completed) cleared++;
-            return $"Pixel Kingdom Rumble: {Plural.Of(cleared, "level")} cleared, {hero}, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
+            int badges = s != null ? s.lifetime.badges.Count : 0;
+            return $"Pixel Kingdom Rumble: {Plural.Of(cleared, "level")} cleared, {hero}, {badges}/{Badges.All.Length} badges, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
         }
     }
 }

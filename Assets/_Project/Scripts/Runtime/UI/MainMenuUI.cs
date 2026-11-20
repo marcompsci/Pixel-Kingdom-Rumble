@@ -89,8 +89,10 @@ namespace PKR
         {
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
-            foreach (var b in Badges.Update(save.Data))
+            var fresh = Badges.Update(save.Data);
+            foreach (var b in fresh)
                 EventBus<ProgressToast>.Raise(new ProgressToast { title = "BADGE: " + b.name, detail = b.how, color = new Color32(120, 220, 255, 255) });
+            if (fresh.Count > 0 && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
             var week = WeeklyRecap.Roll(save.Data, WeeklyRecap.WeekKey(System.DateTime.Now));
             save.SaveNow();
             if (week == null || FindAnyObjectByType<WelcomeGuide>() != null) return;
@@ -106,8 +108,21 @@ namespace PKR
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
             var now = System.DateTime.Now;
+            // Welcome back: a week or more away earns a one-off gift (checked before today's claim moves the date).
+            int away = ComebackGift.DaysAway(save.Data.lifetime.loginDay, now);
+            int comeback = save.Data.lifetime.loginDay != DailyChallenges.DayKey(now) ? ComebackGift.For(save.Data.lifetime.loginDay, now) : 0;
+            if (comeback > 0)
+            {
+                Economy.Grant(save.Data, comeback);
+                EventBus<ProgressToast>.Raise(new ProgressToast
+                {
+                    title = $"WELCOME BACK!  +{comeback} STAR SHARDS",
+                    detail = $"{away} days away. See WHAT'S NEW and your NEXT BADGE below.",
+                    color = new Color32(140, 220, 160, 255)
+                });
+            }
             int gift = LoginStreak.Claim(save.Data, DailyChallenges.DayKey(now), DailyChallenges.DayKey(now.AddDays(-1)));
-            if (gift <= 0) return;
+            if (gift <= 0) { if (comeback > 0) save.SaveNow(); return; }
             Economy.Grant(save.Data, gift);
             save.SaveNow();
             int streak = save.Data.lifetime.loginStreak;
@@ -254,8 +269,20 @@ namespace PKR
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             // Tip of the day.
-            var tip = UIFactory.Label(panel, "TIP: " + TipOfTheDay.For(DailyChallenges.DayKey(System.DateTime.Now)), 26, TextAnchor.MiddleCenter, 64f);
+            // NEXT GOAL: the badge you're closest to.
+            if (save != null)
+            {
+                var goal = UIFactory.Label(panel, Badges.NextGoal(save), 26, TextAnchor.MiddleCenter, 64f);
+                goal.color = new Color32(120, 220, 255, 255);
+            }
+            // Tip of the day (tap for the next one).
+            int tipIndex = TipOfTheDay.Index(DailyChallenges.DayKey(System.DateTime.Now));
+            var tip = UIFactory.Label(panel, "TIP: " + TipOfTheDay.Tips[tipIndex], 26, TextAnchor.MiddleCenter, 64f);
             tip.color = UITheme.Current.subtle;
+            tip.raycastTarget = true;
+            var tipButton = tip.gameObject.AddComponent<Button>();
+            tipButton.transition = Selectable.Transition.None;
+            tipButton.onClick.AddListener(() => { tip.text = "TIP: " + TipOfTheDay.Next(ref tipIndex); });
             UIFactory.Select(story.interactable ? story : zombies);
             FitPanel(panel);
         }

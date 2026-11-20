@@ -21,6 +21,9 @@ namespace PKR
         public int secrets;
         public int totalSecrets;
         public int deaths;
+        /// <summary>Story Quest: times this level has been started (this run included), and whether it's the first clear.</summary>
+        public int attempts;
+        public bool firstClear;
         public int starShardReward;
         /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
         public int luckyBonus;

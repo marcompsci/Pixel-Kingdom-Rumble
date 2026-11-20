@@ -133,6 +133,7 @@ namespace PKR
             BraveRun = IsStoryLevel && !invincible && Services.Settings != null && Services.Settings.Data.storyBrave;
             if (PlayerHealth != null) PlayerHealth.capMaxHealth = BraveRun ? 1 : 0;
             if (IsStoryLevel) MetaTracker.Played(ContinueKind.StoryLevel, level.id);
+            if (IsStoryLevel && Services.Save != null) { StoryAttempts.Begin(Services.Save.Data.GetOrAddLevel(level.id)); Services.Save.MarkDirty(); }
             if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
@@ -456,6 +457,8 @@ namespace PKR
                 secrets = Run.SecretsFound,
                 totalSecrets = TotalSecrets,
                 deaths = Run.Deaths,
+                attempts = IsStoryLevel && data != null && data.GetLevel(Run.LevelId) != null ? data.GetLevel(Run.LevelId).attempts : 0,
+                firstClear = previousBest <= 0f,
                 starShardReward = reward,
                 luckyBonus = lucky,
                 worldCompleted = worldIndex >= 0 ? StoryWorlds.All[worldIndex].name : "",

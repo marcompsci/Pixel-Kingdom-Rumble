@@ -53,7 +53,10 @@ namespace PKR
             if (save != null) foreach (var t in save.enemyDefeats) if (t != null) foes += t.defeated;
 
             Section(panel, "STORY QUEST");
-            Row(panel, "Levels cleared", $"{cleared} / {_levels.Count}");
+            var ids = new List<string>();
+            foreach (var l in _levels) ids.Add(l.id);
+            var run = StorySpeedrun.Total(save, ids);
+            Row(panel, "Levels cleared", $"{cleared} / {_levels.Count}" + (run.levels > 0 ? $"  ·  best times total {ResultsMath.FormatTime(run.seconds)}" : ""));
             Row(panel, "Star Shards found", $"{shards} / {totalShards}");
             Row(panel, "Secrets found", $"{secrets} / {totalSecrets}");
             Row(panel, "Time medals", $"{gold} GOLD  ·  {silver} SILVER  ·  {bronze} BRONZE");

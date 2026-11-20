@@ -109,7 +109,7 @@ namespace PKR
                            (hasDescription ? 90f + 18f : 0f) + MapHeight(n) + 18f + DetailHeight + 18f + UIFactory.RowHeight;
             var panel = UIFactory.Panel(_root, new Vector2(1000f, Mathf.Min(1840f, height)));
             string worldNo = paged ? $"WORLD {_page + 1} · " : "";
-            UIFactory.Label(panel, $"STORY QUEST\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
+            UIFactory.Label(panel, $"STORY QUEST  ·  {WorldPercent(page)}% COMPLETE\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (paged) PageRow(panel);
             if (hasDescription)
                 UIFactory.Label(panel, page.description, 32, TextAnchor.MiddleCenter, 90f).color = p.subtle;
@@ -347,12 +347,35 @@ namespace PKR
             return (tag ?? "").ToLowerInvariant() == "stealth" ? Color.white : p.buttonText;
         }
 
+        /// <summary>A world's completion: clears, shards and secrets.</summary>
+        public static int WorldPercent(WorldDefinition page)
+        {
+            var save = Services.Save != null ? Services.Save.Data : null;
+            int cleared = 0, shards = 0, totalShards = 0, secrets = 0, totalSecrets = 0, n = 0;
+            foreach (var l in page.levels)
+            {
+                if (l == null) continue;
+                n++; totalShards += l.totalShards; totalSecrets += l.totalSecrets;
+                var r = save != null ? save.GetLevel(l.id) : null;
+                if (r == null || !r.completed) continue;
+                cleared++;
+                shards += Mathf.Min(r.mostShardsCollected, l.totalShards);
+                secrets += Mathf.Min(r.mostSecretsFound, l.totalSecrets);
+            }
+            return StoryCompletion.Percent(cleared, n, shards, totalShards, secrets, totalSecrets);
+        }
+
         static string CardText(int index, LevelDefinition level, LevelSlot slot)
         {
             string name = level != null ? level.displayName.ToUpperInvariant() : "???";
             if (level != null && !string.IsNullOrEmpty(level.modeTag)) name += $"  [{level.modeTag.ToUpperInvariant()}]";
             if (!slot.unlocked) return $"{index + 1}. {name}\nLOCKED: CLEAR THE LEVEL BEFORE IT";
-            if (!slot.completed) return $"{index + 1}. {name}\nNEW!";
+            if (!slot.completed)
+            {
+                var r0 = Services.Save != null && level != null ? Services.Save.Data.GetLevel(level.id) : null;
+                string tries = r0 != null ? StoryAttempts.TriesLine(r0.attempts) : "";
+                return $"{index + 1}. {name}\nNEW!" + (tries.Length > 0 ? "   " + tries.ToUpperInvariant() : "");
+            }
             // Enemy drops can push the collected count past the placed total; cap it for display.
             string shards = level != null && level.totalShards > 0 ? $"   SHARDS {Mathf.Min(slot.shards, level.totalShards)}/{level.totalShards}" : "";
             string secrets = level != null && level.totalSecrets > 0 ? $"   SECRETS {slot.secrets}/{level.totalSecrets}" : "";

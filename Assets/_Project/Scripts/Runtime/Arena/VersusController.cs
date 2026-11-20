@@ -288,7 +288,7 @@ namespace PKR
             if (grantRewards && !botVsBot)
             {
                 ProgressTracker.MatchPlayed(won, versus: true);
-                if (Match.Winner >= 0) MetaTracker.Versus(Opponent.def.id, won);
+                if (Match.Winner >= 0) MetaTracker.Versus(Opponent.def.id, won, Player.def.id);
                 MetaTracker.Mastery(Player.def.id, (won ? HeroMastery.VersusWinXp : HeroMastery.VersusMatchXp) + (cleared ? HeroMastery.LadderClearXp : 0), roster);
             }
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded

@@ -44,6 +44,8 @@ namespace PKR.Core
         public bool replayWelcome;
         public List<HeroXp> heroXp = new List<HeroXp>();
         public List<HeadToHeadRecord> headToHead = new List<HeadToHeadRecord>();
+        /// <summary>Versus: your record with each hero you've played as.</summary>
+        public List<HeadToHeadRecord> heroRecords = new List<HeadToHeadRecord>();
         public List<FallMarks> falls = new List<FallMarks>();
         public List<StandRunRecord> standRuns = new List<StandRunRecord>();
         /// <summary>PROFILE badges earned (Badges ids).</summary>
@@ -68,6 +70,9 @@ namespace PKR.Core
             if (headToHead == null) headToHead = new List<HeadToHeadRecord>();
             headToHead.RemoveAll(h => h == null || string.IsNullOrEmpty(h.id));
             foreach (var h in headToHead) { h.wins = Math.Max(0, h.wins); h.losses = Math.Max(0, h.losses); }
+            if (heroRecords == null) heroRecords = new List<HeadToHeadRecord>();
+            heroRecords.RemoveAll(h => h == null || string.IsNullOrEmpty(h.id));
+            foreach (var h in heroRecords) { h.wins = Math.Max(0, h.wins); h.losses = Math.Max(0, h.losses); }
             if (falls == null) falls = new List<FallMarks>();
             falls.RemoveAll(f => f == null || string.IsNullOrEmpty(f.levelId) || f.xs == null || f.ys == null || f.xs.Count != f.ys.Count);
             while (falls.Count > FallMemory.MaxLevels) falls.RemoveAt(0);
@@ -274,15 +279,15 @@ namespace PKR.Core
     /// <summary>WHAT'S NEW: a one-time card per update with its headline features.</summary>
     public static class WhatsNew
     {
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         public static readonly string[] Items =
         {
-            "KINGDOM PLAZA: walk Story Quest's street, enter worlds and five party quests.",
-            "QUICK GAME widget for your Home Screen (iOS 17+).",
-            "ARENA CLASH items, CPU hero picks and a training lab.  VERSUS LADDER.",
-            "ZOMBIES: the Bargain Bell power-up and a Field Guide.",
-            "HERO MASTERY, a PROFILE page, CONTINUE and a daily login gift.",
-            "Story ghosts, FLAWLESS clears, fall markers, game speed and an invincible assist.",
+            "18 BADGES in your PROFILE, with progress and a NEXT BADGE goal on the menu.",
+            "STORY: the one-heart BRAVE challenge, checkpoint splits, tries per level and world completion %.",
+            "VERSUS: best of 5, RANDOM MATCHUP, rival callouts and your record with each hero.",
+            "ZOMBIES: accuracy, your average round, YOUR BEST callouts and a NEW BEST alert.",
+            "A weekly recap, tip of the day, welcome-back gift and an optional break reminder.",
+            "Pause menu: BACK TO CHECKPOINT and KINGDOM PLAZA.",
         };
 
         /// <summary>Show to returning players once per version (brand-new players get the welcome guide instead).</summary>

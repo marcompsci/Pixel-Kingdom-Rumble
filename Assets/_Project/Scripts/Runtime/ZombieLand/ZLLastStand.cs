@@ -277,6 +277,11 @@ namespace PKR
         void StartRound()
         {
             int round = Run.NextRound();
+            if (round == 1)
+            {
+                var career0 = Services.Save != null ? Services.Save.Data.zombieCareer : null;
+                _bestAtStart = !_guest && Weekly == null && career0 != null ? career0.Best(Map.Id, Mode) : 0;
+            }
             foreach (var h in _g.Squad) if (h != null && h.Wallet != null && h.Wallet != Run) h.Wallet.NextRound();
             Tell(ZombieDailyTracker.Report(DailyKind.ReachRound, round, Map.Id));
             Intermission = false;
@@ -305,9 +310,19 @@ namespace PKR
             if (HoundRound) head += "  ·  THE HOUNDS ARE COMING";
             if (_bossPending) head += "  ·  " + Map.BossName + "!";
             if (_kingPending) head += "  ·  " + Map.HiddenBossName + " WAKES";
+            if (round == 1 && _bestAtStart > 0) head += $"  ·  YOUR BEST: {_bestAtStart}";
+            bool passedBest = StandPace.IsNewBestRound(round, _bestAtStart);
+            if (passedBest)
+            {
+                head += "  ·  NEW BEST!";
+                _g.ShowToast($"NEW BEST ROUND ON {Map.Title.ToUpperInvariant()}!", 3f);
+            }
             _g.Announce(head, 3.5f);
-            if (HoundRound && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
+            if ((HoundRound || passedBest) && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Heavy);
         }
+
+        /// <summary>Your best round on this map and mode when the run began (0 = none, a guest or a weekly run).</summary>
+        int _bestAtStart;
 
         readonly Dictionary<ZLZombie, int> _bossPhase = new Dictionary<ZLZombie, int>();
         readonly Dictionary<ZLZombie, float> _bossBaseSpeed = new Dictionary<ZLZombie, float>();
@@ -1005,7 +1020,10 @@ namespace PKR
             {
                 var runs = StandHistory.For(Services.Save.Data, Map.Id);
                 string acc = Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%   ·   " : "";
-                string avg = runs.Count > 1 ? $"your last {runs.Count} runs here average round {StandHistory.AverageRound(Services.Save.Data, Map.Id):0.#}" : "first run logged on this map";
+                float avgAll = StandHistory.AverageRound(Services.Save.Data, Map.Id);
+                float avgBefore = runs.Count > 1 ? (avgAll * runs.Count - Run.Round) / (runs.Count - 1) : 0f;
+                string pace = StandPace.VsAverage(Run.Round, avgBefore, runs.Count - 1);
+                string avg = runs.Count > 1 ? $"your last {runs.Count} runs here average round {avgAll:0.#}" + (pace.Length > 0 ? "  ·  " + pace : "") : "first run logged on this map";
                 UIFactory.Label(panel, acc + avg, 28, TextAnchor.MiddleCenter, 40f).color = UITheme.Current.subtle;
             }
             var news = new List<string>();

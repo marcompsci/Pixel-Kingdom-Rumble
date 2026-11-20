@@ -141,34 +141,77 @@ namespace PKR.Core
             "Faint red arrows in a level mark where you fell last time. Watch your step!",
         };
 
-        public static string For(int dayKey) => Tips[(int)((uint)(dayKey * 2654435761u) % (uint)Tips.Length)];
+        public static string For(int dayKey) => Tips[Index(dayKey)];
+        public static int Index(int dayKey) => (int)((uint)(dayKey * 2654435761u) % (uint)Tips.Length);
+        /// <summary>The tip after the one shown (tap the tip on the menu to cycle).</summary>
+        public static string Next(ref int index) { index = ((index + 1) % Tips.Length + Tips.Length) % Tips.Length; return Tips[index]; }
     }
 
     /// <summary>PROFILE badges: milestones earned from what's already in the save. Newly earned ones get a toast.</summary>
     public static class Badges
     {
-        public struct Badge { public string id, name, how; public Func<SaveData, bool> earned; }
+        /// <summary>A badge: earned when have(save) reaches need. Progress shows on PROFILE and as the menu's NEXT GOAL.</summary>
+        public struct Badge
+        {
+            public string id, name, how; public int need; public Func<SaveData, int> have;
+            public bool Earned(SaveData s) { try { return have(s) >= need; } catch (Exception) { return false; } }
+            public int Have(SaveData s) { try { return Math.Max(0, Math.Min(need, have(s))); } catch (Exception) { return 0; } }
+        }
 
         static int Cleared(SaveData s) { int n = 0; foreach (var l in s.levels) if (l != null && l.completed) n++; return n; }
+        static int SRanks(SaveData s) { int n = 0; foreach (var l in s.levels) if (l != null && l.completed && l.BestRank == ClearRank.S) n++; return n; }
+        static int Secrets(SaveData s) { int n = 0; foreach (var l in s.levels) if (l != null) n += Math.Max(0, l.mostSecretsFound); return n; }
         static int PartyWins(SaveData s) { int n = 0; if (s.party != null) foreach (var p in s.party.records) if (p != null) n += p.wins; return n; }
         static int MaxMastery(SaveData s) { int m = 1; foreach (var h in s.lifetime.heroXp) m = Math.Max(m, HeroMastery.Level(h.xp)); return m; }
         static int BestRound(SaveData s) { int b = 0; if (s.zombieCareer != null) foreach (var r in s.zombieCareer.bestRounds) b = Math.Max(b, r); return b; }
+        static int Kills(SaveData s) => s.zombieCareer != null ? s.zombieCareer.totalKills : 0;
+        static int RivalsBeaten(SaveData s) { int n = 0; foreach (var h in s.lifetime.headToHead) if (h != null && h.wins > 0) n++; return n; }
 
         public static readonly Badge[] All =
         {
-            new Badge { id = "first_clear", name = "FIRST STEPS", how = "Clear a Story level", earned = s => Cleared(s) >= 1 },
-            new Badge { id = "ten_clears", name = "TRAILBLAZER", how = "Clear 10 Story levels", earned = s => Cleared(s) >= 10 },
-            new Badge { id = "flawless5", name = "UNTOUCHABLE", how = "5 FLAWLESS clears", earned = s => StoryFlawless.Count(s) >= 5 },
-            new Badge { id = "brave1", name = "BRAVE HEART", how = "A one-heart BRAVE clear", earned = s => StoryBrave.Count(s) >= 1 },
-            new Badge { id = "party10", name = "LIFE OF THE PARTY", how = "Win 10 party quests", earned = s => PartyWins(s) >= 10 },
-            new Badge { id = "ladder", name = "CLIMBER", how = "Clear a Versus ladder", earned = s => s.ladder != null && s.ladder.clears >= 1 },
-            new Badge { id = "rumble10", name = "BRAWLER", how = "Win 10 rated matches", earned = s => s.rumble != null && s.rumble.wins >= 10 },
-            new Badge { id = "zombies500", name = "UNDERTAKER", how = "500 zombie kills", earned = s => s.zombieCareer != null && s.zombieCareer.totalKills >= 500 },
-            new Badge { id = "round20", name = "LAST ONE STANDING", how = "Reach round 20 in Last Stand", earned = s => BestRound(s) >= 20 },
-            new Badge { id = "guide", name = "FIELD SCHOLAR", how = "Find every Field Guide entry", earned = s => ZombieFieldGuide.Count(s.zombieCareer).seen >= ZombieFieldGuide.All.Length },
-            new Badge { id = "mastery5", name = "DEVOTED", how = "A hero at mastery 5", earned = s => MaxMastery(s) >= 5 },
-            new Badge { id = "streak7", name = "REGULAR", how = "A 7-day daily gift streak", earned = s => s.lifetime.bestLoginStreak >= 7 },
+            new Badge { id = "first_clear", name = "FIRST STEPS", how = "Clear a Story level", need = 1, have = Cleared },
+            new Badge { id = "ten_clears", name = "TRAILBLAZER", how = "Clear 10 Story levels", need = 10, have = Cleared },
+            new Badge { id = "flawless5", name = "UNTOUCHABLE", how = "5 FLAWLESS clears", need = 5, have = StoryFlawless.Count },
+            new Badge { id = "brave1", name = "BRAVE HEART", how = "A one-heart BRAVE clear", need = 1, have = StoryBrave.Count },
+            new Badge { id = "party10", name = "LIFE OF THE PARTY", how = "Win 10 party quests", need = 10, have = PartyWins },
+            new Badge { id = "ladder", name = "CLIMBER", how = "Clear a Versus ladder", need = 1, have = s => s.ladder != null ? s.ladder.clears : 0 },
+            new Badge { id = "rumble10", name = "BRAWLER", how = "Win 10 rated matches", need = 10, have = s => s.rumble != null ? s.rumble.wins : 0 },
+            new Badge { id = "zombies500", name = "UNDERTAKER", how = "500 zombie kills", need = 500, have = Kills },
+            new Badge { id = "round20", name = "LAST ONE STANDING", how = "Reach round 20 in Last Stand", need = 20, have = BestRound },
+            new Badge { id = "guide", name = "FIELD SCHOLAR", how = "Find every Field Guide entry", need = ZombieFieldGuide.All.Length, have = s => ZombieFieldGuide.Count(s.zombieCareer).seen },
+            new Badge { id = "mastery5", name = "DEVOTED", how = "A hero at mastery 5", need = 5, have = MaxMastery },
+            new Badge { id = "streak7", name = "REGULAR", how = "A 7-day daily gift streak", need = 7, have = s => s.lifetime.bestLoginStreak },
+            // Round 5.
+            new Badge { id = "sranks10", name = "STAR PUPIL", how = "10 S-rank Story clears", need = 10, have = SRanks },
+            new Badge { id = "brave10", name = "LIONHEART", how = "10 BRAVE clears", need = 10, have = StoryBrave.Count },
+            new Badge { id = "secrets10", name = "SECRET KEEPER", how = "Find 10 Story secrets", need = 10, have = Secrets },
+            new Badge { id = "zombies2000", name = "GRAVEKEEPER", how = "2,000 zombie kills", need = 2000, have = Kills },
+            new Badge { id = "rivals6", name = "RIVALRY", how = "Beat 6 different Versus heroes", need = 6, have = RivalsBeaten },
+            new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
+
+        /// <summary>The unearned badge you're closest to (by share of the way there), or null when all are earned.</summary>
+        public static Badge? Closest(SaveData s)
+        {
+            if (s == null) return null;
+            Badge? best = null; double bestRatio = -1;
+            foreach (var b in All)
+            {
+                if (Has(s, b.id) || b.Earned(s)) continue;
+                double r = b.need <= 0 ? 0 : (double)b.Have(s) / b.need;
+                if (r > bestRatio) { bestRatio = r; best = b; }
+            }
+            return best;
+        }
+
+        /// <summary>The menu's NEXT GOAL line.</summary>
+        public static string NextGoal(SaveData s)
+        {
+            var b = Closest(s);
+            if (b == null) return "Every badge earned. You're a legend of the kingdom!";
+            var x = b.Value;
+            return x.need > 1 ? $"NEXT BADGE: {x.name}  ·  {x.how}  ({x.Have(s):N0}/{x.need:N0})" : $"NEXT BADGE: {x.name}  ·  {x.how}";
+        }
 
         /// <summary>Badges earned now that weren't recorded before. Records them.</summary>
         public static List<Badge> Update(SaveData s)
@@ -178,9 +221,7 @@ namespace PKR.Core
             foreach (var b in All)
             {
                 if (s.lifetime.badges.Contains(b.id)) continue;
-                bool ok;
-                try { ok = b.earned(s); } catch (Exception) { ok = false; }
-                if (!ok) continue;
+                if (!b.Earned(s)) continue;
                 s.lifetime.badges.Add(b.id);
                 fresh.Add(b);
             }

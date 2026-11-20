@@ -185,6 +185,8 @@ namespace PKR
             if (flow.TotalSecrets > 0) parts.Add($"SECRETS {flow.Run.SecretsFound}/{flow.TotalSecrets}");
             if (flow.Level.parTimeSeconds > 0f)
                 parts.Add($"{PKR.Core.ResultsMath.FormatTime(flow.Run.ElapsedSeconds)} / PAR {PKR.Core.ResultsMath.FormatTime(flow.Level.parTimeSeconds)}");
+            var rec0 = Services.Save != null ? Services.Save.Data.GetLevel(flow.Level.id) : null;
+            if (rec0 != null && rec0.completed && rec0.bestTimeSeconds > 0f) parts.Add($"BEST {PKR.Core.ResultsMath.FormatTime(rec0.bestTimeSeconds)}");
             var season = SeasonDirector.Current;
             var save = Services.Save != null ? Services.Save.Data : null;
             if (season != null && save != null)

@@ -19,6 +19,8 @@ namespace PKR.Core
         public bool brave;
         /// <summary>Best clear rank + 1 (1 = C … 4 = S); 0 = no rank yet. Stored +1 so old saves (missing field = 0) read as "none".</summary>
         public int bestRankPlusOne;
+        /// <summary>Times the level has been started.</summary>
+        public int attempts;
 
         /// <summary>Best rank, or null if never ranked.</summary>
         public ClearRank? BestRank => bestRankPlusOne >= 1 && bestRankPlusOne <= 4 ? (ClearRank)(bestRankPlusOne - 1) : (ClearRank?)null;
@@ -103,6 +105,15 @@ namespace PKR.Core
             if (string.IsNullOrEmpty(id) || unlockedCharacters.Contains(id)) return false;
             unlockedCharacters.Add(id);
             return true;
+        }
+
+        /// <summary>The level's record, made (not completed) if there isn't one yet.</summary>
+        public LevelRecord GetOrAddLevel(string levelId)
+        {
+            if (string.IsNullOrEmpty(levelId)) return null;
+            var rec = GetLevel(levelId);
+            if (rec == null) { rec = new LevelRecord { levelId = levelId }; levels.Add(rec); }
+            return rec;
         }
 
         public LevelRecord GetLevel(string levelId)
@@ -300,6 +311,7 @@ namespace PKR.Core
                 if (l.mostShardsCollected < 0) l.mostShardsCollected = 0;
                 if (l.mostSecretsFound < 0) l.mostSecretsFound = 0;
                 if (l.bestRankPlusOne < 0 || l.bestRankPlusOne > 4) l.bestRankPlusOne = 0;
+                if (l.attempts < 0) l.attempts = 0;
             }
             // Can't equip what you don't own.
             equippedCosmetics.RemoveAll(c => !ownedCosmetics.Contains(c));

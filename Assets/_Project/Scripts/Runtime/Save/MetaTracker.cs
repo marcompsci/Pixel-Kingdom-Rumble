@@ -47,9 +47,11 @@ namespace PKR
             l.lastScene = SceneManager.GetActiveScene().name;
         }
 
-        public static void Versus(string rivalId, bool won)
+        public static void Versus(string rivalId, bool won, string heroId = null)
         {
-            if (Services.Save != null) HeadToHead.Record(Services.Save.Data, rivalId, won);
+            if (Services.Save == null) return;
+            HeadToHead.Record(Services.Save.Data, rivalId, won);
+            HeroRecords.Record(Services.Save.Data, heroId, won);
         }
     }
 }
