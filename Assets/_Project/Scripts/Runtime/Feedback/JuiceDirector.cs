@@ -175,8 +175,19 @@ namespace PKR
             UIFactory.Label(_card, (level.biomeName ?? "").ToUpperInvariant(), 32, TextAnchor.MiddleCenter, 44f).color = UITheme.Current.subtle;
             UIFactory.Label(_card, (level.displayName ?? "").ToUpperInvariant(), 64, TextAnchor.MiddleCenter, 80f, title: true);
             if (level.parTimeSeconds > 0f)
-                UIFactory.Label(_card, $"PAR {ResultsMath.FormatTime(level.parTimeSeconds)}", 30, TextAnchor.MiddleCenter, 40f);
+                UIFactory.Label(_card, $"PAR {ResultsMath.FormatTime(level.parTimeSeconds)}" + BestLine(level), 30, TextAnchor.MiddleCenter, 40f);
             StartCoroutine(Slide(_card));
+        }
+
+        /// <summary>On replays: your best time and the next medal to chase.</summary>
+        static string BestLine(LevelDefinition level)
+        {
+            var rec = Services.Save != null ? Services.Save.Data.GetLevel(level.id) : null;
+            if (rec == null || rec.bestTimeSeconds <= 0f) return "";
+            var have = StoryMedals.For(rec.bestTimeSeconds, level.parTimeSeconds);
+            string next = have >= TimeMedal.Gold ? "  ·  GOLD!" : $"  ·  {StoryMedals.Name(StoryMedals.Next(have))} UNDER {ResultsMath.FormatTime(StoryMedals.Target(StoryMedals.Next(have), level.parTimeSeconds))}";
+            if (StoryMedals.Next(have) == TimeMedal.Bronze) next = "";
+            return $"   ·   BEST {ResultsMath.FormatTime(rec.bestTimeSeconds)}{next}";
         }
 
         IEnumerator Slide(RectTransform card)

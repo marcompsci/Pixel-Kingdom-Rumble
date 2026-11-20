@@ -113,6 +113,21 @@ namespace PKR
         }
 
         /// <summary>VERSUS LADDER: beat a run of CPU rivals in a row, Easy up to Hard (your CPU level setting is ignored).</summary>
+        /// <summary>RANDOM MATCHUP: a random fighter for you and for the CPU, straight into the fight.</summary>
+        public void RandomMatchup()
+        {
+            if (roster == null) return;
+            var pool = new System.Collections.Generic.List<string>();
+            foreach (var h in roster.heroes) if (h != null && h.playableInThisBuild && roster.IsSelectable(h)) pool.Add(h.id);
+            if (pool.Count == 0) return;
+            _p1 = pool[Random.Range(0, pool.Count)];
+            _cpu = pool.Count > 1 ? pool[Random.Range(0, pool.Count)] : _p1;
+            _picking = 1;
+            _cpuChosen = true;
+            GameSession.Ladder = null;
+            Fight();
+        }
+
         public void StartLadder()
         {
             if (string.IsNullOrEmpty(_p1) || roster == null) return;
@@ -181,8 +196,8 @@ namespace PKR
                 UIFactory.Label(panel, meta, 28, TextAnchor.MiddleCenter, 40f).color = p.accent;
             }
             if (focus != null && !focusLocked)
-                UIFactory.Label(panel, CodexPanel.HeroStats(focus, versus: true), 26, TextAnchor.UpperLeft, 370f);
-            else UIFactory.Label(panel, "", 26, TextAnchor.UpperLeft, 370f);
+                UIFactory.Label(panel, CodexPanel.HeroStats(focus, versus: true), 24, TextAnchor.UpperLeft, 290f);
+            else UIFactory.Label(panel, "", 24, TextAnchor.UpperLeft, 290f);
 
             // Fighter grid.
             int cells = Count + 1;
@@ -209,6 +224,18 @@ namespace PKR
                      .GetComponentInChildren<Text>().fontSize = 36;
             if (_picking == 1 && !string.IsNullOrEmpty(_p1))
                 UIFactory.Button(row, "LADDER", StartLadder, 110f).GetComponentInChildren<Text>().fontSize = 36;
+            // Rounds (best of 3 or 5) and a random matchup on their own row.
+            var row2 = UIFactory.Rect("Extras", panel);
+            row2.gameObject.AddComponent<LayoutElement>().preferredHeight = 90f;
+            var h2 = row2.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h2.spacing = 14f; h2.childControlWidth = true; h2.childControlHeight = true;
+            h2.childForceExpandWidth = true; h2.childForceExpandHeight = true;
+            UIFactory.Button(row2, GameSession.VersusRoundsToWin >= 3 ? "ROUNDS: BEST OF 5" : "ROUNDS: BEST OF 3", () =>
+            {
+                GameSession.VersusRoundsToWin = GameSession.VersusRoundsToWin >= 3 ? 2 : 3;
+                Build();
+            }, 90f).GetComponentInChildren<Text>().fontSize = 32;
+            UIFactory.Button(row2, "RANDOM MATCHUP", RandomMatchup, 90f).GetComponentInChildren<Text>().fontSize = 32;
             string pickLabel = _cpuChosen ? "FIGHT!" : "PICK";
             var go = UIFactory.Button(row, pickLabel, () => { if (_cpuChosen) Fight(); else Pick(_highlight); }, 110f,
                                       interactable: _cpuChosen || HighlightPickable());

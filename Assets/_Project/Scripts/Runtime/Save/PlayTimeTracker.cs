@@ -11,7 +11,8 @@ namespace PKR
     public class PlayTimeTracker : MonoBehaviour
     {
         static PlayTimeTracker _instance;
-        float _pending, _flushAt;
+        float _pending, _flushAt, _session;
+        int _breaksShown;
         int _pendingMode = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -48,7 +49,19 @@ namespace PKR
             if (mode != _pendingMode) Flush();
             _pendingMode = mode;
             _pending += dt;
+            _session += dt;
             if (Time.unscaledTime >= _flushAt) Flush();
+            bool on = Services.Settings != null && Services.Settings.Data.breakReminder;
+            if (BreakReminder.Due(on, _session, _breaksShown))
+            {
+                _breaksShown++;
+                EventBus<ProgressToast>.Raise(new ProgressToast
+                {
+                    title = _breaksShown == 1 ? "AN HOUR OF PLAY!" : $"{_breaksShown} HOURS OF PLAY!",
+                    detail = "Good time for a stretch and some water. Your progress is saved.",
+                    color = new Color32(140, 220, 160, 255)
+                });
+            }
         }
 
         void Flush()

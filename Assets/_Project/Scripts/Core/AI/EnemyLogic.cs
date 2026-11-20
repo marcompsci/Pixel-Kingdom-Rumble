@@ -85,6 +85,7 @@ namespace PKR.Core
         }
 
         /// <summary>Returns true the first time a given secret is found.</summary>
+        public bool HasSecret(string secretId) => !string.IsNullOrEmpty(secretId) && _secrets.Contains(secretId);
         public bool FindSecret(string secretId) => !IsComplete && !string.IsNullOrEmpty(secretId) && _secrets.Add(secretId);
 
         /// <summary>Checkpoints only move forward. Returns true if this became the active checkpoint.</summary>

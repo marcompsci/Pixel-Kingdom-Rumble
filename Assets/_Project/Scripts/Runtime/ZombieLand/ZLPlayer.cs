@@ -481,6 +481,7 @@ namespace PKR
             Vector2 from = (Vector2)transform.position + Aim * 0.5f + new Vector2(0f, 0.2f);
             int pellets = Mathf.Max(1, gun.pellets);
             bool cosmetic = game.IsGuest;
+            if (Control == ZLControl.Local && game.Stand != null) game.Stand.Shots += pellets; // accuracy on the results
             Color32 shotCol = Control == ZLControl.Local && Tracer.HasValue && !gun.wonder ? Tracer.Value : new Color32(gun.r, gun.g, gun.b, 255);
             if (Control == ZLControl.Local && !Tracer.HasValue && !gun.wonder)
             {

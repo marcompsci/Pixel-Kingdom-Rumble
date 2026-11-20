@@ -67,6 +67,7 @@ namespace PKR
             }
             var falls = Row(panel, "Falls", e.deaths.ToString() + (e.flawless && !e.isContract ? "   FLAWLESS!" + (e.flawlessShards > 0 ? $" +{e.flawlessShards}" : "") : ""));
             if (e.flawless && !e.isContract) falls.color = p.title;
+            if (e.brave) Row(panel, "Challenge", "BRAVE: ONE HEART!" + (e.braveShards > 0 ? $" +{e.braveShards}" : "")).color = p.title;
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;
             if (left != null)

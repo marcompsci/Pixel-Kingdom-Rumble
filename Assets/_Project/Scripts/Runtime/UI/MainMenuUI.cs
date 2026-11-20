@@ -81,6 +81,23 @@ namespace PKR
                      WhatsNew.ShouldShow(Services.Save.Data, WelcomeGuide.IsNewPlayer(Services.Save.Data))))
                 WhatsNewCard.Show(transform);
             ClaimLoginGift();
+            MenuMeta();
+        }
+
+        /// <summary>Badges earned since last time (toasts) and, on the first open of a new week, last week's recap.</summary>
+        void MenuMeta()
+        {
+            var save = Services.Save;
+            if (save == null || Application.isBatchMode) return;
+            foreach (var b in Badges.Update(save.Data))
+                EventBus<ProgressToast>.Raise(new ProgressToast { title = "BADGE: " + b.name, detail = b.how, color = new Color32(120, 220, 255, 255) });
+            var week = WeeklyRecap.Roll(save.Data, WeeklyRecap.WeekKey(System.DateTime.Now));
+            save.SaveNow();
+            if (week == null || FindAnyObjectByType<WelcomeGuide>() != null) return;
+            var lines = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < week.Length; i++)
+                if (week[i] > 0) lines.Add($"{WeeklyRecap.Labels[i]}:  {(i == 4 ? PlayTime.Format(week[i]) : week[i].ToString("N0"))}");
+            InfoCard.Show(transform, "LAST WEEK", "Your week in Pixel Kingdom Rumble", lines);
         }
 
         /// <summary>The daily login gift: Star Shards the first time the game opens each day (more for a streak).</summary>
@@ -221,7 +238,9 @@ namespace PKR
             ch.spacing = 24f;
             ch.childControlWidth = true; ch.childControlHeight = true;
             ch.childForceExpandWidth = true; ch.childForceExpandHeight = true;
-            UIFactory.Button(cRow, "PROFILE", ShowProfile);
+            bool profileNew = save != null && Badges.ProfileScore(save) > save.lifetime.profileSeen;
+            var prof = UIFactory.Button(cRow, profileNew ? "PROFILE · NEW" : "PROFILE", ShowProfile);
+            if (profileNew) UIFactory.Highlight(prof, new Color32(255, 214, 90, 255));
             if (codex != null)
             {
                 int unseen = codex.Progress().unseen;
@@ -234,6 +253,9 @@ namespace PKR
                 gc.GetComponentInChildren<Text>().fontSize = 30;
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
+            // Tip of the day.
+            var tip = UIFactory.Label(panel, "TIP: " + TipOfTheDay.For(DailyChallenges.DayKey(System.DateTime.Now)), 26, TextAnchor.MiddleCenter, 64f);
+            tip.color = UITheme.Current.subtle;
             UIFactory.Select(story.interactable ? story : zombies);
             FitPanel(panel);
         }

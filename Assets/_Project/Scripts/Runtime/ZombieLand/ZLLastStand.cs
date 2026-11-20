@@ -519,8 +519,13 @@ namespace PKR
 
         // ---- points ---------------------------------------------------------------------------------------
 
+        /// <summary>The local hero's shots (pellets) and hits this run, for accuracy on the results.</summary>
+        public int Shots { get; set; }
+        public int Hits { get; private set; }
+
         public void ZombieHit(ZLZombie z, bool killing)
         {
+            if (z != null && z.LastHitBy == _g.Player && _g.Player != null) Hits++;
             if (Over || killing || _guest) return;
             int pts = Mut.Hit(LastStandRules.HitPoints);
             if (pts > 0) Earn(z.LastHitBy != null ? z.LastHitBy : _g.Player, pts);
@@ -929,6 +934,15 @@ namespace PKR
             }
             ProgressTracker.Report(ChallengeKind.SurvivalRound, Run.Round);
             if (!_guest && _g.Player != null && Weekly == null) MetaTracker.Played(ContinueKind.Zombies);
+            if (!_guest && Services.Save != null)
+            {
+                var me = _g.Player;
+                StandHistory.Add(Services.Save.Data, new StandRunRecord
+                {
+                    map = Map.Id, mode = (int)Mode, round = Run.Round, kills = me != null ? me.Kills : Run.Kills,
+                    day = DailyChallenges.DayKey(System.DateTime.Now), shots = Shots, hits = Hits
+                });
+            }
             if (!_guest) MetaTracker.Mastery(GameSession.SelectedCharacterId, HeroMastery.LastStandRoundXp * Mathf.Max(0, Run.Round - 1));
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
             XpEarned = SurvivorRank.RunXp(Mode, Run.Round, Run.Kills, Run.Won);
@@ -987,6 +1001,13 @@ namespace PKR
                     .color = NewBest ? (Color)gold : UITheme.Current.subtle;
             }
             UIFactory.Label(panel, $"+{ShardReward} Star Shards   ·   +{XpEarned} Survivor XP", 34, TextAnchor.MiddleCenter, 50f).color = gold;
+            if (!_guest && Services.Save != null)
+            {
+                var runs = StandHistory.For(Services.Save.Data, Map.Id);
+                string acc = Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%   ·   " : "";
+                string avg = runs.Count > 1 ? $"your last {runs.Count} runs here average round {StandHistory.AverageRound(Services.Save.Data, Map.Id):0.#}" : "first run logged on this map";
+                UIFactory.Label(panel, acc + avg, 28, TextAnchor.MiddleCenter, 40f).color = UITheme.Current.subtle;
+            }
             var news = new List<string>();
             foreach (var l in _endLines) if (l.StartsWith("NEW IN THE LOCKER")) news.Add(l);
             int day = ZombieDailyTracker.Today;

@@ -20,6 +20,8 @@ namespace PKR
             public int flawlessShards;
             public bool newGhost;
             public float ghostDelta;
+            public bool brave;
+            public int braveShards;
         }
 
         LevelFlowController _flow;
@@ -37,6 +39,24 @@ namespace PKR
         Vector2? _target;
 
         public bool TookHit { get; private set; }
+        readonly System.Collections.Generic.List<float> _splits = new System.Collections.Generic.List<float>();
+        public System.Collections.Generic.IReadOnlyList<float> SplitTimes => _splits;
+
+        void OnEnable() => EventBus<CheckpointActivated>.Subscribe(OnCheckpoint);
+        void OnDisable() => EventBus<CheckpointActivated>.Unsubscribe(OnCheckpoint);
+
+        /// <summary>CHECKPOINT SPLITS: your time here against your best clear (ahead in green, behind in red).</summary>
+        void OnCheckpoint(CheckpointActivated e)
+        {
+            if (_flow == null || _flow.Run == null || _flow.Run.IsComplete) return;
+            float t = _flow.Run.ElapsedSeconds;
+            int i = _splits.Count;
+            _splits.Add(t);
+            var save = Services.Save != null ? Services.Save.Data : null;
+            var d = Splits.Delta(save, _flow.Run.LevelId, i, t);
+            if (d.HasValue)
+                EventBus<GameHint>.Raise(new GameHint { id = "split", text = $"CHECKPOINT {i + 1}   {Splits.Format(d.Value)}" + (d.Value <= 0f ? "  AHEAD!" : "") });
+        }
         public bool GhostShown => _ghost != null;
         public bool CompassOn => _compassOn;
         public Vector2? CompassTarget => _target;
@@ -59,7 +79,9 @@ namespace PKR
                 if (_best.Count > 1) _ghost = GhostRacer.Spawn(_flow.Player, _flow.SpriteMaterial).transform;
             }
             ShowFallMarks(save, id);
-            _compassOn = rec != null && rec.completed && _flow.TotalShards > 0 && rec.mostShardsCollected < _flow.TotalShards;
+            // On replays the compass points at missed shards and, once every shard is in hand, at missed secrets.
+            _compassOn = rec != null && rec.completed &&
+                         ((_flow.TotalShards > 0 && rec.mostShardsCollected < _flow.TotalShards) || (_flow.TotalSecrets > 0 && rec.mostSecretsFound < _flow.TotalSecrets));
             if (_compassOn) BuildCompass();
         }
 
@@ -99,6 +121,7 @@ namespace PKR
             bool invincible = Services.Settings != null && Services.Settings.Data.storyInvincible;
             var r = new Result { flawless = !TookHit && !invincible };
             if (_ghost != null && _ghostSeconds > 0f && !assistSpeed) r.ghostDelta = _ghostSeconds - seconds;
+            r.brave = _flow.BraveRun && !assistSpeed;
             if (data == null) return r;
             var rec = data.GetLevel(levelId);
             if (rec == null)
@@ -106,7 +129,10 @@ namespace PKR
                 data.RecordLevelResult(levelId, 0f, 0, 0); // Run.Complete normally made it already
                 rec = data.GetLevel(levelId);
             }
-            r.flawlessShards = StoryFlawless.Record(rec, TookHit);
+            r.flawlessShards = invincible ? 0 : StoryFlawless.Record(rec, TookHit);
+            r.braveShards = StoryBrave.Record(rec, r.brave, assistSpeed);
+            if (r.braveShards > 0) Economy.Grant(data, r.braveShards);
+            if (!assistSpeed) Splits.Offer(data, levelId, _splits, seconds);
             if (r.flawlessShards > 0) Economy.Grant(data, r.flawlessShards);
             if (!assistSpeed) r.newGhost = StoryGhosts.Offer(data, levelId, seconds, _run);
             if (_compassRoot != null) _compassRoot.gameObject.SetActive(false);
@@ -185,6 +211,15 @@ namespace PKR
                 float d = ((Vector2)c.transform.position - from).sqrMagnitude;
                 if (d < bd) { bd = d; best = c.transform.position; }
             }
+            if (best.HasValue) { if (_compassLabel != null) _compassLabel.text = "SHARD"; return best; }
+            // SECRET SENSE: every shard found; now point at a secret you haven't found this run.
+            foreach (var s in FindObjectsByType<SecretArea>())
+            {
+                if (s == null || _flow.Run.HasSecret(s.secretId)) continue;
+                float d = ((Vector2)s.transform.position - from).sqrMagnitude;
+                if (d < bd) { bd = d; best = s.transform.position; }
+            }
+            if (best.HasValue && _compassLabel != null) _compassLabel.text = "SECRET";
             return best;
         }
 

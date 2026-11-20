@@ -122,7 +122,8 @@ namespace PKR
             UIFactory.Button(foot, "BOARDS", OpenBoards);
             var foot2 = Row(panel, UIFactory.RowHeight);
             UIFactory.Button(foot2, "RANK & UNLOCKS", OpenUnlocks);
-            UIFactory.Button(foot2, "FIELD GUIDE", OpenFieldGuide);
+            var (fgSeen, _) = ZombieFieldGuide.Count(c);
+            UIFactory.Button(foot2, $"FIELD GUIDE {fgSeen}/{ZombieFieldGuide.All.Length}", OpenFieldGuide);
             UIFactory.Button(foot2, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(zlButton);
         }
@@ -455,7 +456,8 @@ namespace PKR
                 UIFactory.Tint(b, on ? new Color32(m.R, m.G, m.B, 255) : new Color32(60, 56, 72, 255), on ? Color.white : new Color(1f, 1f, 1f, 0.7f));
                 if (on) UIFactory.Highlight(b, Gold);
                 var t = b.GetComponentInChildren<Text>();
-                if (t != null) { t.supportRichText = true; t.resizeTextForBestFit = false; t.fontSize = 36; t.text = $"{m.Title}\n<size=22>{(best > 0 ? "best round " + best : "not played yet")}</size>"; }
+                float avg = StandHistory.AverageRound(Services.Save != null ? Services.Save.Data : null, m.Id);
+                if (t != null) { t.supportRichText = true; t.resizeTextForBestFit = false; t.fontSize = 36; t.text = $"{m.Title}\n<size=22>{(best > 0 ? "best round " + best + (avg > 0f ? $" · avg {avg:0.#}" : "") : "not played yet")}</size>"; }
             }
             UIFactory.Label(panel, $"{map.Blurb}  ·  {SurvivalModes.Name(_mode)}", 28, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Label(panel, "Who's holding the line with you?", 32, TextAnchor.MiddleCenter, 54f).color = UITheme.Current.subtle;

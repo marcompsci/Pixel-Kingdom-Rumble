@@ -20,6 +20,8 @@ namespace PKR
         public void Open(RectTransform root, CharacterRoster roster, System.Action onBack)
         {
             _root = root; _roster = roster; _onBack = onBack;
+            var save = Services.Save;
+            if (save != null) { Badges.Update(save.Data); save.Data.lifetime.profileSeen = Badges.ProfileScore(save.Data); }
             Build();
         }
 
@@ -50,8 +52,18 @@ namespace PKR
                 lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length} ({mastered} mastered)");
             }
             var lt = s.lifetime;
-            lines.Add($"Daily gift streak: {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
+            lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
+            lines.Add($"Story challenges: {StoryBrave.Count(s)} BRAVE clears  ·  {Plural.Of(s.storySplits.Count, "level")} with splits");
             return lines;
+        }
+
+        /// <summary>This week of the 7-day gift cycle: ● claimed, ○ to come.</summary>
+        static string GiftDots(int streak)
+        {
+            int inCycle = streak <= 0 ? 0 : ((streak - 1) % LoginStreak.Gifts.Length) + 1;
+            var sb = new System.Text.StringBuilder();
+            for (int i = 1; i <= LoginStreak.Gifts.Length; i++) sb.Append(i <= inCycle ? '●' : '○');
+            return sb.ToString();
         }
 
         static string TopMode(SaveData s)
@@ -91,6 +103,12 @@ namespace PKR
                 var t = UIFactory.Label(panel, $"{(i == 0 ? "★ " : "")}{HeroName(_roster, h.id)}   MASTERY {lv} · {HeroMastery.Title(lv)}{next}", 30, TextAnchor.MiddleCenter, 46f);
                 t.color = lv >= HeroMastery.MaxLevel ? UITheme.Current.title : UITheme.Current.text;
             }
+
+            int earned = s != null ? s.lifetime.badges.Count : 0;
+            UIFactory.Label(panel, $"BADGES  {earned}/{Badges.All.Length}", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
+            var names = new System.Collections.Generic.List<string>();
+            foreach (var b in Badges.All) names.Add(Badges.Has(s, b.id) ? b.name : "?");
+            UIFactory.Label(panel, string.Join("  ·  ", names), 24, TextAnchor.MiddleCenter, 90f).color = UITheme.Current.text;
 
             UIFactory.Label(panel, "RECORDS", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
             foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 28, TextAnchor.MiddleCenter, 52f);

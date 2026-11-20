@@ -60,6 +60,8 @@ namespace PKR
 
         void Build()
         {
+            // Your setup is kept between sessions (in the save), so CPU heroes, items and stocks stay how you left them.
+            if (_last == null && Services.Save != null && Services.Save.Data.arenaSetup != null) _last = Services.Save.Data.arenaSetup.Copy();
             var cfg = _last ?? (_last = new ArenaMatchConfig());
             cfg.daily = false;
             cfg.Clamp();
@@ -183,6 +185,7 @@ namespace PKR
         void Launch(ArenaMatchConfig cfg)
         {
             _root.gameObject.SetActive(false);
+            if (Services.Save != null && cfg == _last) { Services.Save.Data.arenaSetup = cfg.Copy(); Services.Save.SaveNow(); }
             if (match != null) match.StartMatch(cfg);
         }
 

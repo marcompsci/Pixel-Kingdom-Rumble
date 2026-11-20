@@ -15,6 +15,8 @@ namespace PKR.Core
         public int mostSecretsFound;
         /// <summary>Cleared without taking a hit (FLAWLESS).</summary>
         public bool flawless;
+        /// <summary>Cleared on the one-heart BRAVE challenge.</summary>
+        public bool brave;
         /// <summary>Best clear rank + 1 (1 = C … 4 = S); 0 = no rank yet. Stored +1 so old saves (missing field = 0) read as "none".</summary>
         public int bestRankPlusOne;
 
@@ -87,6 +89,10 @@ namespace PKR.Core
         public List<StoryGhost> storyGhosts = new List<StoryGhost>();
         /// <summary>PROFILE, CONTINUE, hero mastery, head-to-head, the login gift, fall markers, WHAT'S NEW.</summary>
         public LifetimeSave lifetime = new LifetimeSave();
+        /// <summary>Story Quest checkpoint splits of your best clear of each level.</summary>
+        public List<LevelSplits> storySplits = new List<LevelSplits>();
+        /// <summary>Arena Clash setup screen choices, kept between sessions (null = defaults).</summary>
+        public ArenaMatchConfig arenaSetup;
 
         public static SaveData CreateNew() => new SaveData();
 
@@ -242,6 +248,8 @@ namespace PKR.Core
             StoryGhosts.Sanitize(this);
             if (lifetime == null) lifetime = new LifetimeSave();
             lifetime.Sanitize();
+            Splits.Sanitize(this);
+            if (arenaSetup != null) { arenaSetup.daily = false; arenaSetup.party = PartyMode.None; arenaSetup.Clamp(); }
             if (zombieLand == null) zombieLand = new ZombieLandProgress();
             zombieLand.Sanitize();
             if (zombieCareer == null) zombieCareer = new ZombieCareer();

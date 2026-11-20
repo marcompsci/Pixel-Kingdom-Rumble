@@ -157,6 +157,8 @@ namespace PKR
             });
             UIFactory.Toggle(colA, "Story: invincible", d.storyInvincible, on => { settings.SetStoryInvincible(on); Rebuild(); });
             UIFactory.Toggle(colA, "Story time-trial ghost", d.storyGhost, settings.SetStoryGhost);
+            UIFactory.Toggle(colA, "Story: one heart (BRAVE)", d.storyBrave, on => { settings.SetStoryBrave(on); Rebuild(); });
+            UIFactory.Toggle(colB, "Break reminder (hourly)", d.breakReminder, settings.SetBreakReminder);
             UIFactory.Toggle(colB, "Assist mode (+2 hearts)", d.assistMode, settings.SetAssistMode);
             UIFactory.Button(colB, _hintsReset ? "HINTS RESET!" : "RESET HINTS & GUIDES", () =>
             {

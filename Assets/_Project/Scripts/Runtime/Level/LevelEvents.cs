@@ -31,6 +31,9 @@ namespace PKR
         public bool newGhost;
         /// <summary>Seconds faster (+) or slower (-) than the ghost you raced (0 when there was none).</summary>
         public float ghostDelta;
+        /// <summary>Cleared on the one-heart BRAVE challenge, and the one-off shards for it.</summary>
+        public bool brave;
+        public int braveShards;
         public bool assistSpeed;
         /// <summary>Story world whose every level this clear completed for the first time ("" if none), and its bonus.</summary>
         public string worldCompleted;

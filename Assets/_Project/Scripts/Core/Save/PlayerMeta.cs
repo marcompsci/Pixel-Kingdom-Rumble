@@ -45,6 +45,14 @@ namespace PKR.Core
         public List<HeroXp> heroXp = new List<HeroXp>();
         public List<HeadToHeadRecord> headToHead = new List<HeadToHeadRecord>();
         public List<FallMarks> falls = new List<FallMarks>();
+        public List<StandRunRecord> standRuns = new List<StandRunRecord>();
+        /// <summary>PROFILE badges earned (Badges ids).</summary>
+        public List<string> badges = new List<string>();
+        /// <summary>Weekly recap: the week (Monday yyyymmdd) and the snapshot taken when it began.</summary>
+        public int weekKey;
+        public List<int> weekSnap = new List<int>();
+        /// <summary>PROFILE's NEW dot: mastery levels + badges the last time PROFILE was opened.</summary>
+        public int profileSeen;
 
         public void Sanitize()
         {
@@ -63,6 +71,10 @@ namespace PKR.Core
             if (falls == null) falls = new List<FallMarks>();
             falls.RemoveAll(f => f == null || string.IsNullOrEmpty(f.levelId) || f.xs == null || f.ys == null || f.xs.Count != f.ys.Count);
             while (falls.Count > FallMemory.MaxLevels) falls.RemoveAt(0);
+            if (standRuns == null) standRuns = new List<StandRunRecord>();
+            standRuns.RemoveAll(r => r == null || string.IsNullOrEmpty(r.map));
+            if (badges == null) badges = new List<string>();
+            if (weekSnap == null) weekSnap = new List<int>();
         }
     }
 

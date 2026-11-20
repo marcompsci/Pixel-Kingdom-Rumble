@@ -88,6 +88,9 @@ namespace PKR
         }
 
         public void SetStoryGhost(bool on) { Data.storyGhost = on; Commit(); }
+        /// <summary>The one-heart BRAVE challenge (takes effect from the next Story level).</summary>
+        public void SetStoryBrave(bool on) { Data.storyBrave = on; Commit(); }
+        public void SetBreakReminder(bool on) { Data.breakReminder = on; Commit(); }
 
         /// <summary>Story Quest invincible assist; takes effect at once in a Story level.</summary>
         public void SetStoryInvincible(bool on)

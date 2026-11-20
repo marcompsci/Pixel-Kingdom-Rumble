@@ -107,6 +107,17 @@ namespace PKR
             if (!paused && Time.timeScale > 0f) Time.timeScale = GameStateManager.BaseTimeScale;
         }
 
+        /// <summary>This run is the one-heart BRAVE challenge.</summary>
+        public bool BraveRun { get; private set; }
+
+        /// <summary>Pause > BACK TO CHECKPOINT: practice a tricky part again without restarting the level.</summary>
+        public void BackToCheckpoint()
+        {
+            if (IsComplete || _respawning || player == null) return;
+            if (Services.State != null && Services.State.IsPaused) Services.State.Resume();
+            StartCoroutine(RespawnRoutine(false));
+        }
+
         /// <summary>A Story Quest world level (not an event, contract, the plaza or the race).</summary>
         public bool IsStoryLevel => level != null && !level.isEvent && StoryWorlds.WorldOf(level.id) >= 0;
 
@@ -118,6 +129,14 @@ namespace PKR
             bool invincible = IsStoryLevel && Services.Settings != null && Services.Settings.Data.storyInvincible;
             if (PlayerHealth != null) PlayerHealth.keepHealth = invincible;
             if (invincible) Run.AssistSpeed = true;
+            // BRAVE: the one-heart challenge.
+            BraveRun = IsStoryLevel && !invincible && Services.Settings != null && Services.Settings.Data.storyBrave;
+            if (BraveRun && PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
+            {
+                int baseMax = PlayerHealth.MaxHealth - PlayerHealth.bonusMaxHealth;
+                PlayerHealth.bonusMaxHealth = 1 - baseMax;
+                PlayerHealth.ResetState();
+            }
             if (IsStoryLevel) MetaTracker.Played(ContinueKind.StoryLevel, level.id);
             if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
@@ -367,7 +386,7 @@ namespace PKR
             // Story Quest extras: FLAWLESS (no hits taken) and the time-trial ghost of your best clear.
             var extras = GetComponent<StoryRunExtras>();
             var extra = extras != null ? extras.OnCleared(data, Run.LevelId, Run.ElapsedSeconds, Run.AssistSpeed) : default;
-            reward += extra.flawlessShards;
+            reward += extra.flawlessShards + extra.braveShards;
             if (IsStoryLevel && data != null)
             {
                 MetaTracker.Mastery(GameSession.SelectedCharacterId,
@@ -433,6 +452,8 @@ namespace PKR
                 flawlessShards = extra.flawlessShards,
                 newGhost = extra.newGhost,
                 ghostDelta = extra.ghostDelta,
+                brave = extra.brave,
+                braveShards = extra.braveShards,
                 assistSpeed = Run.AssistSpeed,
                 shards = Run.Shards,
                 totalShards = TotalShards,

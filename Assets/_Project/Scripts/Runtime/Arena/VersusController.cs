@@ -91,7 +91,7 @@ namespace PKR
         public void StartMatch(string playerId, string opponentId, BotLevel level)
         {
             Clear();
-            Match = new VersusMatch();
+            Match = new VersusMatch(autoStart && !botVsBot && !LadderOn ? Mathf.Clamp(GameSession.VersusRoundsToWin, 2, 3) : VersusMatch.DefaultRoundsToWin);
             PerfectRoundWon = false;
             // Bot-vs-bot (the balance lab) must give both CPUs the same fixed tuning, never the adaptive blend.
             _auto = autoStart && !botVsBot && !LadderOn ? GameSession.VersusAutoLevel : false;
@@ -102,6 +102,15 @@ namespace PKR
             if (autoStart && !botVsBot) MetaTracker.Played(ContinueKind.Versus);
             Player = Spawn(playerDef, playerSpawn, 0, human: true, level);
             Opponent = Spawn(opponentDef, opponentSpawn, 1, human: false, level);
+            // Rival callout: your record against this fighter.
+            var h2h = autoStart && !botVsBot && Services.Save != null ? HeadToHead.Get(Services.Save.Data, opponentDef.id) : null;
+            if (h2h != null && h2h.wins + h2h.losses > 0)
+                EventBus<ProgressToast>.Raise(new ProgressToast
+                {
+                    title = $"VS {opponentDef.displayName.ToUpperInvariant()}",
+                    detail = HeadToHead.Line(h2h) + (h2h.losses > h2h.wins ? "  ·  time for revenge!" : h2h.wins > h2h.losses ? "  ·  keep the streak going" : ""),
+                    color = OpponentColor
+                });
             _flow = StartCoroutine(RoundIntro());
         }
 

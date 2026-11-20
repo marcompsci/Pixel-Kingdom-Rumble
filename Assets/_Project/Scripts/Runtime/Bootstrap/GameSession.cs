@@ -21,6 +21,7 @@ namespace PKR
             VersusBotLevel = BotLevel.Normal;
             VersusAutoLevel = true;
             Ladder = null;
+            VersusRoundsToWin = 2;
             ContractScene = null;
             ContractWorldPage = -1;
             PendingWorldDoor = -1;
@@ -101,6 +102,8 @@ namespace PKR
         public static bool VersusAutoLevel { get; set; } = true;
         /// <summary>The Versus ladder being climbed (null for a single match).</summary>
         public static VersusLadder Ladder { get; set; }
+        /// <summary>Versus rounds to win: 2 (best of 3) or 3 (best of 5).</summary>
+        public static int VersusRoundsToWin { get; set; } = 2;
 
         public static string SelectedCharacterId
         {

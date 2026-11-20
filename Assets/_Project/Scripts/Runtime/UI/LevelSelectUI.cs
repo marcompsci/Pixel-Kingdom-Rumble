@@ -360,7 +360,7 @@ namespace PKR
             string medalText = medal == TimeMedal.None ? "" : " " + StoryMedals.Name(medal);
             var save = Services.Save != null ? Services.Save.Data : null;
             var rec = save != null && level != null ? save.GetLevel(level.id) : null;
-            string extras = (rec != null && rec.flawless ? "  FLAWLESS" : "") +
+            string extras = (rec != null && rec.flawless ? "  FLAWLESS" : "") + (rec != null && rec.brave ? "  BRAVE" : "") +
                             (level != null && StoryGhosts.Find(save, level.id) != null ? "  GHOST" : "");
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}{extras}\n" +
                    $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}";

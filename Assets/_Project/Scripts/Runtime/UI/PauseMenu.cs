@@ -200,7 +200,10 @@ namespace PKR
             UIFactory.Clear(_menu);
             UIFactory.Dim(_menu);
             string progress = RunProgress();
-            var panel = UIFactory.Panel(_menu, new Vector2(820f, progress != null ? 900f : 830f)); // fits the five rows
+            var flow = LevelFlowController.Current;
+            bool story = flow != null && flow.IsStoryLevel && !flow.IsComplete;
+            float extra = story ? 2 * (UIFactory.RowHeight + 18f) : 0f;
+            var panel = UIFactory.Panel(_menu, new Vector2(820f, (progress != null ? 900f : 830f) + extra)); // fits the rows
             UIFactory.Label(panel, "PAUSED", 72, TextAnchor.MiddleCenter, 110f, title: true);
             if (progress != null)
             {
@@ -208,9 +211,12 @@ namespace PKR
                 line.color = UITheme.Current.subtle;
             }
             var resume = UIFactory.Button(panel, "RESUME", () => { if (Services.State != null) Services.State.Resume(); });
+            if (story) UIFactory.Button(panel, "BACK TO CHECKPOINT", flow.BackToCheckpoint);
             UIFactory.Button(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             UIFactory.Button(panel, "PHOTO MODE", () => PhotoMode.Begin(null));
             UIFactory.Button(panel, "SETTINGS", ShowSettings);
+            if (story && Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza))
+                UIFactory.Button(panel, "KINGDOM PLAZA", () => { GameSession.ReturnToPlaza(); });
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
             bool zombies = GameSession.Mode == SessionMode.Zombies;
             UIFactory.Button(panel, zombies ? "ZOMBIES MENU" : hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",

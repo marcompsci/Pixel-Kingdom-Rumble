@@ -85,6 +85,10 @@ namespace PKR.Core
         public bool storyGhost = true;
         /// <summary>Accessibility: in Story Quest the hero can't lose hearts (pits still send you back). Clears count, no records.</summary>
         public bool storyInvincible;
+        /// <summary>Story Quest BRAVE challenge: one heart only. A clear earns the BRAVE badge for the level.</summary>
+        public bool storyBrave;
+        /// <summary>A gentle "time for a break?" note after each hour of play (off by default).</summary>
+        public bool breakReminder;
 
         /// <summary>One tap to a gentler game: Assist mode, Story at 80%, strong aim assist and bigger touch targets.</summary>
         public void ApplyComfortPreset()
