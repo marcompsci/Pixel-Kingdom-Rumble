@@ -1,24 +1,21 @@
-Thanks for testing Pixel Kingdom Rumble! This build leads with STORY QUEST (the first main-menu button).
+Thanks for testing Pixel Kingdom Rumble! STORY QUEST is the first main-menu button.
 
 New in this build:
-- KINGDOM PLAZA: Story Quest now opens in a street you can walk. Its buildings lead to the four Story worlds and five
-  party quests. The sign over each building shows your progress and roughly how many players are there right now
-  (from Game Center; "--" when it can't tell, for example when you're not signed in).
-- Five party quests against CPU rivals: ITEM RACE, BALLOON BATTLE, RING-OUT BRAWL, COIN RUSH and KING OF THE HILL,
-  with item boxes (Dash Fizz, Bubble Shield, Seeker Star, Slick Puddle, Thunder Bell).
-- QUICK GAME widget (iOS 17+): a tiny Story Quest stage on your Home Screen. Tap left/right to step, JUMP to jump.
-  Clears pay Star Shards in the game; see Story Quest > STORY STATS.
-- Live seasons: Story Quest dresses itself for the real date (autumn harvest now, winter snow from December).
-- Story Stats page, time medals, menu and font clean-up.
+- KINGDOM PLAZA: Story Quest opens in a street you can walk. Buildings lead to the four Story worlds and five party quests (Item Race, Balloon Battle, Ring-Out Brawl, Coin Rush, King of the Hill) against CPU rivals. Signs show roughly how many players are there (from Game Center; "--" when it can't tell).
+- QUICK GAME widget (iOS 17+): a tiny Story Quest stage on your Home Screen.
+- ARENA CLASH: ITEMS on/off, choose which hero the CPUs play, and a TRAINING LAB (the CPU can walk, jump or fight back; a combo counter tracks your hits). Hard CPUs now guard the ledge when you're off the stage.
+- VERSUS LADDER: pick your fighter, tap LADDER and beat 3-5 rivals in a row, Easy up to Hard.
+- ZOMBIES: the BARGAIN BELL power-up in Last Stand (box spins cost 10 for 20 s) and a FIELD GUIDE of every kind of the dead.
+- STORY QUEST: a time-trial ghost of your best clear, FLAWLESS clears, a shard compass on replays, and Settings > STORY GAME SPEED (100-70%).
+- A short welcome guide for new players, and the DAILY page now lists every daily in the game.
 
 Please try:
-1. STORY QUEST: walk the plaza, enter each building, and come back with PLAZA. Any dead ends?
-2. Each party quest once. Fair? Too long? Do the CPUs ever get stuck?
-3. Add the QUICK GAME widget (touch and hold the Home Screen > + > Pixel Kingdom Rumble). Clear a stage, then open the
-   game: do the Star Shards and stats show up?
-4. With a friend: are the live counts on the plaza signs believable? (They are approximate.)
-5. ZOMBIES and ONLINE CO-OP still work as before.
+1. STORY QUEST: walk the plaza, enter buildings, replay a cleared level (ghost + compass).
+2. ARENA CLASH with ITEMS ON, and TRAINING with each CPU option.
+3. VERSUS > pick a fighter > LADDER. Is the climb fair?
+4. ZOMBIES > FIELD GUIDE, then a Last Stand run. Did you see the Bargain Bell?
+5. Settings > STORY GAME SPEED at 70%: does it feel easier, and is anything broken?
+6. Add the QUICK GAME widget and clear a stage.
 
-Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge). Party quests are against the
-computer, not online.
+Known: the Shadow Contracts purchase uses the TestFlight sandbox (no real charge). Party quests and the ladder are against the computer, not online.
 Feedback: take a screenshot in the game and tap "Share Beta Feedback", or email rodlonbell16@gmail.com.
