@@ -26,6 +26,8 @@ namespace PKR
         public PartyMode party;
         /// <summary>Each fighter's best combo (hits landed while the target was still reeling).</summary>
         public int[] bestCombo;
+        /// <summary>Arena Clash: P1 set a new career best for KOs in a match / combo.</summary>
+        public bool newBestKOs, newBestCombo;
     }
 
     /// <summary>
@@ -354,6 +356,23 @@ namespace PKR
                 int xp = Config.party != PartyMode.None ? (won ? HeroMastery.PartyWinXp : HeroMastery.PartyMatchXp)
                                                         : (won ? HeroMastery.ArenaWinXp : HeroMastery.ArenaMatchXp);
                 if (vis != null && vis.Character != null) MetaTracker.Mastery(vis.Character.id, xp, roster);
+            }
+            // Arena Clash career (Training and party quests don't count): bests, KO milestones and badges.
+            if (Config.mode != MatchMode.Training && Config.party == PartyMode.None && grantRewards && Services.Save != null && n > 0)
+            {
+                var c = ArenaCareer.Record(Services.Save.Data, result.playerPlacement == 1, result.knockouts[0], result.bestCombo[0]);
+                result.newBestKOs = c.newBestKOs; result.newBestCombo = c.newBestCombo;
+                if (c.koMilestone > 0)
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"{c.koMilestone:N0} ARENA KOs!", detail = "A lifetime milestone in Arena Clash.", color = new Color32(255, 170, 60, 255) });
+                MetaTracker.CheckBadges();
+                Services.Save.MarkDirty();
+            }
+            else if (Config.party != PartyMode.None && grantRewards && Services.Save != null)
+            {
+                var pr = Services.Save.Data.party != null ? Services.Save.Data.party.Find(Config.party) : null;
+                if (result.playerPlacement == 1 && pr != null && PartyMeta.WinMilestone(pr.wins))
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = pr.wins == 1 ? $"FIRST {PartyModes.Info(Config.party).name} WIN!" : $"{PartyModes.Info(Config.party).name}: WIN #{pr.wins}", detail = "Party quest milestone.", color = new Color32(255, 200, 90, 255) });
+                MetaTracker.CheckBadges();
             }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             EventBus<ArenaMatchEnded>.Raise(result);

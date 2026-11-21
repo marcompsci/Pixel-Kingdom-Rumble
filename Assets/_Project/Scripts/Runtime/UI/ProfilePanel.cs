@@ -35,6 +35,8 @@ namespace PKR
             lines.Add($"Story Quest: {Plural.Of(cleared, "level")} cleared  ·  {StoryFlawless.Count(s)} FLAWLESS  ·  {Plural.Of(s.storyGhosts.Count, "ghost")}");
             var r = s.rumble;
             if (r != null) lines.Add($"Arena & Versus: {r.wins} wins in {Plural.Of(r.matches, "rated match", "rated matches")}  ·  best rating {r.bestRating}");
+            string arena = ArenaCareer.Line(s);
+            if (arena.Length > 0) lines.Add(arena);
             var lad = s.ladder;
             int vsW = 0, vsL = 0;
             foreach (var h in s.lifetime.heroRecords) if (h != null) { vsW += h.wins; vsL += h.losses; }
@@ -47,7 +49,9 @@ namespace PKR
             if (nemesis != null) lines.Add($"Toughest rival: {HeroName(roster, nemesis.id)}  ({HeadToHead.Line(nemesis)})");
             int pWins = 0, pPlayed = 0;
             if (s.party != null) foreach (var p in s.party.records) if (p != null) { pWins += p.wins; pPlayed += p.played; }
-            lines.Add($"Party quests: {pWins} wins in {Plural.Of(pPlayed, "match", "matches")}  ·  {s.party?.cupsPlayed ?? 0} cups");
+            var favParty = PartyMeta.Favorite(s);
+            lines.Add($"Party quests: {pWins} wins in {Plural.Of(pPlayed, "match", "matches")}  ·  {s.party?.cupsPlayed ?? 0} cups" +
+                      (favParty != null ? $"  ·  favorite {PartyModes.Info((PartyMode)favParty.mode).name}" : ""));
             var c = s.zombieCareer;
             if (c != null)
             {
@@ -55,10 +59,11 @@ namespace PKR
                 foreach (var b in c.bestRounds) best = Mathf.Max(best, b);
                 var (seen, mastered) = ZombieFieldGuide.Count(c);
                 lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  {Plural.Of(c.lastStandRuns, "run")}" +
-                          (s.lifetime.bestAccuracy > 0 ? $"  ·  best accuracy {s.lifetime.bestAccuracy}%" : "") + $"  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
+                          (s.lifetime.bestAccuracy > 0 ? $"  ·  best accuracy {s.lifetime.bestAccuracy}%" : "") +
+                          (c.weeklyDone.Count > 0 ? $"  ·  {Plural.Of(c.weeklyDone.Count, "weekly", "weeklies")} beaten" : "") + $"  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
             }
             var lt = s.lifetime;
-            lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
+            lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.dailyDone} daily challenges done");
             lines.Add($"Story challenges: {StoryPerfect.Count(s)} PERFECT  ·  {StoryBrave.Count(s)} BRAVE  ·  {StoryRecords.SRanks(s)} S ranks  ·  {Plural.Of(StoryRecords.TotalTries(s), "try", "tries")}");
             var fast = StoryRecords.Fastest(s);
             string since = PlayDates.Since(lt.firstDay);
@@ -81,7 +86,8 @@ namespace PKR
             var close = new List<string>();
             for (int i = 0; i < open.Count && i < 3; i++)
                 close.Add(open[i].need > 1 && s != null ? $"{open[i].name} {open[i].Have(s):N0}/{open[i].need:N0}" : $"{open[i].name} ({open[i].how})");
-            string a1 = earned.Count > 0 ? "Earned: " + string.Join("  ·  ", earned) : "No badges yet: they come from playing every mode.";
+            var recent = RecentBadges.Names(s, 3);
+            string a1 = earned.Count > 0 ? "Latest: " + string.Join("  ·  ", recent) + (earned.Count > 3 ? $"  (+{earned.Count - 3} more)" : "") : "No badges yet: they come from playing every mode.";
             return close.Count > 0 ? a1 + "\nClosest: " + string.Join("  ·  ", close) : a1;
         }
 

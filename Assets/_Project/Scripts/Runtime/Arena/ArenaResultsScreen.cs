@@ -48,11 +48,13 @@ namespace PKR
             var order = new int[e.placements.Length];
             for (int i = 0; i < order.Length; i++) order[i] = i;
             System.Array.Sort(order, (a, b) => e.placements[a].CompareTo(e.placements[b]));
+            int mvp = e.mode == MatchMode.Training ? -1 : ArenaCareer.Mvp(e.knockouts);
             foreach (int slot in order)
             {
                 string unit = e.party == PartyMode.CoinRush ? "coins" : e.party == PartyMode.KingOfTheHill ? "crown time" : "score";
                 string score = e.mode == MatchMode.Timed ? $"   {unit} {e.scores[slot]}" : "";
                 if (e.bestCombo != null && slot < e.bestCombo.Length && e.bestCombo[slot] >= 2) score += $"   combo {e.bestCombo[slot]}";
+                if (slot == mvp) score += "   MVP";
                 var row = UIFactory.Label(panel, $"{Ordinal(e.placements[slot])}   {e.names[slot]}   KOs {e.knockouts[slot]}   falls {e.falls[slot]}{score}",
                                           36, TextAnchor.MiddleLeft, 52f);
                 row.color = slot < ArenaMatchController.SlotColors.Length ? ArenaMatchController.SlotColors[slot] : p.text;
@@ -67,7 +69,16 @@ namespace PKR
                                     TextAnchor.MiddleCenter, 44f).color = p.subtle;
                     PartyFlow.AddLines(panel, PartyFlow.Last, e.party);
                 }
-                else RumbleUI.AddResults(panel, e.rumble);
+                else
+                {
+                    var bests = new System.Collections.Generic.List<string>();
+                    if (e.newBestKOs) bests.Add($"NEW BEST: {e.knockouts[0]} KOs IN A MATCH!");
+                    if (e.newBestCombo && e.bestCombo != null && e.bestCombo.Length > 0) bests.Add($"NEW BEST COMBO: {e.bestCombo[0]}!");
+                    string career = ArenaCareer.Line(Services.Save != null ? Services.Save.Data : null);
+                    if (bests.Count > 0) UIFactory.Label(panel, string.Join("   ", bests), 32, TextAnchor.MiddleCenter, 46f).color = p.title;
+                    else if (career.Length > 0) UIFactory.Label(panel, career, 26, TextAnchor.MiddleCenter, 40f).color = p.subtle;
+                    RumbleUI.AddResults(panel, e.rumble);
+                }
             }
 
             var buttons = UIFactory.Rect("Buttons", panel);

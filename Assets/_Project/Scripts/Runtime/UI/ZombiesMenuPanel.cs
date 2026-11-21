@@ -114,7 +114,8 @@ namespace PKR
             var w = ZombieWeekly.Current(DateTime.UtcNow);
             bool done = ZombieWeekly.Done(c, w);
             string wSub = $"{LastStandMap.Get(w.MapId).Title} · {w.Set.Names()} · " +
-                          (done ? "DONE! New one Monday" : $"reach round {w.GoalRound} · {ZombieWeekly.LeftText(DateTime.UtcNow)}");
+                          (done ? "DONE! New one Monday" : $"reach round {w.GoalRound} · {ZombieWeekly.LeftText(DateTime.UtcNow)}") +
+                          (c.weeklyDone.Count > 0 ? $" · {c.weeklyDone.Count} beaten" : "");
             Big(panel, done ? "WEEKLY CHALLENGE: DONE" : "WEEKLY CHALLENGE", wSub, new Color32(130, 100, 30, 255), OpenWeekly,
                 Application.CanStreamedLevelBeLoaded(SceneIds.LastStand));
 

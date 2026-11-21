@@ -61,6 +61,8 @@ namespace PKR.Core
         /// the day first played and the day last played (yyyymmdd).</summary>
         public List<string> worlds100 = new List<string>();
         public int badgeRewards, bestAccuracy, closeCalls, firstDay, lastPlayedDay;
+        /// <summary>Arena Clash career (not Training or party quests) and lifetime daily challenges done.</summary>
+        public int arenaMatches, arenaWins, arenaKOs, arenaBestKOs, arenaBestCombo, dailyDone;
 
         public void Sanitize()
         {
@@ -87,6 +89,8 @@ namespace PKR.Core
             if (badges == null) badges = new List<string>();
             if (weekSnap == null) weekSnap = new List<int>();
             if (worlds100 == null) worlds100 = new List<string>();
+            arenaMatches = Math.Max(0, arenaMatches); arenaWins = Math.Max(0, Math.Min(arenaMatches, arenaWins)); arenaKOs = Math.Max(0, arenaKOs);
+            arenaBestKOs = Math.Max(0, arenaBestKOs); arenaBestCombo = Math.Max(0, arenaBestCombo); dailyDone = Math.Max(0, dailyDone);
             badgeRewards = Math.Max(0, badgeRewards); bestAccuracy = Math.Max(0, Math.Min(100, bestAccuracy)); closeCalls = Math.Max(0, closeCalls);
             vsStreak = Math.Max(0, vsStreak); vsBestStreak = Math.Max(vsStreak, vsBestStreak);
         }
@@ -288,15 +292,15 @@ namespace PKR.Core
     /// <summary>WHAT'S NEW: a one-time card per update with its headline features.</summary>
     public static class WhatsNew
     {
-        public const string Version = "1.4";
+        public const string Version = "1.5";
         public static readonly string[] Items =
         {
-            "PERFECT clears (S rank, FLAWLESS, every shard and secret) pay bonus shards. Worlds at 100% are celebrated.",
-            "Clear screen: MEDAL UP, rank UP FROM, your next medal's target, CLOSE CALL and time vs your best.",
-            "26 BADGES, and every 5 badges pays 25 Star Shards. NEXT BADGE on the menu shows what's closest.",
-            "VERSUS: win streaks, REVENGE and FIRST WIN callouts, best of 5 and RANDOM MATCHUP.",
-            "ZOMBIES: best accuracy, kill milestones, YOUR BEST and NEW BEST callouts, and your last run.",
-            "PROFILE: playing since, days played, Versus win %, fastest clear.  CONTINUE shows when you last played.",
+            "ARENA CLASH career: MVP on the results, best KOs and combo records, KO milestones.",
+            "32 BADGES, including KNOCKOUT ARTIST, COMBO KING, PARTY ANIMAL, WEEKLY WARRIOR, DUTIFUL and CHAMPION.",
+            "STORY: checkpoints show your shards, plus ONE SHARD LEFT and ALL SHARDS callouts. PERFECT count per world.",
+            "PARTY QUESTS: win milestones and your favorite mode in PROFILE.  ZOMBIES: weeklies beaten.",
+            "Settings: LONGER MESSAGES (Display) and QUIET CELEBRATIONS (Assists).",
+            "PROFILE: latest badges, daily challenges done, Arena record.",
         };
 
         /// <summary>Show to returning players once per version (brand-new players get the welcome guide instead).</summary>

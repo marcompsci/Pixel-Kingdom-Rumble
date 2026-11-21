@@ -11,6 +11,8 @@ namespace PKR
     {
         public string title, detail;
         public Color color;
+        /// <summary>A "nice to know" cheer (streaks, milestones, session recaps): hidden by Settings > Quiet celebrations.</summary>
+        public bool celebration;
     }
 
     /// <summary>
@@ -52,7 +54,7 @@ namespace PKR
             if (DailyChallenges.EnsureToday(save, TodayKey)) Services.Save.MarkDirty();
             var done = DailyChallenges.Report(save, kind, amount, out int xp);
             foreach (var c in done) Toast("CHALLENGE DONE!", $"{c.text}  +{c.shards} shards", ChallengeColor);
-            if (done.Count > 0) Services.Save.MarkDirty();
+            if (done.Count > 0) { DailyCareer.Add(save, done.Count); Services.Save.MarkDirty(); MetaTracker.CheckBadges(); }
             AddXp(xp);
         }
 

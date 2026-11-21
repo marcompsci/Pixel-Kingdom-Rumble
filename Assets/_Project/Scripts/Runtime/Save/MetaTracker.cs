@@ -60,13 +60,13 @@ namespace PKR
             HeroRecords.Record(d, heroId, won);
             int streak = VersusStreak.Record(d, won);
             if (firstWin && !string.IsNullOrEmpty(rivalName))
-                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"FIRST WIN VS {rivalName.ToUpperInvariant()}!", detail = "A new rival beaten.", color = new Color32(255, 150, 90, 255) });
+                EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"FIRST WIN VS {rivalName.ToUpperInvariant()}!", detail = "A new rival beaten.", color = new Color32(255, 150, 90, 255) });
             else if (revenge && !string.IsNullOrEmpty(rivalName))
-                EventBus<ProgressToast>.Raise(new ProgressToast { title = "REVENGE!", detail = $"You beat {rivalName.ToUpperInvariant()}, who had the upper hand. Now {HeadToHead.Line(HeadToHead.Get(d, rivalId))}.", color = new Color32(255, 120, 120, 255) });
+                EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = "REVENGE!", detail = $"You beat {rivalName.ToUpperInvariant()}, who had the upper hand. Now {HeadToHead.Line(HeadToHead.Get(d, rivalId))}.", color = new Color32(255, 120, 120, 255) });
             if (!won && streakBefore >= 3)
-                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"STREAK OF {streakBefore} ENDED", detail = $"Best: {d.lifetime.vsBestStreak}. Go again!", color = new Color32(200, 200, 220, 255) });
+                EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"STREAK OF {streakBefore} ENDED", detail = $"Best: {d.lifetime.vsBestStreak}. Go again!", color = new Color32(200, 200, 220, 255) });
             if (won && VersusStreak.Milestone(streak))
-                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"{streak} WINS IN A ROW!", detail = streak >= d.lifetime.vsBestStreak ? "Your best Versus streak!" : $"Best: {d.lifetime.vsBestStreak}", color = new Color32(255, 110, 60, 255) });
+                EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"{streak} WINS IN A ROW!", detail = streak >= d.lifetime.vsBestStreak ? "Your best Versus streak!" : $"Best: {d.lifetime.vsBestStreak}", color = new Color32(255, 110, 60, 255) });
             CheckBadges();
         }
 

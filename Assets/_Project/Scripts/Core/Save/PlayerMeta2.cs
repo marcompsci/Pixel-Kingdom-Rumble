@@ -147,6 +147,10 @@ namespace PKR.Core
             "In Last Stand, your best round is called out at the start. Beat it for a NEW BEST alert.",
             "Tap the tip on the main menu to read the next one.",
             "Story Stats adds up your best times. Shave seconds off any level to lower your total.",
+            "The fighter with the most KOs in an Arena Clash match is the MVP.",
+            "Too many pop-ups? Settings > ASSISTS > Quiet celebrations hides the cheers and keeps the important news.",
+            "Need more time to read? Settings > DISPLAY > Longer messages.",
+            "Every party quest counts toward PARTY ANIMAL. Try all five in the Kingdom Plaza.",
         };
 
         public static string For(int dayKey) => Tips[Index(dayKey)];
@@ -203,6 +207,12 @@ namespace PKR.Core
             new Badge { id = "world100", name = "COMPLETIONIST", how = "A Story world at 100%", need = 1, have = s => s.lifetime.worlds100.Count },
             new Badge { id = "streak_vs10", name = "UNSTOPPABLE", how = "Win 10 Versus matches in a row", need = 10, have = s => s.lifetime.vsBestStreak },
             new Badge { id = "sharpshooter", name = "SHARPSHOOTER", how = "60% accuracy in a Last Stand run (50+ shots)", need = 60, have = s => s.lifetime.bestAccuracy },
+            new Badge { id = "arena_ko250", name = "KNOCKOUT ARTIST", how = "250 Arena Clash KOs", need = 250, have = s => s.lifetime.arenaKOs },
+            new Badge { id = "combo8", name = "COMBO KING", how = "An 8-hit combo in Arena Clash", need = 8, have = s => s.lifetime.arenaBestCombo },
+            new Badge { id = "party_all", name = "PARTY ANIMAL", how = "Play every party quest", need = PartyModes.All.Length, have = PartyMeta.ModesPlayed },
+            new Badge { id = "weekly3", name = "WEEKLY WARRIOR", how = "Beat 3 Zombies weekly challenges", need = 3, have = s => s.zombieCareer != null ? s.zombieCareer.weeklyDone.Count : 0 },
+            new Badge { id = "daily30", name = "DUTIFUL", how = "Complete 30 daily challenges", need = 30, have = s => s.lifetime.dailyDone },
+            new Badge { id = "arena_win50", name = "CHAMPION", how = "Win 50 Arena Clash matches", need = 50, have = s => s.lifetime.arenaWins },
             new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
 
@@ -226,7 +236,8 @@ namespace PKR.Core
             var b = Closest(s);
             if (b == null) return "Every badge earned. You're a legend of the kingdom!";
             var x = b.Value;
-            return x.need > 1 ? $"NEXT BADGE: {x.name}  ·  {x.how}  ({x.Have(s):N0}/{x.need:N0})" : $"NEXT BADGE: {x.name}  ·  {x.how}";
+            string pay = BadgeRewards.ToNext(s) == 1 ? $"  ·  +{BadgeRewards.Shards} shards!" : "";
+            return (x.need > 1 ? $"NEXT BADGE: {x.name}  ·  {x.how}  ({x.Have(s):N0}/{x.need:N0})" : $"NEXT BADGE: {x.name}  ·  {x.how}") + pay;
         }
 
         /// <summary>Badges earned now that weren't recorded before. Records them.</summary>

@@ -55,8 +55,12 @@ namespace PKR
             var save = Services.Save != null ? Services.Save.Data : null;
             var d = Splits.Delta(save, _flow.Run.LevelId, i, t);
             if (d.HasValue)
-                EventBus<GameHint>.Raise(new GameHint { id = "split", text = $"CHECKPOINT {i + 1}   {Splits.Format(d.Value)}" + (d.Value <= 0f ? "  AHEAD!" : "") });
+                EventBus<GameHint>.Raise(new GameHint { id = "split", text = $"CHECKPOINT {i + 1}   {Splits.Format(d.Value)}" + (d.Value <= 0f ? "  AHEAD!" : "") + ShardsSoFar() });
+            else if (_flow.TotalShards > 0)
+                EventBus<GameHint>.Raise(new GameHint { id = "split", text = $"CHECKPOINT {i + 1}" + ShardsSoFar() });
         }
+        string ShardsSoFar() => _flow.TotalShards > 0 ? $"   ·   SHARDS {Mathf.Min(_flow.Run.Shards, _flow.TotalShards)}/{_flow.TotalShards}" : "";
+
         public bool GhostShown => _ghost != null;
         public bool CompassOn => _compassOn;
         public Vector2? CompassTarget => _target;

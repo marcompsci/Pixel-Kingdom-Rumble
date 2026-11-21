@@ -18,7 +18,7 @@ namespace PKR
         Image _bg;
         CanvasGroup _group;
         float _shownAt = -99f;
-        const float Seconds = 2.6f, In = 0.22f, Out = 0.15f, Rest = -30f;
+        const float BaseSeconds = 2.6f, In = 0.22f, Out = 0.15f, Rest = -30f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
@@ -68,7 +68,15 @@ namespace PKR
         void OnEnable() => EventBus<ProgressToast>.Subscribe(OnToast);
         void OnDisable() => EventBus<ProgressToast>.Unsubscribe(OnToast);
 
-        void OnToast(ProgressToast t) => _queue.Enqueue(t);
+        void OnToast(ProgressToast t)
+        {
+            var d = Services.Settings != null ? Services.Settings.Data : null;
+            if (t.celebration && d != null && d.quietCelebrations) return;
+            _queue.Enqueue(t);
+        }
+
+        /// <summary>How long each message stays up (Settings > Longer messages makes it 60% longer).</summary>
+        static float Seconds => Services.Settings != null && Services.Settings.Data.longToasts ? BaseSeconds * 1.6f : BaseSeconds;
 
         void Update()
         {

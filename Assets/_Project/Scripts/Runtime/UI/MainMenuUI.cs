@@ -99,7 +99,7 @@ namespace PKR
                 var sl = SessionSummary.Lines(s_sessionStart, now0);
                 s_sessionShown = now0;
                 if (sl.Count > 0)
-                    EventBus<ProgressToast>.Raise(new ProgressToast { title = "THIS SESSION", detail = string.Join("  ·  ", sl), color = new Color32(180, 200, 255, 255) });
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = "THIS SESSION", detail = string.Join("  ·  ", sl), color = new Color32(180, 200, 255, 255) });
             }
             var week = WeeklyRecap.Roll(save.Data, WeeklyRecap.WeekKey(System.DateTime.Now));
             save.SaveNow();

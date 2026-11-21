@@ -136,6 +136,7 @@ namespace PKR
             UIFactory.Toggle(colB, "Left-handed controls", d.leftHanded, settings.SetLeftHanded);
             UIFactory.Toggle(colB, "Bigger touch targets", d.bigTouchTargets, settings.SetBigTouchTargets);
             UIFactory.Toggle(colB, "Sound cues on screen", d.soundCues, settings.SetSoundCues);
+            UIFactory.Toggle(colB, "Longer messages", d.longToasts, settings.SetLongToasts);
             var info = UIFactory.Label(colB, PKR.Core.PerfGovernor.Info(gm) + ".\n" + PKR.Core.Accessibility.Info(ca) + ".", 24, TextAnchor.MiddleCenter, 70f);
             info.color = UITheme.Current.subtle;
             UIFactory.Button(colB, "BACK", () => _onBack?.Invoke());
@@ -160,6 +161,7 @@ namespace PKR
             UIFactory.Toggle(colA, "Story: one heart (BRAVE)", d.storyBrave, on => { settings.SetStoryBrave(on); Rebuild(); });
             UIFactory.Toggle(colB, "Break reminder (hourly)", d.breakReminder, settings.SetBreakReminder);
             UIFactory.Toggle(colB, "Menu tips & goals", d.menuTips, settings.SetMenuTips);
+            UIFactory.Toggle(colA, "Quiet celebrations", d.quietCelebrations, settings.SetQuietCelebrations);
             UIFactory.Toggle(colB, "Assist mode (+2 hearts)", d.assistMode, settings.SetAssistMode);
             UIFactory.Button(colB, _hintsReset ? "HINTS RESET!" : "RESET HINTS & GUIDES", () =>
             {

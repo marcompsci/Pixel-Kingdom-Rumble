@@ -354,7 +354,17 @@ namespace PKR
         public void OnPickupCollected(PickupKind kind, int value)
         {
             if (Run == null) return;
-            if (kind == PickupKind.StarShard) Run.CollectShards(value);
+            if (kind != PickupKind.StarShard) return;
+            int before = Run.Shards;
+            Run.CollectShards(value);
+            // Story Quest: a nudge when one shard is left, and a cheer when the set is complete.
+            if (IsStoryLevel && TotalShards > 1)
+            {
+                if (before < TotalShards - 1 && Run.Shards == TotalShards - 1)
+                    EventBus<GameHint>.Raise(new GameHint { id = "lastshard", text = "ONE SHARD LEFT!" });
+                else if (before < TotalShards && Run.Shards >= TotalShards)
+                    EventBus<GameHint>.Raise(new GameHint { id = "allshards", text = $"ALL {TotalShards} SHARDS!" });
+            }
         }
 
         public void FindSecret(string id)
@@ -457,7 +467,7 @@ namespace PKR
             {
                 s_cleanStreak = CleanStreak.Next(s_cleanStreak, Run.Deaths);
                 if (CleanStreak.Milestone(s_cleanStreak))
-                    EventBus<ProgressToast>.Raise(new ProgressToast { title = $"ON A ROLL: {s_cleanStreak} CLEAN CLEARS", detail = "Levels in a row without a single fall.", color = new Color32(140, 220, 160, 255) });
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"ON A ROLL: {s_cleanStreak} CLEAN CLEARS", detail = "Levels in a row without a single fall.", color = new Color32(140, 220, 160, 255) });
             }
             if (IsStoryLevel) MetaTracker.CheckBadges();
             if (save != null) save.SaveNow();

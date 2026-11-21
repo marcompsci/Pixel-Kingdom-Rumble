@@ -116,7 +116,9 @@ namespace PKR
                 MetaTracker.CheckBadges();
                 Services.Save.SaveNow();
             }
-            UIFactory.Label(panel, $"STORY QUEST  ·  {pct}% COMPLETE\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
+            int perfectHere = 0;
+            if (Services.Save != null) foreach (var lv in page.levels) { var rr = lv != null ? Services.Save.Data.GetLevel(lv.id) : null; if (rr != null && rr.perfect) perfectHere++; }
+            UIFactory.Label(panel, $"STORY QUEST  ·  {pct}% COMPLETE{(perfectHere > 0 ? $"  ·  {perfectHere} PERFECT" : "")}\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (paged) PageRow(panel);
             if (hasDescription)
                 UIFactory.Label(panel, page.description, 32, TextAnchor.MiddleCenter, 90f).color = p.subtle;

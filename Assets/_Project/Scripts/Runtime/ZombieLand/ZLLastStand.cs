@@ -964,7 +964,7 @@ namespace PKR
                 var cz = Services.Save.Data.zombieCareer;
                 int milestone = cz != null ? KillMilestone.Crossed(cz.totalKills - Run.Kills, cz.totalKills) : 0;
                 if (milestone > 0)
-                    EventBus<ProgressToast>.Raise(new ProgressToast { title = $"{milestone:N0} ZOMBIES PUT DOWN!", detail = "A lifetime milestone. The dead fear you.", color = new Color32(200, 70, 50, 255) });
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"{milestone:N0} ZOMBIES PUT DOWN!", detail = "A lifetime milestone. The dead fear you.", color = new Color32(200, 70, 50, 255) });
                 MetaTracker.CheckBadges();
             }
             if (!_guest) MetaTracker.Mastery(GameSession.SelectedCharacterId, HeroMastery.LastStandRoundXp * Mathf.Max(0, Run.Round - 1));

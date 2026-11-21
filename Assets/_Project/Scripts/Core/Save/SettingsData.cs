@@ -91,6 +91,8 @@ namespace PKR.Core
         public bool breakReminder;
         /// <summary>The main menu's greeting, NEXT BADGE and tip lines.</summary>
         public bool menuTips = true;
+        /// <summary>Messages stay up longer; streak/milestone cheers are hidden.</summary>
+        public bool longToasts, quietCelebrations;
 
         /// <summary>One tap to a gentler game: Assist mode, Story at 80%, strong aim assist and bigger touch targets.</summary>
         public void ApplyComfortPreset()
