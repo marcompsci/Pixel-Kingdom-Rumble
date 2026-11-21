@@ -55,6 +55,8 @@ namespace PKR.Core
         public List<int> weekSnap = new List<int>();
         /// <summary>PROFILE's NEW dot: mastery levels + badges the last time PROFILE was opened.</summary>
         public int profileSeen;
+        /// <summary>Versus: wins in a row now, and the best run.</summary>
+        public int vsStreak, vsBestStreak;
 
         public void Sanitize()
         {
@@ -80,6 +82,7 @@ namespace PKR.Core
             standRuns.RemoveAll(r => r == null || string.IsNullOrEmpty(r.map));
             if (badges == null) badges = new List<string>();
             if (weekSnap == null) weekSnap = new List<int>();
+            vsStreak = Math.Max(0, vsStreak); vsBestStreak = Math.Max(vsStreak, vsBestStreak);
         }
     }
 
@@ -279,15 +282,15 @@ namespace PKR.Core
     /// <summary>WHAT'S NEW: a one-time card per update with its headline features.</summary>
     public static class WhatsNew
     {
-        public const string Version = "1.2";
+        public const string Version = "1.3";
         public static readonly string[] Items =
         {
-            "18 BADGES in your PROFILE, with progress and a NEXT BADGE goal on the menu.",
-            "STORY: the one-heart BRAVE challenge, checkpoint splits, tries per level and world completion %.",
-            "VERSUS: best of 5, RANDOM MATCHUP, rival callouts and your record with each hero.",
-            "ZOMBIES: accuracy, your average round, YOUR BEST callouts and a NEW BEST alert.",
-            "A weekly recap, tip of the day, welcome-back gift and an optional break reminder.",
-            "Pause menu: BACK TO CHECKPOINT and KINGDOM PLAZA.",
+            "22 BADGES with progress, a NEXT BADGE goal on the menu, and badges that pop the moment you earn them.",
+            "STORY: tries per level, world completion %, CLOSE CALL and ON A ROLL callouts, and time vs your best.",
+            "VERSUS: win streaks, FIRST WIN callouts, best of 5, RANDOM MATCHUP and your record with each hero.",
+            "ZOMBIES: YOUR BEST and NEW BEST callouts, accuracy, kills per round and your last run.",
+            "PROFILE: days played, fastest clear, streaks and an ABOUT page.  THIS SESSION recap on the menu.",
+            "BRAVE one-heart challenge, checkpoint splits, weekly recap, tips and a welcome-back gift.",
         };
 
         /// <summary>Show to returning players once per version (brand-new players get the welcome guide instead).</summary>

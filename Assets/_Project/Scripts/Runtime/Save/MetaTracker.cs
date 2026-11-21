@@ -47,11 +47,32 @@ namespace PKR
             l.lastScene = SceneManager.GetActiveScene().name;
         }
 
-        public static void Versus(string rivalId, bool won, string heroId = null)
+        public static void Versus(string rivalId, bool won, string heroId = null, string rivalName = null)
         {
             if (Services.Save == null) return;
-            HeadToHead.Record(Services.Save.Data, rivalId, won);
-            HeroRecords.Record(Services.Save.Data, heroId, won);
+            var d = Services.Save.Data;
+            var before = HeadToHead.Get(d, rivalId);
+            bool firstWin = won && !string.IsNullOrEmpty(rivalId) && (before == null || before.wins == 0);
+            HeadToHead.Record(d, rivalId, won);
+            HeroRecords.Record(d, heroId, won);
+            int streak = VersusStreak.Record(d, won);
+            if (firstWin && !string.IsNullOrEmpty(rivalName))
+                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"FIRST WIN VS {rivalName.ToUpperInvariant()}!", detail = "A new rival beaten.", color = new Color32(255, 150, 90, 255) });
+            if (won && VersusStreak.Milestone(streak))
+                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"{streak} WINS IN A ROW!", detail = streak >= d.lifetime.vsBestStreak ? "Your best Versus streak!" : $"Best: {d.lifetime.vsBestStreak}", color = new Color32(255, 110, 60, 255) });
+            CheckBadges();
+        }
+
+        /// <summary>Records any newly earned PROFILE badges, with a toast and a tap for each. Call after something is won or cleared.</summary>
+        public static int CheckBadges()
+        {
+            var save = Services.Save;
+            if (save == null) return 0;
+            var fresh = Badges.Update(save.Data);
+            foreach (var b in fresh)
+                EventBus<ProgressToast>.Raise(new ProgressToast { title = "BADGE: " + b.name, detail = b.how, color = new Color32(120, 220, 255, 255) });
+            if (fresh.Count > 0) { if (Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium); save.MarkDirty(); }
+            return fresh.Count;
         }
     }
 }

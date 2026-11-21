@@ -89,6 +89,8 @@ namespace PKR.Core
         public bool storyBrave;
         /// <summary>A gentle "time for a break?" note after each hour of play (off by default).</summary>
         public bool breakReminder;
+        /// <summary>The main menu's greeting, NEXT BADGE and tip lines.</summary>
+        public bool menuTips = true;
 
         /// <summary>One tap to a gentler game: Assist mode, Story at 80%, strong aim assist and bigger touch targets.</summary>
         public void ApplyComfortPreset()

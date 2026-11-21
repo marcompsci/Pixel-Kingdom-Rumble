@@ -89,10 +89,17 @@ namespace PKR
         {
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
-            var fresh = Badges.Update(save.Data);
-            foreach (var b in fresh)
-                EventBus<ProgressToast>.Raise(new ProgressToast { title = "BADGE: " + b.name, detail = b.how, color = new Color32(120, 220, 255, 255) });
-            if (fresh.Count > 0 && Services.Haptics != null) Services.Haptics.Play(HapticStrength.Medium);
+            MetaTracker.CheckBadges();
+            // This session so far (shown when you come back to the menu with something new).
+            var now0 = WeeklyRecap.Snapshot(save.Data);
+            if (s_sessionStart == null) s_sessionStart = s_sessionShown = now0;
+            else if (SessionSummary.Changed(s_sessionShown, now0))
+            {
+                var sl = SessionSummary.Lines(s_sessionStart, now0);
+                s_sessionShown = now0;
+                if (sl.Count > 0)
+                    EventBus<ProgressToast>.Raise(new ProgressToast { title = "THIS SESSION", detail = string.Join("  ·  ", sl), color = new Color32(180, 200, 255, 255) });
+            }
             var week = WeeklyRecap.Roll(save.Data, WeeklyRecap.WeekKey(System.DateTime.Now));
             save.SaveNow();
             if (week == null || FindAnyObjectByType<WelcomeGuide>() != null) return;
@@ -101,6 +108,11 @@ namespace PKR
                 if (week[i] > 0) lines.Add($"{WeeklyRecap.Labels[i]}:  {(i == 4 ? PlayTime.Format(week[i]) : week[i].ToString("N0"))}");
             InfoCard.Show(transform, "LAST WEEK", "Your week in Pixel Kingdom Rumble", lines);
         }
+
+        static int[] s_sessionStart, s_sessionShown;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetSession() { s_sessionStart = s_sessionShown = null; }
 
         /// <summary>The daily login gift: Star Shards the first time the game opens each day (more for a streak).</summary>
         static void ClaimLoginGift()
@@ -254,7 +266,7 @@ namespace PKR
             ch.childControlWidth = true; ch.childControlHeight = true;
             ch.childForceExpandWidth = true; ch.childForceExpandHeight = true;
             bool profileNew = save != null && Badges.ProfileScore(save) > save.lifetime.profileSeen;
-            var prof = UIFactory.Button(cRow, profileNew ? "PROFILE · NEW" : "PROFILE", ShowProfile);
+            var prof = UIFactory.Button(cRow, profileNew ? "PROFILE · NEW" : save != null ? $"PROFILE {save.lifetime.badges.Count}/{Badges.All.Length}" : "PROFILE", ShowProfile);
             if (profileNew) UIFactory.Highlight(prof, new Color32(255, 214, 90, 255));
             if (codex != null)
             {
@@ -269,15 +281,18 @@ namespace PKR
             }
             else UIFactory.Label(panel, "Original pixel art · made for touch", 30, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             // Tip of the day.
-            // NEXT GOAL: the badge you're closest to.
-            if (save != null)
+            // Greeting, NEXT GOAL (the badge you're closest to) and the tip: Settings > ASSISTS > Menu tips & goals.
+            bool menuTips = Services.Settings == null || Services.Settings.Data.menuTips;
+            if (save != null && menuTips)
             {
+                UIFactory.Label(panel, Greeting.For(System.DateTime.Now.Hour), 30, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.title;
                 var goal = UIFactory.Label(panel, Badges.NextGoal(save), 26, TextAnchor.MiddleCenter, 64f);
                 goal.color = new Color32(120, 220, 255, 255);
             }
             // Tip of the day (tap for the next one).
             int tipIndex = TipOfTheDay.Index(DailyChallenges.DayKey(System.DateTime.Now));
             var tip = UIFactory.Label(panel, "TIP: " + TipOfTheDay.Tips[tipIndex], 26, TextAnchor.MiddleCenter, 64f);
+            tip.gameObject.SetActive(menuTips);
             tip.color = UITheme.Current.subtle;
             tip.raycastTarget = true;
             var tipButton = tip.gameObject.AddComponent<Button>();

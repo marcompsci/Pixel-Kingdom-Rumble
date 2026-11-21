@@ -386,7 +386,7 @@ namespace PKR
             string extras = (rec != null && rec.flawless ? "  FLAWLESS" : "") + (rec != null && rec.brave ? "  BRAVE" : "") +
                             (level != null && StoryGhosts.Find(save, level.id) != null ? "  GHOST" : "");
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}{extras}\n" +
-                   $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}";
+                   $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}" + (rec != null && rec.attempts > 0 ? $"   TRIES {rec.attempts}" : "");
         }
 
         /// <summary>Story Quest totals across every world, and the Quick Game widget's stats.</summary>

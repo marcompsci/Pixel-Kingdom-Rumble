@@ -37,7 +37,8 @@ namespace PKR
             UIFactory.Clear(_root);
             UIFactory.Dim(_root);
             string left = e.isContract ? null : StillToFind(e);
-            float panelH = (string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f) + (left != null ? 62f : 0f);
+            float panelH = (string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f) + (left != null ? 62f : 0f)
+                           + (e.attempts > 0 && !e.isContract ? 62f : 0f) + (e.brave ? 62f : 0f) + (e.closeCall && !e.brave ? 62f : 0f);
             var panel = UIFactory.Panel(_root, new Vector2(1240f, panelH));
             var p = UITheme.Current;
 
@@ -53,6 +54,8 @@ namespace PKR
             string medalText = e.isContract || e.assistSpeed || medal == TimeMedal.None ? "" : $"   {StoryMedals.Name(medal)}";
             if (e.assistSpeed) best = "   (slower game speed: no record)";
             else if (e.newGhost) best += e.ghostDelta > 0f ? $"   BEAT YOUR GHOST BY {e.ghostDelta:0.0}s!" : "   GHOST SAVED";
+            string vsBest = e.isContract || e.assistSpeed || e.newGhost ? "" : StoryResults.VsBest(e.timeSeconds, e.previousBest);
+            if (vsBest.Length > 0) best += "   " + vsBest.ToUpperInvariant();
             var timeRow = Row(panel, "Time", $"{ResultsMath.FormatTime(e.timeSeconds)}  (par {ResultsMath.FormatTime(e.parTimeSeconds)}){medalText}{best}");
             if (medal == TimeMedal.Gold && !e.isContract) timeRow.color = p.title;
             if (e.isContract)
@@ -72,6 +75,7 @@ namespace PKR
                 var tries = Row(panel, "Tries", StoryAttempts.ClearLine(e.attempts, e.firstClear));
                 if (e.firstClear) tries.color = p.accent;
             }
+            if (e.closeCall && !e.brave) Row(panel, "Hearts", "CLOSE CALL! Cleared on your last heart.").color = p.accent;
             if (e.brave) Row(panel, "Challenge", "BRAVE: ONE HEART!" + (e.braveShards > 0 ? $" +{e.braveShards}" : "")).color = p.title;
             if (!string.IsNullOrEmpty(e.stealthRank))
                 Row(panel, "Stealth", $"{e.stealthRank}   (spotted {e.timesSpotted}, takedowns {e.takedowns})").color = p.title;

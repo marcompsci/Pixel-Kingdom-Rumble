@@ -187,6 +187,10 @@ namespace PKR.Core
             new Badge { id = "secrets10", name = "SECRET KEEPER", how = "Find 10 Story secrets", need = 10, have = Secrets },
             new Badge { id = "zombies2000", name = "GRAVEKEEPER", how = "2,000 zombie kills", need = 2000, have = Kills },
             new Badge { id = "rivals6", name = "RIVALRY", how = "Beat 6 different Versus heroes", need = 6, have = RivalsBeaten },
+            new Badge { id = "streak_vs5", name = "ON FIRE", how = "Win 5 Versus matches in a row", need = 5, have = s => s.lifetime.vsBestStreak },
+            new Badge { id = "days30", name = "LOYAL SUBJECT", how = "Play on 30 different days", need = 30, have = s => s.lifetime.loginGifts },
+            new Badge { id = "tries100", name = "NEVER GIVE UP", how = "Start Story levels 100 times", need = 100, have = StoryRecords.TotalTries },
+            new Badge { id = "runs50", name = "NIGHT SHIFT", how = "Play 50 Last Stand runs", need = 50, have = s => s.zombieCareer != null ? s.zombieCareer.lastStandRuns : 0 },
             new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
 

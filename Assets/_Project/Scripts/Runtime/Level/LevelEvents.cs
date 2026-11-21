@@ -24,6 +24,9 @@ namespace PKR
         /// <summary>Story Quest: times this level has been started (this run included), and whether it's the first clear.</summary>
         public int attempts;
         public bool firstClear;
+        /// <summary>The best time before this run (0 = none), and whether the run ended on the last heart.</summary>
+        public float previousBest;
+        public bool closeCall;
         public int starShardReward;
         /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
         public int luckyBonus;

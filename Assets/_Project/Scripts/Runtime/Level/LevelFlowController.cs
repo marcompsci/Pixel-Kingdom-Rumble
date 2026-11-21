@@ -118,6 +118,14 @@ namespace PKR
             StartCoroutine(RespawnRoutine(false));
         }
 
+        static int s_cleanStreak;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetCleanStreak() { s_cleanStreak = 0; }
+
+        /// <summary>Clears in a row without a fall this session.</summary>
+        public static int CleanStreakNow => s_cleanStreak;
+
         /// <summary>A Story Quest world level (not an event, contract, the plaza or the race).</summary>
         public bool IsStoryLevel => level != null && !level.isEvent && StoryWorlds.WorldOf(level.id) >= 0;
 
@@ -429,6 +437,15 @@ namespace PKR
             if (level != null && level.modeTag == "Maze") ProgressTracker.Report(ChallengeKind.ClearMaze, 1);
             ProgressTracker.Report(ChallengeKind.CollectShards, Run.Shards);
             if (SeasonDirector.Current != null) SeasonDirector.Current.RecordClear(data, Run.Shards);
+            // Round 6: finishing on your last heart, clears in a row without a fall, and any badges earned.
+            bool closeCall = IsStoryLevel && PlayerHealth != null && !Run.AssistSpeed && StoryResults.CloseCall(PlayerHealth.Health, PlayerHealth.MaxHealth);
+            if (IsStoryLevel && !Run.AssistSpeed)
+            {
+                s_cleanStreak = CleanStreak.Next(s_cleanStreak, Run.Deaths);
+                if (CleanStreak.Milestone(s_cleanStreak))
+                    EventBus<ProgressToast>.Raise(new ProgressToast { title = $"ON A ROLL: {s_cleanStreak} CLEAN CLEARS", detail = "Levels in a row without a single fall.", color = new Color32(140, 220, 160, 255) });
+            }
+            if (IsStoryLevel) MetaTracker.CheckBadges();
             if (save != null) save.SaveNow();
 
             // Freeze the hero in a victory pose; LevelCompleteScreen takes over.
@@ -459,6 +476,8 @@ namespace PKR
                 deaths = Run.Deaths,
                 attempts = IsStoryLevel && data != null && data.GetLevel(Run.LevelId) != null ? data.GetLevel(Run.LevelId).attempts : 0,
                 firstClear = previousBest <= 0f,
+                previousBest = previousBest,
+                closeCall = closeCall,
                 starShardReward = reward,
                 luckyBonus = lucky,
                 worldCompleted = worldIndex >= 0 ? StoryWorlds.All[worldIndex].name : "",

@@ -61,6 +61,10 @@ namespace PKR
             Row(panel, "Secrets found", $"{secrets} / {totalSecrets}");
             Row(panel, "Time medals", $"{gold} GOLD  ·  {silver} SILVER  ·  {bronze} BRONZE");
             Row(panel, "Foes defeated", foes.ToString("N0"));
+            var tough = StoryRecords.Toughest(save);
+            string toughName = null;
+            if (tough != null) foreach (var l in _levels) if (l.id == tough.levelId) toughName = l.displayName;
+            Row(panel, "Tries", StoryRecords.TotalTries(save).ToString("N0") + (toughName != null ? $"  ·  toughest: {toughName} ({tough.attempts})" : ""));
             var season = SettingsService.Season;
             if (season.Active && save != null)
                 Row(panel, $"{Seasons.TokenName(season.Event)}s ({SeasonCalendar.Name(season.Event)})",
@@ -83,7 +87,7 @@ namespace PKR
                 lines.Add($"KINGDOM CUP:  {Plural.Of(ps.cupsPlayed, "cup")} played  ·  best trophies: {Trophy(PartyDifficulty.Easy)}  ·  {Trophy(PartyDifficulty.Normal)}  ·  {Trophy(PartyDifficulty.Hard)}");
                 lines.Add($"DAILY PARTY CHALLENGE:  {ps.dailyCompleted} done  ·  streak {ps.dailyStreak}");
             }
-            var partyText = UIFactory.Label(panel, string.Join("\n", lines), 26, TextAnchor.MiddleLeft, 270f);
+            var partyText = UIFactory.Label(panel, string.Join("\n", lines), 26, TextAnchor.MiddleLeft, 220f);
             partyText.color = p.text;
 
             Section(panel, "QUICK GAME  ·  HOME SCREEN WIDGET");

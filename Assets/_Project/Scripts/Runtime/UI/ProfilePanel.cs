@@ -51,11 +51,14 @@ namespace PKR
                 int best = 0;
                 foreach (var b in c.bestRounds) best = Mathf.Max(best, b);
                 var (seen, mastered) = ZombieFieldGuide.Count(c);
-                lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length} ({mastered} mastered)");
+                lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  {Plural.Of(c.lastStandRuns, "run")}  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
             }
             var lt = s.lifetime;
             lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
-            lines.Add($"Story challenges: {StoryBrave.Count(s)} BRAVE clears  ·  {Plural.Of(s.storySplits.Count, "level")} with splits");
+            lines.Add($"Story challenges: {StoryBrave.Count(s)} BRAVE  ·  {StoryRecords.SRanks(s)} S ranks  ·  {Plural.Of(StoryRecords.TotalTries(s), "try", "tries")}");
+            var fast = StoryRecords.Fastest(s);
+            lines.Add($"Days played: {lt.loginGifts}  ·  best Versus streak {lt.vsBestStreak}" + (lt.vsStreak > 0 ? $" (now {lt.vsStreak})" : "") +
+                      (fast != null ? $"  ·  fastest clear {ResultsMath.FormatTime(fast.bestTimeSeconds)}" : ""));
             return lines;
         }
 
@@ -129,7 +132,7 @@ namespace PKR
             UIFactory.Label(panel, BadgeLines(s), 24, TextAnchor.MiddleCenter, 120f).color = UITheme.Current.text;
 
             UIFactory.Label(panel, "RECORDS", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
-            foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 28, TextAnchor.MiddleCenter, 52f);
+            foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 26, TextAnchor.MiddleCenter, 46f);
 
             var row = UIFactory.Rect("Buttons", panel);
             row.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;

@@ -957,6 +957,7 @@ namespace PKR
                     map = Map.Id, mode = (int)Mode, round = Run.Round, kills = me != null ? me.Kills : Run.Kills,
                     day = DailyChallenges.DayKey(System.DateTime.Now), shots = Shots, hits = Hits
                 });
+                MetaTracker.CheckBadges();
             }
             if (!_guest) MetaTracker.Mastery(GameSession.SelectedCharacterId, HeroMastery.LastStandRoundXp * Mathf.Max(0, Run.Round - 1));
             ProgressTracker.AddXp(PlayerLevel.SurvivalRoundXp * Mathf.Max(0, Run.Round - 1));
@@ -1019,7 +1020,8 @@ namespace PKR
             if (!_guest && Services.Save != null)
             {
                 var runs = StandHistory.For(Services.Save.Data, Map.Id);
-                string acc = Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%   ·   " : "";
+                string acc = (Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%   ·   " : "") +
+                             (Run.Round > 0 ? StandLast.KillsPerRound(Run.Kills, Run.Round) + "   ·   " : "");
                 float avgAll = StandHistory.AverageRound(Services.Save.Data, Map.Id);
                 float avgBefore = runs.Count > 1 ? (avgAll * runs.Count - Run.Round) / (runs.Count - 1) : 0f;
                 string pace = StandPace.VsAverage(Run.Round, avgBefore, runs.Count - 1);

@@ -192,7 +192,8 @@ namespace PKR
                 int lv = HeroMastery.Level(xp);
                 string meta = _picking == 0
                     ? $"MASTERY {lv} · {HeroMastery.Title(lv)}" + (lv < HeroMastery.MaxLevel ? $"  ·  {HeroMastery.ToNext(xp)} XP to {lv + 1}" : "") +
-                      (HeroRecords.Get(save, focus.id) is HeadToHeadRecord hr && hr.wins + hr.losses > 0 ? $"  ·  {hr.wins}W-{hr.losses}L" : "")
+                      (HeroRecords.Get(save, focus.id) is HeadToHeadRecord hr && hr.wins + hr.losses > 0 ? $"  ·  {hr.wins}W-{hr.losses}L" : "") +
+                      (save != null && save.lifetime.vsStreak >= 2 ? $"  ·  STREAK {save.lifetime.vsStreak}" : "")
                     : $"HEAD-TO-HEAD: {HeadToHead.Line(HeadToHead.Get(save, focus.id))}";
                 UIFactory.Label(panel, meta, 28, TextAnchor.MiddleCenter, 40f).color = p.accent;
             }
