@@ -139,6 +139,14 @@ namespace PKR.Core
             "The Versus ladder gets harder each rung. Clear it for a big Star Shard bonus.",
             "Replaying a cleared level? The shard compass points to the shards you missed.",
             "Faint red arrows in a level mark where you fell last time. Watch your step!",
+            "Turn on BRAVE in Settings > ASSISTS: clear a level on one heart for bonus shards.",
+            "Every checkpoint shows your split against your best run. Green means ahead!",
+            "A PERFECT clear is S rank, FLAWLESS, and every shard and secret. It pays bonus shards.",
+            "Every 5 badges you earn pays 25 Star Shards. Check PROFILE for the ones you're closest to.",
+            "Versus win streaks are saved. Five in a row earns the ON FIRE badge.",
+            "In Last Stand, your best round is called out at the start. Beat it for a NEW BEST alert.",
+            "Tap the tip on the main menu to read the next one.",
+            "Story Stats adds up your best times. Shave seconds off any level to lower your total.",
         };
 
         public static string For(int dayKey) => Tips[Index(dayKey)];
@@ -191,6 +199,10 @@ namespace PKR.Core
             new Badge { id = "days30", name = "LOYAL SUBJECT", how = "Play on 30 different days", need = 30, have = s => s.lifetime.loginGifts },
             new Badge { id = "tries100", name = "NEVER GIVE UP", how = "Start Story levels 100 times", need = 100, have = StoryRecords.TotalTries },
             new Badge { id = "runs50", name = "NIGHT SHIFT", how = "Play 50 Last Stand runs", need = 50, have = s => s.zombieCareer != null ? s.zombieCareer.lastStandRuns : 0 },
+            new Badge { id = "perfect5", name = "PERFECTIONIST", how = "5 PERFECT Story clears", need = 5, have = StoryPerfect.Count },
+            new Badge { id = "world100", name = "COMPLETIONIST", how = "A Story world at 100%", need = 1, have = s => s.lifetime.worlds100.Count },
+            new Badge { id = "streak_vs10", name = "UNSTOPPABLE", how = "Win 10 Versus matches in a row", need = 10, have = s => s.lifetime.vsBestStreak },
+            new Badge { id = "sharpshooter", name = "SHARPSHOOTER", how = "60% accuracy in a Last Stand run (50+ shots)", need = 60, have = s => s.lifetime.bestAccuracy },
             new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
 
@@ -259,10 +271,12 @@ namespace PKR.Core
         {
             int cleared = 0; foreach (var l in s.levels) if (l != null && l.completed) cleared++;
             int party = 0; if (s.party != null) foreach (var p in s.party.records) if (p != null) party += p.wins;
-            return new[] { cleared, s.zombieCareer != null ? s.zombieCareer.totalKills : 0, s.rumble != null ? s.rumble.wins : 0, party, (int)PlayTime.Total(s) };
+            int vs = 0; foreach (var h in s.lifetime.heroRecords) if (h != null) vs += h.wins;
+            return new[] { cleared, s.zombieCareer != null ? s.zombieCareer.totalKills : 0, s.rumble != null ? s.rumble.wins : 0, party, (int)PlayTime.Total(s),
+                           s.lifetime.badges.Count, vs };
         }
 
-        public static readonly string[] Labels = { "Story levels cleared", "Zombies put down", "Rated wins", "Party wins", "Time played" };
+        public static readonly string[] Labels = { "Story levels cleared", "Zombies put down", "Rated wins", "Party wins", "Time played", "Badges earned", "Versus wins" };
 
         /// <summary>Starts a new week if needed. Returns last week's deltas when a recap should be shown, else null.</summary>
         public static int[] Roll(SaveData s, int weekKey)

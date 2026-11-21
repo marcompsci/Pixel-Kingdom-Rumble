@@ -27,6 +27,10 @@ namespace PKR
         /// <summary>The best time before this run (0 = none), and whether the run ended on the last heart.</summary>
         public float previousBest;
         public bool closeCall;
+        /// <summary>Round 7: "UP FROM A!", "MEDAL UP: GOLD!", "GOLD: 3.2s faster", and a PERFECT clear with its one-off shards.</summary>
+        public string rankUp, medalUp, nextMedalGap;
+        public bool perfect;
+        public int perfectShards;
         public int starShardReward;
         /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
         public int luckyBonus;

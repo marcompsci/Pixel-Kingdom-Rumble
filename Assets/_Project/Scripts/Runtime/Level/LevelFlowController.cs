@@ -401,11 +401,24 @@ namespace PKR
             int worldIndex = data != null ? StoryWorlds.ClaimIfComplete(data, Run.LevelId) : -1;
             int worldBonus = worldIndex >= 0 ? StoryWorlds.CompletionBonus : 0;
             reward += lucky + worldBonus;
+            ClearRank? rankBefore = null;
+            ClearRank runRank = ClearRank.C;
+            bool perfect = false;
+            int perfectShards = 0;
             if (data != null)
             {
                 var rank = ResultsMath.Rank(Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f, Run.Shards, TotalShards,
                                             Run.SecretsFound, TotalSecrets, Run.Deaths);
+                var recBefore = data.GetLevel(Run.LevelId);
+                rankBefore = recBefore != null ? recBefore.BestRank : null;
+                runRank = rank;
                 data.RecordRank(Run.LevelId, rank); // best rank for the level select
+                // PERFECT: S rank, FLAWLESS, every shard and secret (not while assisted).
+                bool perfectRun = IsStoryLevel && !Run.AssistSpeed && MissionTracker.Current == null &&
+                                  StoryPerfect.Is(rank, extra.flawless, Run.Shards, TotalShards, Run.SecretsFound, TotalSecrets);
+                perfect = perfectRun;
+                perfectShards = StoryPerfect.Record(data.GetLevel(Run.LevelId), perfectRun);
+                if (perfectShards > 0) { Economy.Grant(data, perfectShards); reward += perfectShards; }
             }
             var unlockedNames = new List<string>();
             if (data != null && roster != null)
@@ -439,6 +452,7 @@ namespace PKR
             if (SeasonDirector.Current != null) SeasonDirector.Current.RecordClear(data, Run.Shards);
             // Round 6: finishing on your last heart, clears in a row without a fall, and any badges earned.
             bool closeCall = IsStoryLevel && PlayerHealth != null && !Run.AssistSpeed && StoryResults.CloseCall(PlayerHealth.Health, PlayerHealth.MaxHealth);
+            if (closeCall && data != null) data.lifetime.closeCalls++;
             if (IsStoryLevel && !Run.AssistSpeed)
             {
                 s_cleanStreak = CleanStreak.Next(s_cleanStreak, Run.Deaths);
@@ -478,6 +492,11 @@ namespace PKR
                 firstClear = previousBest <= 0f,
                 previousBest = previousBest,
                 closeCall = closeCall,
+                rankUp = StoryPerfect.RankUp(rankBefore, runRank),
+                medalUp = Run.AssistSpeed ? "" : StoryPerfect.MedalUp(previousBest, Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f),
+                nextMedalGap = data != null && data.GetLevel(Run.LevelId) != null ? StoryPerfect.NextMedalGap(data.GetLevel(Run.LevelId).bestTimeSeconds, level != null ? level.parTimeSeconds : 0f) : "",
+                perfect = perfect,
+                perfectShards = perfectShards,
                 starShardReward = reward,
                 luckyBonus = lucky,
                 worldCompleted = worldIndex >= 0 ? StoryWorlds.All[worldIndex].name : "",

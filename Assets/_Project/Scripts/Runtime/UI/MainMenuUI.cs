@@ -89,6 +89,7 @@ namespace PKR
         {
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
+            if (save.Data.lifetime.firstDay <= 0) save.Data.lifetime.firstDay = DailyChallenges.DayKey(System.DateTime.Now);
             MetaTracker.CheckBadges();
             // This session so far (shown when you come back to the menu with something new).
             var now0 = WeeklyRecap.Snapshot(save.Data);
@@ -394,7 +395,8 @@ namespace PKR
             }
             var b = UIFactory.Button(panel, "CONTINUE", () => go(), 96f);
             UIFactory.Tint(b, new Color32(60, 150, 100, 255), Color.white);
-            UIFactory.TwoLine(b, "CONTINUE", sub, 40, 22);
+            string ago = l.lastPlayedDay > 0 ? PlayDates.Ago(l.lastPlayedDay, System.DateTime.Now) : "";
+            UIFactory.TwoLine(b, "CONTINUE", ago.Length > 0 ? $"{sub}  ·  {ago}" : sub, 40, 22);
         }
 
         string LevelName(string id)

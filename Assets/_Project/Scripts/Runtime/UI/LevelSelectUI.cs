@@ -109,7 +109,14 @@ namespace PKR
                            (hasDescription ? 90f + 18f : 0f) + MapHeight(n) + 18f + DetailHeight + 18f + UIFactory.RowHeight;
             var panel = UIFactory.Panel(_root, new Vector2(1000f, Mathf.Min(1840f, height)));
             string worldNo = paged ? $"WORLD {_page + 1} · " : "";
-            UIFactory.Label(panel, $"STORY QUEST  ·  {WorldPercent(page)}% COMPLETE\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
+            int pct = WorldPercent(page);
+            if (pct >= 100 && Services.Save != null && WorldFull.Claim(Services.Save.Data, page.displayName))
+            {
+                EventBus<ProgressToast>.Raise(new ProgressToast { title = $"{page.displayName.ToUpperInvariant()}: 100%!", detail = "Every level, shard and secret in this world.", color = new Color32(255, 214, 90, 255) });
+                MetaTracker.CheckBadges();
+                Services.Save.SaveNow();
+            }
+            UIFactory.Label(panel, $"STORY QUEST  ·  {pct}% COMPLETE\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (paged) PageRow(panel);
             if (hasDescription)
                 UIFactory.Label(panel, page.description, 32, TextAnchor.MiddleCenter, 90f).color = p.subtle;
@@ -383,7 +390,9 @@ namespace PKR
             string medalText = medal == TimeMedal.None ? "" : " " + StoryMedals.Name(medal);
             var save = Services.Save != null ? Services.Save.Data : null;
             var rec = save != null && level != null ? save.GetLevel(level.id) : null;
-            string extras = (rec != null && rec.flawless ? "  FLAWLESS" : "") + (rec != null && rec.brave ? "  BRAVE" : "") +
+            var toughest = StoryRecords.Toughest(save);
+            string extras = (rec != null && rec.perfect ? "  PERFECT" : "") + (toughest != null && rec != null && toughest.levelId == rec.levelId ? "  TOUGHEST" : "") +
+                            (rec != null && rec.flawless ? "  FLAWLESS" : "") + (rec != null && rec.brave ? "  BRAVE" : "") +
                             (level != null && StoryGhosts.Find(save, level.id) != null ? "  GHOST" : "");
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}{extras}\n" +
                    $"BEST {ResultsMath.FormatTime(slot.bestTimeSeconds)}{medalText}{shards}{secrets}" + (rec != null && rec.attempts > 0 ? $"   TRIES {rec.attempts}" : "");

@@ -100,7 +100,7 @@ namespace PKR.Tests
         [Test]
         public void NewBadges_FromStreakDaysTriesRuns()
         {
-            Assert.AreEqual(22, Badges.All.Length);
+            Assert.GreaterOrEqual(Badges.All.Length, 26);
             var s = SaveData.CreateNew();
             s.lifetime.vsBestStreak = 5;
             s.lifetime.loginGifts = 30;

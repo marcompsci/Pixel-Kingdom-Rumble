@@ -57,6 +57,10 @@ namespace PKR.Core
         public int profileSeen;
         /// <summary>Versus: wins in a row now, and the best run.</summary>
         public int vsStreak, vsBestStreak;
+        /// <summary>Worlds celebrated at 100%, badge milestones paid, best Last Stand accuracy (%), Story close calls,
+        /// the day first played and the day last played (yyyymmdd).</summary>
+        public List<string> worlds100 = new List<string>();
+        public int badgeRewards, bestAccuracy, closeCalls, firstDay, lastPlayedDay;
 
         public void Sanitize()
         {
@@ -82,6 +86,8 @@ namespace PKR.Core
             standRuns.RemoveAll(r => r == null || string.IsNullOrEmpty(r.map));
             if (badges == null) badges = new List<string>();
             if (weekSnap == null) weekSnap = new List<int>();
+            if (worlds100 == null) worlds100 = new List<string>();
+            badgeRewards = Math.Max(0, badgeRewards); bestAccuracy = Math.Max(0, Math.Min(100, bestAccuracy)); closeCalls = Math.Max(0, closeCalls);
             vsStreak = Math.Max(0, vsStreak); vsBestStreak = Math.Max(vsStreak, vsBestStreak);
         }
     }
@@ -282,15 +288,15 @@ namespace PKR.Core
     /// <summary>WHAT'S NEW: a one-time card per update with its headline features.</summary>
     public static class WhatsNew
     {
-        public const string Version = "1.3";
+        public const string Version = "1.4";
         public static readonly string[] Items =
         {
-            "22 BADGES with progress, a NEXT BADGE goal on the menu, and badges that pop the moment you earn them.",
-            "STORY: tries per level, world completion %, CLOSE CALL and ON A ROLL callouts, and time vs your best.",
-            "VERSUS: win streaks, FIRST WIN callouts, best of 5, RANDOM MATCHUP and your record with each hero.",
-            "ZOMBIES: YOUR BEST and NEW BEST callouts, accuracy, kills per round and your last run.",
-            "PROFILE: days played, fastest clear, streaks and an ABOUT page.  THIS SESSION recap on the menu.",
-            "BRAVE one-heart challenge, checkpoint splits, weekly recap, tips and a welcome-back gift.",
+            "PERFECT clears (S rank, FLAWLESS, every shard and secret) pay bonus shards. Worlds at 100% are celebrated.",
+            "Clear screen: MEDAL UP, rank UP FROM, your next medal's target, CLOSE CALL and time vs your best.",
+            "26 BADGES, and every 5 badges pays 25 Star Shards. NEXT BADGE on the menu shows what's closest.",
+            "VERSUS: win streaks, REVENGE and FIRST WIN callouts, best of 5 and RANDOM MATCHUP.",
+            "ZOMBIES: best accuracy, kill milestones, YOUR BEST and NEW BEST callouts, and your last run.",
+            "PROFILE: playing since, days played, Versus win %, fastest clear.  CONTINUE shows when you last played.",
         };
 
         /// <summary>Show to returning players once per version (brand-new players get the welcome guide instead).</summary>

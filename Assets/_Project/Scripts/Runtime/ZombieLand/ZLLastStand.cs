@@ -324,6 +324,9 @@ namespace PKR
         /// <summary>Your best round on this map and mode when the run began (0 = none, a guest or a weekly run).</summary>
         int _bestAtStart;
 
+        /// <summary>This run set your best Last Stand accuracy (50+ shots).</summary>
+        public bool NewBestAccuracy { get; private set; }
+
         readonly Dictionary<ZLZombie, int> _bossPhase = new Dictionary<ZLZombie, int>();
         readonly Dictionary<ZLZombie, float> _bossBaseSpeed = new Dictionary<ZLZombie, float>();
 
@@ -957,6 +960,11 @@ namespace PKR
                     map = Map.Id, mode = (int)Mode, round = Run.Round, kills = me != null ? me.Kills : Run.Kills,
                     day = DailyChallenges.DayKey(System.DateTime.Now), shots = Shots, hits = Hits
                 });
+                NewBestAccuracy = StandAccuracy.Record(Services.Save.Data, Shots, Hits);
+                var cz = Services.Save.Data.zombieCareer;
+                int milestone = cz != null ? KillMilestone.Crossed(cz.totalKills - Run.Kills, cz.totalKills) : 0;
+                if (milestone > 0)
+                    EventBus<ProgressToast>.Raise(new ProgressToast { title = $"{milestone:N0} ZOMBIES PUT DOWN!", detail = "A lifetime milestone. The dead fear you.", color = new Color32(200, 70, 50, 255) });
                 MetaTracker.CheckBadges();
             }
             if (!_guest) MetaTracker.Mastery(GameSession.SelectedCharacterId, HeroMastery.LastStandRoundXp * Mathf.Max(0, Run.Round - 1));
@@ -1020,7 +1028,7 @@ namespace PKR
             if (!_guest && Services.Save != null)
             {
                 var runs = StandHistory.For(Services.Save.Data, Map.Id);
-                string acc = (Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%   ·   " : "") +
+                string acc = (Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%{(NewBestAccuracy ? " (NEW BEST!)" : "")}   ·   " : "") +
                              (Run.Round > 0 ? StandLast.KillsPerRound(Run.Kills, Run.Round) + "   ·   " : "");
                 float avgAll = StandHistory.AverageRound(Services.Save.Data, Map.Id);
                 float avgBefore = runs.Count > 1 ? (avgAll * runs.Count - Run.Round) / (runs.Count - 1) : 0f;

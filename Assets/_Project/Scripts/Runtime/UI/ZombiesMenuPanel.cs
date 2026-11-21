@@ -155,6 +155,13 @@ namespace PKR
 
         // ---- field guide ----------------------------------------------------------------------------------
 
+        /// <summary>" · 5 runs" logged on a map (the last few are kept).</summary>
+        static string RunsOn(string map)
+        {
+            int n = Services.Save != null ? StandHistory.For(Services.Save.Data, map).Count : 0;
+            return n > 0 ? $" · {Plural.Of(n, "recent run")}" : "";
+        }
+
         /// <summary>FIELD GUIDE: every kind of the dead, how to beat it, your kills and its tier (SEEN, STUDIED, MASTERED).</summary>
         public void OpenFieldGuide()
         {
@@ -459,7 +466,7 @@ namespace PKR
                 if (on) UIFactory.Highlight(b, Gold);
                 var t = b.GetComponentInChildren<Text>();
                 float avg = StandHistory.AverageRound(Services.Save != null ? Services.Save.Data : null, m.Id);
-                if (t != null) { t.supportRichText = true; t.resizeTextForBestFit = false; t.fontSize = 36; t.text = $"{m.Title}\n<size=22>{(best > 0 ? "best round " + best + (avg > 0f ? $" · avg {avg:0.#}" : "") : "not played yet")}</size>"; }
+                if (t != null) { t.supportRichText = true; t.resizeTextForBestFit = false; t.fontSize = 36; t.text = $"{m.Title}\n<size=22>{(best > 0 ? "best round " + best + (avg > 0f ? $" · avg {avg:0.#}" : "") + RunsOn(m.Id) : "not played yet")}</size>"; }
             }
             UIFactory.Label(panel, $"{map.Blurb}  ·  {SurvivalModes.Name(_mode)}", 28, TextAnchor.MiddleCenter, 50f).color = UITheme.Current.subtle;
             UIFactory.Label(panel, "Who's holding the line with you?", 32, TextAnchor.MiddleCenter, 54f).color = UITheme.Current.subtle;

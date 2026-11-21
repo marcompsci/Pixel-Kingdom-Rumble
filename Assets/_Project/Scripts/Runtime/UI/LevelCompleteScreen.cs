@@ -38,7 +38,8 @@ namespace PKR
             UIFactory.Dim(_root);
             string left = e.isContract ? null : StillToFind(e);
             float panelH = (string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f) + (left != null ? 62f : 0f)
-                           + (e.attempts > 0 && !e.isContract ? 62f : 0f) + (e.brave ? 62f : 0f) + (e.closeCall && !e.brave ? 62f : 0f);
+                           + (e.attempts > 0 && !e.isContract ? 62f : 0f) + (e.brave ? 62f : 0f) + (e.closeCall && !e.brave ? 62f : 0f)
+                           + (e.perfect ? 62f : 0f) + (!e.isContract && !e.assistSpeed && (!string.IsNullOrEmpty(e.medalUp) || !string.IsNullOrEmpty(e.nextMedalGap)) ? 62f : 0f);
             var panel = UIFactory.Panel(_root, new Vector2(1240f, panelH));
             var p = UITheme.Current;
 
@@ -46,7 +47,8 @@ namespace PKR
                                         e.secrets, e.totalSecrets, e.deaths);
             UIFactory.Label(panel, $"{(e.levelName ?? "LEVEL").ToUpperInvariant()} CLEAR!", 64, TextAnchor.MiddleCenter, 90f, title: true);
             bool newHero = e.unlockedHeroes != null && e.unlockedHeroes.Length > 0;
-            var rankLabel = UIFactory.Label(panel, $"RANK {rank}", newHero ? 80 : 96, TextAnchor.MiddleCenter, newHero ? 96f : 120f);
+            string rankUp = string.IsNullOrEmpty(e.rankUp) ? "" : $"  <size=44>{e.rankUp}</size>";
+            var rankLabel = UIFactory.Label(panel, $"RANK {rank}{rankUp}", newHero ? 80 : 96, TextAnchor.MiddleCenter, newHero ? 96f : 120f);
             rankLabel.color = rank == ClearRank.S ? p.title : p.accent;
 
             string best = e.newBestTime ? "   NEW BEST!" : "";
@@ -75,6 +77,12 @@ namespace PKR
                 var tries = Row(panel, "Tries", StoryAttempts.ClearLine(e.attempts, e.firstClear));
                 if (e.firstClear) tries.color = p.accent;
             }
+            if (!e.isContract && !e.assistSpeed)
+            {
+                if (!string.IsNullOrEmpty(e.medalUp)) Row(panel, "Medal", e.medalUp).color = p.title;
+                else if (!string.IsNullOrEmpty(e.nextMedalGap)) Row(panel, "Next medal", e.nextMedalGap);
+            }
+            if (e.perfect) Row(panel, "PERFECT", "S rank, FLAWLESS, every shard and secret!" + (e.perfectShards > 0 ? $" +{e.perfectShards}" : "")).color = p.title;
             if (e.closeCall && !e.brave) Row(panel, "Hearts", "CLOSE CALL! Cleared on your last heart.").color = p.accent;
             if (e.brave) Row(panel, "Challenge", "BRAVE: ONE HEART!" + (e.braveShards > 0 ? $" +{e.braveShards}" : "")).color = p.title;
             if (!string.IsNullOrEmpty(e.stealthRank))

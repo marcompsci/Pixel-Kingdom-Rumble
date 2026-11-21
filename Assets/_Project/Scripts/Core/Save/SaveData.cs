@@ -21,6 +21,8 @@ namespace PKR.Core
         public int bestRankPlusOne;
         /// <summary>Times the level has been started.</summary>
         public int attempts;
+        /// <summary>A PERFECT clear: S rank, FLAWLESS, every shard and secret.</summary>
+        public bool perfect;
 
         /// <summary>Best rank, or null if never ranked.</summary>
         public ClearRank? BestRank => bestRankPlusOne >= 1 && bestRankPlusOne <= 4 ? (ClearRank)(bestRankPlusOne - 1) : (ClearRank?)null;

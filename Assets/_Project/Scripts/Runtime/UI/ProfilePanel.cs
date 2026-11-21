@@ -36,6 +36,9 @@ namespace PKR
             var r = s.rumble;
             if (r != null) lines.Add($"Arena & Versus: {r.wins} wins in {Plural.Of(r.matches, "rated match", "rated matches")}  ·  best rating {r.bestRating}");
             var lad = s.ladder;
+            int vsW = 0, vsL = 0;
+            foreach (var h in s.lifetime.heroRecords) if (h != null) { vsW += h.wins; vsL += h.losses; }
+            if (vsW + vsL > 0) lines.Add($"Versus: {Plural.Of(vsW + vsL, "match", "matches")}  ·  {vsW * 100 / (vsW + vsL)}% won  ·  {vsW}W-{vsL}L");
             var top = HeroRecords.Best(s);
             string topHero = top != null ? $"  ·  top hero {HeroName(roster, top.id)} {top.wins}W-{top.losses}L" : "";
             if (lad != null) lines.Add($"Versus ladder: {Plural.Of(lad.clears, "clear")}  ·  best climb {lad.bestRungs} rungs{topHero}");
@@ -51,13 +54,15 @@ namespace PKR
                 int best = 0;
                 foreach (var b in c.bestRounds) best = Mathf.Max(best, b);
                 var (seen, mastered) = ZombieFieldGuide.Count(c);
-                lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  {Plural.Of(c.lastStandRuns, "run")}  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
+                lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  {Plural.Of(c.lastStandRuns, "run")}" +
+                          (s.lifetime.bestAccuracy > 0 ? $"  ·  best accuracy {s.lifetime.bestAccuracy}%" : "") + $"  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
             }
             var lt = s.lifetime;
             lines.Add($"Daily gift streak: {GiftDots(lt.loginStreak)}  {Plural.Of(lt.loginStreak, "day")}  ·  best {lt.bestLoginStreak}  ·  {lt.loginGifts} gifts");
-            lines.Add($"Story challenges: {StoryBrave.Count(s)} BRAVE  ·  {StoryRecords.SRanks(s)} S ranks  ·  {Plural.Of(StoryRecords.TotalTries(s), "try", "tries")}");
+            lines.Add($"Story challenges: {StoryPerfect.Count(s)} PERFECT  ·  {StoryBrave.Count(s)} BRAVE  ·  {StoryRecords.SRanks(s)} S ranks  ·  {Plural.Of(StoryRecords.TotalTries(s), "try", "tries")}");
             var fast = StoryRecords.Fastest(s);
-            lines.Add($"Days played: {lt.loginGifts}  ·  best Versus streak {lt.vsBestStreak}" + (lt.vsStreak > 0 ? $" (now {lt.vsStreak})" : "") +
+            string since = PlayDates.Since(lt.firstDay);
+            lines.Add($"{(since.Length > 0 ? since + "  ·  " : "")}days played: {lt.loginGifts}  ·  best Versus streak {lt.vsBestStreak}" + (lt.vsStreak > 0 ? $" (now {lt.vsStreak})" : "") +
                       (fast != null ? $"  ·  fastest clear {ResultsMath.FormatTime(fast.bestTimeSeconds)}" : ""));
             return lines;
         }
@@ -128,11 +133,11 @@ namespace PKR
             }
 
             int earned = s != null ? s.lifetime.badges.Count : 0;
-            UIFactory.Label(panel, $"BADGES  {earned}/{Badges.All.Length}", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
+            UIFactory.Label(panel, $"BADGES  {earned}/{Badges.All.Length}   <size=26>{BadgeRewards.ToNext(s)} more for +{BadgeRewards.Shards} shards</size>", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
             UIFactory.Label(panel, BadgeLines(s), 24, TextAnchor.MiddleCenter, 120f).color = UITheme.Current.text;
 
             UIFactory.Label(panel, "RECORDS", 44, TextAnchor.MiddleCenter, 60f, title: true).color = UITheme.Current.title;
-            foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 26, TextAnchor.MiddleCenter, 46f);
+            foreach (var line in Lines(s, _roster)) UIFactory.Label(panel, line, 24, TextAnchor.MiddleCenter, 40f);
 
             var row = UIFactory.Rect("Buttons", panel);
             row.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
@@ -168,7 +173,8 @@ namespace PKR
             int cleared = 0;
             if (s != null) foreach (var l in s.levels) if (l != null && l.completed) cleared++;
             int badges = s != null ? s.lifetime.badges.Count : 0;
-            return $"Pixel Kingdom Rumble: {Plural.Of(cleared, "level")} cleared, {hero}, {badges}/{Badges.All.Length} badges, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
+            int days = s != null ? s.lifetime.loginGifts : 0;
+            return $"Pixel Kingdom Rumble: {Plural.Of(cleared, "level")} cleared, {hero}, {badges}/{Badges.All.Length} badges, {Plural.Of(days, "day")} in the kingdom, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
         }
     }
 }

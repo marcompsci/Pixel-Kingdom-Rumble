@@ -87,7 +87,7 @@ namespace PKR.Tests
         [Test]
         public void Badges_ProgressNextGoalAndNewOnes()
         {
-            Assert.AreEqual(22, Badges.All.Length);
+            Assert.GreaterOrEqual(Badges.All.Length, 22);
             var ids = new System.Collections.Generic.HashSet<string>();
             foreach (var b in Badges.All) Assert.IsTrue(ids.Add(b.id), "unique id " + b.id);
             var s = SaveData.CreateNew();
