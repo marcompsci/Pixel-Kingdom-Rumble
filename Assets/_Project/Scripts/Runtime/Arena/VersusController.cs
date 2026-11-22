@@ -107,7 +107,7 @@ namespace PKR
             if (h2h != null && h2h.wins + h2h.losses > 0)
                 EventBus<ProgressToast>.Raise(new ProgressToast
                 {
-                    title = $"VS {opponentDef.displayName.ToUpperInvariant()}",
+                    title = Rivalry.IsGrudge(h2h) ? $"GRUDGE MATCH: {opponentDef.displayName.ToUpperInvariant()}" : $"VS {opponentDef.displayName.ToUpperInvariant()}",
                     detail = HeadToHead.Line(h2h) + (h2h.losses > h2h.wins ? "  ·  time for revenge!" : h2h.wins > h2h.losses ? "  ·  keep the streak going" : ""),
                     color = OpponentColor
                 });

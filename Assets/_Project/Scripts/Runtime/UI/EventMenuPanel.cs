@@ -95,7 +95,8 @@ namespace PKR
             int into = xp - PlayerLevel.XpAtLevel(lv);
             UIFactory.Label(panel, $"PLAYER LEVEL {lv}   ·   {into}/{PlayerLevel.XpToNext(lv)} XP", 38, TextAnchor.MiddleCenter, 60f)
                 .color = UITheme.Current.title;
-            UIFactory.Label(panel, "New challenges every day. Finish them for Star Shards and XP.", 30, TextAnchor.MiddleCenter, 50f)
+            int doneEver = Services.Save != null ? Services.Save.Data.lifetime.dailyDone : 0;
+            UIFactory.Label(panel, "New challenges every day. Finish them for Star Shards and XP." + (doneEver > 0 ? $"  ({doneEver} done so far)" : ""), 30, TextAnchor.MiddleCenter, 50f)
                 .color = UITheme.Current.subtle;
             foreach (var rec in ProgressTracker.Today())
             {

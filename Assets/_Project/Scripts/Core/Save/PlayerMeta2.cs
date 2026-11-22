@@ -151,6 +151,10 @@ namespace PKR.Core
             "Too many pop-ups? Settings > ASSISTS > Quiet celebrations hides the cheers and keeps the important news.",
             "Need more time to read? Settings > DISPLAY > Longer messages.",
             "Every party quest counts toward PARTY ANIMAL. Try all five in the Kingdom Plaza.",
+            "Can't decide? Hero select has a RANDOM button.",
+            "PROFILE > ALL BADGES shows every badge and how close you are.",
+            "The shop shows what you're saving for. Upgrades help Story Quest and Shadow Contracts only.",
+            "Play at least once a week to build a week streak. Four in a row earns SEASONED.",
         };
 
         public static string For(int dayKey) => Tips[Index(dayKey)];
@@ -213,6 +217,10 @@ namespace PKR.Core
             new Badge { id = "weekly3", name = "WEEKLY WARRIOR", how = "Beat 3 Zombies weekly challenges", need = 3, have = s => s.zombieCareer != null ? s.zombieCareer.weeklyDone.Count : 0 },
             new Badge { id = "daily30", name = "DUTIFUL", how = "Complete 30 daily challenges", need = 30, have = s => s.lifetime.dailyDone },
             new Badge { id = "arena_win50", name = "CHAMPION", how = "Win 50 Arena Clash matches", need = 50, have = s => s.lifetime.arenaWins },
+            new Badge { id = "shopper5", name = "SHOPPER", how = "Buy 5 things in the Star Shard shop", need = 5, have = ShopMeta.Purchases },
+            new Badge { id = "codex30", name = "LOREKEEPER", how = "Find 30 Codex entries", need = 30, have = s => s.unlockedCodexEntries.Count },
+            new Badge { id = "weeks4", name = "SEASONED", how = "Play 4 weeks in a row", need = 4, have = s => s.lifetime.bestWeekStreak },
+            new Badge { id = "heroes6", name = "HERO COLLECTOR", how = "Unlock 6 heroes", need = 6, have = s => s.unlockedCharacters.Count },
             new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
 

@@ -46,7 +46,10 @@ namespace PKR
             if (lad != null) lines.Add($"Versus ladder: {Plural.Of(lad.clears, "clear")}  ·  best climb {lad.bestRungs} rungs{topHero}");
             HeadToHeadRecord nemesis = null;
             foreach (var h in s.lifetime.headToHead) if (h.losses > 0 && (nemesis == null || h.losses - h.wins > nemesis.losses - nemesis.wins)) nemesis = h;
-            if (nemesis != null) lines.Add($"Toughest rival: {HeroName(roster, nemesis.id)}  ({HeadToHead.Line(nemesis)})");
+            var beaten = Rivalry.MostBeaten(s);
+            if (nemesis != null || beaten != null)
+                lines.Add((nemesis != null ? $"Toughest rival: {HeroName(roster, nemesis.id)}  ({HeadToHead.Line(nemesis)})" : "") +
+                          (nemesis != null && beaten != null ? "  ·  " : "") + (beaten != null ? $"most beaten: {HeroName(roster, beaten.id)} ({beaten.wins})" : ""));
             int pWins = 0, pPlayed = 0;
             if (s.party != null) foreach (var p in s.party.records) if (p != null) { pWins += p.wins; pPlayed += p.played; }
             var favParty = PartyMeta.Favorite(s);
@@ -67,7 +70,7 @@ namespace PKR
             lines.Add($"Story challenges: {StoryPerfect.Count(s)} PERFECT  ·  {StoryBrave.Count(s)} BRAVE  ·  {StoryRecords.SRanks(s)} S ranks  ·  {Plural.Of(StoryRecords.TotalTries(s), "try", "tries")}");
             var fast = StoryRecords.Fastest(s);
             string since = PlayDates.Since(lt.firstDay);
-            lines.Add($"{(since.Length > 0 ? since + "  ·  " : "")}days played: {lt.loginGifts}  ·  best Versus streak {lt.vsBestStreak}" + (lt.vsStreak > 0 ? $" (now {lt.vsStreak})" : "") +
+            lines.Add($"{(since.Length > 0 ? since + "  ·  " : "")}days played: {lt.loginGifts}  ·  week streak {lt.weekStreak} (best {lt.bestWeekStreak})  ·  best Versus streak {lt.vsBestStreak}" + (lt.vsStreak > 0 ? $" (now {lt.vsStreak})" : "") +
                       (fast != null ? $"  ·  fastest clear {ResultsMath.FormatTime(fast.bestTimeSeconds)}" : ""));
             return lines;
         }
@@ -152,12 +155,15 @@ namespace PKR
             h2.childControlWidth = true; h2.childControlHeight = true;
             h2.childForceExpandWidth = true; h2.childForceExpandHeight = true;
             UIFactory.Button(row, "SHARE", () => ShareService.Share(ShareText(s)));
+            UIFactory.Button(row, "BADGES", ShowBadges);
             UIFactory.Button(row, "ABOUT", ShowAbout);
             var back = UIFactory.Button(row, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(back);
         }
 
         /// <summary>ABOUT: the version, that the art and music are original, and that progress stays on this device.</summary>
+        public void ShowBadges() => BadgesPanel.Show(transform);
+
         public void ShowAbout()
         {
             InfoCard.Show(transform, "ABOUT", $"Pixel Kingdom Rumble  ·  version {Application.version}", AboutLines(), "OK");

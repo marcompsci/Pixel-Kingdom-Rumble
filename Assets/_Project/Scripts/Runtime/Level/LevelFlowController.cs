@@ -118,6 +118,7 @@ namespace PKR
             StartCoroutine(RespawnRoutine(false));
         }
 
+        bool _struggleShown;
         static int s_cleanStreak;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -298,6 +299,12 @@ namespace PKR
             if (IsComplete) return;
             RememberFall();
             Run.RecordDeath();
+            bool assisted = Run.AssistSpeed || AssistMode;
+            if (IsStoryLevel && StruggleHint.Due(Run.Deaths, assisted, _struggleShown))
+            {
+                _struggleShown = true;
+                EventBus<GameHint>.Raise(new GameHint { id = "struggle", text = StruggleHint.Text });
+            }
             if (!_respawning) StartCoroutine(RespawnRoutine(true));
         }
 

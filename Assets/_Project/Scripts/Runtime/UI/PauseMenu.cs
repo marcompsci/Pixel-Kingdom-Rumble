@@ -188,6 +188,7 @@ namespace PKR
             var rec0 = Services.Save != null ? Services.Save.Data.GetLevel(flow.Level.id) : null;
             if (rec0 != null && rec0.completed && rec0.bestTimeSeconds > 0f) parts.Add($"BEST {PKR.Core.ResultsMath.FormatTime(rec0.bestTimeSeconds)}");
             if (rec0 != null && rec0.attempts > 1) parts.Add($"TRY {rec0.attempts}");
+            if (flow.BraveRun) parts.Add("BRAVE");
             var season = SeasonDirector.Current;
             var save = Services.Save != null ? Services.Save.Data : null;
             if (season != null && save != null)
@@ -215,21 +216,40 @@ namespace PKR
             }
             var resume = UIFactory.Button(panel, "RESUME", () => { if (Services.State != null) Services.State.Resume(); });
             if (story) UIFactory.Button(panel, "BACK TO CHECKPOINT", flow.BackToCheckpoint);
-            UIFactory.Button(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
+            ConfirmButton(panel, "RESTART LEVEL", () => { if (Services.Scenes != null) Services.Scenes.ReloadCurrent(); });
             UIFactory.Button(panel, "PHOTO MODE", () => PhotoMode.Begin(null));
             UIFactory.Button(panel, "SETTINGS", ShowSettings);
             if (story && Application.CanStreamedLevelBeLoaded(SceneIds.KingdomPlaza))
                 UIFactory.Button(panel, "KINGDOM PLAZA", () => { GameSession.ReturnToPlaza(); });
             bool hasMenu = Application.CanStreamedLevelBeLoaded(SceneIds.MainMenu);
             bool zombies = GameSession.Mode == SessionMode.Zombies;
-            UIFactory.Button(panel, zombies ? "ZOMBIES MENU" : hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",
+            var quit = ConfirmButton(panel, zombies ? "ZOMBIES MENU" : hasMenu ? "MAIN MENU" : "MAIN MENU (SOON)",
                              () =>
                              {
                                  if (zombies) GameSession.ReopenEventMenu = true;
                                  if (Services.Scenes != null) Services.Scenes.Load(SceneIds.MainMenu);
-                             },
-                             interactable: hasMenu);
+                             });
+            quit.interactable = hasMenu;
             UIFactory.Select(resume);
+        }
+
+        /// <summary>A button that loses progress: the first tap asks "TAP AGAIN", the second (within a few seconds) does it.
+        /// Outside a level (nothing to lose) one tap is enough.</summary>
+        Button ConfirmButton(RectTransform panel, string label, System.Action act)
+        {
+            var flow = LevelFlowController.Current;
+            bool risky = flow != null && !flow.IsComplete && flow.Run != null && flow.Run.ElapsedSeconds > 3f || GameSession.Mode == SessionMode.Zombies;
+            float armedAt = 0f;
+            Button b = null;
+            b = UIFactory.Button(panel, label, () =>
+            {
+                float now = Time.unscaledTime;
+                if (!risky || TwoTap.Confirmed(armedAt, now)) { act(); return; }
+                armedAt = now;
+                var t = b.GetComponentInChildren<Text>();
+                if (t != null) t.text = "TAP AGAIN: " + label;
+            });
+            return b;
         }
 
         void ShowSettings()

@@ -183,7 +183,8 @@ namespace PKR
             string info = focus == null ? "The CPU picks any fighter."
                         : focusLocked ? (string.IsNullOrEmpty(focus.unlockHint) ? "Locked" : "LOCKED: " + focus.unlockHint.ToUpperInvariant())
                         : focus.tagline + WeaponLine(focus);
-            UIFactory.Label(panel, info, 30, TextAnchor.MiddleCenter, 50f).color = p.subtle;
+            string overall = Rivalry.Overall(Services.Save != null ? Services.Save.Data : null);
+            UIFactory.Label(panel, overall.Length > 0 ? info + "   ·   " + overall : info, 30, TextAnchor.MiddleCenter, 50f).color = p.subtle;
             if (focus != null && !focusLocked)
             {
                 // Mastery when picking your fighter; your record against them when picking the CPU.

@@ -98,7 +98,7 @@ namespace PKR
             var save = Services.Save != null ? Services.Save.Data : null;
             var all = _codex.Progress();
             UIFactory.Label(panel, "CODEX", 64, TextAnchor.MiddleCenter, 100f, title: true);
-            UIFactory.Label(panel, $"FOUND {all.unlocked}/{all.total}", 40, TextAnchor.MiddleCenter, 60f).color = p.subtle;
+            UIFactory.Label(panel, $"FOUND {all.unlocked}/{all.total}" + (all.total > 0 ? $"  ({all.unlocked * 100 / all.total}%)" : ""), 40, TextAnchor.MiddleCenter, 60f).color = p.subtle;
 
             var tabs = Row(panel, "Tabs", 110f);
             TabButton(tabs, CodexCategory.Hero, "HEROES");

@@ -89,6 +89,7 @@ namespace PKR
         {
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
+            WeekStreak.Update(save.Data, System.DateTime.Now);
             if (save.Data.lifetime.firstDay <= 0) save.Data.lifetime.firstDay = DailyChallenges.DayKey(System.DateTime.Now);
             MetaTracker.CheckBadges();
             // This session so far (shown when you come back to the menu with something new).
@@ -254,7 +255,11 @@ namespace PKR
             miscRow.childControlWidth = true; miscRow.childControlHeight = true;
             miscRow.childForceExpandWidth = true; miscRow.childForceExpandHeight = true;
             if (roster != null && roster.cosmetics != null && roster.cosmetics.items.Count > 0)
-                UIFactory.Button(misc, "SHOP", ShowShop);
+            {
+                int canBuy = ShopMeta.AffordableUpgrades(save);
+                if (save != null) foreach (var it in roster.cosmetics.items) if (it != null && !save.ownedCosmetics.Contains(it.id) && it.cost <= save.starShards && save.unlockedCharacters.Contains(it.heroId)) canBuy++;
+                UIFactory.Button(misc, canBuy > 0 ? $"SHOP · {canBuy}" : "SHOP", ShowShop);
+            }
             int dailyDone = 0;
             foreach (var c in ProgressTracker.Today()) if (c != null && c.done) dailyDone++;
             var daily = UIFactory.Button(misc, $"DAILY {dailyDone}/{DailyChallenges.PerDay}", ShowDaily);

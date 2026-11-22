@@ -149,6 +149,7 @@ namespace PKR
                 // Shadow Contracts: back goes to the board you came from.
                 Services.Scenes.Load(GameSession.Mode == SessionMode.Contracts ? SceneIds.MissionBoard : SceneIds.MainMenu);
             });
+            UIFactory.Button(buttons, "RANDOM", PickRandom);
             _confirm = UIFactory.Button(buttons, "CONFIRM", Confirm);
 
             Refresh();
@@ -181,7 +182,7 @@ namespace PKR
             _tagline.text = hero.frames != null && !string.IsNullOrEmpty(hero.frames.weaponName)
                 ? $"{hero.tagline}\nWeapon: {hero.frames.weaponName}" : hero.tagline;
             _lore.text = selectable || hero.playableInThisBuild ? hero.lore : "A new hero is on the way to the Sunspire Isles.";
-            _status.text = selectable ? "READY"
+            _status.text = selectable ? (Services.Save != null ? "READY  ·  " + HeroMeta.Status(Services.Save.Data, hero.id) : "READY")
                 : !hero.playableInThisBuild ? "COMING IN A FUTURE UPDATE"
                 : string.IsNullOrEmpty(hero.unlockHint) ? "LOCKED" : $"LOCKED: {hero.unlockHint.ToUpperInvariant()}";
 
@@ -198,6 +199,17 @@ namespace PKR
                 UiMotion.ScaleTo(_cards[i], i == _index ? 1.06f : 0.95f, 0.14f);
             }
         }
+
+        /// <summary>RANDOM: jumps to a random hero you can play.</summary>
+        public void PickRandom()
+        {
+            var ok = new System.Collections.Generic.List<bool>();
+            for (int i = 0; i < Count; i++) ok.Add(roster.IsSelectable(roster.heroes[i]));
+            int pick = HeroMeta.RandomPick(ok, _index, new System.Random());
+            if (pick >= 0) SetIndex(pick);
+        }
+
+        public int Index => _index;
 
         void Confirm()
         {

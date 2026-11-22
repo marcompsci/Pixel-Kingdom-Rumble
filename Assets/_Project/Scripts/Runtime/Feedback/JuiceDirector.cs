@@ -183,11 +183,13 @@ namespace PKR
         static string BestLine(LevelDefinition level)
         {
             var rec = Services.Save != null ? Services.Save.Data.GetLevel(level.id) : null;
-            if (rec == null || rec.bestTimeSeconds <= 0f) return "";
+            var flow = LevelFlowController.Current;
+            string extra = (rec != null && rec.attempts > 1 ? $"   ·   TRY {rec.attempts}" : "") + (flow != null && flow.BraveRun ? "   ·   BRAVE" : "");
+            if (rec == null || rec.bestTimeSeconds <= 0f) return extra;
             var have = StoryMedals.For(rec.bestTimeSeconds, level.parTimeSeconds);
             string next = have >= TimeMedal.Gold ? "  ·  GOLD!" : $"  ·  {StoryMedals.Name(StoryMedals.Next(have))} UNDER {ResultsMath.FormatTime(StoryMedals.Target(StoryMedals.Next(have), level.parTimeSeconds))}";
             if (StoryMedals.Next(have) == TimeMedal.Bronze) next = "";
-            return $"   ·   BEST {ResultsMath.FormatTime(rec.bestTimeSeconds)}{next}";
+            return $"   ·   BEST {ResultsMath.FormatTime(rec.bestTimeSeconds)}{next}{extra}";
         }
 
         IEnumerator Slide(RectTransform card)

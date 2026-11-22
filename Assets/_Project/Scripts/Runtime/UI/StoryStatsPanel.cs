@@ -119,7 +119,15 @@ namespace PKR
                 list.color = p.subtle;
             }
 
-            var back = UIFactory.Button(panel, "BACK", () => _onBack?.Invoke());
+            var shareRow = UIFactory.Rect("ShareBack", panel);
+            shareRow.gameObject.AddComponent<LayoutElement>().preferredHeight = UIFactory.RowHeight;
+            var srh = shareRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            srh.spacing = 24f; srh.childControlWidth = true; srh.childControlHeight = true; srh.childForceExpandWidth = true; srh.childForceExpandHeight = true;
+            var totalIds = new List<string>(); foreach (var lv in _levels) totalIds.Add(lv.id);
+            var sum = StorySpeedrun.Total(save, totalIds);
+            int perfectN = StoryPerfect.Count(save);
+            UIFactory.Button(shareRow, "SHARE", () => ShareService.Share(StoryShare.Text(cleared, _levels.Count, gold, perfectN, sum.seconds)));
+            var back = UIFactory.Button(shareRow, "BACK", () => _onBack?.Invoke());
             UIFactory.Select(back);
         }
 

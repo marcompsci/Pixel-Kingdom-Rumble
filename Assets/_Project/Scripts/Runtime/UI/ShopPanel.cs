@@ -103,6 +103,8 @@ namespace PKR
             UIFactory.Label(panel, "STAR SHARD SHOP", 64, TextAnchor.MiddleCenter, 100f, title: true);
             var save = Services.Save != null ? Services.Save.Data : null;
             UIFactory.Label(panel, $"STAR SHARDS  {(save != null ? save.starShards : 0)}", 46, TextAnchor.MiddleCenter, 70f).color = p.title;
+            int affordUpg = ShopMeta.AffordableUpgrades(save);
+            if (affordUpg > 0) UIFactory.Label(panel, $"You can afford {Plural.Of(affordUpg, "upgrade")} right now.", 28, TextAnchor.MiddleCenter, 40f).color = p.accent;
             ModeRow(panel);
             if (_upgrades) { BuildUpgrades(panel, save); return; }
             UIFactory.Label(panel, "Palettes are cosmetic only. They show in Story Quest, Arena Clash and Character Select.",
@@ -190,6 +192,8 @@ namespace PKR
                 b.GetComponentInChildren<Text>().fontSize = 38;
                 UIFactory.Label(panel, spec.description, 30, TextAnchor.MiddleCenter, 56f).color = p.subtle;
             }
+            string goal = ShopMeta.NextUpgradeGoal(save);
+            if (goal.Length > 0) UIFactory.Label(panel, goal, 30, TextAnchor.MiddleCenter, 50f).color = p.accent;
             UIFactory.Label(panel, $"Clear every level of a Story world for a one-time +{StoryWorlds.CompletionBonus} bonus.",
                             30, TextAnchor.MiddleCenter, 60f).color = p.subtle;
             var status = UIFactory.Label(panel, _status, 34, TextAnchor.MiddleCenter, 60f);

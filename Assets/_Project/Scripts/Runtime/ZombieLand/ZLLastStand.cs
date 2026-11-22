@@ -310,7 +310,11 @@ namespace PKR
             if (HoundRound) head += "  ·  THE HOUNDS ARE COMING";
             if (_bossPending) head += "  ·  " + Map.BossName + "!";
             if (_kingPending) head += "  ·  " + Map.HiddenBossName + " WAKES";
-            if (round == 1 && _bestAtStart > 0) head += $"  ·  YOUR BEST: {_bestAtStart}";
+            if (round == 1 && _bestAtStart > 0)
+            {
+                float avg0 = Services.Save != null ? StandHistory.AverageRound(Services.Save.Data, Map.Id) : 0f;
+                head += $"  ·  YOUR BEST: {_bestAtStart}" + (avg0 > 0f ? $"  ·  AVG {avg0:0.#}" : "");
+            }
             bool passedBest = StandPace.IsNewBestRound(round, _bestAtStart);
             if (passedBest)
             {
