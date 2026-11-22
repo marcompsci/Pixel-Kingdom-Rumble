@@ -96,7 +96,11 @@ namespace PKR
             if (_health != null)
             {
                 int h = _health.Health;
-                if (_lastHealth >= 0 && h < _lastHealth) TookHit = true;
+                if (_lastHealth >= 0 && h < _lastHealth)
+                {
+                    TookHit = true;
+                    if (h == 1 && _health.MaxHealth > 1 && !_health.IsDead) EventBus<GameHint>.Raise(new GameHint { id = "lastheart", text = "LAST HEART! Play it safe." });
+                }
                 if (_health.IsDead) TookHit = true;
                 _lastHealth = h;
             }

@@ -39,7 +39,7 @@ namespace PKR
             string left = e.isContract ? null : StillToFind(e);
             float panelH = (string.IsNullOrEmpty(e.stealthRank) && !e.clueFound ? 1000f : 1050f) + (left != null ? 62f : 0f)
                            + (e.attempts > 0 && !e.isContract ? 62f : 0f) + (e.brave ? 62f : 0f) + (e.closeCall && !e.brave ? 62f : 0f)
-                           + (e.perfect ? 62f : 0f) + (!e.isContract && !e.assistSpeed && (!string.IsNullOrEmpty(e.medalUp) || !string.IsNullOrEmpty(e.nextMedalGap)) ? 62f : 0f);
+                           + (e.perfect ? 62f : 0f) + (e.masteryXp > 0 ? 62f : 0f) + (!e.isContract && !e.assistSpeed && (!string.IsNullOrEmpty(e.medalUp) || !string.IsNullOrEmpty(e.nextMedalGap)) ? 62f : 0f);
             var panel = UIFactory.Panel(_root, new Vector2(1240f, panelH));
             var p = UITheme.Current;
 
@@ -62,7 +62,8 @@ namespace PKR
             if (medal == TimeMedal.Gold && !e.isContract) timeRow.color = p.title;
             if (e.isContract)
             {
-                Row(panel, "Contract score", $"{e.contractScore:N0}{(e.newBestScore ? "   NEW BEST!" : "")}").color = p.title;
+                string vsBestScore = ContractMeta.VsBest(e.contractScore, e.contractPrevBest);
+                Row(panel, "Contract score", $"{e.contractScore:N0}{(e.newBestScore ? "   NEW BEST!" : "")}{(vsBestScore.Length > 0 ? "   (" + vsBestScore + ")" : "")}").color = p.title;
                 Row(panel, "Ancient relics", $"{e.relics} / {e.totalRelics}");
             }
             else
@@ -83,6 +84,7 @@ namespace PKR
                 else if (!string.IsNullOrEmpty(e.nextMedalGap)) Row(panel, "Next medal", e.nextMedalGap);
             }
             if (e.perfect) Row(panel, "PERFECT", "S rank, FLAWLESS, every shard and secret!" + (e.perfectShards > 0 ? $" +{e.perfectShards}" : "")).color = p.title;
+            if (e.masteryXp > 0) Row(panel, "Hero mastery", $"+{e.masteryXp} XP" + (e.masteryLevel > 0 ? $"   ·   MASTERY {e.masteryLevel}" : ""));
             if (e.closeCall && !e.brave) Row(panel, "Hearts", "CLOSE CALL! Cleared on your last heart.").color = p.accent;
             if (e.brave) Row(panel, "Challenge", "BRAVE: ONE HEART!" + (e.braveShards > 0 ? $" +{e.braveShards}" : "")).color = p.title;
             if (!string.IsNullOrEmpty(e.stealthRank))

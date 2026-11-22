@@ -20,6 +20,8 @@ namespace PKR
         public VersusLadder ladder;
         public bool ladderCleared;
         public int ladderBonus;
+        /// <summary>Hero mastery XP from this match.</summary>
+        public int masteryXp;
     }
 
     /// <summary>
@@ -232,7 +234,11 @@ namespace PKR
             Freeze();
             int w = Match.LastRoundWinner;
             bool perfect = w == 0 && Player.health.Health >= Player.health.MaxHealth;
-            if (perfect) PerfectRoundWon = true;
+            if (perfect)
+            {
+                PerfectRoundWon = true;
+                if (grantRewards && !botVsBot && Services.Save != null) { Services.Save.Data.lifetime.vsPerfectRounds++; Services.Save.MarkDirty(); }
+            }
             string headline = timeUp ? "TIME" : (w < 0 ? "DOUBLE K.O." : "K.O.");
             Announce(headline, roundOutroSeconds * 0.45f);
             yield return new WaitForSeconds(roundOutroSeconds * 0.45f);
@@ -285,17 +291,20 @@ namespace PKR
             }
             if (Services.State != null) Services.State.SetState(GameState.Results);
             if (Services.Haptics != null) Services.Haptics.Play(won ? HapticStrength.Heavy : HapticStrength.Medium);
+            int vsXp = 0;
             if (grantRewards && !botVsBot)
             {
                 ProgressTracker.MatchPlayed(won, versus: true);
                 if (Match.Winner >= 0) MetaTracker.Versus(Opponent.def.id, won, Player.def.id, Opponent.def.displayName);
-                MetaTracker.Mastery(Player.def.id, (won ? HeroMastery.VersusWinXp : HeroMastery.VersusMatchXp) + (cleared ? HeroMastery.LadderClearXp : 0), roster);
+                vsXp = (won ? HeroMastery.VersusWinXp : HeroMastery.VersusMatchXp) + (cleared ? HeroMastery.LadderClearXp : 0);
+                MetaTracker.Mastery(Player.def.id, vsXp, roster);
+                MetaTracker.CheckBadges();
             }
             EventBus<VersusMatchEnded>.Raise(new VersusMatchEnded
             {
                 winner = Match.Winner, playerName = Player.name, opponentName = Opponent.name,
                 playerRounds = Match.Wins(0), opponentRounds = Match.Wins(1), starShardReward = reward, rumble = rumble,
-                ladder = ladder, ladderCleared = cleared, ladderBonus = ladderBonus
+                ladder = ladder, ladderCleared = cleared, ladderBonus = ladderBonus, masteryXp = vsXp
             });
         }
 

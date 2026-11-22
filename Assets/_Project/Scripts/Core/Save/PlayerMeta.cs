@@ -65,6 +65,11 @@ namespace PKR.Core
         public int arenaMatches, arenaWins, arenaKOs, arenaBestKOs, arenaBestCombo, dailyDone;
         /// <summary>Weeks in a row played: the last week counted (Monday yyyymmdd), the streak and the best.</summary>
         public int weekStreakKey, weekStreak, bestWeekStreak;
+        /// <summary>Round 10: today's play time, the time-of-day badges, Versus perfect rounds, the training lab's best
+        /// combo and the longest Last Stand run (seconds).</summary>
+        public int todayKey, vsPerfectRounds, labBestCombo;
+        public float todaySeconds, longestStand;
+        public bool nightOwl, earlyBird;
 
         public void Sanitize()
         {
@@ -93,6 +98,9 @@ namespace PKR.Core
             if (worlds100 == null) worlds100 = new List<string>();
             arenaMatches = Math.Max(0, arenaMatches); arenaWins = Math.Max(0, Math.Min(arenaMatches, arenaWins)); arenaKOs = Math.Max(0, arenaKOs);
             arenaBestKOs = Math.Max(0, arenaBestKOs); arenaBestCombo = Math.Max(0, arenaBestCombo); dailyDone = Math.Max(0, dailyDone);
+            vsPerfectRounds = Math.Max(0, vsPerfectRounds); labBestCombo = Math.Max(0, labBestCombo);
+            if (float.IsNaN(todaySeconds) || todaySeconds < 0f) todaySeconds = 0f;
+            if (float.IsNaN(longestStand) || longestStand < 0f) longestStand = 0f;
             weekStreak = Math.Max(0, weekStreak); bestWeekStreak = Math.Max(weekStreak, bestWeekStreak);
             badgeRewards = Math.Max(0, badgeRewards); bestAccuracy = Math.Max(0, Math.Min(100, bestAccuracy)); closeCalls = Math.Max(0, closeCalls);
             vsStreak = Math.Max(0, vsStreak); vsBestStreak = Math.Max(vsStreak, vsBestStreak);
@@ -295,15 +303,15 @@ namespace PKR.Core
     /// <summary>WHAT'S NEW: a one-time card per update with its headline features.</summary>
     public static class WhatsNew
     {
-        public const string Version = "1.6";
+        public const string Version = "1.7";
         public static readonly string[] Items =
         {
-            "HERO SELECT: mastery, Versus record, your ★ FAVORITE and a RANDOM button.",
-            "ALL BADGES page with progress for every badge. 36 badges, including SHOPPER, LOREKEEPER, SEASONED and HERO COLLECTOR.",
-            "SHOP: what you can afford now, what you're saving for, and a count on the menu button.",
-            "VERSUS: your overall record on the select screen and GRUDGE MATCH callouts.",
-            "STORY: intro card shows your try and BRAVE, a SHARE button on Story Stats, and a helping hand after a few falls.",
-            "Pause menu asks you to tap twice before RESTART or leaving a level, so a stray tap won't cost a run.",
+            "TITLES: earn badges to rise from SQUIRE to MYTH. 40 badges, including NIGHT OWL, EARLY BIRD, SHADOW AGENT and FLAWLESS FIGHTER.",
+            "STORY: LAST HEART and ALL SECRETS callouts, FLAWLESS SO FAR in pause, mastery XP on the clear screen, NEW and LAST PLAYED on level select.",
+            "SHADOW CONTRACTS: tries and your score vs your best.",
+            "VERSUS: perfect rounds are counted, and mastery XP shows on the results.  ARENA: a first-win cheer and a saved training lab best combo.",
+            "ZOMBIES: time survived, and your longest Last Stand run.",
+            "The menu greeting shows how long you've played today.  ALL BADGES can show only the ones still to earn.",
         };
 
         /// <summary>Show to returning players once per version (brand-new players get the welcome guide instead).</summary>

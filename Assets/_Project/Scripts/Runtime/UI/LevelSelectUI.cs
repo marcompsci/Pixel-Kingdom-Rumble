@@ -116,9 +116,11 @@ namespace PKR
                 MetaTracker.CheckBadges();
                 Services.Save.SaveNow();
             }
+            int newHere = 0;
+            foreach (var sl in _slots) if (sl.unlocked && !sl.completed) newHere++;
             int perfectHere = 0;
             if (Services.Save != null) foreach (var lv in page.levels) { var rr = lv != null ? Services.Save.Data.GetLevel(lv.id) : null; if (rr != null && rr.perfect) perfectHere++; }
-            UIFactory.Label(panel, $"STORY QUEST  ·  {pct}% COMPLETE{(perfectHere > 0 ? $"  ·  {perfectHere} PERFECT" : "")}\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
+            UIFactory.Label(panel, $"STORY QUEST  ·  {pct}% COMPLETE{(perfectHere > 0 ? $"  ·  {perfectHere} PERFECT" : "")}{(newHere > 0 ? $"  ·  {newHere} NEW" : "")}\n{worldNo}{page.displayName.ToUpperInvariant()}", 56, TextAnchor.MiddleCenter, 150f, title: true);
             if (paged) PageRow(panel);
             if (hasDescription)
                 UIFactory.Label(panel, page.description, 32, TextAnchor.MiddleCenter, 90f).color = p.subtle;
@@ -393,7 +395,8 @@ namespace PKR
             var save = Services.Save != null ? Services.Save.Data : null;
             var rec = save != null && level != null ? save.GetLevel(level.id) : null;
             var toughest = StoryRecords.Toughest(save);
-            string extras = (rec != null && rec.perfect ? "  PERFECT" : "") + (toughest != null && rec != null && toughest.levelId == rec.levelId ? "  TOUGHEST" : "") +
+            bool lastPlayed = save != null && level != null && save.lifetime.lastLevelId == level.id;
+            string extras = (lastPlayed ? "  LAST PLAYED" : "") + (rec != null && rec.perfect ? "  PERFECT" : "") + (toughest != null && rec != null && toughest.levelId == rec.levelId ? "  TOUGHEST" : "") +
                             (rec != null && rec.flawless ? "  FLAWLESS" : "") + (rec != null && rec.brave ? "  BRAVE" : "") +
                             (level != null && StoryGhosts.Find(save, level.id) != null ? "  GHOST" : "");
             return $"{index + 1}. {name}   RANK {LevelSelect.RankLabel(slot.rank)}{extras}\n" +

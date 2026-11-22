@@ -155,6 +155,10 @@ namespace PKR.Core
             "PROFILE > ALL BADGES shows every badge and how close you are.",
             "The shop shows what you're saving for. Upgrades help Story Quest and Shadow Contracts only.",
             "Play at least once a week to build a week streak. Four in a row earns SEASONED.",
+            "Badges raise your title: SQUIRE, ADVENTURER, KNIGHT, HERO, LEGEND, MYTH. See PROFILE.",
+            "Win a Versus round without losing a heart for a PERFECT round. Five earn FLAWLESS FIGHTER.",
+            "The training lab remembers your best combo, even after you close the game.",
+            "Down to your last heart? The game will warn you. Slow down and look for a checkpoint.",
         };
 
         public static string For(int dayKey) => Tips[Index(dayKey)];
@@ -221,6 +225,10 @@ namespace PKR.Core
             new Badge { id = "codex30", name = "LOREKEEPER", how = "Find 30 Codex entries", need = 30, have = s => s.unlockedCodexEntries.Count },
             new Badge { id = "weeks4", name = "SEASONED", how = "Play 4 weeks in a row", need = 4, have = s => s.lifetime.bestWeekStreak },
             new Badge { id = "heroes6", name = "HERO COLLECTOR", how = "Unlock 6 heroes", need = 6, have = s => s.unlockedCharacters.Count },
+            new Badge { id = "contracts10", name = "SHADOW AGENT", how = "Score on 10 Shadow Contracts", need = 10, have = ContractMeta.Cleared },
+            new Badge { id = "vs_perfect5", name = "FLAWLESS FIGHTER", how = "Win 5 Versus rounds without a scratch", need = 5, have = s => s.lifetime.vsPerfectRounds },
+            new Badge { id = "night_owl", name = "NIGHT OWL", how = "Play between midnight and 4 a.m.", need = 1, have = s => s.lifetime.nightOwl ? 1 : 0 },
+            new Badge { id = "early_bird", name = "EARLY BIRD", how = "Play between 5 and 8 a.m.", need = 1, have = s => s.lifetime.earlyBird ? 1 : 0 },
             new Badge { id = "hours10", name = "KINGDOM CITIZEN", how = "Play for 10 hours", need = 10, have = s => (int)(PlayTime.Total(s) / 3600f) },
         };
 

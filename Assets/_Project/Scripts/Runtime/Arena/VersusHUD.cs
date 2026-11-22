@@ -160,6 +160,7 @@ namespace PKR
                             TextAnchor.MiddleCenter, 70f);
             if (e.starShardReward > 0)
                 UIFactory.Label(panel, $"+{e.starShardReward} STAR SHARDS", 40, TextAnchor.MiddleCenter, 56f).color = UITheme.Current.accent;
+            if (e.masteryXp > 0) UIFactory.Label(panel, $"+{e.masteryXp} {e.playerName} MASTERY XP", 30, TextAnchor.MiddleCenter, 44f).color = UITheme.Current.subtle;
             if (e.rumble != null) RumbleUI.AddResults(panel, e.rumble);
             if (e.ladder != null) LadderLine(panel, e);
             var row = UIFactory.Rect("Buttons", panel);

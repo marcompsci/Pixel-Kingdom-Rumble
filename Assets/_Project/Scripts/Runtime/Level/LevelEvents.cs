@@ -31,6 +31,8 @@ namespace PKR
         public string rankUp, medalUp, nextMedalGap;
         public bool perfect;
         public int perfectShards;
+        /// <summary>Round 10: hero mastery XP from this clear (and the level after it), and a contract's best score before this run.</summary>
+        public int masteryXp, masteryLevel, contractPrevBest;
         public int starShardReward;
         /// <summary>Part of starShardReward from the Lucky Shards upgrade.</summary>
         public int luckyBonus;

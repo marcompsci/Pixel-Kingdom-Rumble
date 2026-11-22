@@ -100,6 +100,7 @@ namespace PKR
             var lastRun = save != null ? StandLast.Latest(save) : null;
             string lsSub = (lsBest > 0 ? $"{SurvivalModes.Name(_mode)} best: round {lsBest}" : "Round-based")
                            + (save != null && save.lifetime.bestAccuracy > 0 ? $" · best accuracy {save.lifetime.bestAccuracy}%" : "")
+                           + (save != null && save.lifetime.longestStand > 0f ? $" · longest {ResultsMath.FormatTime(save.lifetime.longestStand)}" : "")
                            + (lastRun != null ? $" · last run: round {lastRun.round} on {LastStandMap.Get(lastRun.map).Title}"
                                               : $" · {LastStandMap.All.Length} maps · solo, AI squad or online co-op");
             Big(panel, "LAST STAND", lsSub, new Color32(170, 70, 40, 255), OpenSquad,

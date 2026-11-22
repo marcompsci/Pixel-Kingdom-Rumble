@@ -189,6 +189,8 @@ namespace PKR
             if (rec0 != null && rec0.completed && rec0.bestTimeSeconds > 0f) parts.Add($"BEST {PKR.Core.ResultsMath.FormatTime(rec0.bestTimeSeconds)}");
             if (rec0 != null && rec0.attempts > 1) parts.Add($"TRY {rec0.attempts}");
             if (flow.BraveRun) parts.Add("BRAVE");
+            var ex = flow.GetComponent<StoryRunExtras>();
+            if (ex != null && !ex.TookHit && flow.Run.ElapsedSeconds > 5f) parts.Add("FLAWLESS SO FAR");
             var season = SeasonDirector.Current;
             var save = Services.Save != null ? Services.Save.Data : null;
             if (season != null && save != null)

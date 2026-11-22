@@ -96,7 +96,7 @@ namespace PKR.Tests
         {
             Services.Settings.Data.menuTips = true;
             yield return Load(SceneIds.MainMenu);
-            Assert.IsTrue(HasText("hero"), "a greeting");
+            Assert.IsTrue(HasText(RankTitle.For(Services.Save.Data.lifetime.badges.Count)), "a greeting with your title");
             Assert.IsTrue(HasText("PROFILE"));
             Assert.IsTrue(HasText("TIP: "));
             Services.Settings.Data.menuTips = false;

@@ -40,7 +40,7 @@ namespace PKR
             var lad = s.ladder;
             int vsW = 0, vsL = 0;
             foreach (var h in s.lifetime.heroRecords) if (h != null) { vsW += h.wins; vsL += h.losses; }
-            if (vsW + vsL > 0) lines.Add($"Versus: {Plural.Of(vsW + vsL, "match", "matches")}  ·  {vsW * 100 / (vsW + vsL)}% won  ·  {vsW}W-{vsL}L");
+            if (vsW + vsL > 0) lines.Add($"Versus: {Plural.Of(vsW + vsL, "match", "matches")}  ·  {vsW * 100 / (vsW + vsL)}% won  ·  {vsW}W-{vsL}L  ·  {s.lifetime.vsPerfectRounds} perfect rounds");
             var top = HeroRecords.Best(s);
             string topHero = top != null ? $"  ·  top hero {HeroName(roster, top.id)} {top.wins}W-{top.losses}L" : "";
             if (lad != null) lines.Add($"Versus ladder: {Plural.Of(lad.clears, "clear")}  ·  best climb {lad.bestRungs} rungs{topHero}");
@@ -63,6 +63,7 @@ namespace PKR
                 var (seen, mastered) = ZombieFieldGuide.Count(c);
                 lines.Add($"Zombies: {c.totalKills:N0} kills  ·  best round {best}  ·  {Plural.Of(c.lastStandRuns, "run")}" +
                           (s.lifetime.bestAccuracy > 0 ? $"  ·  best accuracy {s.lifetime.bestAccuracy}%" : "") +
+                          (s.lifetime.longestStand > 0f ? $"  ·  longest run {ResultsMath.FormatTime(s.lifetime.longestStand)}" : "") +
                           (c.weeklyDone.Count > 0 ? $"  ·  {Plural.Of(c.weeklyDone.Count, "weekly", "weeklies")} beaten" : "") + $"  ·  Field Guide {seen}/{ZombieFieldGuide.All.Length}");
             }
             var lt = s.lifetime;
@@ -123,6 +124,9 @@ namespace PKR
             var panel = UIFactory.Panel(_root, new Vector2(980f, 1800f));
             UIFactory.Label(panel, "PROFILE", 84, TextAnchor.MiddleCenter, 110f, title: true);
             int xp = s != null ? s.playerXp : 0;
+            int bc = s != null ? s.lifetime.badges.Count : 0;
+            string nextTitle = RankTitle.Next(bc);
+            UIFactory.Label(panel, $"{RankTitle.For(bc)}" + (nextTitle.Length > 0 ? $"   <size=26>({nextTitle})</size>" : ""), 44, TextAnchor.MiddleCenter, 56f, title: true).color = UITheme.Current.accent;
             UIFactory.Label(panel, $"PLAYER LEVEL {PlayerLevel.LevelFor(xp)}   ·   STAR SHARDS {(s != null ? s.starShards : 0)}", 38, TextAnchor.MiddleCenter, 56f)
                 .color = UITheme.Current.title;
 
@@ -186,7 +190,7 @@ namespace PKR
             if (s != null) foreach (var l in s.levels) if (l != null && l.completed) cleared++;
             int badges = s != null ? s.lifetime.badges.Count : 0;
             int days = s != null ? s.lifetime.loginGifts : 0;
-            return $"Pixel Kingdom Rumble: {Plural.Of(cleared, "level")} cleared, {hero}, {badges}/{Badges.All.Length} badges, {Plural.Of(days, "day")} in the kingdom, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
+            return $"Pixel Kingdom Rumble: a {RankTitle.For(badges)} with {Plural.Of(cleared, "level")} cleared, {hero}, {badges}/{Badges.All.Length} badges, {Plural.Of(days, "day")} in the kingdom, {PlayTime.Format(PlayTime.Total(s))} played! " + ShareCard.Link;
         }
     }
 }

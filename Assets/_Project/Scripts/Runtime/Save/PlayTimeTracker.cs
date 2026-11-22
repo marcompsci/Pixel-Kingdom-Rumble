@@ -69,6 +69,7 @@ namespace PKR
             _flushAt = Time.unscaledTime + 60f;
             if (_pending <= 0f || _pendingMode < 0 || Services.Save == null) { _pending = 0f; return; }
             PlayTime.Add(Services.Save.Data, _pendingMode, _pending);
+            TodayPlay.Add(Services.Save.Data, DailyChallenges.DayKey(System.DateTime.Now), _pending);
             _pending = 0f;
         }
 

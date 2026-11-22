@@ -107,12 +107,18 @@ namespace PKR
                 PartyHUD.Flash($"{n} HIT COMBO!");
             }
             if (n == 1) _lastFlash = 0;
+            if (n >= 2 && Services.Save != null && LabRecord.Offer(Services.Save.Data, n))
+            {
+                Services.Save.MarkDirty();
+                if (n >= 5) PartyHUD.Flash($"NEW LAB RECORD: {n} HITS!");
+            }
         }
 
         string Line()
         {
             int now = _combo.Current(Time.time);
-            return $"COMBO {now}   ·   BEST {_combo.Best}   ·   HITS {_combo.TotalHits}   ·   PIPS BROKEN {_combo.PipsBroken}   ·   LAUNCHES {_combo.Launches}";
+            int rec = Services.Save != null ? Services.Save.Data.lifetime.labBestCombo : 0;
+            return $"COMBO {now}   ·   BEST {_combo.Best} (RECORD {rec})   ·   HITS {_combo.TotalHits}   ·   PIPS BROKEN {_combo.PipsBroken}   ·   LAUNCHES {_combo.Launches}";
         }
 
         void OnDestroy() => Clear();

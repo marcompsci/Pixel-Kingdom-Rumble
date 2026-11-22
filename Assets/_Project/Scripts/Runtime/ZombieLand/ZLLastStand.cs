@@ -279,6 +279,7 @@ namespace PKR
             int round = Run.NextRound();
             if (round == 1)
             {
+                _runStart = Time.time;
                 var career0 = Services.Save != null ? Services.Save.Data.zombieCareer : null;
                 _bestAtStart = !_guest && Weekly == null && career0 != null ? career0.Best(Map.Id, Mode) : 0;
             }
@@ -327,6 +328,10 @@ namespace PKR
 
         /// <summary>Your best round on this map and mode when the run began (0 = none, a guest or a weekly run).</summary>
         int _bestAtStart;
+        float _runStart = -1f;
+        /// <summary>Seconds survived this run, and whether it's your longest.</summary>
+        public float Survived => _runStart >= 0f ? Time.time - _runStart : 0f;
+        public bool LongestRun { get; private set; }
 
         /// <summary>This run set your best Last Stand accuracy (50+ shots).</summary>
         public bool NewBestAccuracy { get; private set; }
@@ -965,6 +970,7 @@ namespace PKR
                     day = DailyChallenges.DayKey(System.DateTime.Now), shots = Shots, hits = Hits
                 });
                 NewBestAccuracy = StandAccuracy.Record(Services.Save.Data, Shots, Hits);
+                LongestRun = StandTime.Record(Services.Save.Data, Survived);
                 var cz = Services.Save.Data.zombieCareer;
                 int milestone = cz != null ? KillMilestone.Crossed(cz.totalKills - Run.Kills, cz.totalKills) : 0;
                 if (milestone > 0)
@@ -1033,7 +1039,8 @@ namespace PKR
             {
                 var runs = StandHistory.For(Services.Save.Data, Map.Id);
                 string acc = (Shots > 0 ? $"Accuracy {StandHistory.Accuracy(Shots, Hits)}%{(NewBestAccuracy ? " (NEW BEST!)" : "")}   ·   " : "") +
-                             (Run.Round > 0 ? StandLast.KillsPerRound(Run.Kills, Run.Round) + "   ·   " : "");
+                             (Run.Round > 0 ? StandLast.KillsPerRound(Run.Kills, Run.Round) + "   ·   " : "") +
+                             (Survived > 0f ? $"survived {ResultsMath.FormatTime(Survived)}{(LongestRun ? " (LONGEST!)" : "")}   ·   " : "");
                 float avgAll = StandHistory.AverageRound(Services.Save.Data, Map.Id);
                 float avgBefore = runs.Count > 1 ? (avgAll * runs.Count - Run.Round) / (runs.Count - 1) : 0f;
                 string pace = StandPace.VsAverage(Run.Round, avgBefore, runs.Count - 1);

@@ -90,6 +90,7 @@ namespace PKR
             var save = Services.Save;
             if (save == null || Application.isBatchMode) return;
             WeekStreak.Update(save.Data, System.DateTime.Now);
+            TimeBadges.Mark(save.Data, System.DateTime.Now.Hour);
             if (save.Data.lifetime.firstDay <= 0) save.Data.lifetime.firstDay = DailyChallenges.DayKey(System.DateTime.Now);
             MetaTracker.CheckBadges();
             // This session so far (shown when you come back to the menu with something new).
@@ -291,7 +292,9 @@ namespace PKR
             bool menuTips = Services.Settings == null || Services.Settings.Data.menuTips;
             if (save != null && menuTips)
             {
-                UIFactory.Label(panel, Greeting.For(System.DateTime.Now.Hour), 30, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.title;
+                string title = RankTitle.For(save.lifetime.badges.Count);
+                string today = TodayPlay.Line(save, DailyChallenges.DayKey(System.DateTime.Now));
+                UIFactory.Label(panel, Greeting.For(System.DateTime.Now.Hour).Replace("hero", title) + (today.Length > 0 ? "  " + today : ""), 30, TextAnchor.MiddleCenter, 46f).color = UITheme.Current.title;
                 var goal = UIFactory.Label(panel, Badges.NextGoal(save), 26, TextAnchor.MiddleCenter, 64f);
                 goal.color = new Color32(120, 220, 255, 255);
             }

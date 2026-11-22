@@ -361,6 +361,8 @@ namespace PKR
             if (Config.mode != MatchMode.Training && Config.party == PartyMode.None && grantRewards && Services.Save != null && n > 0)
             {
                 var c = ArenaCareer.Record(Services.Save.Data, result.playerPlacement == 1, result.knockouts[0], result.bestCombo[0]);
+                if (result.playerPlacement == 1 && Services.Save.Data.lifetime.arenaWins == 1)
+                    EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = "FIRST ARENA CLASH WIN!", detail = "The first of many. Try a harder CPU next.", color = new Color32(255, 170, 60, 255) });
                 result.newBestKOs = c.newBestKOs; result.newBestCombo = c.newBestCombo;
                 if (c.koMilestone > 0)
                     EventBus<ProgressToast>.Raise(new ProgressToast { celebration = true, title = $"{c.koMilestone:N0} ARENA KOs!", detail = "A lifetime milestone in Arena Clash.", color = new Color32(255, 170, 60, 255) });

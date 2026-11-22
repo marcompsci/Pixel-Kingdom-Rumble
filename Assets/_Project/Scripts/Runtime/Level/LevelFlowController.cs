@@ -142,7 +142,8 @@ namespace PKR
             BraveRun = IsStoryLevel && !invincible && Services.Settings != null && Services.Settings.Data.storyBrave;
             if (PlayerHealth != null) PlayerHealth.capMaxHealth = BraveRun ? 1 : 0;
             if (IsStoryLevel) MetaTracker.Played(ContinueKind.StoryLevel, level.id);
-            if (IsStoryLevel && Services.Save != null) { StoryAttempts.Begin(Services.Save.Data.GetOrAddLevel(level.id)); Services.Save.MarkDirty(); }
+            bool contract = !IsStoryLevel && level != null && GameSession.Mode == SessionMode.Contracts;
+            if ((IsStoryLevel || contract) && Services.Save != null) { StoryAttempts.Begin(Services.Save.Data.GetOrAddLevel(level.id)); Services.Save.MarkDirty(); }
             if (IsStoryLevel && GetComponent<StoryRunExtras>() == null) gameObject.AddComponent<StoryRunExtras>();
             if (PlayerHealth != null && PlayerHealth.Model == DamageModel.StoryHealth)
             {
@@ -409,10 +410,12 @@ namespace PKR
             var extras = GetComponent<StoryRunExtras>();
             var extra = extras != null ? extras.OnCleared(data, Run.LevelId, Run.ElapsedSeconds, Run.AssistSpeed) : default;
             reward += extra.flawlessShards + extra.braveShards;
+            int masteryXp = 0, masteryLevel = 0;
             if (IsStoryLevel && data != null)
             {
-                MetaTracker.Mastery(GameSession.SelectedCharacterId,
-                                    HeroMastery.StoryClearXp + (previousBest <= 0f ? HeroMastery.StoryFirstClearXp : 0), roster);
+                masteryXp = HeroMastery.StoryClearXp + (previousBest <= 0f ? HeroMastery.StoryFirstClearXp : 0);
+                var award = MetaTracker.Mastery(GameSession.SelectedCharacterId, masteryXp, roster);
+                masteryLevel = award.levelAfter;
                 if (Run.Deaths == 0 && extra.flawless) FallMemory.Clear(data, Run.LevelId);
             }
             int worldIndex = data != null ? StoryWorlds.ClaimIfComplete(data, Run.LevelId) : -1;
@@ -449,13 +452,15 @@ namespace PKR
             // Shadow Contracts: score the run and keep the best.
             var mission = MissionTracker.Current;
             var stealth = StealthTracker.Current;
-            int contractScore = 0;
+            int contractScore = 0, contractPrevBest = 0;
             bool newBestScore = false;
             if (mission != null)
             {
                 contractScore = MissionScore.Compute(stealth != null ? stealth.ObjectivesDone : 0, mission.Relics,
                                                      stealth != null ? stealth.Takedowns : 0, stealth != null ? stealth.TimesSpotted : 0,
                                                      Run.ElapsedSeconds, level != null ? level.parTimeSeconds : 0f);
+                var prevMission = data != null ? data.GetMission(mission.contractId) : null;
+                contractPrevBest = prevMission != null ? prevMission.bestScore : 0;
                 if (data != null) newBestScore = data.RecordMission(mission.contractId, contractScore, mission.Relics);
             }
             // Player level + daily challenges.
@@ -514,6 +519,9 @@ namespace PKR
                 nextMedalGap = data != null && data.GetLevel(Run.LevelId) != null ? StoryPerfect.NextMedalGap(data.GetLevel(Run.LevelId).bestTimeSeconds, level != null ? level.parTimeSeconds : 0f) : "",
                 perfect = perfect,
                 perfectShards = perfectShards,
+                masteryXp = masteryXp,
+                masteryLevel = masteryLevel,
+                contractPrevBest = contractPrevBest,
                 starShardReward = reward,
                 luckyBonus = lucky,
                 worldCompleted = worldIndex >= 0 ? StoryWorlds.All[worldIndex].name : "",

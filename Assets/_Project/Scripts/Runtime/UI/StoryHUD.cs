@@ -48,7 +48,7 @@ namespace PKR
         }
 
         void OnCheckpoint(CheckpointActivated e) => ShowBanner("CHECKPOINT", 1.5f);
-        void OnSecret(SecretFound e) => ShowBanner($"SECRET FOUND  {e.found}/{e.total}", 2f);
+        void OnSecret(SecretFound e) => ShowBanner(e.total > 1 && e.found >= e.total ? $"ALL {e.total} SECRETS FOUND!" : $"SECRET FOUND  {e.found}/{e.total}", 2f);
         void OnStealth(StealthNotice e) => ShowBanner(e.text, e.alarm ? 1.3f : 1.6f);
         void OnCodex(CodexEntryUnlocked e)
         {

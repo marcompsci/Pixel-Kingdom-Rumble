@@ -239,6 +239,12 @@ namespace PKR
             UIFactory.Label(panel, $"ANCIENT RELICS: {c.totalRelics}  ·  {MissionScore.RelicPoints} PTS EACH\n" +
                                    $"STAY UNSEEN: +{MissionScore.UnseenBonus} PTS  ·  TAKEDOWNS: +{MissionScore.TakedownPoints}",
                             30, TextAnchor.MiddleCenter, 100f).color = p.accent;
+            var crec = Services.Save != null && c.level != null ? Services.Save.Data.GetLevel(c.level.id) : null;
+            var mrec = Services.Save != null ? Services.Save.Data.GetMission(c.id) : null;
+            if ((crec != null && crec.attempts > 0) || (mrec != null && mrec.bestScore > 0))
+                UIFactory.Label(panel, (mrec != null && mrec.bestScore > 0 ? $"YOUR BEST {mrec.bestScore:N0} PTS" : "") +
+                                       (crec != null && crec.attempts > 0 ? $"{(mrec != null && mrec.bestScore > 0 ? "  ·  " : "")}{Plural.Of(crec.attempts, "try", "tries")}" : ""),
+                                30, TextAnchor.MiddleCenter, 44f).color = p.title;
             var start = UIFactory.Button(panel, "START CONTRACT", () => Play(index));
             UIFactory.Button(panel, "BACK TO BOARD", Build);
             UIFactory.Select(start);
