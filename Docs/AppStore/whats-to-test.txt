@@ -7,7 +7,7 @@ New in this build (six rounds of improvements):
 - VERSUS: best of 5, RANDOM MATCHUP, win streaks, FIRST WIN, REVENGE and GRUDGE MATCH callouts, and your record with each hero.
 - ARENA CLASH: MVP on the results, best KOs and combo records, KO milestones.
 - ZOMBIES: accuracy, average round, YOUR BEST and NEW BEST callouts, kill milestones, last run and weeklies beaten.
-- HERO SELECT: mastery, Versus record, ★ FAVORITE and a RANDOM button.
+- HERO SELECT: mastery, Versus record, your FAVORITE and a RANDOM button.
 - SHOP: what you can afford now and what you're saving for.
 - PROFILE: playing since, days played, week streak, fastest clear, Arena and Versus records, ABOUT page.
 - Menu: greeting, tip of the day (tap for more), weekly recap, THIS SESSION recap, welcome-back gift.
