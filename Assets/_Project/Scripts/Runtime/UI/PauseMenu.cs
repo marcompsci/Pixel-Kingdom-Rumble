@@ -244,7 +244,7 @@ namespace PKR
             b = UIFactory.Button(panel, label, () =>
             {
                 float now = Time.unscaledTime;
-                if (!risky || TwoTap.Confirmed(armedAt, now)) { act(); return; }
+                if (!risky || PKR.Core.TwoTap.Confirmed(armedAt, now)) { act(); return; }
                 armedAt = now;
                 var t = b.GetComponentInChildren<Text>();
                 if (t != null) t.text = "TAP AGAIN: " + label;
